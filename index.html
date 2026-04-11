@@ -31,30 +31,14 @@
       padding: 24px;
     }
 
-    /* Logo mark — composed from the 3 SVG parts */
     .logo-mark {
-      position: relative;
       width: 104px;
       height: 115px;
     }
 
-    .logo-mark .bg {
-      position: absolute;
-      inset: 0;
-    }
-
-    .logo-mark .stroke {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -55%);
-    }
-
-    .logo-mark .swoosh {
-      position: absolute;
-      left: 50%;
-      bottom: 16px;
-      transform: translateX(-50%);
+    .logo-mark img {
+      width: 100%;
+      height: 100%;
     }
 
     .logo-text {
@@ -100,19 +84,7 @@
   <main class="container">
     <!-- Logo mark -->
     <div class="logo-mark">
-      <!-- Background rectangle -->
-      <svg class="bg" width="104" height="115" viewBox="0 0 104 115" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="104" height="115" rx="8" fill="white"/>
-        <rect x="0.5" y="0.5" width="103" height="114" rx="7.5" stroke="#2F2F2F" stroke-opacity="0.09"/>
-      </svg>
-      <!-- Vertical stroke -->
-      <svg class="stroke" width="19" height="75" viewBox="0 0 19 75" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4.86122 60.2947C4.84604 45.3174 4.79448 30.8333 4.82904 16.3493C4.83961 11.9143 4.73125 7.62423 0 4.13078C6.19585 2.7255 12.3917 1.32022 18.2125 0C14.3253 20.1562 16.8735 40.0261 16.3498 59.7638C16.0728 70.2045 15.3144 71.4954 3.931 74.6663C4.80119 69.9217 4.79832 65.3542 4.86122 60.2947Z" fill="black"/>
-      </svg>
-      <!-- Swoosh -->
-      <svg class="swoosh" width="63" height="21" viewBox="0 0 63 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M52.2603 20.0657C34.6705 18.6115 17.4751 17.5235 0.599473 19.5873C-0.616408 17.3201 0.198594 16.3118 1.43253 15.5792C10.1631 10.3955 19.1299 6.40104 29.769 8.47172C34.152 9.32479 38.6991 9.65789 43.1709 9.65373C49.3845 9.64793 55.0066 7.89581 58.7673 2.34846C59.4636 1.3213 59.9409 -0.161841 61.6654 0.0143678C63.6702 4.53671 57.9424 17.247 52.2603 20.0657Z" fill="black"/>
-      </svg>
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGgAAABzCAYAAAB0DUf5AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABQ5JREFUeAHtnVFO6loUhlfBiEQTIcRncQTiDGQEMgN1BOIIkBGII0BHIIwAnQGOQHxWAj4IokDv/hubcAxy6bG0q6f/l+zTWoiH7q9rdXVTuy35xvPz86FZHCUSiZJt23khK8eyrLbp63Yymaxms9nOH6+5K71eLzOdTitmtbyxsSFoRpKQ1TOZTGQ8HstwOMSytra2BlF9vOYI+pLTWl9fL2xubsKokOAxUSSDwUBGo1HbBEcRkpwQQeSkUqnC1tYW5YQI+h4BgkAxkVRxtpnoyZvl4/b2NuUoAZFkvCBwigmT/yrpdJpyFAEXqAHMspQw/xRM9SBEFxAkqKZNOBVM1SBEF18VdJ51tHIoSDkUpBwKUg4FKYeClENBylEtqNPpyPX1tZyensre3p7zc9xQc4Xa7/el3W7Lw8OD3N3dOQ3bXDKZjOTzeYkboQlCNECCKwRyFlEoFCSOBCYIAu7v750lhHhNVxS0Qmq1mpyfn8tviGN6A4EUCeVyWSqVivyG3d1diSOBVXEXFxeOqL8lrhFkvby82LlcToLib8tlfMOISi5OdLvd4K+D6vW6eAVi4ibHJXBBh4eHnjs7rukNhDKSUCqVPL0/rtEDQhHk9ZqGERQwXjucggIG9+CR5QhFEIuE5YmEoDhHXCS+sGMVR9TCCFIOBSmHKU45FKScSAjidRBRCwUph4KUQ0HKoSDlUJByKEg5FKQcClIOBSknEoJm/04oblCQcpjilENByqEg5VCQclgkKIeClMMUpxwKUg4FKYfnIOVEQtDr66vEFaY45VCQcihIORSkHApSDgUph4KUQ0HKoSDlUJByKEg5FKQcClIOBSmHgpQTCUFxfWY2YAQph8/qUU4ogrw+2JyClBOlR8Hg4CsWi3JwcCB+oH4K4qhNS1OtVp3pd/xCfQThSfVRAdO5obn4MaWb+nPQ2dmZRAHsE6JnFj9ScyiClr3PDXKicP5xzzuzB55fqTkUQcvcKYrUhjmHtDNPDvDrwFKX4lBSY7auVqulvrxuNBpOtTZvf46OjsQXMMFT0JjosM1//UczMmwjxu71ep5+1+Pjo9OCxBw8c/dhtvnxmeAmlDLbTXGIkJOTE+doW1StzU7piXXMJPlTFCK1oOEcgOX+/r6z/ttoxGe+ublxoub/ymjsi18pLhRBEHJ5eblQCjqh2Ww6HeKl6sN7XaGzuBPluku3A38aiEUhg98DMV6nFT0+PhbfCCPF/QTSmykMnHQnC9KH5mbE234BNyoELZPTo9Lq9brtF6EL+pfE+B09IDRB/5qYVUQPCFwQzjGmaotUpy/bcMD5TaCCarVapE/+ixpS2yquxQITVC6XI9XhXtvt7a29CgITFKXO9tow+rEqAhtJwEXhoiv/ecvv617AxaU7WjFvfXbbb8CY4aoHdAMRhB15enpyrtrdq3gt83O7owWzDZ913mvuz/j8mJM8iC8TLYRRLpcToo9ut8v74rRDQcqhIOVQkHIoSDkUpBwKUk7CsqzOdDoVoovJZCLGTTthhnyao9FIiC7G47EYN46gxnA4FEaRHjC+PBgMJJlMVhM7Ozt3ZsMVNhAdfAXMVTab7VjYYL7pzJgNrVQqVUin05JIsHYIA0TO29ubfHx8tI2DohHUd0w4K2bD+/v7Fe4HwzkJOZAEA04viBoTKOj7K1cOXrO+v9m8Kf/5+Xlh8t++MRqtv56KKKikTdXWNMsGTjmzr/0HaiFi4pd/zgYAAAAASUVORK5CYII=" alt="Livowa Logo">
     </div>
 
     <!-- Brand name -->
