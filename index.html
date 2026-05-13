@@ -1,104 +1,138 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <script>if(location.protocol==='http:')location.replace(location.href.replace('http:','https:'));</script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-  <title>Livowa — Acompanhamento Nutricional Inteligente</title>
-  <meta name="description" content="Livowa — acompanhamento nutricional inteligente. Em breve.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 115'%3E%3Crect width='104' height='115' rx='8' fill='white'/%3E%3Cpath d='M29.86 75.29C29.85 60.32 29.79 45.83 29.83 31.35C29.84 26.91 29.73 22.62 25 19.13C31.2 17.73 37.39 16.32 43.21 15C39.33 35.16 41.87 55.03 41.35 74.76C41.07 85.2 40.31 86.5 28.93 89.67C29.8 84.92 29.8 80.35 29.86 75.29Z' fill='black'/%3E%3Cpath d='M77.26 100.07C59.67 98.61 42.48 97.52 25.6 99.59C24.38 97.32 25.2 96.31 26.43 95.58C35.16 90.4 44.13 86.4 54.77 88.47C59.15 89.32 63.7 89.66 68.17 89.65C74.38 89.65 80.01 87.9 83.77 82.35C84.46 81.32 84.94 79.84 86.67 80.01C88.67 84.54 82.94 97.25 77.26 100.07Z' fill='black'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #fafafa;
-      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-      color: #1a1a1a;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
-      padding: 24px;
-    }
-
-    .logo-mark {
-      width: 104px;
-      height: 115px;
-    }
-
-    .logo-text {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      color: #1a1a1a;
-      margin-top: 12px;
-    }
-
-    .tagline {
-      font-size: 1.125rem;
-      font-weight: 400;
-      color: #666;
-      text-align: center;
-      line-height: 1.6;
-      max-width: 380px;
-    }
-
-    .divider {
-      width: 40px;
-      height: 2px;
-      background: #e0e0e0;
-      border-radius: 1px;
-    }
-
-    footer {
-      position: fixed;
-      bottom: 32px;
-      font-size: 0.8125rem;
-      color: #aaa;
-      letter-spacing: 0.02em;
-    }
-
-    @media (max-width: 480px) {
-      .logo-text { font-size: 1.625rem; }
-      .tagline { font-size: 1rem; max-width: 300px; }
-      footer { bottom: 24px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <script>if(location.protocol==='http:')location.replace(location.href.replace('http:','https:'));</script>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Livowa — Nutrição inteligente que acompanha seu ritmo</title>
+    <meta name="description" content="Livowa é o software que cruza o que você tem em casa, o que gosta de comer e suas metas em um plano executável. Acompanhamento humano opcional. Suporte a usuários de GLP-1.">
+    <meta property="og:title" content="Livowa | Nutrição inteligente">
+    <meta property="og:description" content="Seu paladar, sua despensa e seus objetivos em um plano executável. Sem dietas genéricas.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://livowa.com">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 115'%3E%3Crect width='104' height='115' rx='8' fill='white'/%3E%3Cpath d='M29.86 75.29C29.85 60.32 29.79 45.83 29.83 31.35C29.84 26.91 29.73 22.62 25 19.13C31.2 17.73 37.39 16.32 43.21 15C39.33 35.16 41.87 55.03 41.35 74.76C41.07 85.2 40.31 86.5 28.93 89.67C29.8 84.92 29.8 80.35 29.86 75.29Z' fill='black'/%3E%3Cpath d='M77.26 100.07C59.67 98.61 42.48 97.52 25.6 99.59C24.38 97.32 25.2 96.31 26.43 95.58C35.16 90.4 44.13 86.4 54.77 88.47C59.15 89.32 63.7 89.66 68.17 89.65C74.38 89.65 80.01 87.9 83.77 82.35C84.46 81.32 84.94 79.84 86.67 80.01C88.67 84.54 82.94 97.25 77.26 100.07Z' fill='black'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <main class="container">
-    <!-- Logo mark -->
-    <div class="logo-mark">
-      <svg width="104" height="115" viewBox="0 0 104 115" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="104" height="115" rx="8" fill="white"/>
-        <rect x="0.5" y="0.5" width="103" height="114" rx="7.5" stroke="#2F2F2F" stroke-opacity="0.09"/>
-        <path d="M29.8612 75.2947C29.846 60.3174 29.7945 45.8333 29.829 31.3493C29.8396 26.9143 29.7312 22.6242 25 19.1308C31.1958 17.7255 37.3917 16.3202 43.2125 15C39.3253 35.1562 41.8735 55.0261 41.3498 74.7638C41.0728 85.2045 40.3144 86.4954 28.931 89.6663C29.8012 84.9217 29.7983 80.3542 29.8612 75.2947Z" fill="black"/>
-        <path d="M77.2603 100.066C59.6705 98.6115 42.4751 97.5235 25.5995 99.5873C24.3836 97.3201 25.1986 96.3118 26.4325 95.5792C35.1631 90.3955 44.1299 86.401 54.769 88.4717C59.152 89.3248 63.6991 89.6579 68.1709 89.6537C74.3845 89.6479 80.0066 87.8958 83.7673 82.3485C84.4636 81.3213 84.9409 79.8382 86.6654 80.0144C88.6702 84.5367 82.9424 97.247 77.2603 100.066Z" fill="black"/>
-      </svg>
-    </div>
+    <header class="container">
+        <a href="/" class="logo">Livowa</a>
+        <nav>
+            <a href="/suporte">Suporte</a>
+            <a href="/privacidade">Privacidade</a>
+            <a href="/termos">Termos</a>
+        </nav>
+    </header>
 
-    <!-- Brand name -->
-    <span class="logo-text">Livowa</span>
+    <main>
+        <section class="hero container">
+            <h1>Nutrição inteligente que acompanha o seu ritmo.</h1>
+            <p>Seu paladar, sua despensa e seus objetivos sincronizados em um plano executável. Sem dietas genéricas, sem desperdício.</p>
+            <div class="hero-actions">
+                <a href="#" class="btn btn-primary">Em breve na App Store</a>
+                <a href="#" class="btn btn-outline">Em breve no Google Play</a>
+            </div>
+        </section>
 
-    <div class="divider"></div>
+        <section class="section-alt">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Do planejamento ao prato em 3 etapas.</h2>
+                </div>
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="icon-wrapper">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        </div>
+                        <h3>O que você tem.</h3>
+                        <p class="text-light">A Livowa lê a sua despensa virtual e planeja a semana com os ingredientes que já estão na sua casa.</p>
+                    </div>
+                    <div class="card">
+                        <div class="icon-wrapper">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        </div>
+                        <h3>O que você come.</h3>
+                        <p class="text-light">Fotografe o prato. O sistema calcula os macros e ajusta o plano sem você precisar digitar grama por grama.</p>
+                    </div>
+                    <div class="card">
+                        <div class="icon-wrapper">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </div>
+                        <h3>O que muda.</h3>
+                        <p class="text-light">Imprevistos acontecem. O coach do app adapta sua próxima refeição em tempo real para manter o progresso.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <!-- Tagline -->
-    <p class="tagline">Em breve — acompanhamento nutricional inteligente</p>
-  </main>
+        <section class="container">
+            <div class="grid-2">
+                <div>
+                    <h2>Focado no que importa: execução.</h2>
+                    <p class="text-light">Criamos a Livowa para quem cansou de ferramentas passivas que só contam calorias.</p>
+                </div>
+                <ul class="feature-list">
+                    <li>
+                        <strong>Cansou de contar calorias no escuro?</strong><br>
+                        <span class="text-light">A Livowa decide as refeições baseada na sua meta, seu paladar e sua despensa.</span>
+                    </li>
+                    <li>
+                        <strong>Desperdiçando comida?</strong><br>
+                        <span class="text-light">A despensa virtual decrementa automaticamente conforme você come e otimiza a próxima lista de compras.</span>
+                    </li>
+                    <li>
+                        <strong>Plano genérico não cabe na sua rotina?</strong><br>
+                        <span class="text-light">A cada refeição registrada, o plano se ajusta para manter você dentro da meta sem perder o sabor.</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
 
-  <footer>livowa.com</footer>
+        <section class="section-alt">
+            <div class="container grid-2">
+                <div>
+                    <span class="badge">Suporte a usuários de GLP-1</span>
+                    <h2>Perda de peso sem perda de músculo.</h2>
+                    <p class="text-light">Para quem utiliza agonistas de GLP-1, a Livowa prioriza metas de proteína e adapta volumes ao apetite reduzido — para que a perda de peso seja focada em gordura, não em massa magra.</p>
+                    <p class="text-light text-small">A Livowa não prescreve, não substitui consulta médica e não fornece dose de medicamento. Toda decisão clínica deve ser conduzida pelo seu profissional de saúde.</p>
+                </div>
+                <div>
+                    <div style="background: var(--color-bg-main); border: 1px solid var(--color-border); border-radius: 8px; height: 280px; display: flex; align-items: center; justify-content: center; color: var(--color-text-light);">
+                        Em breve.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <a href="/" class="logo">Livowa</a>
+                    <p class="text-light" style="margin-top: 1rem; max-width: 260px;">Nutrição inteligente que acompanha seu ritmo.</p>
+                </div>
+                <div class="footer-links">
+                    <strong>Navegação</strong>
+                    <a href="/">Home</a>
+                    <a href="/suporte">Suporte</a>
+                    <a href="/privacidade">Privacidade</a>
+                    <a href="/termos">Termos</a>
+                    <a href="/exclusao-dados">Excluir meus dados</a>
+                </div>
+                <div class="footer-links">
+                    <strong>Contato</strong>
+                    <a href="mailto:contato@livowa.com">contato@livowa.com</a>
+                    <a href="mailto:suporte@livowa.com">suporte@livowa.com</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Livowa. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
