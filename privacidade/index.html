@@ -72,24 +72,24 @@
             <p><strong>Base legal:</strong> consentimento explícito do titular (Art. 11, II, "a" da LGPD) para dados sensíveis de saúde; execução de contrato (Art. 7º, V) para dados gerais necessários ao funcionamento do serviço.</p>
 
             <h2>3. Compartilhamento de dados</h2>
-            <p>A Livowa não vende seus dados. Compartilhamos apenas nas seguintes situações, com fornecedores de infraestrutura submetidos a obrigações contratuais de proteção de dados:</p>
+            <p>A Livowa não vende os seus dados. Compartilhamos apenas com subprocessadores submetidos a obrigações contratuais de proteção de dados, exclusivamente para viabilizar o funcionamento do serviço:</p>
             <ul>
-                <li><strong>Supabase</strong> — armazenamento seguro do banco de dados e autenticação, com criptografia em repouso e em trânsito.</li>
-                <li><strong>Google Cloud (Vertex AI)</strong> — processamento de imagens de refeições e geração de respostas do coach. Os dados enviados são processados sob contrato comercial do Google Cloud com cláusulas de não-treinamento: o conteúdo enviado pela Livowa não é utilizado para treinar modelos de IA do Google.</li>
-                <li><strong>n8n</strong> — pipeline de processamento e orquestração das análises.</li>
-                <li><strong>Profissionais de saúde vinculados</strong> à sua conta, mediante seu consentimento explícito.</li>
+                <li><strong>Provedor de banco de dados e autenticação em nuvem</strong> — armazena o seu cadastro, refeições, plano semanal e demais dados de uso, com criptografia em repouso e em trânsito.</li>
+                <li><strong>Provedores de Inteligência Artificial</strong> — processam imagens de refeições e geram respostas do coach. Trabalhamos com <strong>Google Cloud (Vertex AI / Gemini)</strong> e <strong>OpenAI</strong>, ambos sob contrato comercial com cláusulas de não-retenção e não-treinamento (o conteúdo enviado pela Livowa não é usado para treinar modelos).</li>
+                <li><strong>Provedor de orquestração de processamento</strong> — coordena o pipeline interno de análise das suas refeições e demais workflows do serviço.</li>
+                <li><strong>Profissionais de saúde vinculados</strong> à sua conta, mediante o seu consentimento explícito.</li>
                 <li><strong>Autoridades públicas</strong>, quando exigido por lei ou ordem judicial.</li>
             </ul>
-            <p>Seus dados sensíveis de saúde nunca são compartilhados para fins publicitários ou de marketing.</p>
+            <p>Os seus dados sensíveis de saúde nunca são compartilhados para fins publicitários ou de marketing.</p>
 
             <h2>4. Uso de Inteligência Artificial</h2>
-            <p>A Livowa utiliza serviços de inteligência artificial fornecidos pelo Google Cloud (Vertex AI / Gemini) para:</p>
+            <p>A Livowa utiliza serviços de inteligência artificial fornecidos por <strong>Google Cloud (Vertex AI / Gemini)</strong> e <strong>OpenAI</strong> para:</p>
             <ul>
                 <li>Identificar alimentos em fotos de refeições enviadas voluntariamente pelo usuário</li>
-                <li>Estimar quantidades e macronutrientes com base na imagem analisada</li>
+                <li>Estimar quantidades e macronutrientes a partir da imagem analisada</li>
                 <li>Gerar respostas do coach nutricional dentro do aplicativo</li>
             </ul>
-            <p>Esses recursos são opcionais e dependem da sua interação ativa (fotografar uma refeição ou conversar com o coach). Os modelos de IA utilizados não são treinados com os seus dados — o processamento é feito sob contrato comercial do Google Cloud com cláusulas de não-retenção e não-treinamento. A Livowa não delega decisões clínicas à IA: todas as análises são informativas e não substituem orientação profissional.</p>
+            <p>Esses recursos são opcionais e dependem da sua interação ativa (fotografar uma refeição ou conversar com o coach). Os modelos de IA utilizados <strong>não são treinados com os seus dados</strong>: o processamento ocorre sob contratos comerciais com cláusulas de não-retenção e não-treinamento. A Livowa não delega decisões clínicas à IA — todas as análises são informativas e não substituem orientação profissional.</p>
 
             <h2>5. Integração com HealthKit (iOS) e Health Connect (Android)</h2>
             <p>Se você optar por conectar a Livowa ao HealthKit da Apple ou ao Health Connect do Google, leremos apenas os dados estritamente necessários para a funcionalidade que você ativou (ex.: peso, frequência cardíaca, sessões de atividade física). Esses dados:</p>
@@ -125,10 +125,12 @@
 
             <h2>8. Retenção de dados</h2>
             <ul>
-                <li>Seus dados são mantidos enquanto sua conta estiver ativa</li>
-                <li>Após a solicitação de exclusão, os dados são anonimizados em até 15 dias úteis</li>
-                <li>Dados anonimizados podem ser retidos para fins estatísticos (sem identificação pessoal)</li>
-                <li>Registros legais obrigatórios são mantidos pelo prazo exigido em lei</li>
+                <li>Os seus dados são mantidos enquanto a sua conta estiver ativa.</li>
+                <li>Ao solicitar exclusão, a sua conta é <strong>desativada imediatamente</strong>. Por padrão, oferecemos um período de <strong>14 dias para reativação</strong>, caso você mude de ideia — durante esse intervalo, ninguém da Livowa acessa os seus dados, e eles permanecem isolados em estado de exclusão programada.</li>
+                <li>Após o período de reativação, a <strong>anonimização é concluída em até 15 dias úteis adicionais</strong>, conforme a LGPD (Art. 18, VI).</li>
+                <li>Se você preferir <strong>exclusão imediata</strong> (sem período de reativação), basta indicar isso no pedido — atendemos no prazo de 15 dias úteis a contar da solicitação.</li>
+                <li>Dados anonimizados podem ser retidos para fins estatísticos (sem identificação pessoal).</li>
+                <li>Registros legais obrigatórios são mantidos pelo prazo exigido em lei.</li>
             </ul>
 
             <h2>9. Crianças e adolescentes</h2>
