@@ -3,61 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <script>if(location.protocol==='http:')location.replace(location.href.replace('http:','https:'));</script>
+    <script>document.documentElement.classList.add('js');</script>
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#070A10">
     <title>Livowa — Nutrição inteligente que acompanha seu ritmo</title>
     <meta name="description" content="Livowa é o software que cruza o que você tem em casa, o que gosta de comer e suas metas em um plano executável. Acompanhamento humano opcional. Suporte a usuários de GLP-1.">
     <meta property="og:title" content="Livowa | Nutrição inteligente">
     <meta property="og:description" content="Seu paladar, sua despensa e seus objetivos em um plano executável. Sem dietas genéricas.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://livowa.com">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 115'%3E%3Crect width='104' height='115' rx='8' fill='white'/%3E%3Cpath d='M29.86 75.29C29.85 60.32 29.79 45.83 29.83 31.35C29.84 26.91 29.73 22.62 25 19.13C31.2 17.73 37.39 16.32 43.21 15C39.33 35.16 41.87 55.03 41.35 74.76C41.07 85.2 40.31 86.5 28.93 89.67C29.8 84.92 29.8 80.35 29.86 75.29Z' fill='black'/%3E%3Cpath d='M77.26 100.07C59.67 98.61 42.48 97.52 25.6 99.59C24.38 97.32 25.2 96.31 26.43 95.58C35.16 90.4 44.13 86.4 54.77 88.47C59.15 89.32 63.7 89.66 68.17 89.65C74.38 89.65 80.01 87.9 83.77 82.35C84.46 81.32 84.94 79.84 86.67 80.01C88.67 84.54 82.94 97.25 77.26 100.07Z' fill='black'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 115'%3E%3Crect width='104' height='115' rx='8' fill='%230B1117'/%3E%3Cpath d='M29.86 75.29C29.85 60.32 29.79 45.83 29.83 31.35C29.84 26.91 29.73 22.62 25 19.13C31.2 17.73 37.39 16.32 43.21 15C39.33 35.16 41.87 55.03 41.35 74.76C41.07 85.2 40.31 86.5 28.93 89.67C29.8 84.92 29.8 80.35 29.86 75.29Z' fill='%2300D9A6'/%3E%3Cpath d='M77.26 100.07C59.67 98.61 42.48 97.52 25.6 99.59C24.38 97.32 25.2 96.31 26.43 95.58C35.16 90.4 44.13 86.4 54.77 88.47C59.15 89.32 63.7 89.66 68.17 89.65C74.38 89.65 80.01 87.9 83.77 82.35C84.46 81.32 84.94 79.84 86.67 80.01C88.67 84.54 82.94 97.25 77.26 100.07Z' fill='%2300D9A6'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <header class="container">
-        <a href="/" class="logo">Livowa</a>
-        <nav>
-            <a href="/suporte">Suporte</a>
-            <a href="/privacidade">Privacidade</a>
-            <a href="/termos">Termos</a>
-        </nav>
+    <header class="site-nav">
+        <div class="container">
+            <a href="/" class="logo">Livowa</a>
+            <nav class="nav-links">
+                <a href="#como-funciona">Como funciona</a>
+                <a href="#glp1">GLP-1</a>
+                <a href="/suporte">Suporte</a>
+                <a href="https://quiz.livowa.com/?src=site-nav" class="nav-cta">Diagnóstico gratuito</a>
+            </nav>
+        </div>
     </header>
 
     <main>
-        <section class="hero container">
-            <h1>Nutrição inteligente que acompanha o seu ritmo.</h1>
-            <p>Seu paladar, sua despensa e seus objetivos sincronizados em um plano executável. Sem dietas genéricas, sem desperdício.</p>
-            <div class="hero-actions">
-                <a href="#" class="btn btn-primary">Em breve na App Store</a>
-                <a href="#" class="btn btn-outline">Em breve no Google Play</a>
+        <!-- ───────────── HERO ───────────── -->
+        <section class="lp-hero">
+            <canvas id="hero-canvas" aria-hidden="true"></canvas>
+            <div class="aurora" aria-hidden="true"></div>
+            <div class="container">
+                <div class="hero-copy">
+                    <span class="eyebrow"><span class="dot"></span>Acesso antecipado · fila de espera aberta</span>
+                    <h1 class="lp-title">Nutrição inteligente que acompanha o seu <em class="accent">ritmo</em>.</h1>
+                    <p class="lp-sub">Seu paladar, sua despensa e seus objetivos sincronizados em um plano executável. Sem dietas genéricas, sem desperdício.</p>
+                    <div class="lp-actions">
+                        <a href="https://quiz.livowa.com/?src=site-hero" class="btn btn-primary">
+                            Descobrir minha trava metabólica
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </a>
+                        <a href="#como-funciona" class="btn btn-outline">Como funciona</a>
+                    </div>
+                    <div class="store-chips">
+                        <span class="store-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                            App Store · em breve
+                        </span>
+                        <span class="store-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.61 1.81 13.79 12 3.61 22.19c-.38-.2-.61-.6-.61-1.08V2.89c0-.48.23-.88.61-1.08zM14.85 13.06l2.55 2.55-10.78 6.04c-.36.2-.78.22-1.14.06l9.37-8.65zm0-2.12L5.48 2.29c.36-.16.78-.14 1.14.06l10.78 6.04-2.55 2.55zM18.78 9.4l2.61 1.46c.81.46.81 1.82 0 2.28l-2.61 1.46-2.87-2.6 2.87-2.6z"/></svg>
+                            Google Play · em breve
+                        </span>
+                    </div>
+                </div>
+
+                <div class="phone-wrap" data-reveal style="--d:.3s">
+                    <div class="phone-glow" aria-hidden="true"></div>
+                    <div class="phone" aria-hidden="true">
+                        <div class="phone-screen">
+                            <div class="app-status"><span>9:41</span><span>●●●</span></div>
+                            <div class="app-head">
+                                <div>
+                                    <div class="app-hi">Boa noite, Marina</div>
+                                    <div class="app-date">Quinta · Semana 4</div>
+                                </div>
+                                <div class="app-avatar">M</div>
+                            </div>
+                            <div class="app-card app-macro">
+                                <div class="ring">
+                                    <svg viewBox="0 0 80 80">
+                                        <circle class="ring-track" cx="40" cy="40" r="34"/>
+                                        <circle class="ring-fill" data-p="0.76" cx="40" cy="40" r="34"/>
+                                    </svg>
+                                    <div class="ring-label"><strong>76%</strong><span>proteína</span></div>
+                                </div>
+                                <div class="macro-info">
+                                    <div class="macro-line"><span>Proteína</span><strong>92 / 120 g</strong></div>
+                                    <div class="macro-bar"><i style="--w:76%"></i></div>
+                                    <div class="macro-line"><span>Energia</span><strong>1.430 / 1.850 kcal</strong></div>
+                                    <div class="macro-bar"><i style="--w:62%; --c:#7FB7FF"></i></div>
+                                </div>
+                            </div>
+                            <div class="app-card app-chat">
+                                <div class="chat-bubble coach">Seu almoço mudou? Me conta o que você comeu que eu reorganizo o jantar. 🌿</div>
+                                <div class="chat-bubble user">Comi fora — strogonoff</div>
+                                <div class="chat-bubble coach typing"><i></i><i></i><i></i></div>
+                            </div>
+                            <div class="app-card">
+                                <div class="app-card-title">Despensa</div>
+                                <div class="pantry-chips">
+                                    <span>Frango ✓</span>
+                                    <span>Arroz ✓</span>
+                                    <span class="low">Brócolis · acabando</span>
+                                </div>
+                            </div>
+                            <div class="app-tabbar"><i class="on"></i><i></i><i></i><i></i></div>
+                        </div>
+                    </div>
+                    <p class="phone-caption">Interface ilustrativa do aplicativo.</p>
+                </div>
             </div>
         </section>
 
-        <section class="section-alt">
+        <!-- ───────────── MARQUEE ───────────── -->
+        <div class="marquee" aria-hidden="true">
+            <div class="marquee-track">
+                <span>Despensa virtual <i class="leaf">✦</i> Macros por foto <i class="leaf">✦</i> Plano em 2 minutos <i class="leaf">✦</i> Suporte a GLP-1 <i class="leaf">✦</i> Coach em tempo real <i class="leaf">✦</i> Lista de compras automática <i class="leaf">✦</i></span>
+                <span>Despensa virtual <i class="leaf">✦</i> Macros por foto <i class="leaf">✦</i> Plano em 2 minutos <i class="leaf">✦</i> Suporte a GLP-1 <i class="leaf">✦</i> Coach em tempo real <i class="leaf">✦</i> Lista de compras automática <i class="leaf">✦</i></span>
+            </div>
+        </div>
+
+        <!-- ───────────── COMO FUNCIONA ───────────── -->
+        <section class="section-alt" id="como-funciona">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header" data-reveal>
+                    <span class="kicker">O método</span>
                     <h2>Do planejamento ao prato em 3 etapas.</h2>
                 </div>
                 <div class="grid-3">
-                    <div class="card">
+                    <div class="card" data-reveal>
+                        <span class="step-num">01</span>
                         <div class="icon-wrapper">
                             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </div>
                         <h3>O que você tem.</h3>
                         <p class="text-light">A Livowa lê a sua despensa virtual e planeja a semana com os ingredientes que já estão na sua casa.</p>
                     </div>
-                    <div class="card">
+                    <div class="card" data-reveal style="--d:.12s">
+                        <span class="step-num">02</span>
                         <div class="icon-wrapper">
                             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                         </div>
                         <h3>O que você come.</h3>
                         <p class="text-light">Fotografe o prato. O sistema calcula os macros e ajusta o plano sem você precisar digitar grama por grama.</p>
                     </div>
-                    <div class="card">
+                    <div class="card" data-reveal style="--d:.24s">
+                        <span class="step-num">03</span>
                         <div class="icon-wrapper">
                             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                         </div>
@@ -68,22 +153,31 @@
             </div>
         </section>
 
-        <section class="container">
-            <div class="grid-2">
-                <div>
+        <!-- ───────────── STATEMENT EDITORIAL ───────────── -->
+        <section class="statement">
+            <div class="container" data-reveal>
+                <p>Comer bem não deveria ser um <em class="accent">segundo emprego</em>.</p>
+            </div>
+        </section>
+
+        <!-- ───────────── EXECUÇÃO ───────────── -->
+        <section class="section-alt">
+            <div class="container grid-2">
+                <div data-reveal>
+                    <span class="kicker">Por que a Livowa</span>
                     <h2>Focado no que importa: execução.</h2>
                     <p class="text-light">Criamos a Livowa para quem cansou de ferramentas passivas que só contam calorias.</p>
                 </div>
                 <ul class="feature-list">
-                    <li>
+                    <li data-reveal>
                         <strong>Cansou de contar calorias no escuro?</strong><br>
                         <span class="text-light">A Livowa decide as refeições baseada na sua meta, seu paladar e sua despensa.</span>
                     </li>
-                    <li>
+                    <li data-reveal style="--d:.12s">
                         <strong>Desperdiçando comida?</strong><br>
                         <span class="text-light">A despensa virtual decrementa automaticamente conforme você come e otimiza a próxima lista de compras.</span>
                     </li>
-                    <li>
+                    <li data-reveal style="--d:.24s">
                         <strong>Plano genérico não cabe na sua rotina?</strong><br>
                         <span class="text-light">A cada refeição registrada, o plano se ajusta para manter você dentro da meta sem perder o sabor.</span>
                     </li>
@@ -91,18 +185,47 @@
             </div>
         </section>
 
-        <section class="section-alt">
+        <!-- ───────────── GLP-1 ───────────── -->
+        <section id="glp1">
             <div class="container grid-2">
-                <div>
+                <div data-reveal>
                     <span class="badge">Suporte a usuários de GLP-1</span>
                     <h2>Perda de peso sem perda de músculo.</h2>
                     <p class="text-light">Para quem utiliza agonistas de GLP-1, a Livowa prioriza metas de proteína e adapta volumes ao apetite reduzido — para que a perda de peso seja focada em gordura, não em massa magra.</p>
                     <p class="text-light text-small">A Livowa não prescreve, não substitui consulta médica e não fornece dose de medicamento. Toda decisão clínica deve ser conduzida pelo seu profissional de saúde.</p>
                 </div>
-                <div>
-                    <div style="background: var(--color-bg-main); border: 1px solid var(--color-border); border-radius: 8px; height: 280px; display: flex; align-items: center; justify-content: center; color: var(--color-text-light);">
-                        Em breve.
+                <div class="glp-visual" data-reveal style="--d:.15s">
+                    <div class="glp-rows">
+                        <div>
+                            <div class="glp-row-head"><span>Meta de proteína</span><strong>Prioridade nº 1</strong></div>
+                            <div class="glp-bar"><i style="--w:92%"></i></div>
+                        </div>
+                        <div>
+                            <div class="glp-row-head"><span>Volume por refeição</span><strong>Adaptado ao apetite</strong></div>
+                            <div class="glp-bar"><i style="--w:55%; --c:#7FB7FF"></i></div>
+                        </div>
+                        <div>
+                            <div class="glp-row-head"><span>Massa magra</span><strong>Acompanhada de perto</strong></div>
+                            <div class="glp-bar"><i style="--w:78%; --c:#2DF0BE"></i></div>
+                        </div>
                     </div>
+                    <p class="glp-note">Visual ilustrativo do painel do app. A Livowa não promete resultados — entrega método.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ───────────── CTA FINAL ───────────── -->
+        <section>
+            <div class="container">
+                <div class="cta-panel" data-reveal>
+                    <span class="kicker">Diagnóstico gratuito · 2 minutos</span>
+                    <h2>O que está <em class="accent">travando</em> o seu progresso?</h2>
+                    <p>Responda o Diagnóstico Metabólico e descubra qual das 3 travas está segurando você — com base em literatura clínica, não em palpite.</p>
+                    <a href="https://quiz.livowa.com/?src=site-cta" class="btn btn-primary">
+                        Fazer o diagnóstico gratuito
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                    <p class="cta-note">Sem cartão, sem spam. O app chega primeiro para quem está na fila de espera.</p>
                 </div>
             </div>
         </section>
@@ -118,6 +241,7 @@
                 <div class="footer-links">
                     <strong>Navegação</strong>
                     <a href="/">Home</a>
+                    <a href="https://quiz.livowa.com/?src=site-footer">Diagnóstico Metabólico</a>
                     <a href="/suporte">Suporte</a>
                     <a href="/privacidade">Privacidade</a>
                     <a href="/termos">Termos</a>
@@ -135,5 +259,156 @@
             </div>
         </div>
     </footer>
+
+    <script>
+    (function () {
+        'use strict';
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        /* ── Nav: estado ao rolar ── */
+        var nav = document.querySelector('.site-nav');
+        function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 24); }
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+
+        /* ── Título: quebra em palavras animadas (preserva o <em>) ── */
+        var title = document.querySelector('.lp-title');
+        if (title && !reduceMotion) {
+            var i = 0;
+            var frag = document.createDocumentFragment();
+            Array.prototype.slice.call(title.childNodes).forEach(function (node) {
+                if (node.nodeType === 3) {
+                    node.textContent.split(/(\s+)/).forEach(function (tok) {
+                        if (!tok) return;
+                        if (/^\s+$/.test(tok)) { frag.appendChild(document.createTextNode(' ')); return; }
+                        var s = document.createElement('span');
+                        s.className = 'w';
+                        s.style.setProperty('--i', i++);
+                        s.textContent = tok;
+                        frag.appendChild(s);
+                    });
+                } else {
+                    var s = document.createElement('span');
+                    s.className = 'w';
+                    s.style.setProperty('--i', i++);
+                    s.appendChild(node.cloneNode(true));
+                    frag.appendChild(s);
+                }
+            });
+            title.textContent = '';
+            title.appendChild(frag);
+        }
+
+        /* ── Reveal on scroll ── */
+        if ('IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('in');
+                    entry.target.querySelectorAll('.ring-fill[data-p]').forEach(function (c) {
+                        c.style.setProperty('--p', c.dataset.p);
+                    });
+                    io.unobserve(entry.target);
+                });
+            }, { threshold: 0.18, rootMargin: '0px 0px -8% 0px' });
+            document.querySelectorAll('[data-reveal]').forEach(function (el) { io.observe(el); });
+        } else {
+            document.querySelectorAll('[data-reveal]').forEach(function (el) { el.classList.add('in'); });
+            document.querySelectorAll('.ring-fill[data-p]').forEach(function (c) {
+                c.style.setProperty('--p', c.dataset.p);
+            });
+        }
+
+        /* ── Tilt 3D do mockup (só ponteiro fino) ── */
+        var phoneWrap = document.querySelector('.phone-wrap');
+        var phone = document.querySelector('.phone');
+        if (phone && !reduceMotion && window.matchMedia('(pointer: fine)').matches) {
+            phoneWrap.addEventListener('pointermove', function (e) {
+                var r = phoneWrap.getBoundingClientRect();
+                var px = (e.clientX - r.left) / r.width - 0.5;
+                var py = (e.clientY - r.top) / r.height - 0.5;
+                phone.style.setProperty('--ry', (px * 10).toFixed(2) + 'deg');
+                phone.style.setProperty('--rx', (-py * 8).toFixed(2) + 'deg');
+            });
+            phoneWrap.addEventListener('pointerleave', function () {
+                phone.style.setProperty('--ry', '0deg');
+                phone.style.setProperty('--rx', '0deg');
+            });
+        }
+
+        /* ── Canvas: partículas orgânicas ("esporos") no hero ── */
+        var canvas = document.getElementById('hero-canvas');
+        if (canvas && !reduceMotion) {
+            var ctx = canvas.getContext('2d');
+            var W = 0, H = 0, parts = [], raf = null;
+            var mx = 0.5, my = 0.5;
+
+            function spawn(fromBottom) {
+                var z = 0.35 + Math.random() * 0.65;
+                return {
+                    x: Math.random() * W,
+                    y: fromBottom ? H + 12 : Math.random() * H,
+                    z: z,
+                    r: (0.7 + Math.random() * 1.7) * z,
+                    vy: (0.12 + Math.random() * 0.30) * z,
+                    drift: Math.random() * Math.PI * 2,
+                    ds: 0.008 + Math.random() * 0.012,
+                    a: (0.22 + Math.random() * 0.45) * z,
+                    green: Math.random() < 0.85
+                };
+            }
+
+            function resize() {
+                var dpr = Math.min(2, window.devicePixelRatio || 1);
+                W = canvas.clientWidth;
+                H = canvas.clientHeight;
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                var count = Math.min(80, Math.round(W * H / 16000));
+                parts = [];
+                for (var k = 0; k < count; k++) parts.push(spawn(false));
+            }
+
+            function tick() {
+                ctx.clearRect(0, 0, W, H);
+                for (var k = 0; k < parts.length; k++) {
+                    var p = parts[k];
+                    p.y -= p.vy;
+                    p.drift += p.ds;
+                    if (p.y < -12) parts[k] = p = spawn(true);
+                    var x = p.x + Math.sin(p.drift) * 14 + (mx - 0.5) * 30 * p.z;
+                    var y = p.y + (my - 0.5) * 18 * p.z;
+                    ctx.beginPath();
+                    ctx.arc(x, y, p.r, 0, 6.2832);
+                    ctx.fillStyle = p.green
+                        ? 'rgba(45,240,190,' + p.a.toFixed(3) + ')'
+                        : 'rgba(243,246,249,' + (p.a * 0.8).toFixed(3) + ')';
+                    ctx.fill();
+                }
+                raf = window.requestAnimationFrame(tick);
+            }
+
+            window.addEventListener('pointermove', function (e) {
+                mx = e.clientX / window.innerWidth;
+                my = e.clientY / window.innerHeight;
+            }, { passive: true });
+
+            window.addEventListener('resize', resize, { passive: true });
+
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) {
+                    if (raf) window.cancelAnimationFrame(raf);
+                    raf = null;
+                } else if (!raf) {
+                    tick();
+                }
+            });
+
+            resize();
+            tick();
+        }
+    })();
+    </script>
 </body>
 </html>

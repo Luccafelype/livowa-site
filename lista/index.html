@@ -8,10 +8,10 @@
     <title>Lista de compras | Livowa</title>
     <meta name="description" content="Lista de compras compartilhada via Livowa.">
     <meta name="robots" content="noindex,nofollow">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 115'%3E%3Crect width='104' height='115' rx='8' fill='white'/%3E%3Cpath d='M29.86 75.29C29.85 60.32 29.79 45.83 29.83 31.35C29.84 26.91 29.73 22.62 25 19.13C31.2 17.73 37.39 16.32 43.21 15C39.33 35.16 41.87 55.03 41.35 74.76C41.07 85.2 40.31 86.5 28.93 89.67C29.8 84.92 29.8 80.35 29.86 75.29Z' fill='black'/%3E%3Cpath d='M77.26 100.07C59.67 98.61 42.48 97.52 25.6 99.59C24.38 97.32 25.2 96.31 26.43 95.58C35.16 90.4 44.13 86.4 54.77 88.47C59.15 89.32 63.7 89.66 68.17 89.65C74.38 89.65 80.01 87.9 83.77 82.35C84.46 81.32 84.94 79.84 86.67 80.01C88.67 84.54 82.94 97.25 77.26 100.07Z' fill='black'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 115'%3E%3Crect width='104' height='115' rx='8' fill='%230B1117'/%3E%3Cpath d='M29.86 75.29C29.85 60.32 29.79 45.83 29.83 31.35C29.84 26.91 29.73 22.62 25 19.13C31.2 17.73 37.39 16.32 43.21 15C39.33 35.16 41.87 55.03 41.35 74.76C41.07 85.2 40.31 86.5 28.93 89.67C29.8 84.92 29.8 80.35 29.86 75.29Z' fill='%2300D9A6'/%3E%3Cpath d='M77.26 100.07C59.67 98.61 42.48 97.52 25.6 99.59C24.38 97.32 25.2 96.31 26.43 95.58C35.16 90.4 44.13 86.4 54.77 88.47C59.15 89.32 63.7 89.66 68.17 89.65C74.38 89.65 80.01 87.9 83.77 82.35C84.46 81.32 84.94 79.84 86.67 80.01C88.67 84.54 82.94 97.25 77.26 100.07Z' fill='%2300D9A6'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
     <style>
         .lc-wrap { max-width: 720px; margin: 0 auto; padding: 1rem; }
@@ -21,9 +21,9 @@
         .lc-section-title { color: var(--color-primary); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 0.75rem; }
         .lc-item { display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); }
         .lc-item:last-child { border-bottom: none; }
-        .lc-checkbox { flex-shrink: 0; width: 24px; height: 24px; border: 2px solid var(--color-border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; background: white; }
+        .lc-checkbox { flex-shrink: 0; width: 24px; height: 24px; border: 2px solid var(--color-border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; background: var(--color-bg-main); }
         .lc-checkbox.checked { background: var(--color-secondary); border-color: var(--color-secondary); }
-        .lc-checkbox.checked::after { content: ""; width: 12px; height: 6px; border-left: 2px solid white; border-bottom: 2px solid white; transform: rotate(-45deg) translate(2px, -2px); }
+        .lc-checkbox.checked::after { content: ""; width: 12px; height: 6px; border-left: 2px solid #04130E; border-bottom: 2px solid #04130E; transform: rotate(-45deg) translate(2px, -2px); }
         .lc-checkbox:disabled { opacity: 0.5; cursor: wait; }
         .lc-item-body { flex: 1; min-width: 0; }
         .lc-item-name { font-weight: 500; color: var(--color-primary); }
@@ -34,7 +34,7 @@
         .lc-empty { text-align: center; color: var(--color-text-light); padding: 2rem; }
         .lc-progress { background: var(--color-bg-main); border-radius: 999px; height: 8px; overflow: hidden; margin-top: 0.75rem; }
         .lc-progress-bar { background: var(--color-secondary); height: 100%; transition: width 0.3s ease; width: 0%; }
-        .lc-btn-small { padding: 0.5rem 0.875rem; font-size: 0.875rem; border-radius: 8px; border: 1px solid var(--color-border); background: white; cursor: pointer; color: var(--color-text-main); }
+        .lc-btn-small { padding: 0.5rem 0.875rem; font-size: 0.875rem; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-bg-card); cursor: pointer; color: var(--color-text-main); }
         .lc-btn-small:hover { background: var(--color-bg-main); }
         .lc-loading { text-align: center; padding: 3rem 1rem; color: var(--color-text-light); }
         .lc-badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--color-badge-bg); color: var(--color-badge-text); margin-left: 0.5rem; }
