@@ -2,6 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; worker-src 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-elem 'self' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; upgrade-insecure-requests">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <script src="/assets/js/boot.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página não encontrada | Livowa</title>
     <!--
@@ -10,19 +13,7 @@
       Se o path for /lista/<algo>, redirecionamos pra /lista/?token=<algo>
       (que é servido pelo /lista/index.html) — sem o usuário ver esta página.
     -->
-    <script>
-      (function () {
-        try {
-          var parts = location.pathname.split('/').filter(Boolean);
-          if (parts.length >= 2 && parts[0] === 'lista') {
-            var token = parts[1];
-            if (token && token !== 'index.html') {
-              location.replace('/lista/?token=' + encodeURIComponent(token));
-            }
-          }
-        } catch (e) { /* fall through to 404 page */ }
-      })();
-    </script>
+    <script src="/assets/js/404.js"></script>
     <link rel="stylesheet" href="/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

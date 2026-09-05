@@ -1,0 +1,24 @@
+.lc-wrap { max-width: 720px; margin: 0 auto; padding: 1rem; }
+        .lc-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+        .lc-header-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .lc-meta { color: var(--color-text-light); font-size: 0.875rem; }
+        .lc-section-title { color: var(--color-primary); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 0.75rem; }
+        .lc-item { display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); }
+        .lc-item:last-child { border-bottom: none; }
+        .lc-checkbox { flex-shrink: 0; width: 24px; height: 24px; border: 2px solid var(--color-border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; background: var(--color-bg-main); }
+        .lc-checkbox.checked { background: var(--color-secondary); border-color: var(--color-secondary); }
+        .lc-checkbox.checked::after { content: ""; width: 12px; height: 6px; border-left: 2px solid #04130E; border-bottom: 2px solid #04130E; transform: rotate(-45deg) translate(2px, -2px); }
+        .lc-checkbox:disabled { opacity: 0.5; cursor: wait; }
+        .lc-item-body { flex: 1; min-width: 0; }
+        .lc-item-name { font-weight: 500; color: var(--color-primary); }
+        .lc-item.checked .lc-item-name { text-decoration: line-through; color: var(--color-text-light); }
+        .lc-item-meta { color: var(--color-text-light); font-size: 0.875rem; margin-top: 2px; }
+        .lc-refresh { display: inline-flex; align-items: center; gap: 0.5rem; }
+        .lc-error { color: var(--color-danger); background: var(--color-danger-bg); border: 1px solid var(--color-danger); padding: 1rem; border-radius: 8px; }
+        .lc-empty { text-align: center; color: var(--color-text-light); padding: 2rem; }
+        .lc-progress { background: var(--color-bg-main); border-radius: 999px; height: 8px; overflow: hidden; margin-top: 0.75rem; }
+        .lc-progress-bar { background: var(--color-secondary); height: 100%; transition: width 0.3s ease; width: 0%; }
+        .lc-btn-small { padding: 0.5rem 0.875rem; font-size: 0.875rem; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-bg-card); cursor: pointer; color: var(--color-text-main); }
+        .lc-btn-small:hover { background: var(--color-bg-main); }
+        .lc-loading { text-align: center; padding: 3rem 1rem; color: var(--color-text-light); }
+        .lc-badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--color-badge-bg); color: var(--color-badge-text); margin-left: 0.5rem; }
