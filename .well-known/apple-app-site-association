@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["7JG3WN329V.com.livowa.app"],
+        "components": [
+          { "/": "/c/*", "comment": "página pública da criadora" },
+          { "/": "/g/*", "comment": "convite por código" },
+          { "/": "/casa/*", "comment": "casa" }
+        ]
+      }
+    ]
+  }
+}

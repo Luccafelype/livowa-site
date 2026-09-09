@@ -1,0 +1,88 @@
+/* A página pública da criadora (/c/<apelido>). Mesma língua visual do app:
+   cartão dela em cima, o texto fixo de referência ANTES de qualquer botão,
+   a dieta refeição a refeição, o treino, e a barra fixa "Abrir no Livowa". */
+
+.cr-wrap { max-width: 640px; margin: 0 auto; padding: 1rem 1rem 9rem; }
+
+.cr-loading, .cr-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+.cr-error { color: var(--color-danger); background: var(--color-danger-bg); border: 1px solid var(--color-danger); padding: 1rem; border-radius: 12px; }
+
+.cr-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Cartão da criadora ─────────────────────────────────────────────── */
+.cr-quem { display: flex; align-items: center; gap: 1rem; }
+.cr-avatar {
+  width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+  object-fit: cover; background: rgba(0, 217, 166, 0.15);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); font-weight: 700; font-size: 1.35rem; letter-spacing: 0.02em;
+}
+.cr-nome { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; line-height: 1.15; color: var(--ink); margin: 0; text-wrap: balance; }
+.cr-handle { color: var(--muted); font-size: 0.9rem; margin: 0.2rem 0 0; }
+.cr-bio { color: var(--body); font-size: 0.95rem; line-height: 1.55; margin: 1rem 0 0; }
+.cr-redes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.cr-rede {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.35rem 0.8rem; border-radius: 999px;
+  background: var(--surface-2); color: var(--accent);
+  font-size: 0.8rem; text-decoration: none; font-weight: 500;
+}
+.cr-rede:hover { background: rgba(0, 217, 166, 0.14); }
+.cr-rede.sem-link { color: var(--body); }
+
+/* ── O texto fixo de referência pública ─────────────────────────────── */
+.cr-aviso {
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  background: var(--surface-2); border-radius: 12px;
+  padding: 0.85rem 1rem; margin-bottom: 1.25rem;
+  color: var(--body); font-size: 0.8rem; line-height: 1.6;
+}
+.cr-aviso svg { flex-shrink: 0; margin-top: 2px; color: var(--muted); }
+.cr-demo { background: rgba(255, 196, 0, 0.10); border: 1px solid rgba(255, 196, 0, 0.35); color: #F5D67A; }
+
+/* ── Seções ─────────────────────────────────────────────────────────── */
+.cr-titulo { display: flex; align-items: center; gap: 0.5rem; margin: 1.75rem 0.25rem 0.35rem; }
+.cr-titulo svg { color: var(--accent); flex-shrink: 0; }
+.cr-titulo h2 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin: 0; flex: 1; }
+.cr-titulo .cr-detalhe { color: var(--accent); font-weight: 600; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.cr-sub { color: var(--muted); font-size: 0.9rem; margin: 0 0.25rem 0.85rem; }
+
+/* ── Refeição ───────────────────────────────────────────────────────── */
+.cr-refeicao { display: flex; gap: 1rem; align-items: center; }
+.cr-foto {
+  width: 64px; height: 64px; border-radius: 12px; flex-shrink: 0; object-fit: cover;
+  background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--muted);
+}
+.cr-refeicao-corpo { flex: 1; min-width: 0; }
+.cr-slot { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.cr-prato { font-weight: 600; color: var(--ink); margin: 0.15rem 0 0; font-size: 1rem; }
+.cr-itens { color: var(--body); font-size: 0.85rem; line-height: 1.5; margin: 0.25rem 0 0; }
+.cr-obs { color: var(--muted); font-size: 0.8rem; font-style: italic; margin: 0.35rem 0 0; }
+.cr-kcal { color: var(--accent); font-weight: 600; font-size: 0.85rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ── Treino ─────────────────────────────────────────────────────────── */
+.cr-exercicio { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line); }
+.cr-exercicio:last-child { border-bottom: none; }
+.cr-exercicio-nome { color: var(--ink); font-weight: 500; }
+.cr-exercicio-series { color: var(--muted); font-size: 0.85rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ── Barra fixa de baixo ────────────────────────────────────────────── */
+.cr-cta {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: linear-gradient(to top, var(--bg) 70%, rgba(7, 10, 16, 0));
+  padding: 1.5rem 1rem calc(1rem + env(safe-area-inset-bottom));
+}
+.cr-cta-inner { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch; }
+.cr-cta-btn { text-align: center; width: 100%; justify-content: center; }
+.cr-cta-sub { color: var(--muted); font-size: 0.8rem; text-align: center; margin: 0; }
+.cr-lojas { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+.cr-lojas a { font-size: 0.85rem; }
+.cr-lojas .cr-breve { color: var(--body); font-size: 0.85rem; text-align: center; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) { .cr-cta { transition: none; } }
