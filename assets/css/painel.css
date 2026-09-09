@@ -1,0 +1,31 @@
+/* O painel privado da criadora (/c/painel/?t=). Três números grandes, o link
+   dela para copiar, e as últimas 8 semanas em barras. Sem biblioteca. */
+
+.pn-wrap { padding-bottom: 3rem; }
+
+.pn-ola { font-family: var(--font-display); font-weight: 600; font-size: 1.75rem; line-height: 1.15; color: var(--ink); margin: 0.5rem 0.25rem 0; text-wrap: balance; }
+.pn-sub { color: var(--muted); font-size: 0.95rem; margin: 0.35rem 0.25rem 1.25rem; }
+
+.pn-numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+@media (max-width: 420px) { .pn-numeros { grid-template-columns: 1fr 1fr; } .pn-numeros .pn-num:first-child { grid-column: 1 / -1; } }
+.pn-num { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.1rem; }
+.pn-num-valor { font-family: var(--font-display); font-weight: 600; font-size: 2.4rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; margin: 0; }
+.pn-num-rotulo { color: var(--body); font-size: 0.85rem; margin: 0.45rem 0 0; line-height: 1.35; }
+
+.pn-link { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.75rem; }
+.pn-link code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 0.7rem 0.85rem; color: var(--ink); font-size: 0.9rem; }
+.pn-copiar { flex-shrink: 0; padding: 0.7rem 1rem; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); cursor: pointer; font: inherit; font-size: 0.9rem; font-weight: 600; }
+.pn-copiar:hover { background: rgba(0, 217, 166, 0.14); }
+.pn-copiar:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pn-dica { color: var(--muted); font-size: 0.8rem; margin: 0.6rem 0 0; line-height: 1.5; }
+
+.pn-semanas { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.4rem; align-items: end; height: 140px; margin-top: 0.75rem; }
+.pn-semana { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 0.3rem; }
+.pn-barra { width: 100%; max-width: 34px; border-radius: 6px 6px 3px 3px; background: rgba(0, 217, 166, 0.28); min-height: 3px; transition: height 0.4s var(--ease-out); }
+.pn-semana.atual .pn-barra { background: var(--accent); }
+.pn-barra-valor { color: var(--ink); font-size: 0.8rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pn-barra-data { color: var(--muted); font-size: 0.65rem; white-space: nowrap; }
+.pn-vazio { color: var(--muted); font-size: 0.85rem; text-align: center; margin: 0.75rem 0 0; }
+
+.pn-inativa { background: rgba(255, 196, 0, 0.10); border: 1px solid rgba(255, 196, 0, 0.35); color: #F5D67A; border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; }
+@media (prefers-reduced-motion: reduce) { .pn-barra { transition: none; } }
