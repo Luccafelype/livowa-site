@@ -23,8 +23,11 @@
     almoco: 'Almoço',
     lanche: 'Lanche',
     lanche_tarde: 'Lanche da tarde',
+    lanche_da_manha: 'Lanche da manhã',
     jantar: 'Jantar',
-    ceia: 'Ceia'
+    ceia: 'Ceia',
+    pre_treino: 'Pré-treino',
+    pos_treino: 'Pós-treino'
   };
   var DIAS_CURTOS = ['', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
 
@@ -113,15 +116,6 @@
     return String(nome || '').replace(/\[[^\]]*\]/g, '').trim().split(/\s+/).slice(0, 2)
       .map(function (p) { return p[0] || ''; }).join('').toUpperCase() || '—';
   }
-  function textoDoItem(a) {
-    var q = a && a.quantidade != null ? Number(a.quantidade) : null;
-    var u = a && a.unidade ? String(a.unidade) : '';
-    var n = a && a.nome ? String(a.nome) : '';
-    if (!n) return '';
-    if (q == null || !isFinite(q)) return n;
-    var qs = Number.isInteger(q) ? String(q) : q.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
-    return qs + (u === 'g' || u === 'ml' ? '' : ' ') + u + ' ' + n;
-  }
   function kcalTexto(n) { return Number(n).toLocaleString('pt-BR') + ' kcal'; }
 
   // ── Ícones (traço, sem emoji) ────────────────────────────────────────────
@@ -141,7 +135,9 @@
     var chips = redes.map(function (rede) {
       var url = urlDaRede(rede, c.redes[rede]);
       var rotulo = rotuloDaRede(rede) + ' ' + esc(c.redes[rede]);
-      if (!url) return '<span class="cr-rede sem-link">' + rotulo + '</span>';
+      // 14/09: só o que abre uma rede vira chip; "seguidores …" e afins não
+      // são link e só enchiam o cartão ("informações desnecessárias").
+      if (!url) return '';
       return '<a class="cr-rede" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + rotulo + ICONE.fora + '</a>';
     }).join('');
     return '<div class="cr-card">' +
@@ -152,22 +148,48 @@
       '</div>';
   }
 
+  // ── O card de uma refeição (14/09, pedido dele: "quanto mais singela,
+  // bonita e simples, com cards bonitos, melhor") ─────────────────────────
+  // Foto quadrada à esquerda, o horário em cima, os NOMES do que ela comeu
+  // (sem gramas, sem "(1 unidade)", no máximo 4 e "+N"), o kcal à direita.
+  function nomeLimpo(s) {
+    var t = String(s || '')
+      .replace(/\s*\((?=[^)]*\d)[^)]*\)/g, '')                       // "Ovo (1 unidade)" -> "Ovo"
+      .replace(/^\d+\s*(fatias?|unidades?|un\.?|x|col(?:heres?)?\.?(?:\s*de\s*sopa)?)\s+(de\s+)?/i, '')
+      .replace(/\s{2,}/g, ' ').trim();
+    return t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
+  }
+  function itensDoCard(r) {
+    // Os nomes DELA (pratos_lidos, o que o vídeo/carrossel diz) vencem os
+    // componentes da tabela; sem eles, os alimentos; por último o prato fundido.
+    var base = Array.isArray(r.pratos_lidos) && r.pratos_lidos.length
+      ? r.pratos_lidos
+      : (r.alimentos || []).map(function (a) { return a && a.nome; });
+    if (!base.length && r.nome_prato) base = [r.nome_prato];
+    var vistos = {}; var saida = [];
+    base.forEach(function (b) {
+      String(b || '').split(/\s*\+\s*/).map(nomeLimpo).filter(Boolean).forEach(function (n) {
+        var k = n.toLowerCase();
+        if (!vistos[k]) { vistos[k] = 1; saida.push(n); }
+      });
+    });
+    return saida;
+  }
+  var MAX_ITENS_NO_CARD = 3;   // medido no print de 14/09: com 4, o '+N' caía fora das 2 linhas
   function cartaoRefeicao(r, kcal, foto) {
-    var itens = (r.alimentos || []).map(textoDoItem).filter(Boolean);
-    // 14/09: item que só repete o nome do prato não vira segunda linha; e
+    var itens = itensDoCard(r);
+    var extra = itens.length > MAX_ITENS_NO_CARD ? itens.length - MAX_ITENS_NO_CARD : 0;
+    var texto = esc(itens.slice(0, MAX_ITENS_NO_CARD).join(' · ')) +
+      (extra ? ' <span class="cr-mais">+' + extra + '</span>' : '');
     // caloria ZERO é "sem porção", não "0 kcal" — a página não mente número.
-    var nomePrato = String(r.nome_prato || '').trim().toLowerCase();
-    if (itens.length === 1 && itens[0].trim().toLowerCase() === nomePrato) itens = [];
     var temKcal = kcal != null && Number(kcal) > 0;
     var fotoHtml = foto
-      ? '<img class="cr-foto" src="' + esc(foto) + '" alt="">'
+      ? '<img class="cr-foto" src="' + esc(foto) + '" alt="" loading="lazy">'
       : '<div class="cr-foto" aria-hidden="true">' + ICONE.prato + '</div>';
-    return '<div class="cr-card"><div class="cr-refeicao">' + fotoHtml +
+    return '<div class="cr-card cr-card-refeicao"><div class="cr-refeicao">' + fotoHtml +
       '<div class="cr-refeicao-corpo">' +
-      '<p class="cr-slot">' + esc(nomeDoSlot(r.slot)) + '</p>' +
-      '<p class="cr-prato">' + esc(r.nome_prato || '') + (r.porcao_g ? ' <span class="cr-kcal" style="color:var(--muted);font-weight:500">' + esc(r.porcao_g) + ' g</span>' : '') + '</p>' +
-      (itens.length ? '<p class="cr-itens">' + esc(itens.join(' · ')) + '</p>' : '') +
-      (r.observacao ? '<p class="cr-obs">' + esc(r.observacao) + '</p>' : '') +
+      '<p class="cr-slot">' + esc(r.slot ? nomeDoSlot(r.slot) : 'Todo dia') + '</p>' +
+      '<p class="cr-itens">' + texto + '</p>' +
       '</div>' +
       (temKcal ? '<span class="cr-kcal">' + esc(kcalTexto(kcal)) + '</span>' : '') +
       '</div></div>';
@@ -281,14 +303,19 @@
             .then(function (x) { var n = x && x.kcal != null ? Number(x.kcal) : null; return isFinite(n) ? n : null; })
             .catch(function () { return null; });
         }));
-        var ids = refeicoes.map(function (r) { return r.receita_id; }).filter(Boolean);
+        // A foto da refeição é a DELA (foto_url, tirada do vídeo/carrossel,
+        // 14/09); a foto da receita do acervo só entra onde a dela não existe.
+        var ids = refeicoes.filter(function (r) { return !r.foto_url; })
+          .map(function (r) { return r.receita_id; }).filter(Boolean);
         var fotos = ids.length
           ? ler('receitas', 'id=in.(' + ids.map(encodeURIComponent).join(',') + ')&select=id,foto_thumb_url,foto_url').catch(function () { return []; })
           : Promise.resolve([]);
         return Promise.all([kcals, fotos]).then(function (res) {
           var porReceita = {};
           (res[1] || []).forEach(function (x) { porReceita[x.id] = x.foto_thumb_url || x.foto_url || null; });
-          var fotosPorRefeicao = refeicoes.map(function (r) { return r.receita_id ? porReceita[r.receita_id] || null : null; });
+          var fotosPorRefeicao = refeicoes.map(function (r) {
+            return r.foto_url || (r.receita_id ? porReceita[r.receita_id] || null : null);
+          });
           document.getElementById('cr-dieta').innerHTML = secaoDieta(
             { titulo: linha.titulo, kcal_dia: d.kcal_dia, kcal_completo: d.kcal_completo },
             refeicoes, res[0], fotosPorRefeicao);
