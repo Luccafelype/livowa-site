@@ -154,6 +154,11 @@
 
   function cartaoRefeicao(r, kcal, foto) {
     var itens = (r.alimentos || []).map(textoDoItem).filter(Boolean);
+    // 14/09: item que só repete o nome do prato não vira segunda linha; e
+    // caloria ZERO é "sem porção", não "0 kcal" — a página não mente número.
+    var nomePrato = String(r.nome_prato || '').trim().toLowerCase();
+    if (itens.length === 1 && itens[0].trim().toLowerCase() === nomePrato) itens = [];
+    var temKcal = kcal != null && Number(kcal) > 0;
     var fotoHtml = foto
       ? '<img class="cr-foto" src="' + esc(foto) + '" alt="">'
       : '<div class="cr-foto" aria-hidden="true">' + ICONE.prato + '</div>';
@@ -164,12 +169,15 @@
       (itens.length ? '<p class="cr-itens">' + esc(itens.join(' · ')) + '</p>' : '') +
       (r.observacao ? '<p class="cr-obs">' + esc(r.observacao) + '</p>' : '') +
       '</div>' +
-      (kcal != null ? '<span class="cr-kcal">' + esc(kcalTexto(kcal)) + '</span>' : '') +
+      (temKcal ? '<span class="cr-kcal">' + esc(kcalTexto(kcal)) + '</span>' : '') +
       '</div></div>';
   }
 
   function secaoDieta(d, refeicoes, kcalPorRefeicao, fotos) {
-    var detalhe = d.kcal_dia != null ? kcalTexto(d.kcal_dia) + ' no dia' + (d.kcal_completo ? '' : ' (parcial)') : '';
+    // Sem porções (vídeo não diz gramas) o total é zero: escreve o que é, não "0 kcal".
+    var detalhe = d.kcal_dia != null && Number(d.kcal_dia) > 0
+      ? kcalTexto(d.kcal_dia) + ' no dia' + (d.kcal_completo ? '' : ' (parcial)')
+      : 'porções a definir';
     return '<div class="cr-titulo">' + ICONE.prato + '<h2>A dieta dela</h2>' +
       (detalhe ? '<span class="cr-detalhe">' + esc(detalhe) + '</span>' : '') + '</div>' +
       '<p class="cr-sub">' + esc(d.titulo || '') + '</p>' +
