@@ -117,6 +117,17 @@
       .map(function (p) { return p[0] || ''; }).join('').toUpperCase() || '—';
   }
   function kcalTexto(n) { return Number(n).toLocaleString('pt-BR') + ' kcal'; }
+  function nomeDoExercicio(e, daBiblioteca) {
+    var n = String((e && e.nome_lido) || daBiblioteca || 'Exercício').trim();
+    return n.charAt(0).toUpperCase() + n.slice(1);
+  }
+  function notaDoExercicio(e) {
+    // Só quando o exercício da biblioteca é o VIZINHO do que ela fez
+    // (casamento ambíguo na ingestão): a diferença, em português, embaixo do nome.
+    if (!e || e.casamento !== 'ambiguo') return '';
+    var m = /no vídeo é[^;]*(?:;\s*a biblioteca[^;]*)?/i.exec(String(e.observacao || ''));
+    return m ? m[0] : '';
+  }
 
   // ── Ícones (traço, sem emoji) ────────────────────────────────────────────
   var ICONE = {
@@ -213,7 +224,8 @@
       if (e.sets != null) s.push(e.sets + ' séries');
       if (e.reps_alvo != null) s.push(e.reps_alvo + ' rep.');
       if (e.rest_s != null) s.push(e.rest_s + ' s de descanso');
-      return '<div class="cr-exercicio"><span class="cr-exercicio-nome">' + esc(e.nome) + '</span>' +
+      return '<div class="cr-exercicio"><span class="cr-exercicio-nome">' + esc(e.nome) +
+        (e.nota ? '<small class="cr-exercicio-nota">' + esc(e.nota) + '</small>' : '') + '</span>' +
         '<span class="cr-exercicio-series">' + esc(s.join(' · ')) + '</span></div>';
     }).join('');
     return '<div class="cr-titulo">' + ICONE.halter + '<h2>O treino dela</h2>' +
@@ -328,14 +340,20 @@
         if (!linha) return;
         var crus = Array.isArray(linha.exercicios) ? linha.exercicios : [];
         var ids = crus.map(function (e) { return e.exercicio_id; }).filter(Boolean);
+        // 14/09: o nome sai em PORTUGUÊS — o que o vídeo dela diz (nome_lido, gravado
+        // no modelo) vence; senão o pt-BR da biblioteca (v_exercicios_biblioteca_i18n,
+        // que a chave pública lê); por último o nome cru da biblioteca.
+        var lista = 'id=in.(' + ids.map(encodeURIComponent).join(',') + ')';
         var nomes = ids.length
-          ? ler('exercicios_biblioteca', 'id=in.(' + ids.map(encodeURIComponent).join(',') + ')&select=id,nome').catch(function () { return []; })
+          ? ler('v_exercicios_biblioteca_i18n', lista + '&select=id,nome,nome_pt_br')
+              .catch(function () { return ler('exercicios_biblioteca', lista + '&select=id,nome').catch(function () { return []; }); })
           : Promise.resolve([]);
         return nomes.then(function (linhasNomes) {
           var porId = {};
-          (linhasNomes || []).forEach(function (x) { porId[x.id] = x.nome; });
+          (linhasNomes || []).forEach(function (x) { porId[x.id] = x.nome_pt_br || x.nome; });
           var exercicios = crus.map(function (e) {
-            return { nome: porId[e.exercicio_id] || 'Exercício', sets: e.sets, reps_alvo: e.reps_alvo, rest_s: e.rest_s };
+            return { nome: nomeDoExercicio(e, porId[e.exercicio_id]), nota: notaDoExercicio(e),
+              sets: e.sets, reps_alvo: e.reps_alvo, rest_s: e.rest_s };
           });
           document.getElementById('cr-treino').innerHTML = secaoTreino(t, exercicios);
         });
