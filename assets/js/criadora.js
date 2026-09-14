@@ -118,7 +118,9 @@
   }
   function kcalTexto(n) { return Number(n).toLocaleString('pt-BR') + ' kcal'; }
   function nomeDoExercicio(e, daBiblioteca) {
-    var n = String((e && e.nome_lido) || daBiblioteca || 'Exercício').trim();
+    // 1º o `nome` gravado no modelo de treino (o pt-BR escolhido na ingestão,
+    // passo 22); 2º o que o vídeo dela diz; 3º a biblioteca (pt-BR, senão cru).
+    var n = String((e && e.nome) || (e && e.nome_lido) || daBiblioteca || 'Exercício').trim();
     return n.charAt(0).toUpperCase() + n.slice(1);
   }
   function notaDoExercicio(e) {
