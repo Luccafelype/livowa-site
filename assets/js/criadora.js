@@ -32,10 +32,6 @@
   var DIAS_CURTOS = ['', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
 
   var $content = document.getElementById('cr-content');
-  var $cta = document.getElementById('cr-cta');
-  var $abrir = document.getElementById('cr-abrir');
-  var $ctaSub = document.getElementById('cr-cta-sub');
-  var $lojas = document.getElementById('cr-lojas');
 
   // ── O apelido: mesma regra de `lib/indicacao.ts` (normalizarHandle) ─────
   function extrairHandle() {
@@ -139,42 +135,63 @@
     fora: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>'
   };
 
-  // ── Desenho ──────────────────────────────────────────────────────────────
-  function cartaoDaCriadora(c) {
-    var redes = Object.keys(c.redes || {}).filter(function (k) { return !!c.redes[k]; });
+  // ── Desenho (Redesign 14/09 — ROTINA_CRIADOR_REDESIGN.md) ───────────────
+  // "A tela vende a rotina dela em 2 rolagens: quem é, o que ela come (foto
+  // grande), o que ela treina (vídeo dela). Todo detalhe de execução — gramas,
+  // medidas, séries, descanso — mora no toque, não na lista."
+  var CHEVRON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>';
+  var VOLTAR = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
+  function primeiroNome(nome) { return String(nome || '').trim().split(/\s+/)[0] || ''; }
+
+  function topo(c) {
+    return '<div class="cr-top"><a class="cr-b" href="/" aria-label="Voltar ao início">' + VOLTAR + '</a>' +
+      '<div class="cr-c"><div class="cr-e">Rotina de criador</div><div class="cr-t">' + esc(c.nome) + '</div></div>' +
+      '<div style="width:32px" aria-hidden="true"></div></div>';
+  }
+  function hero(c) {
+    // Sem bio, sem e-mail, sem chips, sem contagem de seguidores (problemas 1 e 2
+    // do redesign): foto 72, nome, e "@handle · título curto" (criadoras.titulo).
     var avatar = c.foto_url
       ? '<img class="cr-avatar" src="' + esc(c.foto_url) + '" alt="">'
       : '<div class="cr-avatar" aria-hidden="true">' + esc(iniciais(c.nome)) + '</div>';
-    var chips = redes.map(function (rede) {
-      var url = urlDaRede(rede, c.redes[rede]);
-      var rotulo = rotuloDaRede(rede) + ' ' + esc(c.redes[rede]);
-      // 14/09: só o que abre uma rede vira chip; "seguidores …" e afins não
-      // são link e só enchiam o cartão ("informações desnecessárias").
-      if (!url) return '';
-      return '<a class="cr-rede" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + rotulo + ICONE.fora + '</a>';
-    }).join('');
-    return '<div class="cr-card">' +
-      '<div class="cr-quem">' + avatar +
-      '<div><h1 class="cr-nome">' + esc(c.nome) + '</h1><p class="cr-handle">@' + esc(c.handle) + '</p></div></div>' +
-      (c.bio ? '<p class="cr-bio">' + esc(c.bio) + '</p>' : '') +
-      (chips ? '<div class="cr-redes">' + chips + '</div>' : '') +
+    var titulo = String(c.titulo || '').trim();
+    return '<div class="cr-hero">' + avatar + '<div><h1 class="cr-nome">' + esc(c.nome) + '</h1>' +
+      '<p class="cr-handle">@' + esc(c.handle) + (titulo ? '<span class="cr-sep">·</span><span>' + esc(titulo) + '</span>' : '') + '</p></div></div>';
+  }
+  function stats(nRefeicoes, kcalDia, nExercicios) {
+    var kcal = kcalDia != null && Number(kcalDia) > 0
+      ? '<div class="cr-v">' + esc(Number(kcalDia).toLocaleString('pt-BR')) + '<small>kcal</small></div><div class="cr-k">no dia</div>'
+      : '<div class="cr-v">—</div><div class="cr-k">kcal a definir</div>';
+    return '<div class="cr-stats" id="cr-stats">' +
+      '<div><div class="cr-v">' + (nRefeicoes == null ? '—' : nRefeicoes) + '</div><div class="cr-k">refeições</div></div>' +
+      '<div>' + kcal + '</div>' +
+      '<div><div class="cr-v">' + (nExercicios == null ? '—' : nExercicios) + '</div><div class="cr-k">exercícios</div></div>' +
       '</div>';
   }
+  function secaoCabecalho(num, titulo, direita) {
+    return '<div class="cr-sech"><span class="cr-num">' + num + '</span><h2>' + esc(titulo) + '</h2>' +
+      (direita ? '<span class="cr-m">' + esc(direita) + '</span>' : '') + '</div>';
+  }
 
-  // ── O card de uma refeição (14/09, pedido dele: "quanto mais singela,
-  // bonita e simples, com cards bonitos, melhor") ─────────────────────────
-  // Foto quadrada à esquerda, o horário em cima, os NOMES do que ela comeu
-  // (sem gramas, sem "(1 unidade)", no máximo 4 e "+N"), o kcal à direita.
+  // O TÍTULO CURTO do card: os 2–3 itens principais do que ela comeu, em
+  // frase ("Pãozinho na chapa, ovo e banana com whey"). Bebida, doce e
+  // suplemento ficam para o detalhe (regra do redesign) — a não ser que a
+  // refeição seja só isso.
+  var SECUNDARIO = /\b(coca|refri|refrigerante|suco|água|agua|café|cafe|coffee|chá|cha\b|matcha|creatina|suplemento|bala|chocolate|doce|sobremesa|língua de gato|lingua de gato|geleia|blessy|supercafé|supercafe|supercoffee)\b/i;
   function nomeLimpo(s) {
     var t = String(s || '')
-      .replace(/\s*\((?=[^)]*\d)[^)]*\)/g, '')                       // "Ovo (1 unidade)" -> "Ovo"
+      .replace(/\s*\([^)]*\)/g, '')                                  // "Ovo (1 unidade)", "McMelt (rap, carne…)" -> sem o parêntese
       .replace(/^\d+\s*(fatias?|unidades?|un\.?|x|col(?:heres?)?\.?(?:\s*de\s*sopa)?)\s+(de\s+)?/i, '')
       .replace(/\s{2,}/g, ' ').trim();
-    return t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
+    // Item comprido ("franguinho cremoso com molho de queijo") fica só com o
+    // núcleo antes do "com" — o resto é detalhe, e o título tem 2 linhas.
+    if (t.length > 28) {
+      var m = /^(.{8,}?)\s+com\s+/i.exec(t);
+      if (m) t = m[1];
+    }
+    return t;
   }
-  function itensDoCard(r) {
-    // Os nomes DELA (pratos_lidos, o que o vídeo/carrossel diz) vencem os
-    // componentes da tabela; sem eles, os alimentos; por último o prato fundido.
+  function itensDaRefeicao(r) {
     var base = Array.isArray(r.pratos_lidos) && r.pratos_lidos.length
       ? r.pratos_lidos
       : (r.alimentos || []).map(function (a) { return a && a.nome; });
@@ -188,52 +205,74 @@
     });
     return saida;
   }
-  var MAX_ITENS_NO_CARD = 3;   // medido no print de 14/09: com 4, o '+N' caía fora das 2 linhas
-  function cartaoRefeicao(r, kcal, foto) {
-    var itens = itensDoCard(r);
-    var extra = itens.length > MAX_ITENS_NO_CARD ? itens.length - MAX_ITENS_NO_CARD : 0;
-    var texto = esc(itens.slice(0, MAX_ITENS_NO_CARD).join(' · ')) +
-      (extra ? ' <span class="cr-mais">+' + extra + '</span>' : '');
-    // caloria ZERO é "sem porção", não "0 kcal" — a página não mente número.
+  function tituloCurto(r) {
+    var itens = itensDaRefeicao(r);
+    var principais = itens.filter(function (n) { return !SECUNDARIO.test(n); });
+    if (!principais.length) principais = itens;
+    var tres = principais.slice(0, 3).map(function (n, i) { return i === 0 ? n.charAt(0).toUpperCase() + n.slice(1) : n.charAt(0).toLowerCase() + n.slice(1); });
+    if (tres.length <= 1) return tres.join('');
+    return tres.slice(0, -1).join(', ') + ' e ' + tres[tres.length - 1];
+  }
+  function cartaoRefeicao(r, kcal, foto, i, handle) {
     var temKcal = kcal != null && Number(kcal) > 0;
     var fotoHtml = foto
-      ? '<img class="cr-foto" src="' + esc(foto) + '" alt="" loading="lazy">'
-      : '<div class="cr-foto" aria-hidden="true">' + ICONE.prato + '</div>';
-    return '<div class="cr-card cr-card-refeicao"><div class="cr-refeicao">' + fotoHtml +
-      '<div class="cr-refeicao-corpo">' +
-      '<p class="cr-slot">' + esc(r.slot ? nomeDoSlot(r.slot) : 'Todo dia') + '</p>' +
-      '<p class="cr-itens">' + texto + '</p>' +
-      '</div>' +
-      (temKcal ? '<span class="cr-kcal">' + esc(kcalTexto(kcal)) + '</span>' : '') +
-      '</div></div>';
+      ? '<div class="cr-ph"><img src="' + esc(foto) + '" alt="" loading="lazy"></div>'
+      : '<div class="cr-ph cr-vazio" aria-hidden="true"></div>';
+    // O card inteiro é tocável: abre a rotina no app, na refeição (detalhe com
+    // ingredientes e medidas mora lá, não aqui).
+    return '<a class="cr-meal" href="' + esc(esquemaDoApp(handle, 'refeicao=' + i)) + '" data-abrir="1">' + fotoHtml +
+      '<div class="cr-ct"><div class="cr-ey">' + esc(r.slot ? nomeDoSlot(r.slot) : 'Todo dia') + '</div>' +
+      '<div class="cr-tt">' + esc(tituloCurto(r) || r.nome_prato || '') + '</div>' +
+      '<div class="cr-ft"><span class="cr-kc">' + (temKcal ? esc(kcalTexto(kcal)) : '') + '</span>' + CHEVRON + '</div></div></a>';
   }
-
-  function secaoDieta(d, refeicoes, kcalPorRefeicao, fotos) {
-    // Sem porções (vídeo não diz gramas) o total é zero: escreve o que é, não "0 kcal".
-    var detalhe = d.kcal_dia != null && Number(d.kcal_dia) > 0
-      ? kcalTexto(d.kcal_dia) + ' no dia' + (d.kcal_completo ? '' : ' (parcial)')
-      : 'porções a definir';
-    return '<div class="cr-titulo">' + ICONE.prato + '<h2>A dieta dela</h2>' +
-      (detalhe ? '<span class="cr-detalhe">' + esc(detalhe) + '</span>' : '') + '</div>' +
+  function secaoDieta(d, refeicoes, kcalPorRefeicao, fotos, handle) {
+    var total = d.kcal_dia != null && Number(d.kcal_dia) > 0 ? kcalTexto(d.kcal_dia) : '';
+    return '<div class="cr-sec">' + secaoCabecalho('01', 'A dieta dela', total) +
       '<p class="cr-sub">' + esc(d.titulo || '') + '</p>' +
-      refeicoes.map(function (r, i) { return cartaoRefeicao(r, kcalPorRefeicao[i], fotos[i]); }).join('');
+      '<div class="cr-meals">' + refeicoes.map(function (r, i) { return cartaoRefeicao(r, kcalPorRefeicao[i], fotos[i], i, handle); }).join('') + '</div>' +
+      '</div>' +
+      '<a class="cr-cta cr-p" href="' + esc(esquemaDoApp(handle, 'quero=dieta')) + '" data-abrir="1">Quero essa dieta</a>';
   }
 
-  function secaoTreino(t, exercicios) {
-    var sub = [t.titulo, diasEmTexto(t.dias_semana)].filter(Boolean).join(' · ');
-    var linhas = exercicios.map(function (e) {
-      var s = [];
-      if (e.sets != null) s.push(e.sets + ' séries');
-      if (e.reps_alvo != null) s.push(e.reps_alvo + ' rep.');
-      if (e.rest_s != null) s.push(e.rest_s + ' s de descanso');
-      return '<div class="cr-exercicio"><span class="cr-exercicio-nome">' + esc(e.nome) +
-        (e.nota ? '<small class="cr-exercicio-nota">' + esc(e.nota) + '</small>' : '') + '</span>' +
-        '<span class="cr-exercicio-series">' + esc(s.join(' · ')) + '</span></div>';
+  var GRUPO_PT = { gluteos: 'Glúteos', abdutores: 'Glúteo médio', adutores: 'Adutores', quadriceps: 'Quadríceps', posterior: 'Posterior de coxa',
+    isquiotibiais: 'Posterior de coxa', panturrilha: 'Panturrilha', lombar: 'Lombar', costas: 'Costas', peito: 'Peito', ombros: 'Ombros',
+    biceps: 'Bíceps', triceps: 'Tríceps', abdomen: 'Abdômen', core: 'Core', trapezio: 'Trapézio', antebraco: 'Antebraço' };
+  function grupoEmTexto(lista) {
+    return (lista || []).slice(0, 2).map(function (g) {
+      var k = String(g || '').toLowerCase().replace(/\s+/g, '');
+      return GRUPO_PT[k] || (k.charAt(0).toUpperCase() + k.slice(1));
+    }).join(' · ');
+  }
+  var DIAS_LONGOS = ['', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
+  function tituloDoTreino(t) {
+    // Sem @ de terceiros no subtítulo (regra do redesign): "Pernas e glúteos · segunda".
+    var base = String(t.titulo || '').replace(/\s*(com|c\/)?\s*@[\w.]+/gi, '').replace(/\s*[—–-]\s*$/, '').trim();
+    var dias = (t.dias_semana || []).map(function (d) { return DIAS_LONGOS[d] || ''; }).filter(Boolean);
+    // O dia só entra se o título ainda não o diz ("Treino de pernas de segunda").
+    dias = dias.filter(function (dia) { return base.toLowerCase().indexOf(dia) < 0; });
+    return [base, dias.join(', ')].filter(Boolean).join(' · ');
+  }
+  function secaoTreino(t, exercicios, handle) {
+    var linhas = exercicios.map(function (e, i) {
+      var thumb = e.foto_url
+        ? '<div class="cr-th"><img src="' + esc(e.foto_url) + '" alt="" loading="lazy"></div>'
+        : '<div class="cr-th" aria-hidden="true"><span>vídeo dela</span></div>';
+      return '<div class="cr-row">' + thumb + '<div><div class="cr-nm">' + esc(e.nome) + '</div>' +
+        (e.grupo ? '<div class="cr-mg">' + esc(e.grupo) + '</div>' : '') + '</div>' +
+        '<span class="cr-n">' + (i < 9 ? '0' : '') + (i + 1) + '</span></div>';
     }).join('');
-    return '<div class="cr-titulo">' + ICONE.halter + '<h2>O treino dela</h2>' +
-      (exercicios.length ? '<span class="cr-detalhe">' + exercicios.length + ' exercícios</span>' : '') + '</div>' +
-      '<p class="cr-sub">' + esc(sub) + '</p>' +
-      '<div class="cr-card">' + (linhas || '<p class="cr-empty">O treino dela ainda não tem exercícios publicados.</p>') + '</div>';
+    return '<div class="cr-sec">' + secaoCabecalho('02', 'O treino dela', exercicios.length ? exercicios.length + ' exercícios' : '') +
+      '<p class="cr-sub">' + esc(tituloDoTreino(t)) + '</p>' +
+      '<div class="cr-ex">' + (linhas || '<p class="cr-empty">O treino dela ainda não tem exercícios publicados.</p>') + '</div>' +
+      '</div>' +
+      '<a class="cr-cta cr-s" href="' + esc(esquemaDoApp(handle, 'quero=treino')) + '" data-abrir="1">Quero esse treino</a>';
+  }
+  function nota(c) {
+    var ig = c.redes && c.redes.instagram ? urlDaRede('instagram', c.redes.instagram) : null;
+    return '<p class="cr-note">Rotina compartilhada por ' + esc(primeiroNome(c.nome)) + '. O Livowa ajusta as quantidades às suas metas. ' +
+      'Não substitui orientação de profissional de saúde.' +
+      (ig ? '<br><a href="' + esc(ig) + '" target="_blank" rel="noopener noreferrer">Ver perfil no Instagram</a>' : '') + '</p>' +
+      '<p class="cr-lojas" id="cr-lojas" hidden></p>';
   }
 
   function mostrarErro(msg) {
@@ -241,16 +280,20 @@
       '<p class="cr-empty"><a href="/" class="btn btn-outline">Conhecer o Livowa</a></p>';
   }
 
-  // ── A barra de baixo: abrir no app, ou dizer o que fazer sem ele ─────────
-  function armarBarra(handle) {
-    // No iPhone com o app, o link universal já abriu o app antes desta página
-    // existir. Aqui o botão tenta o esquema do app (funciona dentro do
-    // TikTok/Instagram, que ignoram o link universal); se nada acontecer em
-    // 1,5 s, é porque o app não está instalado — e aí a barra mostra as lojas.
-    var esquema = 'livowa:///c/' + encodeURIComponent(handle);
-    $abrir.setAttribute('href', esquema);
-    $abrir.addEventListener('click', function (ev) {
+  // ── Abrir no app: cada card e cada botão "Quero…" leva à rotina dela ────
+  // No iPhone com o app, o link universal já abriu o app antes desta página
+  // existir. Aqui o toque tenta o esquema do app (funciona dentro do
+  // TikTok/Instagram, que ignoram o link universal); se nada acontecer em
+  // 1,5 s, é porque o app não está instalado — e aí a nota diz o que fazer.
+  function esquemaDoApp(handle, extra) {
+    return 'livowa:///c/' + encodeURIComponent(handle) + (extra ? '?' + extra : '');
+  }
+  function armarAberturas() {
+    $content.addEventListener('click', function (ev) {
+      var alvo = ev.target && ev.target.closest ? ev.target.closest('[data-abrir]') : null;
+      if (!alvo) return;
       ev.preventDefault();
+      var esquema = alvo.getAttribute('href');
       var saiu = false;
       var marcar = function () { saiu = true; };
       document.addEventListener('visibilitychange', marcar, { once: true });
@@ -261,18 +304,15 @@
         mostrarLojas();
       }, 1500);
     });
-    $cta.hidden = false;
   }
-
   function mostrarLojas() {
+    var $lojas = document.getElementById('cr-lojas');
+    if (!$lojas) return;
     var partes = [];
-    if (LOJAS.ios) partes.push('<a class="btn btn-outline" href="' + esc(LOJAS.ios) + '" rel="noopener">App Store</a>');
-    if (LOJAS.android) partes.push('<a class="btn btn-outline" href="' + esc(LOJAS.android) + '" rel="noopener">Google Play</a>');
-    if (!partes.length) {
-      partes.push('<p class="cr-breve">O Livowa chega às lojas em breve. Guarde este link: com o app no celular, ele abre direto na rotina dela.</p>');
-    }
-    $ctaSub.textContent = 'Parece que o app ainda não está neste celular.';
-    $lojas.innerHTML = partes.join('');
+    if (LOJAS.ios) partes.push('<a href="' + esc(LOJAS.ios) + '" rel="noopener">App Store</a>');
+    if (LOJAS.android) partes.push('<a href="' + esc(LOJAS.android) + '" rel="noopener">Google Play</a>');
+    $lojas.innerHTML = 'Parece que o app ainda não está neste celular. ' +
+      (partes.length ? partes.join(' · ') : 'O Livowa chega às lojas em breve. Guarde este link: com o app no celular, ele abre direto na rotina dela.');
     $lojas.hidden = false;
   }
 
@@ -291,15 +331,17 @@
     }
     var c = p.criadora;
     document.title = esc(c.nome) + ' no Livowa';
+    var d0 = (p.dietas || [])[0];
+    var t0 = (p.treinos || [])[0];
 
-    // A página aparece já com o cartão dela; a dieta e o treino chegam em seguida.
+    // A página aparece já com quem ela é e os três números; dieta e treino chegam em seguida.
     var demo = /^\[TESTE\]/.test(String(c.nome || ''))
-      ? '<div class="cr-aviso cr-demo">' + ICONE.info + '<span>Cadastro de teste: esta criadora não é uma pessoa real.</span></div>'
+      ? '<div class="cr-demo">Cadastro de teste: esta criadora não é uma pessoa real.</div>'
       : '';
-    $content.innerHTML = cartaoDaCriadora(c) +
-      '<div class="cr-aviso">' + ICONE.info + '<span>' + esc(textoReferenciaPublica(c.nome)) + '</span></div>' + demo +
-      '<div id="cr-dieta"></div><div id="cr-treino"></div>';
-    armarBarra(c.handle);
+    $content.innerHTML = topo(c) + hero(c) +
+      stats(d0 ? d0.n_refeicoes : null, d0 ? d0.kcal_dia : null, t0 ? t0.n_exercicios : null) + demo +
+      '<div id="cr-dieta"></div><div id="cr-treino"></div>' + nota(c);
+    armarAberturas();
 
     var d = (p.dietas || [])[0];
     var t = (p.treinos || [])[0];
@@ -332,7 +374,10 @@
           });
           document.getElementById('cr-dieta').innerHTML = secaoDieta(
             { titulo: linha.titulo, kcal_dia: d.kcal_dia, kcal_completo: d.kcal_completo },
-            refeicoes, res[0], fotosPorRefeicao);
+            refeicoes, res[0], fotosPorRefeicao, c.handle);
+          // Os três números falam da MESMA lista que os cards.
+          var $st = document.getElementById('cr-stats');
+          if ($st) $st.outerHTML = stats(refeicoes.length, d.kcal_dia, t0 ? t0.n_exercicios : null);
         });
       }) : Promise.resolve();
 
@@ -347,17 +392,18 @@
         // que a chave pública lê); por último o nome cru da biblioteca.
         var lista = 'id=in.(' + ids.map(encodeURIComponent).join(',') + ')';
         var nomes = ids.length
-          ? ler('v_exercicios_biblioteca_i18n', lista + '&select=id,nome,nome_pt_br')
+          ? ler('v_exercicios_biblioteca_i18n', lista + '&select=id,nome,nome_pt_br,grupo_muscular')
               .catch(function () { return ler('exercicios_biblioteca', lista + '&select=id,nome').catch(function () { return []; }); })
           : Promise.resolve([]);
         return nomes.then(function (linhasNomes) {
-          var porId = {};
-          (linhasNomes || []).forEach(function (x) { porId[x.id] = x.nome_pt_br || x.nome; });
+          var porId = {}; var grupoPorId = {};
+          (linhasNomes || []).forEach(function (x) { porId[x.id] = x.nome_pt_br || x.nome; grupoPorId[x.id] = x.grupo_muscular; });
+          // Sem séries, descanso ou nota de mapeamento (regra do redesign): nome
+          // em pt-BR, grupo muscular e, quando existir, o frame do vídeo dela.
           var exercicios = crus.map(function (e) {
-            return { nome: nomeDoExercicio(e, porId[e.exercicio_id]), nota: notaDoExercicio(e),
-              sets: e.sets, reps_alvo: e.reps_alvo, rest_s: e.rest_s };
+            return { nome: nomeDoExercicio(e, porId[e.exercicio_id]), grupo: grupoEmTexto(grupoPorId[e.exercicio_id]), foto_url: e.foto_url || null };
           });
-          document.getElementById('cr-treino').innerHTML = secaoTreino(t, exercicios);
+          document.getElementById('cr-treino').innerHTML = secaoTreino(t, exercicios, c.handle);
         });
       }) : Promise.resolve();
 

@@ -1,94 +1,96 @@
-/* A página pública da criadora (/c/<apelido>). Mesma língua visual do app:
-   cartão dela em cima, o texto fixo de referência ANTES de qualquer botão,
-   a dieta refeição a refeição, o treino, e a barra fixa "Abrir no Livowa". */
+/* A página pública da criadora (/c/<apelido>) — Redesign 14/09 (Claude Design,
+   ROTINA_CRIADOR_REDESIGN.md): "a tela vende a rotina dela em 2 rolagens: quem
+   é, o que ela come (foto grande), o que ela treina (vídeo dela). Todo detalhe
+   de execução mora no toque, não na lista."
+   Tokens do redesign: bg #0A0A0B · surf #121214 · surf2 #1C1C1E · surf3 #2C2C2E
+   · ink #F5F5F4 · ink2 .62 · ink3 .42 · ink4 .22 · line .07 · green #34D399
+   (numerais) · greenDeep #10B981 (CTA). Sans Inter, números JetBrains Mono. */
 
-.cr-wrap { max-width: 640px; margin: 0 auto; padding: 1rem 1rem 9rem; }
-
-.cr-loading, .cr-empty { text-align: center; padding: 3rem 1rem; color: var(--muted); }
-.cr-error { color: var(--color-danger); background: var(--color-danger-bg); border: 1px solid var(--color-danger); padding: 1rem; border-radius: 12px; }
-
-.cr-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
+.cr-wrap {
+  --bg: #0A0A0B; --surf: #121214; --surf2: #1C1C1E; --surf3: #2C2C2E;
+  --ink: #F5F5F4; --ink2: rgba(245,245,244,.62); --ink3: rgba(245,245,244,.42); --ink4: rgba(245,245,244,.22);
+  --line: rgba(245,245,244,.07); --green: #34D399; --greenDeep: #10B981;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  max-width: 480px; margin: 0 auto; padding: 0 0 2.5rem;
+  font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased;
 }
+.cr-wrap .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.cr-wrap svg { display: block; }
 
-/* ── Cartão da criadora ─────────────────────────────────────────────── */
-.cr-quem { display: flex; align-items: center; gap: 1rem; }
-.cr-avatar {
-  width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
-  object-fit: cover; background: rgba(0, 217, 166, 0.15);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--accent); font-weight: 700; font-size: 1.35rem; letter-spacing: 0.02em;
-}
-.cr-nome { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; line-height: 1.15; color: var(--ink); margin: 0; text-wrap: balance; }
-.cr-handle { color: var(--muted); font-size: 0.9rem; margin: 0.2rem 0 0; }
-.cr-bio { color: var(--body); font-size: 0.95rem; line-height: 1.55; margin: 1rem 0 0; }
-.cr-redes { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-.cr-rede {
-  display: inline-flex; align-items: center; gap: 0.35rem;
-  padding: 0.35rem 0.8rem; border-radius: 999px;
-  background: var(--surface-2); color: var(--accent);
-  font-size: 0.8rem; text-decoration: none; font-weight: 500;
-}
-.cr-rede:hover { background: rgba(0, 217, 166, 0.14); }
-.cr-rede.sem-link { color: var(--body); }
+.cr-loading, .cr-empty { text-align: center; padding: 3rem 1rem; color: var(--ink3); }
+.cr-error { color: var(--color-danger); background: var(--color-danger-bg); border: 1px solid var(--color-danger); padding: 1rem; border-radius: 12px; margin: 1rem; }
 
-/* ── O texto fixo de referência pública ─────────────────────────────── */
-.cr-aviso {
-  display: flex; gap: 0.75rem; align-items: flex-start;
-  background: var(--surface-2); border-radius: 12px;
-  padding: 0.85rem 1rem; margin-bottom: 1.25rem;
-  color: var(--body); font-size: 0.8rem; line-height: 1.6;
-}
-.cr-aviso svg { flex-shrink: 0; margin-top: 2px; color: var(--muted); }
-.cr-demo { background: rgba(255, 196, 0, 0.10); border: 1px solid rgba(255, 196, 0, 0.35); color: #F5D67A; }
+/* ── Cabeçalho da tela (R1): eyebrow mono + nome ───────────────────────── */
+.cr-top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 16px; position: sticky; top: 0; z-index: 4;
+  background: rgba(10,10,11,.72); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
+.cr-top .cr-b { width: 32px; height: 32px; border-radius: 10px; background: var(--surf2); display: grid; place-items: center; color: var(--ink); text-decoration: none; }
+.cr-top .cr-c { text-align: center; }
+.cr-top .cr-e { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink3); }
+.cr-top .cr-t { font-size: 14px; font-weight: 600; margin-top: 2px; }
 
-/* ── Seções ─────────────────────────────────────────────────────────── */
-.cr-titulo { display: flex; align-items: center; gap: 0.5rem; margin: 1.75rem 0.25rem 0.35rem; }
-.cr-titulo svg { color: var(--accent); flex-shrink: 0; }
-.cr-titulo h2 { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin: 0; flex: 1; }
-.cr-titulo .cr-detalhe { color: var(--accent); font-weight: 600; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-.cr-sub { color: var(--muted); font-size: 0.9rem; margin: 0 0.25rem 0.85rem; }
+/* ── Quem é: foto 72 + nome + @ · título curto ─────────────────────────── */
+.cr-hero { display: flex; align-items: center; gap: 16px; padding: 14px 20px 8px; }
+.cr-avatar { width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0; object-fit: cover; background: var(--surf3);
+  display: grid; place-items: center; font-family: var(--mono); font-size: 12px; color: var(--ink3); letter-spacing: .1em; }
+.cr-nome { font-family: var(--sans); font-size: 24px; font-weight: 700; letter-spacing: -.5px; line-height: 1.1; margin: 0; text-wrap: balance; }
+.cr-handle { font-size: 14px; color: var(--ink3); margin: 4px 0 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.cr-handle .cr-sep { color: var(--ink4); }
 
-/* ── Refeição ───────────────────────────────────────────────────────── */
-/* 14/09: card singelo — foto quadrada à esquerda, horário em cima, os nomes
-   do que ela comeu em até 2 linhas, o kcal à direita. Nada de gramas. */
-.cr-card-refeicao { padding: 0.85rem 0.95rem; }
-.cr-refeicao { display: flex; gap: 0.9rem; align-items: center; }
-.cr-foto {
-  width: 96px; height: 96px; border-radius: 14px; flex-shrink: 0; object-fit: cover;
-  background: var(--surface-2); display: flex; align-items: center; justify-content: center; color: var(--muted);
-}
-.cr-refeicao-corpo { flex: 1; min-width: 0; }
-.cr-slot { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0; }
-.cr-itens {
-  color: var(--ink); font-weight: 500; font-size: 0.98rem; line-height: 1.4; margin: 0.3rem 0 0;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.cr-mais { color: var(--muted); font-weight: 500; white-space: nowrap; }
-.cr-kcal { color: var(--accent); font-weight: 600; font-size: 0.85rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* ── Os três números ───────────────────────────────────────────────────── */
+.cr-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; margin: 14px 20px 0; background: var(--surf); border-radius: 18px; padding: 14px 8px; }
+.cr-stats > div { text-align: center; }
+.cr-stats .cr-v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 600; letter-spacing: -.3px; }
+.cr-stats .cr-v small { font-size: 11px; color: var(--ink3); margin-left: 2px; font-weight: 500; }
+.cr-stats .cr-k { font-size: 11px; color: var(--ink3); margin-top: 4px; }
 
-/* ── Treino ─────────────────────────────────────────────────────────── */
-.cr-exercicio { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--line); }
-.cr-exercicio:last-child { border-bottom: none; }
-.cr-exercicio-nome { color: var(--ink); font-weight: 500; }
-.cr-exercicio-nota { display: block; color: var(--muted); font-size: 0.78rem; font-weight: 400; margin-top: 2px; }
-.cr-exercicio-series { color: var(--muted); font-size: 0.85rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* ── Seções (R2): numeral mono verde + título + número à direita ───────── */
+.cr-sec { padding: 0 20px; }
+.cr-sech { display: flex; align-items: baseline; gap: 10px; margin: 32px 0 4px; }
+.cr-sech .cr-num { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; color: var(--green); font-weight: 600; }
+.cr-sech h2 { font-family: var(--sans); font-size: 20px; font-weight: 700; letter-spacing: -.4px; margin: 0; }
+.cr-sech .cr-m { margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink3); }
+.cr-sub { font-size: 14px; color: var(--ink2); margin: 0 0 14px 30px; }
 
-/* ── Barra fixa de baixo ────────────────────────────────────────────── */
-.cr-cta {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-  background: linear-gradient(to top, var(--bg) 70%, rgba(7, 10, 16, 0));
-  padding: 1.5rem 1rem calc(1rem + env(safe-area-inset-bottom));
-}
-.cr-cta-inner { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch; }
-.cr-cta-btn { text-align: center; width: 100%; justify-content: center; }
-.cr-cta-sub { color: var(--muted); font-size: 0.8rem; text-align: center; margin: 0; }
-.cr-lojas { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
-.cr-lojas a { font-size: 0.85rem; }
-.cr-lojas .cr-breve { color: var(--body); font-size: 0.85rem; text-align: center; margin: 0; }
+/* ── Refeição: foto 112, horário, título em 2 linhas, kcal mono ────────── */
+.cr-meals { display: flex; flex-direction: column; gap: 10px; }
+.cr-meal { display: grid; grid-template-columns: 112px 1fr; gap: 14px; background: var(--surf); border-radius: 22px; padding: 8px; align-items: stretch;
+  text-decoration: none; color: inherit; }
+.cr-meal .cr-ph { aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; position: relative; background: var(--surf3); }
+.cr-meal .cr-ph img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cr-meal .cr-ph.cr-vazio { background: repeating-linear-gradient(135deg, #1e1e21 0 6px, #232326 6px 12px); }
+.cr-meal .cr-ct { display: flex; flex-direction: column; padding: 10px 12px 10px 0; min-width: 0; }
+.cr-meal .cr-ey { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink3); }
+.cr-meal .cr-tt { font-size: 16px; font-weight: 600; line-height: 1.25; letter-spacing: -.2px; margin: 6px 0 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-wrap: balance; }
+.cr-meal .cr-ft { margin-top: auto; display: flex; align-items: center; justify-content: space-between; }
+.cr-meal .cr-kc { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; color: var(--ink2); }
+.cr-meal .cr-ft svg { color: var(--ink4); }
 
-@media (prefers-reduced-motion: reduce) { .cr-cta { transition: none; } }
+/* ── Botões (pill 52): dieta verde, treino secundário ──────────────────── */
+.cr-cta { margin: 18px 20px 0; height: 52px; border-radius: 999px; display: grid; place-items: center; font-size: 16px; font-weight: 600;
+  text-decoration: none; cursor: pointer; border: 0; width: calc(100% - 40px); font-family: var(--sans); }
+.cr-cta.cr-p { background: var(--greenDeep); color: #04130C; }
+.cr-cta.cr-s { background: var(--surf2); color: var(--ink); }
+.cr-cta:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.cr-lojas { margin: 10px 20px 0; font-size: 12px; color: var(--ink3); text-align: center; line-height: 1.5; }
+.cr-lojas a { color: var(--ink2); }
+
+/* ── Treino: um card, linhas com hairline ──────────────────────────────── */
+.cr-ex { background: var(--surf); border-radius: 22px; padding: 6px 8px; }
+.cr-row { display: grid; grid-template-columns: 72px 1fr auto; gap: 14px; align-items: center; padding: 8px 6px 8px 0; }
+.cr-row + .cr-row { border-top: 1px solid var(--line); }
+.cr-row .cr-th { width: 72px; height: 72px; border-radius: 14px; overflow: hidden; position: relative;
+  background: repeating-linear-gradient(135deg, #1e1e21 0 6px, #232326 6px 12px); }
+.cr-row .cr-th img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cr-row .cr-th span { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--mono); font-size: 8.5px; color: var(--ink3); text-align: center; line-height: 1.4; letter-spacing: .04em; padding: 6px; }
+.cr-row .cr-nm { font-size: 15px; font-weight: 600; letter-spacing: -.2px; line-height: 1.25; }
+.cr-row .cr-mg { font-size: 12.5px; color: var(--ink3); margin-top: 4px; }
+.cr-row .cr-n { font-family: var(--mono); font-size: 12px; color: var(--ink4); }
+
+/* ── Nota de rodapé: o aviso legal, pequeno, no fim ────────────────────── */
+.cr-note { margin: 28px 20px 0; font-size: 12px; color: var(--ink3); line-height: 1.5; text-align: center; text-wrap: pretty; }
+.cr-note a { color: var(--ink2); text-decoration: underline; }
+.cr-demo { margin: 12px 20px 0; padding: 10px 14px; border-radius: 12px; background: rgba(255,196,0,.10); border: 1px solid rgba(255,196,0,.35); color: #F5D67A; font-size: 12px; }
+
+@media (prefers-reduced-motion: reduce) { .cr-top { transition: none; } }
