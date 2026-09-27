@@ -29,3 +29,28 @@
 
 .pn-inativa { background: rgba(255, 196, 0, 0.10); border: 1px solid rgba(255, 196, 0, 0.35); color: #F5D67A; border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; }
 @media (prefers-reduced-motion: reduce) { .pn-barra { transition: none; } }
+
+/* ── Suas dietas e treinos (T40, 27/09): a faixa de fotos dos pratos, o
+   título, se está na página, a nota do vídeo, o link e os dois botões ───── */
+.pn-itens-dica { margin: 0 0.25rem 0.75rem; }
+.pn-grupo { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; color: var(--ink); margin: 1.25rem 0.25rem 0.6rem; }
+.pn-item { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 0.9rem 1rem 1rem; margin-bottom: 0.75rem; }
+.pn-item.fora { opacity: 0.78; }
+.pn-pratos { display: flex; gap: 0.5rem; overflow-x: auto; margin: 0 -1rem 0.75rem; padding: 0 1rem 0.25rem; }
+.pn-prato { flex: 0 0 84px; margin: 0; }
+.pn-prato img, .pn-prato-vazio { display: block; width: 84px; height: 84px; border-radius: 12px; object-fit: cover; background: var(--surface-2); }
+.pn-prato-vazio { background: repeating-linear-gradient(135deg, #151D28 0 6px, #1A2330 6px 12px); }
+.pn-prato figcaption { color: var(--muted); font-size: 0.7rem; line-height: 1.3; margin-top: 0.3rem;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pn-item-topo { display: flex; align-items: flex-start; gap: 0.6rem; }
+.pn-item-topo h3 { flex: 1; min-width: 0; margin: 0; font-size: 1rem; font-weight: 600; color: var(--ink); line-height: 1.3; text-wrap: balance; }
+.pn-status { flex-shrink: 0; font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.pn-status.on { color: var(--accent); border-color: rgba(0, 217, 166, 0.4); background: rgba(0, 217, 166, 0.08); }
+.pn-item-nota { color: var(--body); font-size: 0.82rem; margin: 0.4rem 0 0; font-variant-numeric: tabular-nums; }
+.pn-video { display: inline-block; color: var(--accent); font-size: 0.82rem; margin-top: 0.35rem; }
+.pn-acoes { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }
+.pn-acao { flex: 1 1 0; min-width: 8rem; padding: 0.6rem 0.8rem; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
+  cursor: pointer; font: inherit; font-size: 0.85rem; font-weight: 600; }
+.pn-acao.ativa { background: rgba(0, 217, 166, 0.16); border-color: rgba(0, 217, 166, 0.45); color: var(--accent); }
+.pn-acao:disabled { opacity: 0.5; cursor: default; }
+.pn-acao:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

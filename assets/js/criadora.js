@@ -158,25 +158,16 @@
     return '<div class="cr-hero">' + avatar + '<div><h1 class="cr-nome">' + esc(c.nome) + '</h1>' +
       '<p class="cr-handle">@' + esc(c.handle) + (titulo ? '<span class="cr-sep">·</span><span>' + esc(titulo) + '</span>' : '') + '</p></div></div>';
   }
-  function stats(nRefeicoes, kcalDia, nExercicios, nDietas) {
-    // Duas dietas ou mais: o topo NÃO soma os dias (mesma regra do app, 25/09 —
-    // "9 refeições · 2.043 kcal no dia" misturava dois vídeos e dava a conta
-    // de um só). Diz quantas dietas e a faixa de refeições de cada uma.
-    var primeiro = nDietas > 1
-      ? '<div><div class="cr-v">' + nDietas + '</div><div class="cr-k">dietas</div></div>' +
-        '<div><div class="cr-v">' + (nRefeicoes == null ? '—' : esc(nRefeicoes)) + '</div><div class="cr-k">refeições cada</div></div>'
-      : '<div><div class="cr-v">' + (nRefeicoes == null ? '—' : nRefeicoes) + '</div><div class="cr-k">refeições</div></div>' +
-        '<div>' + (kcalDia != null && Number(kcalDia) > 0
-          ? '<div class="cr-v">' + esc(Number(kcalDia).toLocaleString('pt-BR')) + '<small>kcal</small></div><div class="cr-k">no dia</div>'
-          : '<div class="cr-v">—</div><div class="cr-k">kcal a definir</div>') + '</div>';
-    return '<div class="cr-stats" id="cr-stats">' + primeiro +
-      '<div><div class="cr-v">' + (nExercicios == null ? '—' : nExercicios) + '</div><div class="cr-k">exercícios</div></div>' +
+  function stats(nRefeicoes, kcalDia, nExercicios) {
+    // Os números falam da dieta e do treino EM FOCO (T40, 27/09): nunca somam
+    // duas dietas ("9 refeições · 2.043 kcal no dia" misturava dois vídeos, 25/09).
+    return '<div class="cr-stats" id="cr-stats">' +
+      '<div><div class="cr-v">' + (nRefeicoes == null ? '—' : esc(nRefeicoes)) + '</div><div class="cr-k">refeições</div></div>' +
+      '<div>' + (kcalDia != null && Number(kcalDia) > 0
+        ? '<div class="cr-v">' + esc(Number(kcalDia).toLocaleString('pt-BR')) + '<small>kcal</small></div><div class="cr-k">no dia</div>'
+        : '<div class="cr-v">—</div><div class="cr-k">kcal a definir</div>') + '</div>' +
+      '<div><div class="cr-v">' + (nExercicios == null ? '—' : esc(nExercicios)) + '</div><div class="cr-k">exercícios</div></div>' +
       '</div>';
-  }
-  function faixa(contagens) {
-    if (!contagens.length) return null;
-    var min = Math.min.apply(null, contagens); var max = Math.max.apply(null, contagens);
-    return min === max ? String(min) : min + '–' + max;
   }
   function secaoCabecalho(num, titulo, direita) {
     return '<div class="cr-sech"><span class="cr-num">' + num + '</span><h2>' + esc(titulo) + '</h2>' +
@@ -241,31 +232,42 @@
     }).join('') + '</div>';
   }
   function botaoDaDieta(x, handle) {
-    // O botão leva o id DESTA dieta. O app de 27/09 ainda abre a página dela
-    // (lê só o apelido do link) e lá cada dieta tem o seu "Quero essa dieta";
-    // o id vai junto para o dia em que o app abrir direto na dieta tocada.
+    // O botão leva o id DA DIETA EM FOCO: o app abre a página dela com essa dieta
+    // em foco (`?dieta=`, T40).
     return '<a class="cr-cta cr-p" href="' + esc(esquemaDoApp(handle, 'quero=dieta&dieta=' + encodeURIComponent(x.id))) + '" data-abrir="1">Quero essa dieta</a>';
   }
-  // Uma dieta = um dia (regra do dono, 25/09): a Renata tem uma por vídeo, e a
-  // página mostra TODAS, cada uma com o título, as refeições e o seu botão —
-  // como o app (`components/criadora/PaginaCriadora.tsx`). Com uma só, a seção
-  // fica como sempre foi.
-  function secaoDietas(lista, handle) {
-    if (lista.length === 1) {
-      var x = lista[0];
-      var total = x.kcal_dia != null && Number(x.kcal_dia) > 0 ? kcalTexto(x.kcal_dia) : '';
-      return '<div class="cr-sec">' + secaoCabecalho('01', 'A dieta dela', total) +
-        '<p class="cr-sub">' + esc(x.titulo || '') + '</p>' + cartoesDaDieta(x, handle) + '</div>' +
-        botaoDaDieta(x, handle);
-    }
-    return '<div class="cr-sec">' + secaoCabecalho('01', 'As dietas dela', '') +
-      '<p class="cr-sub">Cada uma é um dia que ela filmou. Escolha a que combina com você.</p></div>' +
-      lista.map(function (x) {
-        var kcal = x.kcal_dia != null && Number(x.kcal_dia) > 0 ? kcalTexto(x.kcal_dia) : 'kcal a definir';
-        return '<div class="cr-dieta"><div class="cr-sec"><div class="cr-dh"><h3>' + esc(x.titulo || '') + '</h3>' +
-          '<span>' + esc(kcal) + '</span></div>' + cartoesDaDieta(x, handle) + '</div>' +
-          botaoDaDieta(x, handle) + '</div>';
-      }).join('');
+  // "Ver outras dietas (N)" / "Ver outros treinos (N)" (T40, 27/09): fechado
+  // por padrão — a página é UMA dieta; quem quer escolher abre a lista. Cada
+  // linha: as fotos dos pratos, o título e o resumo; tocar põe em foco.
+  function verOutras(tipo, rotulo, outras, aberto) {
+    if (!outras.length) return '';
+    var linhas = outras.map(function (o) {
+      var fotos = (o.fotos || []).filter(Boolean).slice(0, 5);
+      return '<button type="button" class="cr-o" data-foco-' + tipo + '="' + esc(o.id) + '" aria-label="Ver ' + esc(o.titulo || '') + '">' +
+        (fotos.length ? '<span class="cr-of">' + fotos.map(function (f) {
+          return '<img src="' + esc(f) + '" alt="" loading="lazy">';
+        }).join('') + '</span>' : '') +
+        '<span class="cr-oc"><span class="cr-ot">' + esc(o.titulo || '') + '</span>' +
+        (o.detalhe ? '<span class="cr-od">' + esc(o.detalhe) + '</span>' : '') + '</span>' + CHEVRON + '</button>';
+    }).join('');
+    return '<div class="cr-outras"><button type="button" class="cr-vo" data-alternar="' + tipo + '" aria-expanded="' + (aberto ? 'true' : 'false') + '">' +
+      esc(rotulo + ' (' + outras.length + ')') + CHEVRON + '</button>' +
+      '<div class="cr-ol"' + (aberto ? '' : ' hidden') + '>' + linhas + '</div></div>';
+  }
+  // Uma dieta = um dia (regra do dono, 25/09). A página mostra UMA, a em foco
+  // (regra em dieta-em-foco.js, a mesma do app), e as outras ficam no "ver outras".
+  function secaoDietas(foco, outras, handle, aberto) {
+    var total = foco.kcal_dia != null && Number(foco.kcal_dia) > 0 ? kcalTexto(foco.kcal_dia) : '';
+    return '<div class="cr-sec">' + secaoCabecalho('01', 'A dieta dela', total) +
+      '<p class="cr-sub">' + esc(foco.titulo || '') + '</p>' + cartoesDaDieta(foco, handle) + '</div>' +
+      botaoDaDieta(foco, handle) +
+      verOutras('dieta', 'Ver outras dietas', outras.map(function (o) {
+        return {
+          id: o.id, titulo: o.titulo, fotos: o.fotos,
+          detalhe: [o.kcal_dia != null && Number(o.kcal_dia) > 0 ? kcalTexto(Math.round(o.kcal_dia)) : null,
+            o.refeicoes.length ? o.refeicoes.length + ' refeições' : null].filter(Boolean).join(' · ')
+        };
+      }), aberto);
   }
 
   var GRUPO_PT = { gluteos: 'Glúteos', abdutores: 'Glúteo médio', adutores: 'Adutores', quadriceps: 'Quadríceps', posterior: 'Posterior de coxa',
@@ -286,7 +288,7 @@
     dias = dias.filter(function (dia) { return base.toLowerCase().indexOf(dia) < 0; });
     return [base, dias.join(', ')].filter(Boolean).join(' · ');
   }
-  function secaoTreino(t, exercicios, handle) {
+  function secaoTreino(t, exercicios, handle, outras, aberto) {
     var linhas = exercicios.map(function (e, i) {
       var thumb = e.foto_url
         ? '<div class="cr-th"><img src="' + esc(e.foto_url) + '" alt="" loading="lazy"></div>'
@@ -299,7 +301,10 @@
       '<p class="cr-sub">' + esc(tituloDoTreino(t)) + '</p>' +
       '<div class="cr-ex">' + (linhas || '<p class="cr-empty">O treino dela ainda não tem exercícios publicados.</p>') + '</div>' +
       '</div>' +
-      '<a class="cr-cta cr-s" href="' + esc(esquemaDoApp(handle, 'quero=treino')) + '" data-abrir="1">Quero esse treino</a>';
+      '<a class="cr-cta cr-s" href="' + esc(esquemaDoApp(handle, 'quero=treino&treino=' + encodeURIComponent(t.id))) + '" data-abrir="1">Quero esse treino</a>' +
+      verOutras('treino', 'Ver outros treinos', outras.map(function (o) {
+        return { id: o.id, titulo: tituloDoTreino(o), fotos: [], detalhe: o.n_exercicios ? o.n_exercicios + ' exercícios' : '' };
+      }), aberto);
   }
   function nota(c) {
     var ig = c.redes && c.redes.instagram ? urlDaRede('instagram', c.redes.instagram) : null;
@@ -358,6 +363,20 @@
   }
   document.title = '@' + handle + ' no Livowa';
 
+  // O link pode trazer a dieta (e o treino) a pôr em foco: /c/?h=<apelido>&dieta=<id>.
+  var doLink = new URLSearchParams(location.search);
+  var Foco = window.LivowaDietaEmFoco;
+
+  // Troca a dieta/o treino em foco sem recarregar: a URL passa a dizer qual é,
+  // para o link copiado da barra abrir na mesma.
+  function marcarNaUrl(chave, id) {
+    try {
+      var q = new URLSearchParams(location.search);
+      q.set(chave, id);
+      history.replaceState(null, '', location.pathname + '?' + q.toString() + location.hash);
+    } catch (e) { /* sem history: a troca na tela já aconteceu */ }
+  }
+
   rpc('criadora_por_handle', { p_handle: handle }).then(function (p) {
     if (!p || !p.criadora) {
       mostrarErro('Não achei essa página. O link pode ter mudado.');
@@ -366,23 +385,80 @@
     var c = p.criadora;
     document.title = esc(c.nome) + ' no Livowa';
     var dietas = p.dietas || [];
-    var t0 = (p.treinos || [])[0];
-    var faixaInicial = faixa(dietas.map(function (d) { return Number(d.n_refeicoes) || 0; }));
+    var treinos = p.treinos || [];
+    // A em foco pela regra (dieta-em-foco.js, a mesma do app). Sem os campos
+    // da T40 no banco (principal, engajamento, completa), fica a mais recente.
+    var dFoco = Foco.itemEmFoco(dietas, { doLink: doLink.get('dieta') });
+    var tFoco = Foco.itemEmFoco(treinos, { doLink: doLink.get('treino') });
 
     // A página aparece já com quem ela é e os três números; dieta e treino chegam em seguida.
     var demo = /^\[TESTE\]/.test(String(c.nome || ''))
       ? '<div class="cr-demo">Cadastro de teste: esta criadora não é uma pessoa real.</div>'
       : '';
     $content.innerHTML = topo(c) + hero(c) +
-      stats(dietas.length > 1 ? faixaInicial : (dietas[0] ? dietas[0].n_refeicoes : null),
-        dietas[0] ? dietas[0].kcal_dia : null, t0 ? t0.n_exercicios : null, dietas.length) + demo +
+      stats(dFoco ? dFoco.n_refeicoes : null, dFoco ? dFoco.kcal_dia : null, tFoco ? tFoco.n_exercicios : null) + demo +
       '<div id="cr-dieta"></div><div id="cr-treino"></div>' + nota(c);
     armarAberturas();
 
-    var t = t0;
+    // Estado da página: o que está em foco e o que já foi lido do banco.
+    var lidas = [];            // dietas carregadas (refeições, kcal, fotos), na ordem do banco
+    var focoDietaId = dFoco ? dFoco.id : null;
+    var focoTreinoId = tFoco ? tFoco.id : null;
+    var exerciciosPorTreino = {};
+
+    function atualizarNumeros() {
+      var d = lidas.filter(function (x) { return x.id === focoDietaId; })[0];
+      var t = treinos.filter(function (x) { return x.id === focoTreinoId; })[0];
+      var nEx = t ? (exerciciosPorTreino[t.id] ? exerciciosPorTreino[t.id].length : t.n_exercicios) : null;
+      var $st = document.getElementById('cr-stats');
+      if ($st) $st.outerHTML = stats(d ? d.refeicoes.length : null, d ? d.kcal_dia : null, nEx);
+    }
+    function desenharDietas(aberto) {
+      var r = Foco.emFocoEOutras(lidas, { doLink: focoDietaId });
+      if (!r.foco) return;
+      focoDietaId = r.foco.id;
+      document.getElementById('cr-dieta').innerHTML = secaoDietas(r.foco, r.outras, c.handle, aberto);
+    }
+    function desenharTreino(aberto) {
+      var r = Foco.emFocoEOutras(treinos, { doLink: focoTreinoId });
+      if (!r.foco || !exerciciosPorTreino[r.foco.id]) return;
+      document.getElementById('cr-treino').innerHTML =
+        secaoTreino(r.foco, exerciciosPorTreino[r.foco.id], c.handle, r.outras, aberto);
+    }
+
+    // "Ver outras" abre/fecha; tocar numa da lista a põe em foco.
+    $content.addEventListener('click', function (ev) {
+      var alvo = ev.target && ev.target.closest ? ev.target.closest('[data-alternar],[data-foco-dieta],[data-foco-treino]') : null;
+      if (!alvo) return;
+      if (alvo.hasAttribute('data-alternar')) {
+        var lista = alvo.nextElementSibling;
+        var abrir = lista.hidden;
+        lista.hidden = !abrir;
+        alvo.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+        return;
+      }
+      var $sec;
+      if (alvo.hasAttribute('data-foco-dieta')) {
+        focoDietaId = alvo.getAttribute('data-foco-dieta');
+        marcarNaUrl('dieta', focoDietaId);
+        desenharDietas(false);
+        atualizarNumeros();
+        $sec = document.getElementById('cr-dieta');
+      } else {
+        focoTreinoId = alvo.getAttribute('data-foco-treino');
+        marcarNaUrl('treino', focoTreinoId);
+        $sec = document.getElementById('cr-treino');
+        carregarTreino(treinos.filter(function (x) { return x.id === focoTreinoId; })[0]).then(function () {
+          desenharTreino(false);
+          atualizarNumeros();
+        });
+      }
+      if ($sec && $sec.scrollIntoView) $sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
 
     // Cada dieta publicada: o dia dela (uma dieta = um dia), o kcal de cada
     // refeição e a foto. Devolve null se a dieta saiu do ar entre as leituras.
+    // Leva junto os campos da regra (principal, engajamento, completa).
     function carregarDieta(d) {
       return ler('criadora_dietas', 'id=eq.' + encodeURIComponent(d.id) + '&status=eq.publicada&select=titulo,dias')
         .then(function (linhas) {
@@ -409,6 +485,7 @@
             (res[1] || []).forEach(function (x) { porReceita[x.id] = x.foto_thumb_url || x.foto_url || null; });
             return {
               id: d.id, titulo: linha.titulo, kcal_dia: d.kcal_dia, refeicoes: refeicoes, kcals: res[0],
+              principal: d.principal, engajamento: d.engajamento, publicada_em: d.publicada_em, completa: d.completa,
               fotos: refeicoes.map(function (r) {
                 return r.foto_url || (r.receita_id ? porReceita[r.receita_id] || null : null);
               })
@@ -417,42 +494,51 @@
         });
     }
 
-    var pDieta = dietas.length ? Promise.all(dietas.map(carregarDieta)).then(function (lidas) {
-      var lista = lidas.filter(Boolean);
-      if (!lista.length) return;
-      document.getElementById('cr-dieta').innerHTML = secaoDietas(lista, c.handle);
-      // Os três números falam da MESMA lista que os cards.
-      var $st = document.getElementById('cr-stats');
-      if ($st) $st.outerHTML = lista.length > 1
-        ? stats(faixa(lista.map(function (x) { return x.refeicoes.length; })), null, t0 ? t0.n_exercicios : null, lista.length)
-        : stats(lista[0].refeicoes.length, lista[0].kcal_dia, t0 ? t0.n_exercicios : null, 1);
+    // O treino em foco: nome em pt-BR, grupo muscular e o frame do vídeo dela.
+    // Lido uma vez por treino; trocar de treino na lista lê o novo.
+    function carregarTreino(t) {
+      if (!t) return Promise.resolve();
+      if (exerciciosPorTreino[t.id]) return Promise.resolve();
+      return ler('treino_template', 'id=eq.' + encodeURIComponent(t.template_id) + '&publico=eq.true&select=exercicios')
+        .then(function (linhas) {
+          var linha = linhas && linhas[0];
+          if (!linha) return;
+          var crus = Array.isArray(linha.exercicios) ? linha.exercicios : [];
+          var ids = crus.map(function (e) { return e.exercicio_id; }).filter(Boolean);
+          // 14/09: o nome sai em PORTUGUÊS — o que o vídeo dela diz (nome_lido, gravado
+          // no modelo) vence; senão o pt-BR da biblioteca (v_exercicios_biblioteca_i18n,
+          // que a chave pública lê); por último o nome cru da biblioteca.
+          var lista = 'id=in.(' + ids.map(encodeURIComponent).join(',') + ')';
+          var nomes = ids.length
+            ? ler('v_exercicios_biblioteca_i18n', lista + '&select=id,nome,nome_pt_br,grupo_muscular')
+                .catch(function () { return ler('exercicios_biblioteca', lista + '&select=id,nome').catch(function () { return []; }); })
+            : Promise.resolve([]);
+          return nomes.then(function (linhasNomes) {
+            var porId = {}; var grupoPorId = {};
+            (linhasNomes || []).forEach(function (x) { porId[x.id] = x.nome_pt_br || x.nome; grupoPorId[x.id] = x.grupo_muscular; });
+            // Sem séries, descanso ou nota de mapeamento (regra do redesign): nome
+            // em pt-BR, grupo muscular e, quando existir, o frame do vídeo dela.
+            exerciciosPorTreino[t.id] = crus.map(function (e) {
+              return { nome: nomeDoExercicio(e, porId[e.exercicio_id]), grupo: grupoEmTexto(grupoPorId[e.exercicio_id]), foto_url: e.foto_url || null };
+            });
+          });
+        });
+    }
+
+    var pDieta = dietas.length ? Promise.all(dietas.map(carregarDieta)).then(function (res) {
+      lidas = res.filter(Boolean);
+      if (!lidas.length) return;
+      // A em foco saiu do ar entre as leituras: a regra escolhe entre as que ficaram.
+      if (!lidas.some(function (x) { return x.id === focoDietaId; })) {
+        var f = Foco.itemEmFoco(lidas, { doLink: doLink.get('dieta') });
+        focoDietaId = f ? f.id : null;
+      }
+      desenharDietas(false);
+      // Os três números falam da MESMA dieta que os cards.
+      atualizarNumeros();
     }) : Promise.resolve();
 
-    var pTreino = t ? ler('treino_template', 'id=eq.' + encodeURIComponent(t.template_id) + '&publico=eq.true&select=exercicios')
-      .then(function (linhas) {
-        var linha = linhas && linhas[0];
-        if (!linha) return;
-        var crus = Array.isArray(linha.exercicios) ? linha.exercicios : [];
-        var ids = crus.map(function (e) { return e.exercicio_id; }).filter(Boolean);
-        // 14/09: o nome sai em PORTUGUÊS — o que o vídeo dela diz (nome_lido, gravado
-        // no modelo) vence; senão o pt-BR da biblioteca (v_exercicios_biblioteca_i18n,
-        // que a chave pública lê); por último o nome cru da biblioteca.
-        var lista = 'id=in.(' + ids.map(encodeURIComponent).join(',') + ')';
-        var nomes = ids.length
-          ? ler('v_exercicios_biblioteca_i18n', lista + '&select=id,nome,nome_pt_br,grupo_muscular')
-              .catch(function () { return ler('exercicios_biblioteca', lista + '&select=id,nome').catch(function () { return []; }); })
-          : Promise.resolve([]);
-        return nomes.then(function (linhasNomes) {
-          var porId = {}; var grupoPorId = {};
-          (linhasNomes || []).forEach(function (x) { porId[x.id] = x.nome_pt_br || x.nome; grupoPorId[x.id] = x.grupo_muscular; });
-          // Sem séries, descanso ou nota de mapeamento (regra do redesign): nome
-          // em pt-BR, grupo muscular e, quando existir, o frame do vídeo dela.
-          var exercicios = crus.map(function (e) {
-            return { nome: nomeDoExercicio(e, porId[e.exercicio_id]), grupo: grupoEmTexto(grupoPorId[e.exercicio_id]), foto_url: e.foto_url || null };
-          });
-          document.getElementById('cr-treino').innerHTML = secaoTreino(t, exercicios, c.handle);
-        });
-      }) : Promise.resolve();
+    var pTreino = tFoco ? carregarTreino(tFoco).then(function () { desenharTreino(false); }) : Promise.resolve();
 
     return Promise.all([pDieta, pTreino]);
   }).catch(function (e) {

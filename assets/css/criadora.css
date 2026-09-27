@@ -95,9 +95,25 @@
 
 @media (prefers-reduced-motion: reduce) { .cr-top { transition: none; } }
 
-/* ── Várias dietas (uma dieta = um dia, 27/09): cada uma com título, kcal,
-   refeições e o seu "Quero essa dieta" — como o app ────────────────────── */
-.cr-dieta + .cr-dieta { margin-top: 28px; padding-top: 4px; }
-.cr-dh { display: flex; align-items: baseline; gap: 10px; margin: 14px 0 12px; }
-.cr-dh h3 { flex: 1; min-width: 0; font-family: var(--sans); font-size: 16px; font-weight: 600; letter-spacing: -.2px; line-height: 1.3; margin: 0; text-wrap: balance; }
-.cr-dh span { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink3); white-space: nowrap; }
+/* ── Uma dieta em foco + "Ver outras dietas (N)" (T40, 27/09) ─────────────
+   A lista fica fechada; cada linha tem as fotos dos pratos, o título e o
+   resumo; tocar põe a dieta em foco. Igual para treinos. ─────────────────── */
+#cr-dieta, #cr-treino { scroll-margin-top: 64px; }
+.cr-outras { margin: 10px 20px 0; }
+.cr-vo { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 10px 0; background: none; border: 0; cursor: pointer;
+  font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--green); }
+.cr-vo svg { transition: transform .2s ease; }
+.cr-vo[aria-expanded="true"] svg { transform: rotate(90deg); }
+.cr-vo:focus-visible, .cr-o:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.cr-ol { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.cr-ol[hidden] { display: none; }
+.cr-o { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px 12px; width: 100%; text-align: left; cursor: pointer;
+  background: var(--surf); border: 0; border-radius: 18px; padding: 10px 14px 12px; color: inherit; font-family: var(--sans); }
+.cr-o .cr-of { grid-column: 1 / -1; display: flex; gap: 6px; }
+.cr-o .cr-of img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: var(--surf3); flex-shrink: 0; }
+.cr-o .cr-oc { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.cr-o .cr-ot { font-size: 15px; font-weight: 600; letter-spacing: -.2px; line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cr-o .cr-od { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ink3); }
+.cr-o > svg { color: var(--ink4); }
+@media (prefers-reduced-motion: reduce) { .cr-vo svg { transition: none; } }
