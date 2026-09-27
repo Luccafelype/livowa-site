@@ -158,15 +158,25 @@
     return '<div class="cr-hero">' + avatar + '<div><h1 class="cr-nome">' + esc(c.nome) + '</h1>' +
       '<p class="cr-handle">@' + esc(c.handle) + (titulo ? '<span class="cr-sep">·</span><span>' + esc(titulo) + '</span>' : '') + '</p></div></div>';
   }
-  function stats(nRefeicoes, kcalDia, nExercicios) {
-    var kcal = kcalDia != null && Number(kcalDia) > 0
-      ? '<div class="cr-v">' + esc(Number(kcalDia).toLocaleString('pt-BR')) + '<small>kcal</small></div><div class="cr-k">no dia</div>'
-      : '<div class="cr-v">—</div><div class="cr-k">kcal a definir</div>';
-    return '<div class="cr-stats" id="cr-stats">' +
-      '<div><div class="cr-v">' + (nRefeicoes == null ? '—' : nRefeicoes) + '</div><div class="cr-k">refeições</div></div>' +
-      '<div>' + kcal + '</div>' +
+  function stats(nRefeicoes, kcalDia, nExercicios, nDietas) {
+    // Duas dietas ou mais: o topo NÃO soma os dias (mesma regra do app, 25/09 —
+    // "9 refeições · 2.043 kcal no dia" misturava dois vídeos e dava a conta
+    // de um só). Diz quantas dietas e a faixa de refeições de cada uma.
+    var primeiro = nDietas > 1
+      ? '<div><div class="cr-v">' + nDietas + '</div><div class="cr-k">dietas</div></div>' +
+        '<div><div class="cr-v">' + (nRefeicoes == null ? '—' : esc(nRefeicoes)) + '</div><div class="cr-k">refeições cada</div></div>'
+      : '<div><div class="cr-v">' + (nRefeicoes == null ? '—' : nRefeicoes) + '</div><div class="cr-k">refeições</div></div>' +
+        '<div>' + (kcalDia != null && Number(kcalDia) > 0
+          ? '<div class="cr-v">' + esc(Number(kcalDia).toLocaleString('pt-BR')) + '<small>kcal</small></div><div class="cr-k">no dia</div>'
+          : '<div class="cr-v">—</div><div class="cr-k">kcal a definir</div>') + '</div>';
+    return '<div class="cr-stats" id="cr-stats">' + primeiro +
       '<div><div class="cr-v">' + (nExercicios == null ? '—' : nExercicios) + '</div><div class="cr-k">exercícios</div></div>' +
       '</div>';
+  }
+  function faixa(contagens) {
+    if (!contagens.length) return null;
+    var min = Math.min.apply(null, contagens); var max = Math.max.apply(null, contagens);
+    return min === max ? String(min) : min + '–' + max;
   }
   function secaoCabecalho(num, titulo, direita) {
     return '<div class="cr-sech"><span class="cr-num">' + num + '</span><h2>' + esc(titulo) + '</h2>' +
@@ -213,25 +223,49 @@
     if (tres.length <= 1) return tres.join('');
     return tres.slice(0, -1).join(', ') + ' e ' + tres[tres.length - 1];
   }
-  function cartaoRefeicao(r, kcal, foto, i, handle) {
+  function cartaoRefeicao(r, kcal, foto, i, handle, dietaId) {
     var temKcal = kcal != null && Number(kcal) > 0;
     var fotoHtml = foto
       ? '<div class="cr-ph"><img src="' + esc(foto) + '" alt="" loading="lazy"></div>'
       : '<div class="cr-ph cr-vazio" aria-hidden="true"></div>';
     // O card inteiro é tocável: abre a rotina no app, na refeição (detalhe com
     // ingredientes e medidas mora lá, não aqui).
-    return '<a class="cr-meal" href="' + esc(esquemaDoApp(handle, 'refeicao=' + i)) + '" data-abrir="1">' + fotoHtml +
+    return '<a class="cr-meal" href="' + esc(esquemaDoApp(handle, 'dieta=' + encodeURIComponent(dietaId) + '&refeicao=' + i)) + '" data-abrir="1">' + fotoHtml +
       '<div class="cr-ct"><div class="cr-ey">' + esc(r.slot ? nomeDoSlot(r.slot) : 'Todo dia') + '</div>' +
       '<div class="cr-tt">' + esc(tituloCurto(r) || r.nome_prato || '') + '</div>' +
       '<div class="cr-ft"><span class="cr-kc">' + (temKcal ? esc(kcalTexto(kcal)) : '') + '</span>' + CHEVRON + '</div></div></a>';
   }
-  function secaoDieta(d, refeicoes, kcalPorRefeicao, fotos, handle) {
-    var total = d.kcal_dia != null && Number(d.kcal_dia) > 0 ? kcalTexto(d.kcal_dia) : '';
-    return '<div class="cr-sec">' + secaoCabecalho('01', 'A dieta dela', total) +
-      '<p class="cr-sub">' + esc(d.titulo || '') + '</p>' +
-      '<div class="cr-meals">' + refeicoes.map(function (r, i) { return cartaoRefeicao(r, kcalPorRefeicao[i], fotos[i], i, handle); }).join('') + '</div>' +
-      '</div>' +
-      '<a class="cr-cta cr-p" href="' + esc(esquemaDoApp(handle, 'quero=dieta')) + '" data-abrir="1">Quero essa dieta</a>';
+  function cartoesDaDieta(x, handle) {
+    return '<div class="cr-meals">' + x.refeicoes.map(function (r, i) {
+      return cartaoRefeicao(r, x.kcals[i], x.fotos[i], i, handle, x.id);
+    }).join('') + '</div>';
+  }
+  function botaoDaDieta(x, handle) {
+    // O botão leva o id DESTA dieta. O app de 27/09 ainda abre a página dela
+    // (lê só o apelido do link) e lá cada dieta tem o seu "Quero essa dieta";
+    // o id vai junto para o dia em que o app abrir direto na dieta tocada.
+    return '<a class="cr-cta cr-p" href="' + esc(esquemaDoApp(handle, 'quero=dieta&dieta=' + encodeURIComponent(x.id))) + '" data-abrir="1">Quero essa dieta</a>';
+  }
+  // Uma dieta = um dia (regra do dono, 25/09): a Renata tem uma por vídeo, e a
+  // página mostra TODAS, cada uma com o título, as refeições e o seu botão —
+  // como o app (`components/criadora/PaginaCriadora.tsx`). Com uma só, a seção
+  // fica como sempre foi.
+  function secaoDietas(lista, handle) {
+    if (lista.length === 1) {
+      var x = lista[0];
+      var total = x.kcal_dia != null && Number(x.kcal_dia) > 0 ? kcalTexto(x.kcal_dia) : '';
+      return '<div class="cr-sec">' + secaoCabecalho('01', 'A dieta dela', total) +
+        '<p class="cr-sub">' + esc(x.titulo || '') + '</p>' + cartoesDaDieta(x, handle) + '</div>' +
+        botaoDaDieta(x, handle);
+    }
+    return '<div class="cr-sec">' + secaoCabecalho('01', 'As dietas dela', '') +
+      '<p class="cr-sub">Cada uma é um dia que ela filmou. Escolha a que combina com você.</p></div>' +
+      lista.map(function (x) {
+        var kcal = x.kcal_dia != null && Number(x.kcal_dia) > 0 ? kcalTexto(x.kcal_dia) : 'kcal a definir';
+        return '<div class="cr-dieta"><div class="cr-sec"><div class="cr-dh"><h3>' + esc(x.titulo || '') + '</h3>' +
+          '<span>' + esc(kcal) + '</span></div>' + cartoesDaDieta(x, handle) + '</div>' +
+          botaoDaDieta(x, handle) + '</div>';
+      }).join('');
   }
 
   var GRUPO_PT = { gluteos: 'Glúteos', abdutores: 'Glúteo médio', adutores: 'Adutores', quadriceps: 'Quadríceps', posterior: 'Posterior de coxa',
@@ -331,55 +365,68 @@
     }
     var c = p.criadora;
     document.title = esc(c.nome) + ' no Livowa';
-    var d0 = (p.dietas || [])[0];
+    var dietas = p.dietas || [];
     var t0 = (p.treinos || [])[0];
+    var faixaInicial = faixa(dietas.map(function (d) { return Number(d.n_refeicoes) || 0; }));
 
     // A página aparece já com quem ela é e os três números; dieta e treino chegam em seguida.
     var demo = /^\[TESTE\]/.test(String(c.nome || ''))
       ? '<div class="cr-demo">Cadastro de teste: esta criadora não é uma pessoa real.</div>'
       : '';
     $content.innerHTML = topo(c) + hero(c) +
-      stats(d0 ? d0.n_refeicoes : null, d0 ? d0.kcal_dia : null, t0 ? t0.n_exercicios : null) + demo +
+      stats(dietas.length > 1 ? faixaInicial : (dietas[0] ? dietas[0].n_refeicoes : null),
+        dietas[0] ? dietas[0].kcal_dia : null, t0 ? t0.n_exercicios : null, dietas.length) + demo +
       '<div id="cr-dieta"></div><div id="cr-treino"></div>' + nota(c);
     armarAberturas();
 
-    var d = (p.dietas || [])[0];
-    var t = (p.treinos || [])[0];
+    var t = t0;
 
-    var pDieta = d ? ler('criadora_dietas', 'id=eq.' + encodeURIComponent(d.id) + '&status=eq.publicada&select=titulo,dias')
-      .then(function (linhas) {
-        var linha = linhas && linhas[0];
-        if (!linha) return;
-        var dias = Array.isArray(linha.dias) ? linha.dias : [];
-        var refeicoes = (dias[0] && dias[0].refeicoes) || [];
-        // O kcal de cada refeição sai da MESMA função que dá o total do dia,
-        // para os cartões e o resumo nunca discordarem.
-        var kcals = Promise.all(refeicoes.map(function (r) {
-          return rpc('criadora_kcal_do_dia', { p_dia: { refeicoes: [r] } })
-            .then(function (x) { var n = x && x.kcal != null ? Number(x.kcal) : null; return isFinite(n) ? n : null; })
-            .catch(function () { return null; });
-        }));
-        // A foto da refeição é a DELA (foto_url, tirada do vídeo/carrossel,
-        // 14/09); a foto da receita do acervo só entra onde a dela não existe.
-        var ids = refeicoes.filter(function (r) { return !r.foto_url; })
-          .map(function (r) { return r.receita_id; }).filter(Boolean);
-        var fotos = ids.length
-          ? ler('receitas', 'id=in.(' + ids.map(encodeURIComponent).join(',') + ')&select=id,foto_thumb_url,foto_url').catch(function () { return []; })
-          : Promise.resolve([]);
-        return Promise.all([kcals, fotos]).then(function (res) {
-          var porReceita = {};
-          (res[1] || []).forEach(function (x) { porReceita[x.id] = x.foto_thumb_url || x.foto_url || null; });
-          var fotosPorRefeicao = refeicoes.map(function (r) {
-            return r.foto_url || (r.receita_id ? porReceita[r.receita_id] || null : null);
+    // Cada dieta publicada: o dia dela (uma dieta = um dia), o kcal de cada
+    // refeição e a foto. Devolve null se a dieta saiu do ar entre as leituras.
+    function carregarDieta(d) {
+      return ler('criadora_dietas', 'id=eq.' + encodeURIComponent(d.id) + '&status=eq.publicada&select=titulo,dias')
+        .then(function (linhas) {
+          var linha = linhas && linhas[0];
+          if (!linha) return null;
+          var dias = Array.isArray(linha.dias) ? linha.dias : [];
+          var refeicoes = (dias[0] && dias[0].refeicoes) || [];
+          // O kcal de cada refeição sai da MESMA função que dá o total do dia,
+          // para os cartões e o resumo nunca discordarem.
+          var kcals = Promise.all(refeicoes.map(function (r) {
+            return rpc('criadora_kcal_do_dia', { p_dia: { refeicoes: [r] } })
+              .then(function (x) { var n = x && x.kcal != null ? Number(x.kcal) : null; return isFinite(n) ? n : null; })
+              .catch(function () { return null; });
+          }));
+          // A foto da refeição é a DELA (foto_url, tirada do vídeo/carrossel,
+          // 14/09); a foto da receita do acervo só entra onde a dela não existe.
+          var ids = refeicoes.filter(function (r) { return !r.foto_url; })
+            .map(function (r) { return r.receita_id; }).filter(Boolean);
+          var fotos = ids.length
+            ? ler('receitas', 'id=in.(' + ids.map(encodeURIComponent).join(',') + ')&select=id,foto_thumb_url,foto_url').catch(function () { return []; })
+            : Promise.resolve([]);
+          return Promise.all([kcals, fotos]).then(function (res) {
+            var porReceita = {};
+            (res[1] || []).forEach(function (x) { porReceita[x.id] = x.foto_thumb_url || x.foto_url || null; });
+            return {
+              id: d.id, titulo: linha.titulo, kcal_dia: d.kcal_dia, refeicoes: refeicoes, kcals: res[0],
+              fotos: refeicoes.map(function (r) {
+                return r.foto_url || (r.receita_id ? porReceita[r.receita_id] || null : null);
+              })
+            };
           });
-          document.getElementById('cr-dieta').innerHTML = secaoDieta(
-            { titulo: linha.titulo, kcal_dia: d.kcal_dia, kcal_completo: d.kcal_completo },
-            refeicoes, res[0], fotosPorRefeicao, c.handle);
-          // Os três números falam da MESMA lista que os cards.
-          var $st = document.getElementById('cr-stats');
-          if ($st) $st.outerHTML = stats(refeicoes.length, d.kcal_dia, t0 ? t0.n_exercicios : null);
         });
-      }) : Promise.resolve();
+    }
+
+    var pDieta = dietas.length ? Promise.all(dietas.map(carregarDieta)).then(function (lidas) {
+      var lista = lidas.filter(Boolean);
+      if (!lista.length) return;
+      document.getElementById('cr-dieta').innerHTML = secaoDietas(lista, c.handle);
+      // Os três números falam da MESMA lista que os cards.
+      var $st = document.getElementById('cr-stats');
+      if ($st) $st.outerHTML = lista.length > 1
+        ? stats(faixa(lista.map(function (x) { return x.refeicoes.length; })), null, t0 ? t0.n_exercicios : null, lista.length)
+        : stats(lista[0].refeicoes.length, lista[0].kcal_dia, t0 ? t0.n_exercicios : null, 1);
+    }) : Promise.resolve();
 
     var pTreino = t ? ler('treino_template', 'id=eq.' + encodeURIComponent(t.template_id) + '&publico=eq.true&select=exercicios')
       .then(function (linhas) {
