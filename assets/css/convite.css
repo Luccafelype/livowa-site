@@ -1,0 +1,10 @@
+/* Convite para um grupo (T57-B) — mesmas cores do modelo da Comunidade. */
+.cv-wrap { box-sizing: border-box; width: 100%; max-width: 440px; margin: 32px auto 64px; padding: 0 16px; }
+.cv-quem { color: #7a7a80; font-size: 15px; margin: 0 0 6px; }
+.cv-titulo { font-family: Inter, system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 12px; }
+.cv-sub { color: #a8a8ad; font-size: 15px; line-height: 1.5; margin: 0 0 22px; }
+.cv-codigo { display: flex; justify-content: space-between; align-items: center; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 16px; padding: 16px 18px; margin: 0 0 18px; }
+.cv-rotulo { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #6b6b70; }
+.cv-num { font-family: 'JetBrains Mono', ui-monospace, monospace; font-weight: 600; font-size: 20px; letter-spacing: 0.08em; }
+.cv-botao { display: block; text-align: center; background: #10B981; color: #04130D; font-weight: 700; font-size: 16px; border-radius: 999px; padding: 15px 18px; text-decoration: none; }
+.cv-nota { color: #7a7a80; font-size: 13.5px; line-height: 1.5; margin: 14px 0 0; }

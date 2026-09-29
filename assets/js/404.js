@@ -19,5 +19,16 @@
               location.replace('/c/?h=' + encodeURIComponent(h) + (extra ? '&' + extra : ''));
             }
           }
+          // /g/{código} → /g/?c={código}  (convite para um grupo da Comunidade, T57-B).
+          // O resto da query segue junto: ?de=<nome> diz quem chamou.
+          if (parts.length >= 2 && parts[0] === 'g') {
+            var c = parts[1];
+            if (c && c !== 'index.html') {
+              var qg = new URLSearchParams(location.search);
+              qg.delete('c');
+              var extraG = qg.toString();
+              location.replace('/g/?c=' + encodeURIComponent(c) + (extraG ? '&' + extraG : ''));
+            }
+          }
         } catch (e) { /* fall through to 404 page */ }
       })();

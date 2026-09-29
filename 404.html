@@ -6,7 +6,12 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <script src="/assets/js/boot.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página não encontrada | Livowa</title>
+    <title>Livowa</title>
+    <!-- Título genérico de propósito (29/09): /c/<apelido> e /g/<código> passam por esta página
+         antes do redirecionamento, e a prévia do WhatsApp/Instagram lê o título sem rodar
+         JavaScript. O "não encontrada" continua no corpo da página. -->
+    <meta property="og:title" content="Livowa">
+    <meta property="og:description" content="Dieta, treino e hábitos num lugar só.">
     <!--
       SPA-style fallback para /lista/{token}.
       GitHub Pages serve este 404.html quando o path não corresponde a um arquivo.
