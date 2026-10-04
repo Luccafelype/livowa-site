@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'; worker-src 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-elem 'self' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://vfzbtnrqbdkfjzhqkiiu.supabase.co; upgrade-insecure-requests">
+    <meta name="referrer" content="no-referrer">
+    <script src="/assets/js/boot.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Nova senha | Livowa</title>
+    <meta name="description" content="Escolha uma nova senha para a sua conta do Livowa.">
+    <meta name="robots" content="noindex,nofollow">
+    <!--
+      livowa.com/redefinir-senha/ — destino do e-mail de "esqueci minha senha" (04/10).
+
+      O app pede o e-mail com redirectTo = esta página. O Auth do Supabase (fluxo
+      implícito, o do app) devolve a sessão de recuperação no fragmento:
+        #access_token=...&refresh_token=...&type=recovery
+      e um link vencido devolve #error=...&error_code=otp_expired.
+      Também aceita ?token_hash=...&type=recovery (caso o modelo do e-mail passe a
+      apontar direto para cá). A troca é PUT /auth/v1/user com o token do link e a
+      chave pública do site (a mesma de /c/ e /lista/). O fragmento sai da barra
+      de endereço assim que é lido, e `referrer: no-referrer` impede vazar o token.
+      Com o app instalado, o link universal (apple-app-site-association) abre o app.
+    -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 115'%3E%3Crect width='104' height='115' rx='8' fill='%230B1117'/%3E%3Cpath d='M29.86 75.29C29.85 60.32 29.79 45.83 29.83 31.35C29.84 26.91 29.73 22.62 25 19.13C31.2 17.73 37.39 16.32 43.21 15C39.33 35.16 41.87 55.03 41.35 74.76C41.07 85.2 40.31 86.5 28.93 89.67C29.8 84.92 29.8 80.35 29.86 75.29Z' fill='%2300D9A6'/%3E%3Cpath d='M77.26 100.07C59.67 98.61 42.48 97.52 25.6 99.59C24.38 97.32 25.2 96.31 26.43 95.58C35.16 90.4 44.13 86.4 54.77 88.47C59.15 89.32 63.7 89.66 68.17 89.65C74.38 89.65 80.01 87.9 83.77 82.35C84.46 81.32 84.94 79.84 86.67 80.01C88.67 84.54 82.94 97.25 77.26 100.07Z' fill='%2300D9A6'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/assets/css/redefinir-senha.css">
+</head>
+<body>
+    <header class="container">
+        <a href="/" class="logo">Livowa</a>
+        <nav>
+            <a href="/suporte">Suporte</a>
+        </nav>
+    </header>
+    <main>
+        <div class="rs-wrap">
+            <section id="rs-carregando" class="rs-estado" role="status">
+                <p class="rs-sub">Abrindo o seu link...</p>
+            </section>
+
+            <section id="rs-sem-link" class="rs-estado" hidden>
+                <h1 class="rs-titulo">Trocar a senha</h1>
+                <p class="rs-sub">Esta página abre pelo link que enviamos por e-mail. Para receber o link, abra o Livowa, toque em "Já tenho conta" e depois em "Esqueci minha senha".</p>
+            </section>
+
+            <section id="rs-vencido" class="rs-estado" hidden>
+                <h1 class="rs-titulo">Esse link não vale mais</h1>
+                <p class="rs-sub">O link de troca de senha já foi usado ou expirou. Peça um novo no app: toque em "Já tenho conta" e depois em "Esqueci minha senha". Use sempre o e-mail mais recente.</p>
+            </section>
+
+            <section id="rs-form-estado" class="rs-estado" hidden>
+                <h1 class="rs-titulo">Escolha a nova senha</h1>
+                <p class="rs-sub" id="rs-conta">Depois, entre no app com ela.</p>
+                <form id="rs-form" novalidate>
+                    <label class="rs-rotulo" for="rs-senha">Nova senha</label>
+                    <input class="rs-campo" id="rs-senha" type="password" autocomplete="new-password" required>
+                    <label class="rs-rotulo" for="rs-confirma">Repita a nova senha</label>
+                    <input class="rs-campo" id="rs-confirma" type="password" autocomplete="new-password" required>
+                    <label class="rs-mostrar"><input type="checkbox" id="rs-mostrar"> Mostrar senha</label>
+                    <ul class="rs-regras" id="rs-regras">
+                        <li data-regra="tamanho">Pelo menos 6 caracteres</li>
+                        <li data-regra="maiuscula">Pelo menos 1 letra maiúscula</li>
+                        <li data-regra="especial">Pelo menos 1 caractere especial (ex.: ! @ # .)</li>
+                        <li data-regra="iguais">As duas senhas iguais</li>
+                    </ul>
+                    <p class="rs-aviso" id="rs-aviso" role="alert" hidden></p>
+                    <button class="rs-botao" id="rs-salvar" type="submit">Salvar nova senha</button>
+                </form>
+            </section>
+
+            <section id="rs-pronto" class="rs-estado" hidden>
+                <h1 class="rs-titulo">Senha trocada</h1>
+                <p class="rs-sub">Pronto. Abra o Livowa e entre com o seu e-mail e a senha nova.</p>
+                <a class="rs-botao" href="livowa://auth/login">Abrir o Livowa</a>
+                <p class="rs-nota">Se o app não abrir, abra o Livowa pelo celular.</p>
+            </section>
+        </div>
+    </main>
+    <script src="/assets/js/redefinir-senha.js"></script>
+</body>
+</html>
