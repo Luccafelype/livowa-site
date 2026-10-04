@@ -2,8 +2,8 @@
    Não chama rede nenhuma: mostra quem chamou (?de=) e o código para digitar no app. */
 (function () {
   'use strict';
-  // Endereços das lojas. Vazio = o app ainda não está público (o mesmo de criadora.js).
-  var LOJAS = { ios: '', android: '' };
+  // Endereços das lojas. Vazio = o app não está naquela loja (o mesmo de criadora.js).
+  var LOJAS = { ios: 'https://apps.apple.com/br/app/livowa/id6767943656', android: '' };
   var CODIGO_VALIDO = /^[A-Z0-9]{8}$/;
 
   function esc(s) {

@@ -12,9 +12,10 @@
   var SUPABASE_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co';
   var SUPABASE_ANON_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';
 
-  // Endereços das lojas. Vazio = o app ainda não está público; a barra de baixo
-  // diz isso em vez de apontar para um link que não existe.
-  var LOJAS = { ios: '', android: '' };
+  // Endereços das lojas. Vazio = o app não está naquela loja; a barra de baixo
+  // diz isso em vez de apontar para um link que não existe. iOS: na App Store
+  // desde 06/06/2026 (id6767943656). Android: ainda não está na Play.
+  var LOJAS = { ios: 'https://apps.apple.com/br/app/livowa/id6767943656', android: '' };
 
   var HANDLE_VALIDO = /^[a-z0-9_.]{2,40}$/;
   var NOME_DO_SLOT = {

@@ -75,6 +75,9 @@
 .cr-cta:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 .cr-lojas { margin: 10px 20px 0; font-size: 12px; color: var(--ink3); text-align: center; line-height: 1.5; }
 .cr-lojas a { color: var(--ink2); }
+/* Link fixo da App Store, abaixo da rotina (04/10): quem não tem o app instala daqui. */
+.cr-baixar { margin: 22px 20px 8px; font-size: 13px; }
+.cr-baixar a { color: var(--ink2); text-decoration: underline; }
 
 /* ── Treino: um card, linhas com hairline ──────────────────────────────── */
 .cr-ex { background: var(--surf); border-radius: 22px; padding: 6px 8px; }

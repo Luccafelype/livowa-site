@@ -12,8 +12,11 @@
     <!--
       livowa.com/c/<apelido> — a página pública da criadora, fora do app.
 
-      GitHub Pages não tem rota dinâmica: /c/<apelido> cai no 404.html, que
-      redireciona para /c/?h=<apelido>, e esta página lê o apelido da query.
+      GitHub Pages não tem rota dinâmica. Cada criadora publicada tem a sua cópia
+      estática em /c/<apelido>/index.html (HTTP 200, com título e foto na prévia),
+      gerada a partir DESTE arquivo por scripts/gerar_paginas_criadoras.py.
+      Apelido sem cópia cai no 404.html, que redireciona para /c/?h=<apelido>,
+      e esta página lê o apelido da query.
       No iPhone com o app instalado o link nem chega aqui: o arquivo
       /.well-known/apple-app-site-association abre o app direto em /c/<apelido>.
       Esta página existe para quem NÃO tem o app (ou abriu o link dentro do
@@ -40,6 +43,7 @@
             <div id="cr-content">
                 <div class="cr-loading" role="status">Carregando a rotina dela...</div>
             </div>
+            <p class="cr-lojas cr-baixar"><a href="https://apps.apple.com/br/app/livowa/id6767943656" rel="noopener">Baixar o Livowa na App Store</a></p>
         </div>
     </main>
 
