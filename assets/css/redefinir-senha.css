@@ -1,0 +1,17 @@
+/* livowa.com/redefinir-senha/ — mesmas cores e medidas do convite (/g/). */
+.rs-wrap { box-sizing: border-box; width: 100%; max-width: 440px; margin: 32px auto 64px; padding: 0 16px; }
+.rs-titulo { font-family: Inter, system-ui, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 12px; color: var(--ink); }
+.rs-sub { color: #a8a8ad; font-size: 15px; line-height: 1.5; margin: 0 0 22px; }
+.rs-rotulo { display: block; color: var(--body); font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+.rs-campo { box-sizing: border-box; width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; }
+.rs-campo:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.rs-mostrar { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 14px; margin: 12px 0 0; }
+.rs-regras { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 6px; }
+.rs-regras li { color: var(--muted); font-size: 13.5px; padding-left: 22px; position: relative; }
+.rs-regras li::before { content: ""; position: absolute; left: 2px; top: 4px; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--muted); }
+.rs-regras li.ok { color: var(--accent-bright); }
+.rs-regras li.ok::before { background: var(--accent); border-color: var(--accent); }
+.rs-aviso { color: #FFB4A8; background: rgba(255, 107, 107, 0.08); border-radius: 12px; padding: 12px 14px; font-size: 14px; line-height: 1.45; margin: 16px 0 0; }
+.rs-botao { display: block; box-sizing: border-box; width: 100%; text-align: center; background: #10B981; color: #04130D; font: inherit; font-weight: 700; font-size: 16px; border: 0; border-radius: 999px; padding: 15px 18px; margin-top: 20px; text-decoration: none; cursor: pointer; }
+.rs-botao[disabled] { opacity: 0.6; cursor: default; }
+.rs-nota { color: #7a7a80; font-size: 13.5px; line-height: 1.5; margin: 14px 0 0; }
