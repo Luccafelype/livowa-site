@@ -474,8 +474,9 @@
               .then(function (x) { var n = x && x.kcal != null ? Number(x.kcal) : null; return isFinite(n) ? n : null; })
               .catch(function () { return null; });
           }));
-          // A foto da refeição é a DELA (foto_url, tirada do vídeo/carrossel,
-          // 14/09); a foto da receita do acervo só entra onde a dela não existe.
+          // A foto da refeição é a da dieta (foto_url). Desde 05/10 (T148), de
+          // criadora sem parceria escrita ela é uma foto GERADA do prato, nunca
+          // a do post; a foto da receita do acervo só entra onde não há foto_url.
           var ids = refeicoes.filter(function (r) { return !r.foto_url; })
             .map(function (r) { return r.receita_id; }).filter(Boolean);
           var fotos = ids.length

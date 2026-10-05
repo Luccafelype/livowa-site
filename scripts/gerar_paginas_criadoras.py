@@ -78,7 +78,11 @@ def pagina(modelo, c):
     h = c['handle']
     nome = c['nome']
     titulo = (c.get('titulo') or '').strip()
-    foto = (c.get('foto_url') or '').strip() or FOTO_PADRAO
+    # Sem foto dela (criadora sem parceria escrita, T148 05/10): a prévia usa a imagem do Livowa, e o texto
+    # alternativo não pode dizer "Foto de <nome>".
+    foto_dela = (c.get('foto_url') or '').strip()
+    foto = foto_dela or FOTO_PADRAO
+    alt = ('Foto de %s' % nome) if foto_dela else 'Livowa'
     url = '%s/c/%s/' % (SITE, h)
     t = '%s (@%s) no Livowa' % (nome, h)
     d = ('%s. ' % titulo if titulo else '') + (
@@ -97,12 +101,12 @@ def pagina(modelo, c):
             '    <meta property="og:title" content="%s">\n'
             '    <meta property="og:description" content="%s">\n'
             '    <meta property="og:image" content="%s">\n'
-            '    <meta property="og:image:alt" content="Foto de %s">\n'
+            '    <meta property="og:image:alt" content="%s">\n'
             '    <meta name="twitter:card" content="summary">\n'
             '    <meta name="twitter:title" content="%s">\n'
             '    <meta name="twitter:description" content="%s">\n'
             '    <meta name="twitter:image" content="%s">'
-            ) % (e(d), e(url), e(url), e(t), e(d), e(foto), e(nome), e(t), e(d), e(foto))
+            ) % (e(d), e(url), e(url), e(t), e(d), e(foto), e(alt), e(t), e(d), e(foto))
     s, n2 = re.subn(r'<meta name="description" content="[^"]*">', lambda _: meta, s, count=1)
     # O comentário de explicação do modelo vira o aviso de arquivo gerado.
     s, n3 = re.subn(r'<!--\s*\n\s*livowa\.com/c/<apelido>.*?-->',
