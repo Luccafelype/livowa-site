@@ -378,6 +378,9 @@ nav a:hover { color: var(--ink); }
 }
 
 .store-chip svg { opacity: 0.7; }
+a.store-chip { color: var(--text, inherit); border-color: currentColor; text-decoration: none; font-weight: 600; transition: transform .15s ease, opacity .15s ease; }
+a.store-chip:hover { transform: translateY(-1px); opacity: .9; }
+a.store-chip svg { opacity: 1; }
 
 /* Entrada suave do bloco de texto do hero */
 .hero-copy > .eyebrow,
