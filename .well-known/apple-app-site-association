@@ -7,8 +7,7 @@
         "components": [
           { "/": "/c/*", "comment": "página pública da criadora" },
           { "/": "/g/*", "comment": "convite por código" },
-          { "/": "/casa/*", "comment": "casa" },
-          { "/": "/redefinir-senha/*", "comment": "link do e-mail de troca de senha (04/10)" }
+          { "/": "/casa/*", "comment": "casa" }
         ]
       }
     ]
