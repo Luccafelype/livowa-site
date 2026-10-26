@@ -6,283 +6,394 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Que idade seu corpo mostra</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: uma coluna estreita como um laudo; duas medidas, cada uma com instrução, captura e resultado. */
+/* Layout: app de uma coluna, uma etapa por tela; barra de progresso no topo, ação principal fixa embaixo. */
 :root{
-  --bg:#f3f5f2; --surface:#ffffff; --fg:#17201b; --muted:#5c6a62; --line:#d7ddd8;
-  --accent:#0f6b4f; --accent-soft:#e1efe8; --warn:#9a5b00; --warn-soft:#f6ead8;
+  --bg:#f2f4f1; --surface:#ffffff; --fg:#141c17; --muted:#5f6d65; --line:#dbe1dc;
+  --accent:#0d6a4d; --accent-2:#d9efe5; --on-accent:#ffffff; --warn:#8a5200; --warn-bg:#f7ecdc;
   --display:"Bricolage Grotesque",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#101512; --surface:#18201b; --fg:#e6ece8; --muted:#97a69d; --line:#2c3730;
-  --accent:#4fc59a; --accent-soft:#18352a; --warn:#e3a547; --warn-soft:#3a2c14; color-scheme:dark}}
+  --bg:#0e1311; --surface:#171f1b; --fg:#e7ede9; --muted:#9aa89f; --line:#27322c;
+  --accent:#52c99c; --accent-2:#173328; --on-accent:#08130e; --warn:#e8ad55; --warn-bg:#33270f; color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.wrap{max-width:640px;margin:0 auto;padding-block:28px 64px;display:flex;flex-direction:column;gap:28px}
-h1,h2{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
-h1{font-size:clamp(2rem,7vw,2.8rem);font-weight:700;letter-spacing:-.01em}
-h2{font-size:1.35rem;font-weight:700}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top,0px) max(20px,env(safe-area-inset-right,0px)) 0 max(20px,env(safe-area-inset-left,0px))}
+.top{display:flex;align-items:center;gap:12px;padding-block:16px 8px}
+.back{background:none;border:0;color:var(--fg);font-size:1.4rem;padding:4px 8px 4px 0;cursor:pointer}
+.bar{flex:1;height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
+.screen{flex:1;display:flex;flex-direction:column;gap:20px;padding-block:12px 120px;animation:in .25s ease}
+@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1,h2{font-family:var(--display);margin:0;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(2.2rem,9vw,3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.7rem;font-weight:700;letter-spacing:-.01em}
 p{margin:0}
-.lede{color:var(--muted);max-width:60ch}
-.who{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.note{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:.88rem}
-section.test{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px}
-.tag{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.how{color:var(--muted);font-size:.95rem}
-.how ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
-label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);min-width:0}
-input,select{font:500 1rem var(--mono);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%}
-input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.unit{font-family:var(--mono);font-size:.72rem}
-button{font:600 1rem var(--body);border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--accent);color:var(--surface)}
-button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-button:disabled{opacity:.45;cursor:default}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.stage{position:relative;width:100%;aspect-ratio:3/4;max-height:70vh;background:#000;border-radius:12px;overflow:hidden}
-.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.hud{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:8px;font:500 1rem var(--mono);color:#fff;text-shadow:0 1px 3px #000}
-.count{font:700 4rem var(--display);position:absolute;inset:0;display:grid;place-items:center;color:#fff;text-shadow:0 2px 8px #000;pointer-events:none}
-.status{font-size:.92rem;color:var(--muted)}
-.result{background:var(--accent-soft);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px}
-.big{font-family:var(--display);font-size:2.2rem;font-weight:700;line-height:1}
-.big small{font-family:var(--body);font-size:1rem;font-weight:500;color:var(--muted)}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.95rem}
-.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums}
-.fine{font-size:.82rem;color:var(--muted)}
-footer{font-size:.8rem;color:var(--muted);display:flex;flex-direction:column;gap:6px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.sub{color:var(--muted);font-size:1.05rem}
+.who{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.choice{display:flex;align-items:center;gap:16px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);
+  border-radius:16px;padding:18px;cursor:pointer;color:var(--fg);font:inherit}
+.choice b{display:block;font-family:var(--display);font-size:1.2rem}
+.choice span{color:var(--muted);font-size:.92rem}
+.choice .ic{width:52px;height:52px;border-radius:14px;background:var(--accent-2);display:grid;place-items:center;flex:none;color:var(--accent)}
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.demo svg{display:block;width:100%;height:auto}
+.steps{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:flex-start;font-size:1rem}
+.steps li em{font-style:normal;flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent-2);color:var(--accent);display:grid;place-items:center;font:600 .9rem var(--mono)}
+.safe{display:flex;gap:10px;align-items:flex-start;background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:12px 14px;font-size:.88rem;cursor:pointer}
+.safe input{margin-top:3px;accent-color:var(--accent);width:18px;height:18px;flex:none}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:.85rem;color:var(--muted)}
+.field input{font:600 1.3rem var(--mono);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;width:100%}
+.seg{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{font:600 1rem var(--body);padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.cta{position:fixed;left:0;right:0;bottom:0;padding:14px max(20px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+  background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.cta div{max-width:520px;margin:0 auto;display:flex;gap:10px}
+.btn{flex:1;font:700 1.08rem var(--body);border:0;border-radius:14px;padding:17px;cursor:pointer;background:var(--accent);color:var(--on-accent)}
+.btn.ghost{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:default}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.stage{position:relative;width:100%;aspect-ratio:3/4;background:#000;border-radius:18px;overflow:hidden}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hud{position:absolute;inset:auto 0 0 0;display:flex;justify-content:space-between;align-items:flex-end;padding:16px;color:#fff;
+  background:linear-gradient(to top,rgba(0,0,0,.65),transparent)}
+.hud .reps{font:800 3.4rem/1 var(--display)}
+.hud .reps small{font-size:1.2rem;opacity:.7}
+.hud .time{font:500 1.6rem var(--mono)}
+.pill{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:8px 14px;font-size:.92rem;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.count{position:absolute;inset:0;display:grid;place-items:center;font:800 7rem var(--display);color:#fff;text-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none}
+.flash{position:absolute;right:14px;top:56px;background:var(--accent);color:var(--on-accent);border-radius:12px;padding:6px 10px;font:600 .95rem var(--mono);opacity:0;transition:opacity .2s}
+.flash.on{opacity:1}
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.hero .age{font:800 clamp(2.6rem,12vw,3.6rem)/1 var(--display);color:var(--accent);letter-spacing:-.02em}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.chip b{font:600 1.15rem var(--mono);font-variant-numeric:tabular-nums}
+.chip span{font-size:.75rem;color:var(--muted)}
+.fine{font-size:.78rem;color:var(--muted)}
+.link{background:none;border:0;color:var(--accent);font:600 .95rem var(--body);padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header style="display:flex;flex-direction:column;gap:12px">
-    <span class="who">Dr. Lucca Marques · Médico · CRM-GO 33.990</span>
-    <h1>Que idade o seu corpo mostra?</h1>
-    <p class="lede">Duas medidas pelo celular: a potência das suas pernas, medida pela câmera, e a aparência da sua pele. O resultado aparece na hora, sem cadastro.</p>
-  </header>
+<div class="app">
+  <div class="top" id="top" hidden>
+    <button class="back" id="back" type="button" aria-label="Voltar">←</button>
+    <div class="bar" aria-hidden="true"><i id="progress"></i></div>
+  </div>
 
-  <section class="test" aria-labelledby="t-pot">
-    <span class="tag">Medida 1 · Potência</span>
-    <h2 id="t-pot">Levantar da cadeira 5 vezes, filmado</h2>
-    <div class="how">
-      <ol>
-        <li>Apoie o celular em pé, a 2 ou 3 metros, de lado para você. O corpo inteiro precisa aparecer.</li>
-        <li>Sente numa cadeira sem braço, encostada na parede, braços cruzados no peito.</li>
-        <li>Aperte "Começar". Depois da contagem, levante e sente 5 vezes o mais rápido que conseguir com segurança, ficando de pé por completo a cada vez.</li>
-      </ol>
+  <!-- 1. Início -->
+  <section class="screen" data-s="inicio" data-p="0">
+    <span class="who" style="margin-top:24px">Dr. Lucca Marques · Médico · CRM-GO 33.990</span>
+    <h1>Que idade o seu corpo mostra?</h1>
+    <p class="sub">Um teste de 1 minuto com a câmera do celular. Resultado na hora, sem cadastro.</p>
+    <button class="choice" type="button" data-go="como">
+      <span class="ic" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span>
+      <span><b>Potência das pernas</b><span>Levantar da cadeira 5 vezes, filmado · 1 min</span></span>
+    </button>
+    <button class="choice" type="button" data-go="pele" id="card-pele" hidden>
+      <span class="ic" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="6"/><path d="M5 21c1.5-3 4-4.5 7-4.5s5.5 1.5 7 4.5"/></svg></span>
+      <span><b>Pele do rosto</b><span>Uma selfie · 30 s</span></span>
+    </button>
+  </section>
+
+  <!-- 2. Como fazer -->
+  <section class="screen" data-s="como" data-p="25" hidden>
+    <h2>Como fazer</h2>
+    <p class="sub" style="margin-top:-8px">Assim você deve aparecer na tela, de corpo inteiro e de lado.</p>
+    <div class="demo" aria-label="Animação: como você deve aparecer na tela do celular, de lado, levantando e sentando 5 vezes">
+      <svg viewBox="0 0 360 262" role="img">
+        <rect x="96" y="8" width="168" height="248" rx="26" fill="none" stroke="var(--fg)" stroke-width="5"/>
+        <rect x="160" y="16" width="40" height="6" rx="3" fill="var(--fg)"/>
+        <line x1="106" y1="226" x2="254" y2="226" stroke="var(--muted)" stroke-width="2"/>
+        <g fill="none" stroke="var(--muted)" stroke-width="4" stroke-linecap="round">
+          <path d="M148 180 H188 M152 180 V224 M184 180 V224 M148 180 V132"/>
+        </g>
+        <g fill="none" stroke="var(--fg)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+          <polyline id="leg" points="206,224 205,178 165,178"/><line id="torso"/><line id="arm"/>
+        </g>
+        <circle id="head" r="10" fill="var(--fg)"/>
+        <g fill="var(--accent)"><circle id="j-hip" r="4"/><circle id="j-knee" r="4"/><circle cx="206" cy="224" r="4"/></g>
+        <g id="arrow" opacity="0">
+          <line x1="236" y1="190" x2="236" y2="122" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M228 131 L236 119 L244 131" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <text id="rep" x="248" y="50" text-anchor="end" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="22" fill="var(--accent)">1/5</text>
+        <text x="112" y="50" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--muted)">de lado</text>
+      </svg>
     </div>
-    <p class="note">Faça perto de uma parede, com a cadeira firme e alguém por perto. Se sentir dor no peito, falta de ar fora do normal ou tontura, pare. Se você tem doença do coração, problema no joelho ou no quadril, ou caiu nos últimos meses, fale com seu médico antes.</p>
-    <div class="grid">
-      <label for="sexo">Sexo<select id="sexo"><option value="m">Masculino</option><option value="f">Feminino</option></select></label>
-      <label for="idade">Idade <input id="idade" type="number" inputmode="numeric" value="42" min="18" max="99"><span class="unit">anos</span></label>
-      <label for="peso">Peso <input id="peso" type="number" inputmode="decimal" value="82" min="30" max="250"><span class="unit">kg</span></label>
-      <label for="altura">Altura <input id="altura" type="number" inputmode="numeric" value="176" min="120" max="220"><span class="unit">cm</span></label>
-      <label for="cadeira">Altura do assento <input id="cadeira" type="number" inputmode="numeric" value="45" min="30" max="60"><span class="unit">cm, do chão ao assento</span></label>
+    <ol class="steps">
+      <li><em>1</em><span>Celular em pé no chão, encostado em algo, a 2 ou 3 passos.</span></li>
+      <li><em>2</em><span>Cadeira comum, sem braço, encostada na parede. Braços cruzados.</span></li>
+      <li><em>3</em><span>Levante e sente 5 vezes, o mais rápido que conseguir, ficando de pé por completo.</span></li>
+    </ol>
+    <label class="safe" for="ok-safe">
+      <input id="ok-safe" type="checkbox">
+      <span>Não faça se tiver dor no peito, tontura, problema no joelho ou no quadril, ou queda recente. Tenha alguém por perto.</span>
+    </label>
+  </section>
+
+  <!-- 3. Seus dados -->
+  <section class="screen" data-s="dados" data-p="50" hidden>
+    <h2>Para calcular a sua potência</h2>
+    <div class="fields">
+      <div class="seg" role="group" aria-label="Sexo">
+        <button type="button" data-sexo="m" aria-pressed="true">Homem</button>
+        <button type="button" data-sexo="f" aria-pressed="false">Mulher</button>
+      </div>
+      <label class="field" for="idade">Idade<input id="idade" type="number" inputmode="numeric" placeholder="42" min="18" max="99"></label>
+      <label class="field" for="peso">Peso (kg)<input id="peso" type="number" inputmode="decimal" placeholder="80" min="30" max="250"></label>
+      <label class="field" for="altura" style="grid-column:1/-1">Altura (cm)<input id="altura" type="number" inputmode="numeric" placeholder="175" min="120" max="220"></label>
     </div>
-    <div class="stage" id="stage" hidden>
+    <p class="fine">Nada disso sai do seu celular.</p>
+  </section>
+
+  <!-- 4. Câmera -->
+  <section class="screen" data-s="camera" data-p="75" hidden>
+    <div class="stage">
       <video id="video" playsinline muted></video>
       <canvas id="overlay"></canvas>
-      <div class="hud"><span id="hud-reps">0 de 5</span><span id="hud-time">0,0 s</span></div>
+      <div class="pill" id="pill" aria-live="polite">Abrindo a câmera…</div>
+      <div class="flash" id="flash"></div>
       <div class="count" id="countdown" aria-live="assertive"></div>
+      <div class="hud"><span class="reps" id="reps">0<small>/5</small></span><span class="time" id="time">0,0 s</span></div>
     </div>
-    <p class="status" id="status" aria-live="polite">A câmera abre quando você apertar "Começar". Nada é gravado nem enviado: o vídeo é analisado só no seu celular.</p>
-    <div class="row">
-      <button id="start" type="button">Começar</button>
-      <button id="stop" type="button" class="ghost" hidden>Cancelar</button>
-    </div>
-    <label for="arquivo">Ou analise um vídeo que você já gravou
-      <input id="arquivo" type="file" accept="video/*"></label>
-    <div class="result" id="r-pot" aria-live="polite" hidden></div>
+    <p class="fine" style="text-align:center">O vídeo é analisado no seu celular e não é gravado nem enviado.</p>
+    <p style="text-align:center"><label class="link" for="arquivo">Prefiro enviar um vídeo já gravado</label><input id="arquivo" type="file" accept="video/*" hidden></p>
   </section>
 
-  <section class="test" aria-labelledby="t-pele">
-    <span class="tag">Medida 2 · Pele</span>
-    <h2 id="t-pele">Que idade a sua pele aparenta</h2>
-    <p class="how">Selfie de frente, sem filtro e sem maquiagem, com a luz de uma janela no rosto e o cabelo longe da testa.</p>
-    <label for="consent" style="flex-direction:row;align-items:flex-start;gap:10px;color:var(--fg);font-size:.92rem">
-      <input id="consent" type="checkbox" style="width:auto;margin-top:4px">
-      <span>Autorizo o envio da minha foto para análise por inteligência artificial, só para gerar este resultado. Foto do rosto é dado pessoal sensível. Tenho 18 anos ou mais.</span>
-    </label>
-    <label for="selfie">Sua selfie <input id="selfie" type="file" accept="image/jpeg,image/png,image/webp" capture="user"></label>
-    <div class="row"><button id="analisar" type="button" disabled>Analisar a pele</button></div>
-    <div class="result" id="r-pele" aria-live="polite" hidden></div>
+  <!-- 5. Resultado -->
+  <section class="screen" data-s="resultado" data-p="100" hidden>
+    <div class="hero">
+      <span class="who">Potência das pernas</span>
+      <p>Suas pernas têm a potência típica de quem tem</p>
+      <span class="age" id="res-age">40 a 44 anos</span>
+      <p class="sub" id="res-line"></p>
+    </div>
+    <div class="chips">
+      <div class="chip"><b id="res-t">8,8 s</b><span>5 levantadas</span></div>
+      <div class="chip"><b id="res-w">4,3</b><span>W por kg</span></div>
+      <div class="chip"><b id="res-v">0,65</b><span>m/s na subida</span></div>
+    </div>
+    <p class="fine" id="res-fine"></p>
   </section>
 
-  <footer>
-    <p>Estimativas educativas a partir de estudos publicados. Não substituem consulta e não são diagnóstico.</p>
-  </footer>
+  <div class="cta"><div>
+    <button class="btn ghost" id="cta-2" type="button" hidden></button>
+    <button class="btn" id="cta" type="button">Começar o teste</button>
+  </div></div>
 </div>
 
 <script type="module">
 import { PoseLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
 
 const $ = id => document.getElementById(id);
-const num = id => parseFloat(String($(id).value).replace(',', '.'));
 const fmt = (v, d=1) => v.toLocaleString('pt-BR', {minimumFractionDigits:d, maximumFractionDigits:d});
 const log = (...a) => { if (location.hash === '#teste') console.log('[sts]', ...a); };
+const CHAIR = 0.45;            // cadeira comum (os protocolos usam 43 a 46 cm)
+let sexo = 'm';
 
+// ---------- navegação ----------
+const order = ['inicio','como','dados','camera','resultado'];
+let cur = 'inicio';
+function show(s){
+  document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
+  cur = s; const el = document.querySelector(`[data-s="${s}"]`);
+  $('top').hidden = s === 'inicio';
+  $('progress').style.width = (el.dataset.p || 0) + '%';
+  const cta = $('cta'), c2 = $('cta-2'); c2.hidden = true; cta.hidden = false;
+  if (s === 'inicio'){ cta.textContent = 'Começar o teste'; cta.disabled = false; }
+  if (s === 'como'){ cta.textContent = 'Continuar'; cta.disabled = !$('ok-safe').checked; }
+  if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; validar(); }
+  if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
+  if (s === 'resultado'){ cta.textContent = 'Fazer de novo'; cta.disabled = false; }
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => show(b.dataset.go)));
+$('back').addEventListener('click', () => { pararCamera(); show(order[Math.max(0, order.indexOf(cur)-1)]); });
+$('ok-safe').addEventListener('change', () => { if (cur === 'como') $('cta').disabled = !$('ok-safe').checked; });
+document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click', () => {
+  sexo = b.dataset.sexo; document.querySelectorAll('[data-sexo]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+const val = id => parseFloat(String($(id).value).replace(',', '.'));
+function validar(){
+  const ok = val('idade') >= 18 && val('idade') <= 99 && val('peso') >= 30 && val('peso') <= 250 && val('altura') >= 120 && val('altura') <= 220;
+  if (cur === 'dados') $('cta').disabled = !ok; return ok;
+}
+['idade','peso','altura'].forEach(id => $(id).addEventListener('input', validar));
+$('cta').addEventListener('click', () => {
+  if (cur === 'inicio') show('como');
+  else if (cur === 'como') show('dados');
+  else if (cur === 'dados' || cur === 'resultado') { show('camera'); abrirCamera(); }
+});
+$('cta-2').addEventListener('click', () => { pararCamera(); show('dados'); });
+
+// ---------- animação de demonstração ----------
+const lerp = (a,b,t) => a + (b-a)*t;
+const P = { sit:{hip:[165,178],knee:[205,178],sh:[160,130],hd:[162,112],hand:[176,150]},
+            up:{hip:[200,140],knee:[205,183],sh:[198,92],hd:[198,74],hand:[206,114]} };
+const ANK = [206,224];
+function pose(t){
+  const p = k => [lerp(P.sit[k][0],P.up[k][0],t), lerp(P.sit[k][1],P.up[k][1],t)];
+  const hip=p('hip'), knee=p('knee'), sh=p('sh'), hd=p('hd'), hand=p('hand');
+  $('leg').setAttribute('points', `${ANK} ${knee} ${hip}`);
+  const set = (id,a,b) => { const e=$(id); e.setAttribute('x1',a[0]); e.setAttribute('y1',a[1]); e.setAttribute('x2',b[0]); e.setAttribute('y2',b[1]); };
+  set('torso', hip, sh); set('arm', [sh[0]-2,sh[1]+12], hand);
+  $('head').setAttribute('cx', hd[0]); $('head').setAttribute('cy', hd[1]);
+  $('j-hip').setAttribute('cx', hip[0]); $('j-hip').setAttribute('cy', hip[1]);
+  $('j-knee').setAttribute('cx', knee[0]); $('j-knee').setAttribute('cy', knee[1]);
+}
+const ease = x => x<.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2;
+const demoT0 = performance.now();
+function demo(now){
+  if (cur === 'como'){
+    const cyc = 1600, ms = (now - demoT0) % (cyc*5 + 1200), i = Math.floor(ms / cyc);
+    if (i >= 5){ pose(0); $('arrow').setAttribute('opacity','0'); $('rep').textContent = '5/5'; }
+    else {
+      const f = (ms % cyc)/cyc;            // 0-.4 sobe, .4-.55 de pé, .55-.95 desce
+      const t = f < .4 ? ease(f/.4) : f < .55 ? 1 : f < .95 ? 1-ease((f-.55)/.4) : 0;
+      pose(t); $('arrow').setAttribute('opacity', f < .4 ? '1' : '0'); $('rep').textContent = `${i+1}/5`;
+    }
+  }
+  requestAnimationFrame(demo);
+}
+pose(0);
+if (matchMedia('(prefers-reduced-motion: reduce)').matches) pose(.5); else requestAnimationFrame(demo);
+
+// ---------- detector ----------
 let landmarker = null;
 async function getLandmarker(){
   if (landmarker) return landmarker;
-  $('status').textContent = 'Carregando o detector de movimento…';
   const files = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm");
-  const opts = delegate => ({
-    baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task", delegate },
-    runningMode: "VIDEO", numPoses: 1
-  });
+  const opts = delegate => ({ baseOptions:{ modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task", delegate }, runningMode:"VIDEO", numPoses:1 });
   try { landmarker = await PoseLandmarker.createFromOptions(files, opts("GPU")); }
   catch { landmarker = await PoseLandmarker.createFromOptions(files, opts("CPU")); }
   return landmarker;
 }
-
-// Detector de repetições a partir da altura do quadril.
-// Unidade: comprimento do tronco (ombro→quadril) medido sentado, para não depender da distância da câmera.
-function makeCounter(){
-  return { phase:'calib', calib:[], seatY:null, torso:null, ema:null, reps:0, t0:null, tEnd:null,
-           riseStart:null, rises:[], up:false, lastT:null };
-}
-const UP = 0.55, DOWN = 0.2, ONSET = 0.08;   // frações do tronco
+// Repetições pela altura do quadril, medida em "troncos" (ombro→quadril sentado), para não depender da distância.
+const UP = 0.55, DOWN = 0.2, ONSET = 0.08;
+const novo = () => ({ phase:'calib', calib:[], seatY:null, torso:null, ema:null, reps:0, t0:null, tEnd:null, riseStart:null, rises:[], up:false });
 function feed(c, lm, t){
-  const vis = i => (lm[i].visibility ?? 1) > 0.5;
-  if (![11,12,23,24].some(vis)) return 'corpo';
+  if (![11,12,23,24].some(i => (lm[i].visibility ?? 1) > 0.5)) return 'corpo';
   const hipY = (lm[23].y + lm[24].y)/2, shY = (lm[11].y + lm[12].y)/2;
   c.ema = c.ema == null ? hipY : c.ema*0.6 + hipY*0.4;
   if (c.phase === 'calib'){
     c.calib.push({hipY:c.ema, torso:Math.abs(hipY - shY)});
     if (c.calib.length >= 12){
-      const s = [...c.calib].sort((a,b)=>a.hipY-b.hipY);
-      c.seatY = s[Math.floor(s.length/2)].hipY;
-      c.torso = [...c.calib].map(x=>x.torso).sort((a,b)=>a-b)[Math.floor(c.calib.length/2)];
-      c.phase = 'run'; log('calibrado', c.seatY.toFixed(3), c.torso.toFixed(3));
+      const med = a => [...a].sort((x,y)=>x-y)[Math.floor(a.length/2)];
+      c.seatY = med(c.calib.map(x=>x.hipY)); c.torso = med(c.calib.map(x=>x.torso)); c.phase = 'run';
+      log('calibrado', c.seatY.toFixed(3), c.torso.toFixed(3));
     }
     return 'calib';
   }
-  const d = (c.seatY - c.ema) / c.torso;          // quanto o quadril subiu, em troncos
-  if (location.hash === '#teste') { c.dbg = (c.dbg||0)+1; if (c.dbg % 4 === 0) log('d', (t/1000).toFixed(2), d.toFixed(2), hipY.toFixed(3)); }
+  const d = (c.seatY - c.ema) / c.torso;
+  if (location.hash === '#teste') { c.dbg=(c.dbg||0)+1; if (c.dbg%6===0) log('d',(t/1000).toFixed(2),d.toFixed(2),c.seatY.toFixed(3),c.ema.toFixed(3)); }
   if (c.t0 == null && d > ONSET){ c.t0 = t; c.riseStart = t; }
   if (c.t0 == null) return 'espera';
   if (!c.up && d > ONSET && c.riseStart == null) c.riseStart = t;
   if (!c.up && d > UP){ c.up = true; c.upStart = c.riseStart ?? t; c.peakD = d; c.peakT = t; c.riseStart = null; }
   if (c.up && d > c.peakD){ c.peakD = d; c.peakT = t; }
-  if (c.up && d < DOWN){ c.up = false; c.reps++; c.rises.push(c.peakT - c.upStart); log('rep', c.reps, ((t-c.t0)/1000).toFixed(2), 'subida', ((c.peakT-c.upStart)/1000).toFixed(2));
-    if (c.reps >= 5){ c.tEnd = t; return 'fim'; } }
+  if (c.up && d < Math.max(DOWN, 0.35*c.peakD)){   // voltou a sentar (quem senta na beirada não desce até a base)
+    c.up = false; c.reps++; c.rises.push(c.peakT - c.upStart);
+    log('rep', c.reps, ((t-c.t0)/1000).toFixed(2), 'subida', ((c.peakT-c.upStart)/1000).toFixed(2));
+    if (c.reps >= 5){ c.tEnd = t; return 'fim'; }
+    return 'rep';
+  }
   if (!c.up && d < ONSET) c.riseStart = null;
   return 'run';
 }
 
-// Mediana do tempo de 5 levantadas por faixa de 5 anos (Grgic et al., J Cachexia Sarcopenia Muscle 2026, n=55.235, tab. 4)
+// Mediana do tempo de 5 levantadas por faixa de 5 anos: Grgic et al., J Cachexia Sarcopenia Muscle 2026 (n=55.235), tab. 4
 const MED = { m:[[30,5.6],[35,5.8],[40,6.5],[45,7.5],[50,8.1],[55,8.5],[60,9.0]],
               f:[[30,6.4],[35,6.6],[40,7.6],[45,8.4],[50,8.8],[55,9.4],[60,9.7]] };
 function resultado(c){
-  const t = (c.tEnd - c.t0)/1000, m = num('peso'), h = num('altura')/100, ch = num('cadeira')/100, sexo = $('sexo').value, idade = num('idade');
-  const sobe = h*0.5 - ch;
-  const watts = m*0.9*9.81*sobe/(t*0.1), rel = watts/m;   // Alcazar et al. 2018/2021
+  const t = (c.tEnd - c.t0)/1000, m = val('peso'), h = val('altura')/100, idade = val('idade');
+  const sobe = h*0.5 - CHAIR;
+  const watts = m*0.9*9.81*sobe/(t*0.1), rel = watts/m;            // Alcazar et al. 2018/2021
   const subidas = c.rises.filter(x => x > 0).map(x => x/1000);
   const vel = subidas.length ? sobe / (subidas.reduce((a,b)=>a+b,0)/subidas.length) : null;
   const med = MED[sexo];
   let faixa;
-  if (t <= med[0][1]) faixa = 'de quem tem 30 a 34 anos, ou mais rápido';
-  else if (t > med[med.length-1][1]) faixa = 'mais lento que o típico de quem tem 60 a 64 anos';
-  else { const b = med.reduce((a,x) => Math.abs(x[1]-t) < Math.abs(a[1]-t) ? x : a); faixa = `de quem tem ${b[0]} a ${b[0]+4} anos`; }
+  if (t <= med[0][1]) faixa = '30 anos ou menos';
+  else if (t > med[med.length-1][1]) faixa = 'mais de 64 anos';
+  else { const b = med.reduce((a,x) => Math.abs(x[1]-t) < Math.abs(a[1]-t) ? x : a); faixa = `${b[0]} a ${b[0]+4} anos`; }
+  $('res-age').textContent = faixa;
+  $('res-t').textContent = fmt(t,1) + ' s'; $('res-w').textContent = fmt(rel,1); $('res-v').textContent = vel ? fmt(vel,2) : '—';
+  $('res-line').textContent = Number.isFinite(idade) ? `Você tem ${idade} anos. A potência das pernas é uma das medidas que mais mudam com treino.` : '';
   const mcid = sexo === 'f' ? '0,33' : '0,42';
-  const share = idade >= 50 ? `<p class="fine">Em mais de 43 mil adultos de 50 anos ou mais na Europa, o risco começou a subir acima de ${sexo === 'f' ? '11' : '10'} segundos (Núñez-Cortés, 2025).</p>` : '';
-  const out = $('r-pot'); out.hidden = false;
-  out.innerHTML = `<span class="big">${fmt(rel,2)} <small>W por kg de potência</small></span>
-    <p>Seu tempo de ${fmt(t,1)} s é o tempo típico ${faixa}.</p>
-    <dl class="kv"><dt>Tempo das 5 vezes</dt><dd>${fmt(t,1)} s</dd><dt>Potência média</dt><dd>${fmt(watts,0)} W</dd>
-    ${vel ? `<dt>Velocidade média de subida</dt><dd>${fmt(vel,2)} m/s</dd>` : ''}</dl>
-    ${share}
-    <p class="fine">Comparação com mais de 55 mil adultos (Grgic, 2026); potência pela equação de Alcazar (2021). Para refazer daqui a algumas semanas: ganhar ${mcid} W/kg já é uma mudança que conta.</p>`;
+  $('res-fine').textContent = `Comparação com o tempo mediano de 55 mil adultos por faixa de idade (Grgic, 2026). Potência pela equação de Alcazar (2021), com cadeira de 45 cm. Ao refazer, ganhar ${mcid} W/kg já é uma mudança real. Estimativa educativa, não é diagnóstico.`;
+  show('resultado');
   if (window.__stsResult) window.__stsResult({t, watts, rel, vel, reps:c.reps});
 }
 
+// ---------- câmera ----------
 let stream = null, raf = null, counter = null, running = false;
-const ctx = () => $('overlay').getContext('2d');
-function drawPose(lm){
-  const cv = $('overlay'), v = $('video');
-  cv.width = v.videoWidth; cv.height = v.videoHeight;
-  const g = ctx(); g.clearRect(0,0,cv.width,cv.height);
-  if (!lm) return;
+function pill(s){ $('pill').textContent = s; }
+function desenhar(lm){
+  const cv = $('overlay'), v = $('video'); cv.width = v.videoWidth; cv.height = v.videoHeight;
+  const g = cv.getContext('2d'); g.clearRect(0,0,cv.width,cv.height); if (!lm) return;
   const du = new DrawingUtils(g);
-  du.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, {color:'#4fc59a', lineWidth:3});
-  du.drawLandmarks(lm, {color:'#ffffff', radius:2});
+  du.drawConnectors(lm, PoseLandmarker.POSE_CONNECTIONS, {color:'#52c99c', lineWidth:4});
+  du.drawLandmarks(lm, {color:'#ffffff', radius:3});
 }
+function flash(txt){ const f = $('flash'); f.textContent = txt; f.classList.add('on'); setTimeout(() => f.classList.remove('on'), 900); }
 function loop(){
-  const v = $('video');
   if (!running) return;
+  const v = $('video');
   if (v.readyState >= 2){
-    const now = performance.now();
-    const ts = v.srcObject ? now : v.currentTime*1000;
-    const res = landmarker.detectForVideo(v, ts);
-    const lm = res.landmarks?.[0];
-    drawPose(lm);
+    const ts = v.srcObject ? performance.now() : v.currentTime*1000;
+    const lm = landmarker.detectForVideo(v, ts).landmarks?.[0];
+    desenhar(lm);
     if (lm){
       const st = feed(counter, lm, ts);
-      $('hud-reps').textContent = `${counter.reps} de 5`;
-      if (counter.t0 != null) $('hud-time').textContent = fmt(((counter.tEnd ?? ts) - counter.t0)/1000,1) + ' s';
-      if (st === 'corpo') $('status').textContent = 'Afaste o celular: o corpo inteiro precisa aparecer.';
-      else if (st === 'calib') $('status').textContent = 'Fique sentado parado um instante…';
-      else if (st === 'espera') $('status').textContent = 'Pode começar: levante e sente 5 vezes.';
-      else if (st === 'run') $('status').textContent = 'Continue…';
-      if (st === 'fim'){ finish(); resultado(counter); return; }
-    } else $('status').textContent = 'Não estou vendo você. Ajuste o celular para o corpo inteiro aparecer.';
-    if (!v.srcObject && v.ended){ finish(); $('status').textContent = `O vídeo terminou com ${counter.reps} de 5 repetições. Grave de novo com o corpo inteiro aparecendo.`; return; }
+      $('reps').innerHTML = `${counter.reps}<small>/5</small>`;
+      if (counter.t0 != null) $('time').textContent = fmt(((counter.tEnd ?? ts) - counter.t0)/1000,1) + ' s';
+      if (st === 'corpo') pill('Afaste o celular: corpo inteiro na tela');
+      else if (st === 'calib') pill('Sentado, parado um instante…');
+      else if (st === 'espera') pill('Pode começar!');
+      else if (st === 'run') pill('Continue');
+      else if (st === 'rep'){ const s = counter.rises.at(-1)/1000; if (s > 0) flash(`${fmt((val('altura')/100*0.5 - CHAIR)/s,2)} m/s`); }
+      if (st === 'fim'){ pararCamera(); resultado(counter); return; }
+    } else pill('Não estou te vendo. Ajuste o celular');
+    if (!v.srcObject && v.ended){ pararCamera(); pill(`O vídeo acabou com ${counter.reps} de 5. Grave de novo com o corpo inteiro na tela.`); return; }
   }
   raf = requestAnimationFrame(loop);
 }
-function finish(){
-  running = false; cancelAnimationFrame(raf);
-  if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
-  $('start').hidden = false; $('stop').hidden = true; $('start').textContent = 'Fazer de novo';
-  $('status').textContent = 'Pronto.';
-}
-async function countdown(){
-  for (const n of ['3','2','1']){ $('countdown').textContent = n; await new Promise(r => setTimeout(r, 1000)); }
-  $('countdown').textContent = '';
-}
-$('start').addEventListener('click', async () => {
-  $('r-pot').hidden = true; $('start').hidden = true; $('stop').hidden = false;
+function pararCamera(){ running = false; cancelAnimationFrame(raf); if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; } }
+async function contagem(){ for (const n of ['3','2','1']){ $('countdown').textContent = n; await new Promise(r => setTimeout(r, 900)); } $('countdown').textContent = ''; }
+async function abrirCamera(){
+  $('reps').innerHTML = '0<small>/5</small>'; $('time').textContent = '0,0 s'; pill('Abrindo a câmera…');
   try {
     await getLandmarker();
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: {ideal: 640}, height: {ideal: 480} }, audio: false });
-    const v = $('video'); v.srcObject = stream; $('stage').hidden = false; await v.play();
-    await countdown();
-    counter = makeCounter(); running = true; loop();
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ideal:640}, height:{ideal:480} }, audio:false });
+    const v = $('video'); v.removeAttribute('src'); v.srcObject = stream; await v.play();
+    pill('Sente e fique parado'); await contagem();
+    counter = novo(); running = true; loop();
   } catch (e) {
-    console.error(e); finish();
-    $('status').textContent = e?.name === 'NotAllowedError' ? 'Sem permissão para a câmera. Libere a câmera para este site e tente de novo.' : 'Não consegui abrir a câmera. Tente pelo vídeo já gravado.';
+    console.error(e); pararCamera();
+    pill(e?.name === 'NotAllowedError' ? 'Libere a câmera para este site e tente de novo' : 'Não abriu a câmera. Envie um vídeo gravado');
   }
-});
-$('stop').addEventListener('click', () => { finish(); $('status').textContent = 'Cancelado.'; });
+}
 $('arquivo').addEventListener('change', async () => {
   const f = $('arquivo').files[0]; if (!f) return;
-  $('r-pot').hidden = true;
+  pararCamera(); show('camera'); pill('Analisando o vídeo…');
   await getLandmarker();
-  const v = $('video'); if (stream) finish(); v.srcObject = null; v.src = URL.createObjectURL(f); $('stage').hidden = false;
-  await v.play(); counter = makeCounter(); running = true; $('start').hidden = true; $('stop').hidden = false; loop();
+  const v = $('video'); v.srcObject = null; v.src = URL.createObjectURL(f);
+  await v.play(); counter = novo(); running = true; loop();
 });
 
-// Pele: análise feita por fornecedor contratado, chamado pelo nosso servidor (a chave nunca fica no celular).
-const PELE_ENDPOINT = window.PELE_ENDPOINT || '';
-const ready = () => { $('analisar').disabled = !($('consent').checked && $('selfie').files.length); };
-$('consent').addEventListener('change', ready); $('selfie').addEventListener('change', ready);
-$('analisar').addEventListener('click', async () => {
-  const out = $('r-pele'); out.hidden = false;
-  if (!PELE_ENDPOINT){ out.innerHTML = '<p>A análise da pele está sendo ligada ao fornecedor. Volte em breve.</p>'; return; }
-  out.innerHTML = '<p>Analisando a foto…</p>';
-  try {
-    const fd = new FormData(); fd.append('foto', $('selfie').files[0]);
-    const r = await (await fetch(PELE_ENDPOINT, { method:'POST', body: fd })).json();
-    out.innerHTML = `<span class="big">${r.idade_min} a ${r.idade_max} <small>anos de aparência</small></span><p class="fine">Estimativa estética, com margem de alguns anos.</p>`;
-  } catch { out.innerHTML = '<p>A análise falhou. Tente de novo.</p>'; }
-});
+// ---------- pele: aparece só quando o serviço estiver ligado ----------
+if (window.PELE_ENDPOINT) $('card-pele').hidden = false;
 </script>
 </body>
 </html>
