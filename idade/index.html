@@ -120,10 +120,10 @@ p{margin:0}
     <h2>Como posicionar</h2>
     <div class="anim" aria-label="Celular em pé no chão, apoiado num tênis, filmando a pessoa sentada de lado">
       <img src="img/celular-no-chao.jpg" alt="">
-      <span class="tag">celular em pé no chão · você de lado</span>
+      <span class="tag">você de lado · do ombro ao joelho na tela</span>
     </div>
     <ol class="steps">
-      <li><em>1</em><span>Celular em pé no chão, apoiado num tênis ou num livro, a uns 3 passos.</span></li>
+      <li><em>1</em><span>Celular em pé, apoiado no chão ou numa mesa baixa, a uns 2 passos. Precisa aparecer do ombro ao joelho.</span></li>
       <li><em>2</em><span>Sente na cadeira, de lado para o celular, braços cruzados na frente do peito.</span></li>
       <li><em>3</em><span>Levante e sente 5 vezes, o mais rápido que conseguir. A voz te guia.</span></li>
     </ol>
@@ -258,19 +258,24 @@ async function getLandmarker(){
   return landmarker;
 }
 
-// Enquadramento: corpo inteiro na tela, de lado, num tamanho que dê para medir. Fora disso, nada é contado.
+// Enquadramento: precisa ver tronco, quadril e joelho, de lado e num tamanho que dê para medir. Pés e cabeça não importam.
 const V = (lm, i) => (lm[i].visibility ?? 1) > 0.6;
-function enquadramento(lm){
-  const lado = [[11,23,25,27],[12,24,26,28]].some(s => s.every(i => V(lm,i)));
-  if (!V(lm,11) && !V(lm,12) && !V(lm,23) && !V(lm,24)) return ['Não estou te vendo', 'Fique na frente da câmera'];
-  if (!(V(lm,27) || V(lm,28)) || Math.max(lm[27].y, lm[28].y) > 0.98) return ['Afaste o celular', 'Afaste o celular. Seus pés não aparecem'];
-  if (!V(lm,0) || lm[0].y < 0.02) return ['Afaste o celular', 'Afaste o celular. Sua cabeça não aparece'];
-  if (!lado) return ['Afaste o celular', 'Afaste o celular. O corpo inteiro precisa aparecer'];
-  if (Math.max(lm[27].y, lm[28].y) - lm[0].y < 0.35) return ['Chegue mais perto', 'Chegue mais perto do celular'];
+function enquadramento(lm, calibrando){
+  const lado = [[23,25],[24,26]].some(s => s.every(i => V(lm,i)));
+  const ombro = V(lm,11) || V(lm,12);
+  if (!V(lm,23) && !V(lm,24) && !ombro) return ['Não estou te vendo', 'Fique na frente da câmera'];
+  if (!calibrando) return (V(lm,23) || V(lm,24)) ? null : ['Afaste o celular', 'Afaste o celular. Seu quadril saiu da tela'];   // durante o teste só o quadril importa
+  if (!lado) return ['Afaste o celular', 'Afaste o celular. Seus joelhos não aparecem'];
+  {
+    if (!ombro || Math.min(lm[11].y, lm[12].y) < 0.06) return ['Afaste o celular', 'Afaste o celular. Seus ombros não aparecem'];
+    const shY = (lm[11].y+lm[12].y)/2, kY = Math.max(lm[25].y, lm[26].y);
+    if (kY > 0.92) return ['Afaste o celular', 'Afaste o celular. Seus joelhos estão no limite da tela'];
+    if (kY - shY < 0.2) return ['Chegue mais perto', 'Chegue mais perto do celular'];
+    const ombros = Math.abs(lm[11].x - lm[12].x), tronco = Math.abs(shY - (lm[23].y+lm[24].y)/2);
+    if (tronco > 0 && ombros / tronco > 0.55) return ['Vire de lado', 'Vire de lado para o celular'];
+  }
   const cx = (lm[23].x + lm[24].x)/2;
-  if (cx < 0.2 || cx > 0.8) return ['Vá para o meio da tela', 'Vá para o meio da tela'];
-  const ombros = Math.abs(lm[11].x - lm[12].x), tronco = Math.abs((lm[11].y+lm[12].y)/2 - (lm[23].y+lm[24].y)/2);
-  if (tronco > 0 && ombros / tronco > 0.55) return ['Vire de lado', 'Vire de lado para o celular'];
+  if (cx < 0.15 || cx > 0.85) return ['Vá para o meio da tela', 'Vá para o meio da tela'];
   return null;
 }
 
@@ -278,11 +283,11 @@ function enquadramento(lm){
 const UP = 0.55, DOWN = 0.2, ONSET = 0.08;
 const novo = () => ({ phase:'calib', calib:[], seatY:null, torso:null, ema:null, reps:0, t0:null, tEnd:null, riseStart:null, rises:[], up:false, lastRep:-1e9 });
 function feed(c, lm, t){
-  const hipY = (lm[23].y + lm[24].y)/2, shY = (lm[11].y + lm[12].y)/2, ankY = Math.max(lm[27].y, lm[28].y);
+  const hipY = (lm[23].y + lm[24].y)/2, shY = (lm[11].y + lm[12].y)/2, kneeY = (lm[25].y + lm[26].y)/2;
   c.ema = c.ema == null ? hipY : c.ema*0.6 + hipY*0.4;
   if (c.phase === 'calib'){
     const torso = Math.abs(hipY - shY);
-    if (torso > 0 && (ankY - hipY) / torso > 1.35){ c.calib = []; return 'em-pe'; }   // de pé: o teste começa sentado
+    if (torso > 0 && (kneeY - hipY) / torso > 0.6){ c.calib = []; return 'em-pe'; }   // joelho bem abaixo do quadril = de pé
     const vv = $('video'), ar = (vv.videoWidth || 4) / (vv.videoHeight || 3);
     const inclin = Math.abs(((lm[11].x+lm[12].x)/2 - (lm[23].x+lm[24].x)/2) * ar) / torso;
     if (inclin > 0.5){ c.calib = []; return 'em-pe'; }   // tronco inclinado = agachado, não sentado
@@ -355,7 +360,7 @@ function loop(){
     if (ts <= lastTs){ raf = requestAnimationFrame(loop); return; }
     lastTs = ts;
     const lm = landmarker.detectForVideo(v, ts).landmarks?.[0];
-    const prob = lm ? enquadramento(lm) : ['Não estou te vendo', 'Fique na frente da câmera'];
+    const prob = lm ? enquadramento(lm, !counter || counter.phase === 'calib') : ['Não estou te vendo', 'Fique na frente da câmera'];
     desenhar(lm, !prob);
     if (prob){ guia(prob[0]); falar(prob[1]); }
     else {
@@ -381,7 +386,7 @@ async function abrirCamera(){
     await getLandmarker();
     stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ideal:640}, height:{ideal:480} }, audio:false });
     const v = $('video'); v.removeAttribute('src'); v.srcObject = stream; await v.play();
-    guia('Sente de lado, corpo inteiro na tela'); falar('Apoie o celular no chão e sente de lado, com o corpo inteiro na tela', true);
+    guia('Sente de lado, do ombro ao joelho na tela'); falar('Apoie o celular e sente de lado, com o tronco e os joelhos na tela', true);
     await new Promise(r => setTimeout(r, 3000)); await contagem();
     lastTs = -1; counter = novo(); running = true; loop();
   } catch (e) {
