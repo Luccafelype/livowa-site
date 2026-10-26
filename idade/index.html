@@ -301,6 +301,8 @@ function feed(c, lm, t){
     }
     return 'calib';
   }
+  const escala = Math.abs(hipY - shY) / c.torso;
+  if (escala > 1.35 || escala < 0.65){ c.hist = []; c.up = false; c.botY = null; return 'andando'; }   // chegou perto ou se afastou: não conta
   if (c.prevRaw != null && Math.abs(hipY - c.prevRaw) > 0.6*c.torso){ c.prevRaw = hipY; return 'run'; }   // salto do detector: ignora
   c.prevRaw = hipY;
   const d = (c.seatY - c.ema) / c.torso;
@@ -385,6 +387,7 @@ function loop(){
       if (counter.t0 != null) $('time').textContent = fmt(((counter.tEnd ?? ts) - counter.t0)/1000,1) + ' s';
       if (st === 'em-pe'){ guia('Sente na cadeira'); falar('Sente na cadeira para começar'); }
       else if (st === 'calib' || st === 'parado') guia('Sentado, fique parado…');
+      else if (st === 'andando'){ guia('Volte para a cadeira'); falar('Volte para a cadeira'); }
       else if (st === 'espera'){ guia('Pode começar!', true); falar('Pode começar. Levante e sente cinco vezes, rápido.'); }
       else if (st === 'run'){
         const desde = ts - Math.max(counter.t0, counter.lastRep);
