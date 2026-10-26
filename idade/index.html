@@ -42,8 +42,10 @@ p{margin:0}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 .anim{position:relative;width:100%;aspect-ratio:3/4;max-height:50vh;border-radius:22px;overflow:hidden;background:#f3f2ef;border:1px solid var(--line)}
 .anim img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.anim .up{animation:stand 2.4s ease-in-out infinite}
-@keyframes stand{0%,20%{opacity:0}40%,70%{opacity:1}90%,100%{opacity:0}}
+.anim .mid{animation:mid 2.4s steps(1,end) infinite}
+.anim .up{animation:up 2.4s steps(1,end) infinite}
+@keyframes mid{0%{opacity:0}30%{opacity:1}45%{opacity:0}75%{opacity:1}90%{opacity:0}}
+@keyframes up{0%{opacity:0}45%{opacity:1}75%{opacity:0}}
 .anim .tag{position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,.6);color:#fff;border-radius:999px;padding:6px 12px;font:600 .85rem var(--body)}
 .hero-card{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mini{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:4px}
@@ -106,7 +108,7 @@ p{margin:0}
     <div class="who" style="margin-top:20px"><span class="dot"></span><span><b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990</span></div>
     <h1>Quantos anos têm as suas pernas?</h1>
     <p class="sub">Levante da cadeira 5 vezes na frente da câmera e veja a idade que a sua potência mostra.</p>
-    <div class="anim" aria-hidden="true"><img src="img/sentado.jpg" alt=""><img class="up" src="img/em-pe.jpg" alt=""></div>
+    <div class="anim" aria-hidden="true"><img src="img/sentado.jpg" alt=""><img class="mid" src="img/levantando.jpg" alt=""><img class="up" src="img/em-pe.jpg" alt=""></div>
     <div class="hero-card">
       <div class="mini"><b>1 minuto</b><span>com a câmera do celular</span></div>
       <div class="mini"><b>Sem cadastro</b><span>o resultado sai na hora</span></div>
@@ -121,7 +123,7 @@ p{margin:0}
     </div>
     <ol class="steps">
       <li><em>1</em><span>Celular em pé no chão, apoiado num tênis ou num livro, a uns 3 passos.</span></li>
-      <li><em>2</em><span>Sente na cadeira, de lado para o celular, braços cruzados.</span></li>
+      <li><em>2</em><span>Sente na cadeira, de lado para o celular, braços cruzados na frente do peito.</span></li>
       <li><em>3</em><span>Levante e sente 5 vezes, o mais rápido que conseguir. A voz te guia.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no peito, tontura, problema no joelho ou no quadril, ou uma queda recente. Tenha alguém por perto.</p>
