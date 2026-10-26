@@ -281,7 +281,7 @@ function enquadramento(lm, calibrando){
 
 // Repetições pela altura do quadril, em "troncos" (ombro→quadril), para não depender da distância.
 const UP = 0.55, DOWN = 0.2, ONSET = 0.08;
-const novo = () => ({ phase:'calib', calib:[], seatY:null, torso:null, ema:null, reps:0, t0:null, tEnd:null, riseStart:null, rises:[], up:false, lastRep:-1e9 });
+const novo = () => ({ phase:'calib', calib:[], seatY:null, torso:null, ema:null, reps:0, t0:null, tEnd:null, riseStart:null, rises:[], up:false, lastRep:-1e9, hist:[], prevRaw:null });
 function feed(c, lm, t){
   const hipY = (lm[23].y + lm[24].y)/2, shY = (lm[11].y + lm[12].y)/2, kneeY = (lm[25].y + lm[26].y)/2;
   c.ema = c.ema == null ? hipY : c.ema*0.6 + hipY*0.4;
@@ -301,19 +301,25 @@ function feed(c, lm, t){
     }
     return 'calib';
   }
+  if (c.prevRaw != null && Math.abs(hipY - c.prevRaw) > 0.6*c.torso){ c.prevRaw = hipY; return 'run'; }   // salto do detector: ignora
+  c.prevRaw = hipY;
   const d = (c.seatY - c.ema) / c.torso;
-  if (c.t0 == null && d > ONSET){ c.t0 = t; c.riseStart = t; }
+  c.hist.push({t, y:c.ema}); while (c.hist.length && t - c.hist[0].t > 4000) c.hist.shift();
+  let lo = Infinity, hi = c.seatY; for (const h of c.hist){ if (h.y < lo){ lo = h.y; c.loT = h.t; } if (h.y > hi) hi = h.y; }
+  const R = hi - lo, p = R > 0 ? (c.ema - lo) / R : 1;    // 0 = de pé (quadril no alto), 1 = sentado
+  if (location.hash === '#teste'){ c.dbg=(c.dbg||0)+1; if (c.dbg%3===0) log('d',(t/1000).toFixed(1),d.toFixed(2),'p',p.toFixed(2),'R',(R/c.torso).toFixed(2),'up',c.up); }
+  const subiu = (hi - c.ema) / c.torso, desceu = (c.ema - lo) / c.torso;   // em troncos, contra o ponto sentado e o de pé recentes
+  if (c.t0 == null && subiu > 0.15){ c.t0 = t; c.riseStart = t; }
   if (c.t0 == null) return 'espera';
-  if (!c.up && d > ONSET && c.riseStart == null) c.riseStart = t;
-  if (!c.up && d > UP){ c.up = true; c.upStart = c.riseStart ?? t; c.peakD = d; c.peakT = t; c.riseStart = null; }
-  if (c.up && d > c.peakD){ c.peakD = d; c.peakT = t; }
-  if (c.up && d < Math.max(DOWN, 0.35*c.peakD) && t - c.lastRep > 500){   // voltou a sentar (quem senta na beirada não desce até a base)
-    c.up = false; c.reps++; c.lastRep = t; c.rises.push(c.peakT - c.upStart);
+  if (!c.up && (c.botY == null || c.ema >= c.botY)){ c.botY = c.ema; c.botT = t; }   // ponto mais baixo desde a última repetição
+  if (!c.up && p < 0.3 && subiu > 0.45){ c.up = true; c.upStart = c.botT ?? t; c.peakT = t; c.peakY = c.ema; }
+  if (c.up && c.ema < c.peakY){ c.peakY = c.ema; c.peakT = t; }
+  if (c.up && p > 0.7 && (c.ema - c.peakY) / c.torso > 0.35 && t - c.lastRep > 500){
+    c.up = false; c.botY = null; c.reps++; c.lastRep = t; c.rises.push(c.peakT - c.upStart);
     log('rep', c.reps, ((t-c.t0)/1000).toFixed(2), 'subida', ((c.peakT-c.upStart)/1000).toFixed(2));
     if (c.reps >= 5){ c.tEnd = t; return 'fim'; }
     return 'rep';
   }
-  if (!c.up && d < ONSET) c.riseStart = null;
   return 'run';
 }
 
@@ -344,7 +350,7 @@ function resultado(c){
 }
 
 // ---------- câmera ----------
-let stream = null, raf = null, counter = null, running = false, lastTs = -1;
+let stream = null, raf = null, counter = null, running = false, lastTs = -1, alvo = null;
 function desenhar(lm, bom){
   const cv = $('overlay'), v = $('video'); cv.width = v.videoWidth; cv.height = v.videoHeight;
   const g = cv.getContext('2d'); g.clearRect(0,0,cv.width,cv.height); if (!lm) return;
@@ -359,7 +365,17 @@ function loop(){
     const ts = v.srcObject ? performance.now() : v.currentTime*1000;
     if (ts <= lastTs){ raf = requestAnimationFrame(loop); return; }
     lastTs = ts;
-    const lm = landmarker.detectForVideo(v, ts).landmarks?.[0];
+    const poses = landmarker.detectForVideo(v, ts).landmarks || [];
+    const tam = l => Math.abs((l[11].y+l[12].y)/2 - (l[23].y+l[24].y)/2);
+    const quadril = l => [(l[23].x+l[24].x)/2, (l[23].y+l[24].y)/2];
+    let lm;
+    if (poses.length){
+      const sentada = l => ((l[25].y+l[26].y)/2 - (l[23].y+l[24].y)/2) / (tam(l) || 1) < 0.6;
+      if (alvo && counter && counter.phase !== 'calib'){ const dist = l => { const q = quadril(l); return Math.hypot(q[0]-alvo[0], q[1]-alvo[1]); };
+                 lm = poses.reduce((a,b) => dist(b) < dist(a) ? b : a); }                                  // durante o teste, segue a mesma pessoa
+      else { const cand = poses.filter(sentada); lm = (cand.length ? cand : poses).reduce((a,b) => tam(b) > tam(a) ? b : a); }   // antes: a pessoa sentada mais perto
+      alvo = quadril(lm);
+    }
     const prob = lm ? enquadramento(lm, !counter || counter.phase === 'calib') : ['Não estou te vendo', 'Fique na frente da câmera'];
     desenhar(lm, !prob);
     if (prob){ guia(prob[0]); falar(prob[1]); }
@@ -370,7 +386,10 @@ function loop(){
       if (st === 'em-pe'){ guia('Sente na cadeira'); falar('Sente na cadeira para começar'); }
       else if (st === 'calib' || st === 'parado') guia('Sentado, fique parado…');
       else if (st === 'espera'){ guia('Pode começar!', true); falar('Pode começar. Levante e sente cinco vezes, rápido.'); }
-      else if (st === 'run') guia('Continue', true);
+      else if (st === 'run'){
+        const desde = ts - Math.max(counter.t0, counter.lastRep);
+        if (desde > 6000){ guia('Fique de pé por completo'); falar('Fique de pé por completo e sente de novo'); } else guia('Continue', true);
+      }
       else if (st === 'rep'){ guia(`${counter.reps} de 5`, true); falar(NUM[counter.reps], true); }
       if (st === 'fim'){ pararCamera(); resultado(counter); return; }
     }
@@ -388,7 +407,7 @@ async function abrirCamera(){
     const v = $('video'); v.removeAttribute('src'); v.srcObject = stream; await v.play();
     guia('Sente de lado, do ombro ao joelho na tela'); falar('Apoie o celular e sente de lado, com o tronco e os joelhos na tela', true);
     await new Promise(r => setTimeout(r, 3000)); await contagem();
-    lastTs = -1; counter = novo(); running = true; loop();
+    lastTs = -1; alvo = null; counter = novo(); running = true; loop();
   } catch (e) {
     console.error(e); pararCamera();
     guia(e?.name === 'NotAllowedError' ? 'Libere a câmera para este site' : 'Não consegui abrir a câmera');
@@ -397,7 +416,7 @@ async function abrirCamera(){
 // teste automático com vídeo (usado só no desenvolvimento)
 window.__testarVideo = async (url, d, s) => {
   Object.assign(dados, d); if (s) sexo = s; voz = false; show('camera'); await getLandmarker();
-  const v = $('video'); v.srcObject = null; v.src = url; await v.play(); lastTs = -1; counter = novo(); running = true; loop();
+  const v = $('video'); v.srcObject = null; v.src = url; await v.play(); lastTs = -1; alvo = null; counter = novo(); running = true; loop();
 };
 </script>
 </body>
