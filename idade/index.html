@@ -290,7 +290,7 @@ function feed(c, lm, t){
     if (torso > 0 && (kneeY - hipY) / torso > 0.6){ c.calib = []; return 'em-pe'; }   // joelho bem abaixo do quadril = de pé
     const vv = $('video'), ar = (vv.videoWidth || 4) / (vv.videoHeight || 3);
     const inclin = Math.abs(((lm[11].x+lm[12].x)/2 - (lm[23].x+lm[24].x)/2) * ar) / torso;
-    if (inclin > 0.5){ c.calib = []; return 'em-pe'; }   // tronco inclinado = agachado, não sentado
+    if (inclin > 0.9){ c.calib = []; return 'em-pe'; }   // tronco muito inclinado = agachado, não sentado
     c.calib.push({hipY:c.ema, torso});
     const ys = c.calib.map(x => x.hipY);
     if (Math.max(...ys) - Math.min(...ys) > 0.15*torso){ c.calib = [c.calib.at(-1)]; return 'parado'; }   // só calibra parado e sentado
