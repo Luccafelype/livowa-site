@@ -95,6 +95,28 @@ p{margin:0}
 .chip span{font-size:.75rem;color:var(--muted)}
 .plan{background:var(--accent-2);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:6px}
 .plan b{font:700 1.2rem var(--display)}
+.result .pct{font:600 1.05rem var(--body)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card h3{margin:0;font:700 1.1rem var(--display)}
+.card p{margin:0;font-size:.92rem;color:var(--muted)}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{font:500 10px var(--body);fill:var(--muted)}
+.chart .b90{fill:var(--accent);opacity:.12} .chart .b75{fill:var(--accent);opacity:.22}
+.chart .p50{fill:none;stroke:var(--accent);stroke-width:2}
+.chart .b90.ext{opacity:.06} .chart .b75.ext{opacity:.11} .chart .p50.ext{opacity:.5}
+.chart .red{fill:#d4543f;opacity:.14} .chart .redl{fill:#d4543f}
+.chart .ax{stroke:var(--line);stroke-width:1}
+.chart .eq{stroke:var(--fg);stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+.chart .me{fill:var(--fg);stroke:var(--surface);stroke-width:2}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.reps5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:end;height:110px}
+.reps5 div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
+.reps5 i{width:100%;border-radius:8px 8px 4px 4px;background:var(--accent)}
+.reps5 b{font:600 .8rem var(--mono)} .reps5 span{font-size:.7rem;color:var(--muted)}
+.facts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.facts li{font-size:.92rem;padding-left:14px;border-left:3px solid var(--accent-2)}
+.facts small{display:block;color:var(--muted);font-size:.75rem}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -158,22 +180,44 @@ p{margin:0}
   <section class="screen" data-s="resultado" data-p="100" hidden>
     <div class="result">
       <span class="lbl">Suas pernas têm a potência típica de quem tem</span>
-      <span class="age" id="res-age">40 a 44 anos</span>
+      <span class="age" id="res-age">40 a 50 anos</span>
+      <span class="pct" id="res-pct"></span>
       <span id="res-vs"></span>
+    </div>
+    <div class="card">
+      <h3>Onde você está</h3>
+      <svg class="chart" id="res-chart" viewBox="0 0 320 210" role="img" aria-label="Potência das pernas por idade"></svg>
+      <div class="legend"><span><i style="background:var(--accent);opacity:.5"></i>metade das pessoas</span><span><i style="background:var(--accent);opacity:.2"></i>8 em cada 10</span><span><i style="background:#d4543f;opacity:.4"></i>potência baixa</span></div>
+      <p id="res-chart-txt"></p>
     </div>
     <div class="chips">
       <div class="chip"><b id="res-t">8,8 s</b><span>5 levantadas</span></div>
       <div class="chip"><b id="res-w">4,3</b><span>W por kg</span></div>
       <div class="chip"><b id="res-v">0,65</b><span>m/s na subida</span></div>
     </div>
+    <div class="card">
+      <h3>Suas 5 subidas</h3>
+      <div class="reps5" id="res-reps"></div>
+      <p id="res-reps-txt"></p>
+    </div>
+    <div class="card">
+      <h3>O que isso quer dizer</h3>
+      <ul class="facts">
+        <li>Potência é força com velocidade: o que te tira da cadeira, sobe a escada e segura um tropeço. Até uns 50 anos ela muda pouco; depois cai cerca de 1 W/kg a cada 10 anos.<small>Alcazar et al., J Cachexia Sarcopenia Muscle 2021</small></li>
+        <li id="res-red"></li>
+        <li>É a medida do corpo que mais responde a treino, em qualquer idade. Refazer o teste mostra se mudou.<small>Comparação: 12.864 italianos de 18 a 98 anos, mesmo teste (Coelho-Junior et al., 2024)</small></li>
+        <li>Estimativa pela câmera, feita em casa. Costuma sair um pouco mais lenta que no laboratório; não é diagnóstico.</li>
+      </ul>
+    </div>
     <div class="plan">
-      <b>Potência é a medida que mais responde a treino.</b>
-      <span>Receba no WhatsApp um plano de 4 semanas para a sua faixa e refaça o teste no fim para ver quanto mudou.</span>
+      <b>Quer entender o seu número?</b>
+      <span>O Dr. Lucca responde pessoalmente, por áudio, e explica o que ele quer dizer no seu dia a dia.</span>
     </div>
   </section>
 
   <div class="cta"><div>
-    <a class="btn" id="cta-link" href="#" target="_blank" rel="noopener" hidden>Quero meu plano de 4 semanas</a>
+    <a class="btn" id="cta-link" href="#" target="_blank" rel="noopener" hidden>Conversar pelo WhatsApp</a>
+    <a class="btn ghost" id="cta-dm" href="https://ig.me/m/dr.luccamarques" target="_blank" rel="noopener" hidden>Prefiro pelo Direct do Instagram</a>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
     <button class="btn ghost" id="cta-2" type="button" hidden></button>
   </div></div>
@@ -228,12 +272,12 @@ function show(s){
   cur = s; const el = document.querySelector(`[data-s="${s}"]`);
   $('top').hidden = s === 'inicio';
   $('progress').style.width = (el.dataset.p || 0) + '%';
-  const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true;
+  const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true; $('cta-dm').hidden = true;
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
-  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; c2.hidden = false; c2.textContent = 'Refazer o teste'; }
+  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; c2.hidden = false; c2.textContent = 'Refazer o teste'; }
   window.scrollTo(0,0);
 }
 $('back').addEventListener('click', () => { pararCamera(); show(order[Math.max(0, order.indexOf(cur)-1)]); });
@@ -325,32 +369,110 @@ function feed(c, lm, t){
   return 'run';
 }
 
-// Mediana do tempo de 5 levantadas por faixa de 5 anos: Grgic et al., J Cachexia Sarcopenia Muscle 2026 (n=55.235), tab. 4
-const MED = { m:[[30,5.6],[35,5.8],[40,6.5],[45,7.5],[50,8.1],[55,8.5],[60,9.0]],
-              f:[[30,6.4],[35,6.6],[40,7.6],[45,8.4],[50,8.8],[55,9.4],[60,9.7]] };
+// Potência relativa (W/kg) por idade: Coelho-Junior et al., J Cachexia Sarcopenia Muscle 2024 (Lookup 7+, n=12.864),
+// tab. S3/S6; mesmo teste (5 levantadas, braços cruzados, cadeira 43-47 cm, equação de Alcazar). P10/P90 interpolados.
+// 90/95/100 anos: extrapolação pela queda anual de Alcazar 2021 (desenhada tracejada, não entra no texto).
+// colunas: idade média da faixa, P5, P10, P25, P50, P75, P90, P95
+const NORMA = {
+  m:[[24.4,3.9,4.3,5.0,5.9,6.8,7.5,7.9],[36.1,4.0,4.3,4.8,5.5,6.3,7.2,7.7],[46.0,3.7,4.0,4.6,5.4,6.2,7.1,7.7],[55.6,3.4,3.7,4.3,5.0,5.7,6.6,7.2],
+     [65.6,3.1,3.4,3.8,4.5,5.2,6.1,6.6],[74.8,2.6,2.9,3.4,4.0,4.7,5.5,5.9],[84.2,2.0,2.4,3.0,3.5,4.1,5.0,5.6],
+     [90,1.7,2.1,2.6,3.0,3.6,4.4,4.9],[95,1.5,1.8,2.3,2.6,3.1,3.8,4.2],[100,1.3,1.5,1.9,2.2,2.6,3.2,3.6]],
+  f:[[25.0,3.6,4.0,4.6,5.3,6.2,7.0,7.4],[35.7,3.5,3.8,4.4,5.1,6.1,6.9,7.4],[46.4,3.1,3.5,4.1,4.8,5.6,6.4,6.9],[55.4,2.8,3.1,3.6,4.3,5.0,5.8,6.3],
+     [65.4,2.4,2.7,3.2,3.8,4.4,5.1,5.5],[74.7,2.0,2.3,2.7,3.2,3.8,4.4,4.7],[83.6,1.3,1.6,2.1,2.8,3.4,4.0,4.4],
+     [90,1.1,1.3,1.8,2.4,2.9,3.4,3.7],[95,0.9,1.1,1.5,2.0,2.4,2.9,3.1],[100,0.8,0.9,1.2,1.7,2.0,2.4,2.6]] };
+const MEDIDO = 7;                       // linhas com dado real; o resto é extrapolação
+const PCTS = [5,10,25,50,75,90,95];
+// Abaixo disto, a partir dos 60-65 anos: fragilidade (Baltasar-Fernandez, Sci Rep 2021) e mortalidade (Garcia-Aguirre, JSHS 2025)
+const CORTE = { m:2.5, f:1.9 };
 const NUM = ['','Um','Dois','Três','Quatro','Cinco'];
+
+// valor de cada percentil na idade da pessoa (interpolado entre as faixas medidas)
+function naIdade(s, idade){
+  const n = NORMA[s].slice(0, MEDIDO), a = Math.max(n[0][0], Math.min(n.at(-1)[0], idade));
+  let k = 0; while (k < n.length-2 && n[k+1][0] < a) k++;
+  const f = (a - n[k][0]) / (n[k+1][0] - n[k][0]);
+  return n[k].slice(1).map((v,i) => v + f*(n[k+1][i+1] - v));
+}
+function percentil(s, idade, w){
+  const v = naIdade(s, idade);
+  if (w <= v[0]) return 4; if (w >= v.at(-1)) return 96;
+  let k = 0; while (w > v[k+1]) k++;
+  return PCTS[k] + (w - v[k]) / (v[k+1] - v[k]) * (PCTS[k+1] - PCTS[k]);
+}
+// idade em que a mediana é igual a w (só faixas medidas)
+function idadeDaMediana(s, w){
+  const n = NORMA[s].slice(0, MEDIDO);
+  if (w >= n[0][4]) return n[0][0]; if (w <= n.at(-1)[4]) return Infinity;
+  let k = 0; while (w < n[k+1][4]) k++;
+  return n[k][0] + (n[k][4] - w) / (n[k][4] - n[k+1][4]) * (n[k+1][0] - n[k][0]);
+}
+// faixa de idade equivalente: mediana ± 0,4 W/kg (a menor mudança que importa, Alcazar 2021)
+function faixaEquivalente(s, w){
+  const lo = idadeDaMediana(s, w + 0.4), hi = idadeDaMediana(s, w - 0.4), meio = idadeDaMediana(s, w);
+  if (meio === Infinity) return { txt:'mais de 80 anos', ref:85 };
+  if (w >= NORMA[s][0][4]) return { txt:'18 a 30 anos', ref:24 };
+  const a = Math.max(18, Math.floor(lo/5)*5), b = hi === Infinity ? null : Math.ceil(hi/5)*5;
+  return { txt: b == null || b > 80 ? `${a} anos ou mais` : a <= 18 ? `até ${b} anos` : `${a} a ${b} anos`, ref:meio };
+}
+
+function grafico(s, idade, w){
+  const n = NORMA[s], W = 320, H = 210, L = 26, R = 8, T = 8, B = 22, ymax = 9;
+  const x = a => L + (a - 18) / (100 - 18) * (W - L - R), y = v => T + (1 - Math.min(v, ymax) / ymax) * (H - T - B);
+  const linha = (pts) => pts.map((p,i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const banda = (rows, a, b) => linha([...rows.map(r => [x(r[0]), y(r[a])]), ...[...rows].reverse().map(r => [x(r[0]), y(r[b])])]) + 'Z';
+  const med = n.slice(0, MEDIDO), ext = n.slice(MEDIDO - 1);
+  let g = '';
+  g += `<rect class="red" x="${x(60)}" y="${y(CORTE[s])}" width="${x(100)-x(60)}" height="${y(0)-y(CORTE[s])}"/>`;
+  g += `<text x="${x(100)-2}" y="${y(CORTE[s])+12}" text-anchor="end" class="redl" style="fill:#d4543f">potência baixa</text>`;
+  for (const [rows, cls] of [[med,''],[ext,' ext']]){
+    g += `<path class="b90${cls}" d="${banda(rows,2,6)}"/><path class="b75${cls}" d="${banda(rows,3,5)}"/>`;
+    g += `<path class="p50${cls}" d="${linha(rows.map(r => [x(r[0]), y(r[4])]))}"${cls ? ' stroke-dasharray="4 3"' : ''}/>`;
+  }
+  for (const a of [20,40,60,80,100]) g += `<text x="${x(a)}" y="${H-6}" text-anchor="middle">${a}</text>`;
+  for (const v of [0,3,6,9]) g += `<line class="ax" x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L-6}" y="${y(v)+3}" text-anchor="end">${v}</text>`;
+  g += `<text x="${W-R}" y="${T+2}" dy="8" text-anchor="end">W/kg</text><text x="${W-R}" y="${H-6}" text-anchor="end" dy="-12">idade</text>`;
+  const eq = idadeDaMediana(s, w), xe = eq === Infinity ? x(100) : x(Math.max(18, eq));
+  const xi = x(Math.max(18, Math.min(100, idade)));
+  if (Math.abs(xe - xi) > 6) g += `<line class="eq" x1="${xi}" x2="${xe}" y1="${y(w)}" y2="${y(w)}"/><circle cx="${xe}" cy="${y(w)}" r="3" fill="var(--accent)"/>`;
+  g += `<circle class="me" cx="${xi}" cy="${y(w)}" r="7"/><text x="${y(w) < 30 ? xi+11 : xi}" y="${y(w) < 30 ? y(w)+4 : y(w)-12}" text-anchor="${y(w) < 30 ? 'start' : 'middle'}" style="fill:var(--fg);font-weight:600">você</text>`;
+  $('res-chart').innerHTML = g;
+}
+
 function resultado(c){
   const t = (c.tEnd - c.t0)/1000, m = dados.peso, h = dados.altura/100, idade = dados.idade;
   const sobe = h*0.5 - CHAIR;
   const watts = m*0.9*9.81*sobe/(t*0.1), rel = watts/m;            // Alcazar et al. 2018/2021
   const subidas = c.rises.filter(x => x > 0).map(x => x/1000);
   const vel = subidas.length ? sobe / (subidas.reduce((a,b)=>a+b,0)/subidas.length) : null;
-  const med = MED[sexo];
-  let faixa, ref;
-  if (t <= med[0][1]){ faixa = '30 anos ou menos'; ref = 30; }
-  else if (t > med[med.length-1][1]){ faixa = 'mais de 64 anos'; ref = 65; }
-  else { const b = med.reduce((a,x) => Math.abs(x[1]-t) < Math.abs(a[1]-t) ? x : a); faixa = `${b[0]} a ${b[0]+4} anos`; ref = b[0]+2; }
-  $('res-age').textContent = faixa;
-  // ref 30 = piso da tabela (30 ou menos): nunca diz "mais velhas" para quem tem menos de 30
-  $('res-vs').textContent = ref === 30 && idade < 30 ? `Você tem ${idade}. A tabela começa nos 30 e você foi mais rápido que a mediana dessa faixa.` :
-                            ref < idade - 2 ? `Você tem ${idade}. Suas pernas estão mais jovens que você.` :
-                            ref > idade + 2 ? `Você tem ${idade}. Suas pernas estão mais velhas que você.` : `Você tem ${idade}. Suas pernas estão na sua idade.`;
+  const eq = faixaEquivalente(sexo, rel), pc = Math.round(percentil(sexo, idade, rel));
+  const quem = sexo === 'f' ? 'mulheres' : 'homens';
+  $('res-age').textContent = eq.txt;
+  $('res-pct').textContent = pc >= 96 ? `Entre os 5% mais potentes dos ${quem} da sua idade.` :
+                             pc <= 4 ? `Entre os 5% menos potentes dos ${quem} da sua idade.` :
+                             `Mais potente que ${pc} de cada 100 ${quem} da sua idade.`;
+  $('res-vs').textContent = eq.ref < idade - 5 ? `Você tem ${idade}: suas pernas estão mais jovens que você.` :
+                            eq.ref > idade + 5 ? `Você tem ${idade}: suas pernas estão mais velhas que você.` : `Você tem ${idade}: suas pernas estão na sua idade.`;
+  grafico(sexo, idade, rel);
+  const v = naIdade(sexo, idade);
+  $('res-chart-txt').textContent = `Sua potência: ${fmt(rel,1)} W/kg. A mediana de quem tem a sua idade é ${fmt(v[3],1)}; metade das pessoas fica entre ${fmt(v[2],1)} e ${fmt(v[4],1)}.`;
+  $('res-red').innerHTML = `Abaixo de ${fmt(CORTE[sexo],1)} W/kg (${quem}), a partir dos 60–65 anos, aparece mais fragilidade e, em 10 anos, mais mortalidade. Você está ${rel >= CORTE[sexo]*1.5 ? 'bem acima' : rel >= CORTE[sexo] ? 'acima, mas perto' : 'abaixo'} dessa linha.<small>Baltasar-Fernandez et al., Sci Rep 2021; Garcia-Aguirre et al., J Sport Health Sci 2025</small>`;
+  // subida de cada levantada (medida complementar: não tem tabela por idade nem ligação com mortalidade)
+  const vs = c.rises.map(x => x > 0 ? sobe / (x/1000) : 0), vmax = Math.max(1, ...vs);
+  $('res-reps').innerHTML = vs.map((x,i) => `<div><b>${x ? fmt(x,2) : '–'}</b><i style="height:${Math.max(4, x/vmax*70)}px"></i><span>${i+1}ª</span></div>`).join('');
+  const frac = subidas.length ? subidas.reduce((a,b)=>a+b,0) / t : null;
+  $('res-reps-txt').textContent = frac == null ? '' :
+    `Velocidade de cada subida, em metros por segundo. Você passou ${Math.round(frac*100)}% do tempo subindo. ` +
+    (frac < 0.4 ? 'Você sobe rápido; o que mais pesou no seu tempo foi a descida e a virada.' :
+     frac > 0.6 ? 'A subida foi a parte mais lenta: é nela que a potência faz diferença.' : 'Subida e descida equilibradas.') +
+    ' Referência medida por sensor: cerca de 0,68 m/s aos 18–29 anos e 0,37 aos 80–89 (Campitelli et al., 2022).';
   $('res-t').textContent = fmt(t,1) + ' s'; $('res-w').textContent = fmt(rel,1); $('res-v').textContent = vel ? fmt(vel,2) : '—';
-  const msg = `Oi, Dr. Lucca! Fiz o teste das pernas: ${fmt(t,1)} s nas 5 levantadas, potência típica de ${faixa} (tenho ${idade}). Quero o plano de 4 semanas.`;
+  const comp = pc >= 96 ? `entre os 5% mais potentes dos ${quem} da minha idade` : pc <= 4 ? `entre os 5% menos potentes dos ${quem} da minha idade` : `mais potente que ${pc} de cada 100 ${quem} da minha idade`;
+  const msg = `Oi, Dr. Lucca! Fiz o teste das pernas: ${fmt(rel,1)} W/kg, ${comp} (tenho ${idade}), pernas de ${eq.txt}. Quero entender meu resultado.`;
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  $('cta-dm').onclick = () => { try { navigator.clipboard.writeText(msg); } catch {} };   // a DM não aceita texto pronto: vai copiado
   falar('Pronto.', true);
   show('resultado');
-  if (window.__stsResult) window.__stsResult({t, watts, rel, vel, reps:c.reps, faixa});
+  if (window.__stsResult) window.__stsResult({t, watts, rel, vel, reps:c.reps, faixa:eq.txt, pc});
 }
 
 // ---------- câmera ----------
@@ -418,6 +540,8 @@ async function abrirCamera(){
     guia(e?.name === 'NotAllowedError' ? 'Libere a câmera para este site' : 'Não consegui abrir a câmera');
   }
 }
+// teste da tela de resultado sem câmera (desenvolvimento)
+window.__testarResultado = (c, d, s) => { Object.assign(dados, d); if (s) sexo = s; voz = false; resultado(c); };
 // teste automático com vídeo (usado só no desenvolvimento)
 window.__testarVideo = async (url, d, s) => {
   Object.assign(dados, d); if (s) sexo = s; voz = false; show('camera'); await getLandmarker();
