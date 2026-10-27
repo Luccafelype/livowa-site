@@ -341,12 +341,14 @@ function resultado(c){
   else if (t > med[med.length-1][1]){ faixa = 'mais de 64 anos'; ref = 65; }
   else { const b = med.reduce((a,x) => Math.abs(x[1]-t) < Math.abs(a[1]-t) ? x : a); faixa = `${b[0]} a ${b[0]+4} anos`; ref = b[0]+2; }
   $('res-age').textContent = faixa;
-  $('res-vs').textContent = ref < idade - 2 ? `Você tem ${idade}. Suas pernas estão mais jovens que você.` :
+  // ref 30 = piso da tabela (30 ou menos): nunca diz "mais velhas" para quem tem menos de 30
+  $('res-vs').textContent = ref === 30 && idade < 30 ? `Você tem ${idade}. A tabela começa nos 30 e você foi mais rápido que a mediana dessa faixa.` :
+                            ref < idade - 2 ? `Você tem ${idade}. Suas pernas estão mais jovens que você.` :
                             ref > idade + 2 ? `Você tem ${idade}. Suas pernas estão mais velhas que você.` : `Você tem ${idade}. Suas pernas estão na sua idade.`;
   $('res-t').textContent = fmt(t,1) + ' s'; $('res-w').textContent = fmt(rel,1); $('res-v').textContent = vel ? fmt(vel,2) : '—';
   const msg = `Oi, Dr. Lucca! Fiz o teste das pernas: ${fmt(t,1)} s nas 5 levantadas, potência típica de ${faixa} (tenho ${idade}). Quero o plano de 4 semanas.`;
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-  falar(`Pronto. Suas pernas têm a potência típica de quem tem ${faixa}.`, true);
+  falar('Pronto.', true);
   show('resultado');
   if (window.__stsResult) window.__stsResult({t, watts, rel, vel, reps:c.reps, faixa});
 }
