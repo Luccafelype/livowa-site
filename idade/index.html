@@ -30,7 +30,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-
 .back{background:none;border:0;color:var(--fg);font-size:1.4rem;padding:4px 8px 4px 0;cursor:pointer}
 .bar{flex:1;height:4px;border-radius:4px;background:var(--line);overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
-.screen{flex:1;display:flex;flex-direction:column;gap:18px;padding-block:12px 130px;animation:in .25s ease}
+.screen{flex:1;display:flex;flex-direction:column;gap:18px;padding-block:12px calc(var(--cta-h,130px) + 28px);animation:in .25s ease}
 @keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
 h1,h2{font-family:var(--display);margin:0;line-height:1.02;text-wrap:balance}
 h1{font-size:clamp(2.4rem,10vw,3.2rem);font-weight:800;letter-spacing:-.025em}
@@ -134,15 +134,25 @@ details.how summary{color:var(--accent);font-weight:600;cursor:pointer;text-alig
 details.how summary::-webkit-details-marker{display:none}
 details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
 .tips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.seguro{margin:-6px 0 0;color:var(--muted);font-size:.95rem}
 .tips span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:.82rem}
-.stage .oculto{opacity:0!important;pointer-events:none}
+.previa{display:block;width:min(210px,54vw);height:auto;margin:0 auto;border-radius:18px;background:#808080}
+.previa.ret{width:min(300px,78vw)}
+.final h2{font-size:1.9rem}
+.codigo.grande{padding:8px 10px 8px 18px;font-size:1rem}
+.codigo.grande b{font-size:1.7rem;padding:8px 18px}
+.aviso-dm{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:20px}
+.aviso-dm div{background:var(--surface);color:var(--fg);border-radius:22px;padding:24px 22px;max-width:420px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.aviso-dm b{font:800 1.5rem/1.15 var(--display)}
+.aviso-dm q{font:600 1.15rem/1.35 var(--body);color:var(--accent);quotes:'“' '”'}
+.aviso-dm span{font-size:1.05rem}
+.aviso-dm a{color:var(--muted);font-size:.9rem}
 .esquema{display:block;width:min(196px,52vw);aspect-ratio:1/1.15;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:22px}
 .legenda{font-size:.9rem;color:var(--muted)}
 .legenda b{color:var(--fg);font-weight:600}
 .perde{font-size:.85rem;color:var(--warn);background:var(--warn-bg);border-radius:12px;padding:8px 12px}
 .opts{display:flex;flex-direction:column;gap:8px}
 .opt{display:flex;align-items:center;gap:12px;width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:10px 14px;font:500 1rem var(--body);color:var(--fg);text-align:left;cursor:pointer}
-.opt .emo{font-size:1.5rem;flex:none}
 .opt .txt{flex:1;display:flex;flex-direction:column;line-height:1.25}
 .opt small{color:var(--muted);font-size:.78rem}
 .opt .box{width:24px;height:24px;flex:none;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center}
@@ -165,7 +175,7 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .codigo{align-self:center;display:inline-flex;align-items:center;gap:10px;border:1.5px dashed var(--line);border-radius:999px;padding:6px 8px 6px 16px;color:var(--muted);font:600 .9rem var(--body)}
 .codigo b{background:var(--accent-2);color:var(--fg);border-radius:999px;padding:6px 14px;font:700 1.15rem var(--mono);letter-spacing:.08em}
 .cod-nota{color:var(--muted);font-size:.8rem;margin-top:-10px}
-.pele-card{background:var(--surface);border:1.5px solid var(--accent);border-radius:22px;padding:18px;display:grid;grid-template-columns:84px 1fr;gap:6px 14px;align-items:center}
+.pele-card{background:var(--surface);border:1.5px solid var(--accent);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:8px;text-align:left}
 .pele-card canvas{width:84px;height:96px;grid-row:span 1}
 .pele-card div{display:flex;flex-direction:column;gap:6px}
 .pele-card h3{margin:0;font:700 1.3rem/1.1 var(--display)}
@@ -195,11 +205,11 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
   <section class="screen" data-s="inicio" data-p="0">
     <div class="who" style="margin-top:20px"><span class="dot"></span><span><b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990</span></div>
     <h1>Quantos anos têm as suas pernas?</h1>
-    <p class="sub">Levante da cadeira 5 vezes na frente da câmera e veja a idade que a sua potência mostra.</p>
+    <p class="sub">Levante da cadeira 5 vezes na frente da câmera e o Dr. Lucca te conta a idade que a sua potência mostra.</p>
     <div class="anim v" aria-hidden="true"><video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video></div>
     <div class="hero-card">
       <div class="mini"><b>1 minuto</b><span>com a câmera do celular</span></div>
-      <div class="mini"><b>Sem cadastro</b><span>o resultado sai na hora</span></div>
+      <div class="mini"><b>Sem cadastro</b><span>ele te responde por áudio</span></div>
     </div>
   </section>
 
@@ -228,7 +238,7 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
       <div class="wheelbox"><label id="l-peso">Peso (kg)</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso"></div></div></div>
       <div class="wheelbox"><label id="l-altura">Altura (cm)</label><div class="wheel-wrap"><div class="wheel" id="w-altura" tabindex="0" role="listbox" aria-labelledby="l-altura"></div></div></div>
     </div>
-    <p class="sub" style="font-size:.85rem;text-align:center">Role para escolher. Nada disso sai do seu celular.</p>
+    <p class="sub" style="font-size:.85rem;text-align:center">Role para escolher. O resultado fica guardado só com um código, sem o seu nome, para o Dr. Lucca te responder.</p>
   </section>
 
   <section class="screen" data-s="camera" data-p="75" hidden>
@@ -239,76 +249,60 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
       <div class="count" id="countdown" aria-live="assertive"></div>
       <div class="hud"><span class="reps" id="reps">0<small>/5</small></span><span class="time" id="time">0,0 s</span></div>
     </div>
-    <div class="sound"><button type="button" id="mute">🔊 Voz ligada</button></div>
+    <div class="sound"><button type="button" id="mute">Voz ligada</button></div>
   </section>
 
-  <section class="screen c" data-s="resultado" data-p="100" hidden>
-    <span class="pill">✅ Seu resultado está pronto</span>
-    <h2 class="res-h">Suas pernas têm a força de quem tem <em id="res-age">40 a 50 anos</em></h2>
-    <p class="sub" id="res-vs"></p>
-    <div class="regua" id="res-regua" aria-hidden="true"></div>
-    <div class="codigo"><span>Seu código</span><b id="res-cod">LV-0000</b></div>
-    <small class="cod-nota">Seu código guarda seu resultado para o Dr. Lucca ver.</small>
+  <section class="screen c final" data-s="resultado" data-p="100" hidden>
+    <span class="pill">Pronto</span>
+    <h2>Seu teste foi enviado ao <em>Dr. Lucca</em></h2>
+    <p class="sub">Ele olha o seu resultado e te responde pessoalmente, por áudio.</p>
+    <div class="codigo grande"><span>Seu código</span><b id="res-cod">LV-0000</b></div>
+    <small class="cod-nota">Mande o código pelo WhatsApp ou pelo Direct.</small>
     <div class="pele-card" id="pele-card" hidden>
-      <canvas id="pele-mini" aria-hidden="true"></canvas>
       <div>
-        <span class="pill sm">🔒 sua foto não aparece</span>
+        <span class="pill sm">Uma selfie</span>
         <h3>Agora a <em>pele</em>: 30 segundos</h3>
-        <p>Uma selfie e você vê a idade que a sua pele aparenta.</p>
+        <p>O Dr. Lucca olha também a idade que a sua pele aparenta.</p>
       </div>
-      <button class="btn" id="pele-ir" type="button">Ver a idade da minha pele →</button>
+      <button class="btn" id="pele-ir" type="button">Fazer a análise da pele</button>
     </div>
   </section>
 
   <!-- ===================== PELE ===================== -->
   <section class="screen c" data-s="pele-inicio" data-p="20" hidden>
-    <span class="pill">🔒 30 segundos · sua foto não aparece</span>
-    <canvas class="face-ill" id="pele-ill" role="img" aria-label="Desenho de um rosto com uma tarja preta nos olhos"></canvas>
+    <span class="pill">30 segundos · uma selfie</span>
     <h2>Quantos anos a sua <em>pele</em> aparenta?</h2>
-    <p class="sub">Uma selfie, de frente pra luz. Sua foto não aparece aqui e seus olhos vão cobertos.</p>
-    <div class="hero-card">
-      <div class="mini"><b>30 s</b><span>uma selfie e pronto</span></div>
-      <div class="mini"><b>0 fotos</b><span>guardadas pela Livowa</span></div>
-    </div>
-    <label class="consent"><input type="checkbox" id="pele-ok"><span>Tenho 18 anos ou mais e autorizo usar a imagem do meu rosto, recortada e com tarja, só para esta análise. Quem analisa é o Gemini, do Google, na versão paga, que não treina a IA com ela.</span></label>
-    <details class="how"><summary>Como funciona</summary>
-      <ol>
-        <li>A câmera acha o seu rosto e tira a foto sozinha. Você vê só um desenho, nunca a foto.</li>
-        <li>Ainda no seu celular, a gente recorta só o rosto (sai cabelo, orelhas, fundo e roupa), apaga os dados do arquivo, como local e aparelho, e cobre os olhos com uma tarja preta.</li>
-        <li>Só essa imagem vai para o Gemini, do Google (servidores do Google, que podem ficar fora do Brasil). Na versão paga, o Google não usa a imagem para treinar a IA.</li>
-        <li>Ela serve só para esta análise. A Livowa não guarda a foto nem o resultado com o seu nome.</li>
-        <li>É uma estimativa estética, não é exame nem diagnóstico. Rosto é dado sensível pela LGPD (art. 11): você pode desistir a qualquer momento.</li>
-      </ol>
-    </details>
+    <p class="sub">Tire uma selfie de frente para a luz. O Dr. Lucca olha a análise e te responde pessoalmente.</p>
+    <label class="consent"><input type="checkbox" id="pele-ok"><span>Tenho 18 anos ou mais e autorizo a análise da minha foto.</span></label>
+    <p class="seguro">É seguro: não guardamos suas imagens.</p>
   </section>
 
   <section class="screen" data-s="pele-camera" data-p="45" hidden>
     <div class="stage">
-      <video id="pele-video" class="oculto" playsinline muted></video>
+      <video id="pele-video" playsinline muted></video>
       <canvas id="pele-live"></canvas>
       <div class="guide"><span id="pele-guia">Abrindo a câmera…</span></div>
     </div>
-    <div class="tips"><span>💡 luz de frente</span><span>👓 sem óculos</span><span>💇 testa livre</span><span>📱 bem perto</span></div>
-    <div class="sound"><button type="button" class="mute-pele">🔊 Voz ligada</button></div>
+    <div class="tips"><span>Luz de frente</span><span>Sem óculos</span><span>Testa livre</span><span>Bem perto</span></div>
+    <div class="sound"><button type="button" class="mute-pele">Voz ligada</button></div>
     <input type="file" id="pele-arquivo" accept="image/*" hidden>
   </section>
 
   <section class="screen c" data-s="pele-envio" data-p="70" hidden>
-    <span class="pill">✅ Foto tirada · ela não aparece aqui</span>
+    <span class="pill">Foto tirada</span>
     <h2>É <em>isto</em> que vai para a análise</h2>
-    <canvas class="esquema" id="pele-esquema" role="img" aria-label="Desenho do que vai para a análise"></canvas>
-    <p class="legenda" id="pele-legenda"></p>
+    <canvas class="previa" id="pele-previa" role="img" aria-label="A foto que vai para a análise, recortada e com tarja"></canvas>
+    <p class="legenda" id="pele-legenda" hidden></p>
     <div class="opts" id="pele-opts">
-      <button type="button" class="opt" data-o="olhos" aria-pressed="true"><span class="emo">🙈</span><span class="txt">Tarja nos olhos<small>já vem ligada</small></span><span class="box"></span></button>
-      <button type="button" class="opt" data-o="sobrancelhas" aria-pressed="false"><span class="emo">🤨</span><span class="txt">Tarja nas sobrancelhas</span><span class="box"></span></button>
-      <button type="button" class="opt" data-o="boca" aria-pressed="false"><span class="emo">🤐</span><span class="txt">Tarja na boca</span><span class="box"></span></button>
-      <button type="button" class="opt" data-o="retalhos" aria-pressed="false"><span class="emo">🧩</span><span class="txt">Só pedacinhos de pele<small>vai sem o formato do rosto</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-o="olhos" aria-pressed="true"><span class="txt">Tarja nos olhos<small>já vem ligada</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-o="sobrancelhas" aria-pressed="false"><span class="txt">Tarja nas sobrancelhas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-o="boca" aria-pressed="false"><span class="txt">Tarja na boca</span><span class="box"></span></button>
+      <button type="button" class="opt" data-o="retalhos" aria-pressed="false"><span class="txt">Só pedacinhos de pele<small>vai sem o formato do rosto</small></span><span class="box"></span></button>
     </div>
     <p class="perde" id="pele-perde"></p>
   </section>
 
   <section class="screen c" data-s="pele-analise" data-p="85" hidden>
-    <div class="big-emoji">🔬</div>
     <h2>Lendo a sua <em>pele</em>…</h2>
     <p class="sub" id="pele-etapa">Olhando linhas, manchas e textura</p>
     <div class="loadrow"><span>ANALISANDO</span><span id="pele-pct">0%</span></div>
@@ -316,39 +310,30 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
   </section>
 
   <section class="screen c" data-s="pele-erro" data-p="70" hidden>
-    <div class="big-emoji" id="pele-erro-emo">📸</div>
+    <div id="pele-erro-emo" hidden></div>
     <h2 id="pele-erro-tit">Essa foto não deu para ler</h2>
     <p class="sub" id="pele-erro-txt"></p>
   </section>
 
-  <section class="screen" data-s="pele-resultado" data-p="100" hidden>
-    <span class="pill">🔒 Sua foto já foi descartada</span>
-    <div class="result">
-      <span class="lbl">Sua pele aparenta ter</span>
-      <span class="age" id="pr-age">40 a 46 anos</span>
-      <span class="pct" id="pr-vs"></span>
-      <span class="lbl" id="pr-resumo"></span>
-    </div>
-    <div class="card" id="pr-duo">
-      <h3>Pernas e pele</h3>
-      <div class="duo">
-        <div class="mini"><span>🦵 pernas de</span><b id="pr-pernas">—</b></div>
-        <div class="mini"><span>🧴 pele de</span><b id="pr-pele">—</b></div>
-      </div>
-    </div>
-    <div class="card">
-      <h3>O que a foto mostra</h3>
-      <div id="pr-sinais"></div>
-    </div>
-    <div class="codigo"><span>Seu código</span><b id="pr-cod">LV-0000</b></div>
-    <small class="cod-nota">Seu código guarda seu resultado para o Dr. Lucca ver.</small>
+  <section class="screen c final" data-s="pele-resultado" data-p="100" hidden>
+    <span class="pill">Pronto</span>
+    <h2 id="pr-tit">Sua análise foi enviada ao <em>Dr. Lucca</em></h2>
+    <p class="sub">Ele olha o seu resultado e te responde pessoalmente, por áudio.</p>
+    <div class="codigo grande"><span>Seu código</span><b id="pr-cod">LV-0000</b></div>
+    <small class="cod-nota">Mande o código pelo WhatsApp ou pelo Direct.</small>
   </section>
 
   <div class="cta"><div>
-    <a class="btn" id="cta-link" href="#" target="_blank" rel="noopener" hidden>💬 FALAR COM O DR. LUCCA</a>
+    <a class="btn" id="cta-link" href="#" target="_blank" rel="noopener" hidden>FALAR COM O DR. LUCCA</a>
     <a class="btn ghost" id="cta-dm" href="https://ig.me/m/dr.luccamarques" target="_blank" rel="noopener" hidden>Prefiro pelo Direct</a>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
     <button class="btn ghost" id="cta-2" type="button" hidden></button>
+  </div></div>
+  <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
+    <b>Copiamos a sua mensagem</b>
+    <q id="aviso-msg">Oi, Dr. Lucca! Meu código é LV-0000</q>
+    <span>No Direct, toque e segure na caixa de mensagem e escolha <b style="font:inherit;font-weight:700">Colar</b>.</span>
+    <a id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrindo o Direct… toque aqui se não abrir</a>
   </div></div>
 </div>
 
@@ -396,18 +381,28 @@ document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click'
 }));
 
 // ---------- voz ----------
-let voz = true, ultimaFala = '', ultimoT = 0;
+// Regras da voz (28/10, teste no iPhone): fala de orientação só quando a instrução MUDA e fica estável ~1 s
+// (falarEstavel), nunca a mesma frase em menos de 4 s e no máximo uma fala a cada 2,5 s. `forcar` fica só para
+// contagem (3-2-1, "Um", "Dois"…) e "Pronto".
+let voz = true, ultimaFala = '', ultimoT = -1e9, candFala = '', candDesde = 0, candDita = '';
 function falar(txt, forcar){
-  if (!voz || !('speechSynthesis' in window)) return;
+  if (!voz || !('speechSynthesis' in window) || !txt) return;
   const now = performance.now();
-  if (!forcar && ((txt === ultimaFala && now - ultimoT < 4000) || now - ultimoT < 1800)) return;
+  if (!forcar && ((txt === ultimaFala && now - ultimoT < 4000) || now - ultimoT < 2500)) return;
   ultimaFala = txt; ultimoT = now;
   speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'pt-BR'; u.rate = 1.05; speechSynthesis.speak(u);
 }
 document.querySelectorAll('#mute,.mute-pele').forEach(b => b.addEventListener('click', () => {
-  voz = !voz; document.querySelectorAll('#mute,.mute-pele').forEach(x => x.textContent = voz ? '🔊 Voz ligada' : '🔇 Voz desligada');
+  voz = !voz; document.querySelectorAll('#mute,.mute-pele').forEach(x => x.textContent = voz ? 'Voz ligada' : 'Voz desligada');
   if (!voz && 'speechSynthesis' in window) speechSynthesis.cancel();
 }));
+function falarEstavel(txt){
+  const now = performance.now();
+  if (txt !== candFala){ candFala = txt; candDesde = now; return; }     // mudou: espera estabilizar
+  if (txt === candDita || now - candDesde < 1000) return;               // já dita, ou ainda instável
+  const antes = ultimoT; falar(txt); if (ultimoT !== antes) candDita = txt;
+}
+function zerarFala(){ candFala = ''; candDita = ''; }
 function guia(txt, ok){ const g = $('guide'); if (g.textContent !== txt) g.textContent = txt; g.classList.toggle('ok', !!ok); }
 
 // ---------- navegação ----------
@@ -424,17 +419,21 @@ function show(s){
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
-  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; c2.hidden = false; c2.textContent = 'Refazer o teste'; ctaPernas(); }
+  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; ctaPernas(); }
   cta.disabled = false;
   cta.classList.remove('off');
-  if (s === 'pele-inicio'){ cta.textContent = 'Abrir a câmera →'; cta.classList.toggle('off', !$('pele-ok').checked); c2.hidden = false; c2.textContent = 'Prefiro escolher uma foto 🖼️'; desenharIlustracao(); }
+  if (s === 'pele-inicio'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('pele-ok').checked); c2.hidden = false; c2.textContent = 'Prefiro escolher uma foto'; }
   if (s === 'pele-camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
-  if (s === 'pele-envio'){ cta.textContent = 'Analisar minha pele →'; c2.hidden = false; c2.textContent = 'Tirar outra foto'; }
+  if (s === 'pele-envio'){ cta.textContent = 'Analisar minha pele'; c2.hidden = false; c2.textContent = 'Tirar outra foto'; }
   if (s === 'pele-analise'){ cta.hidden = true; }
-  if (s === 'pele-erro'){ cta.textContent = peleErroRede ? 'Tentar de novo →' : 'Tirar outra foto →'; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
-  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; c2.hidden = false; c2.textContent = 'Refazer a foto'; }
+  if (s === 'pele-erro'){ cta.textContent = peleErroRede ? 'Tentar de novo' : 'Tirar outra foto'; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
+  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; }
   window.scrollTo(0,0);
+  medirBarra();
 }
+// a barra de botões é fixa: o fim de cada tela ganha espaço do tamanho dela (nada fica escondido embaixo)
+function medirBarra(){ document.documentElement.style.setProperty('--cta-h', document.querySelector('.cta').offsetHeight + 'px'); }
+addEventListener('resize', medirBarra);
 $('back').addEventListener('click', () => {
   pararCamera(); pararCameraPele();
   if (VOLTA[cur]){ const d = VOLTA[cur]; show(d); if (d === 'pele-camera') abrirCameraPele(); return; }
@@ -608,12 +607,6 @@ function grafico(s, idade, w){
 const ALFA = 'ACDEFGHJKMNPQRTUVWXY34679';
 let codigo = null;
 function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
-function regua(idade, ref){
-  const pos = a => Math.max(5, Math.min(95, (a - 18) / (90 - 18) * 100));
-  $('res-regua').innerHTML = `<div class="trilho"></div>
-    <div class="m voce" style="left:${pos(idade)}%"><span>você · ${idade}</span><i></i></div>
-    <div class="m pernas" style="left:${pos(Math.round(ref))}%"><i></i><span>suas pernas</span></div>`;
-}
 function resultado(c){
   const t = (c.tEnd - (c.tStart ?? c.t0))/1000, m = dados.peso, h = dados.altura/100, idade = dados.idade;
   const sobe = h*0.5 - CHAIR;
@@ -621,17 +614,13 @@ function resultado(c){
   const subidas = c.rises.filter(x => x > 0).map(x => x/1000);
   const vel = subidas.length ? sobe / (subidas.reduce((a,b)=>a+b,0)/subidas.length) : null;
   const eq = faixaEquivalente(sexo, rel), pc = Math.round(percentil(sexo, idade, rel));
-  $('res-age').textContent = eq.txt;
-  $('res-vs').textContent = eq.ref < idade - 5 ? `Você tem ${idade}. Suas pernas estão mais jovens que você.` :
-                            eq.ref > idade + 5 ? `Você tem ${idade}. Suas pernas estão mais velhas que você.` : `Você tem ${idade}. Suas pernas estão na sua idade.`;
-  regua(idade, Math.min(90, eq.ref));
+  // decisão do Lucca (28/10): o resultado NÃO aparece na tela; vai no evento 'complete' com o código e ele responde por áudio
   $('res-cod').textContent = meuCodigo();
   pernas = { rel, idade, faixa:eq.txt };
   $('pele-card').hidden = !PELE_ENDPOINT;
-  if (PELE_ENDPOINT) requestAnimationFrame(() => desenharEsquema($('pele-mini'), geoCanon(), 'rosto', ['olhos']));
   falar('Pronto.', true);
   Analytics.track('complete', { stepId:'resultado', stepIndex:order.length, valueText:eq.txt,
-    props:{ codigo:meuCodigo(), rel:+rel.toFixed(2), pc, t:+t.toFixed(1), vel:vel ? +vel.toFixed(2) : null, idade, sexo, peso:m, altura:dados.altura } });
+    props:{ codigo:meuCodigo(), t:+t.toFixed(1), rel:+rel.toFixed(2), pc, faixa:eq.txt, vel:vel ? +vel.toFixed(2) : null, idade, sexo, peso:m, altura:dados.altura, reps:c.reps } });
   show('resultado');
   if (window.__stsResult) window.__stsResult({t, watts, rel, vel, reps:c.reps, faixa:eq.txt, pc});
 }
@@ -665,18 +654,18 @@ function loop(){
     }
     const prob = lm ? enquadramento(lm, !counter || counter.phase === 'calib') : ['Não estou te vendo', 'Fique na frente da câmera'];
     desenhar(lm, !prob);
-    if (prob){ guia(prob[0]); falar(prob[1]); }
+    if (prob){ guia(prob[0]); falarEstavel(prob[1]); }
     else {
       const st = feed(counter, lm, ts);
       $('reps').innerHTML = `${counter.reps}<small>/5</small>`;
       if (counter.tStart != null) $('time').textContent = fmt(((counter.tEnd ?? ts) - counter.tStart)/1000,1) + ' s';
-      if (st === 'em-pe'){ guia('Sente na cadeira'); falar('Sente na cadeira para começar'); }
+      if (st === 'em-pe'){ guia('Sente na cadeira'); falarEstavel('Sente na cadeira para começar'); }
       else if (st === 'calib' || st === 'parado') guia('Sentado, fique parado…');
-      else if (st === 'andando'){ guia('Volte para a cadeira'); falar('Volte para a cadeira'); }
-      else if (st === 'espera'){ guia('Pode começar!', true); falar('Pode começar. Levante e sente cinco vezes, rápido.'); }
+      else if (st === 'andando'){ guia('Volte para a cadeira'); falarEstavel('Volte para a cadeira'); }
+      else if (st === 'espera'){ guia('Pode começar!', true); falarEstavel('Pode começar. Levante e sente cinco vezes, rápido.'); }
       else if (st === 'run'){
         const desde = ts - Math.max(counter.t0, counter.lastRep);
-        if (desde > 6000){ guia('Fique de pé por completo'); falar('Fique de pé por completo e sente de novo'); } else guia('Continue', true);
+        if (desde > 6000){ guia('Fique de pé por completo'); falarEstavel('Fique de pé por completo e sente de novo'); } else guia('Continue', true);
       }
       else if (st === 'rep'){ guia(`${counter.reps} de 5`, true); falar(NUM[counter.reps], true); }
       if (st === 'fim'){ pararCamera(); resultado(counter); return; }
@@ -695,7 +684,7 @@ async function abrirCamera(){
     const v = $('video'); v.removeAttribute('src'); v.srcObject = stream; await v.play();
     guia('Sente de lado, do ombro ao joelho na tela'); falar('Apoie o celular e sente de lado, com o tronco e os joelhos na tela', true);
     await new Promise(r => setTimeout(r, 3000)); await contagem();
-    lastTs = -1; alvo = null; counter = novo(); running = true; loop();
+    lastTs = -1; alvo = null; counter = novo(); zerarFala(); running = true; loop();
   } catch (e) {
     console.error(e); pararCamera();
     guia(e?.name === 'NotAllowedError' ? 'Libere a câmera para este site' : 'Não consegui abrir a câmera');
@@ -707,12 +696,30 @@ function ctaPernas(){
   const fiz = pernas && peleRes ? 'o teste das pernas e da pele' : peleRes ? 'o teste da pele' : 'o teste das pernas';
   const msg = `Oi, Dr. Lucca! Fiz ${fiz}. Meu código é ${meuCodigo()}. Quero entender meu resultado.`;
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-  $('cta-dm').onclick = () => { try { navigator.clipboard.writeText(msg); } catch {} Analytics.track('cta_click', { stepId:cur, valueText:'direct' }); };
+  $('cta-dm').onclick = e => abrirDirect(e);
   $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp' });   // a DM não aceita texto pronto: vai copiado
 }
 
+// Direct: o Instagram não aceita texto pronto. Copia DENTRO do toque (exigência do iOS), mostra o aviso 1,5 s e abre.
+function copiar(txt){
+  let ok = false;
+  try { const t = document.createElement('textarea'); t.value = txt; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(t); t.select(); t.setSelectionRange(0, txt.length); ok = document.execCommand('copy'); t.remove(); } catch {}
+  try { navigator.clipboard?.writeText(txt).catch(() => {}); } catch {}
+  return ok;
+}
+function abrirDirect(e){
+  e.preventDefault();
+  const txt = `Oi, Dr. Lucca! Meu código é ${meuCodigo()}`, url = $('cta-dm').href;
+  copiar(txt);
+  Analytics.track('cta_click', { stepId:cur, valueText:'direct' });
+  $('aviso-msg').textContent = txt; $('aviso-link').href = url; $('aviso-dm').hidden = false;
+  setTimeout(() => { location.href = url; setTimeout(() => { $('aviso-dm').hidden = true; }, 2500); }, 1500);
+}
+$('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
+
 // =====================================================================
-// PELE: a foto nunca aparece na tela. Recorte, tarja e limpeza do arquivo
+// PELE: a pessoa se vê na tela e vê a foto já recortada e com tarja antes de enviar. Recorte, tarja e limpeza do arquivo
 // acontecem aqui no aparelho; só a imagem já mascarada sai.
 // =====================================================================
 const MODELO_ROSTO = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
@@ -741,7 +748,8 @@ function geoCanon(){ if (!_canon){ const lm = []; for (let i = 0; i < CANON.leng
 function contorno(R, enc = 0.025){ const c = media(OVAL.map(i => R[i])); return OVAL.map(i => ({ x:R[i].x + (c.x-R[i].x)*enc, y:R[i].y + (c.y-R[i].y)*enc })); }
 function tarjas(g, ocultas){
   const { R, iod } = g, t = [];
-  if (ocultas.includes('olhos')){ const b = caixa([...OLHO_A, ...OLHO_B].map(i => R[i])); t.push({ nome:'olhos', x0:b.x0-.30*iod, x1:b.x1+.30*iod, y0:b.y0-.15*iod, y1:b.y1+.22*iod }); }
+  // só a abertura dos olhos, de um canto ao outro; pés de galinha (lateral) e olheira (abaixo) ficam à mostra
+  if (ocultas.includes('olhos')){ const b = caixa([...OLHO_A, ...OLHO_B].map(i => R[i])); t.push({ nome:'olhos', x0:Math.min(R[33].x, b.x0)-.04*iod, x1:Math.max(R[263].x, b.x1)+.04*iod, y0:b.y0-.05*iod, y1:b.y1+.05*iod }); }
   if (ocultas.includes('sobrancelhas')){ const b = caixa(SOBRANCELHAS.map(i => R[i])); t.push({ nome:'sobrancelhas', x0:b.x0-.08*iod, x1:b.x1+.08*iod, y0:b.y0-.10*iod, y1:b.y1+.07*iod }); }
   if (ocultas.includes('boca')){ const b = caixa(LABIOS.map(i => R[i])); t.push({ nome:'boca', x0:b.x0-.12*iod, x1:b.x1+.12*iod, y0:b.y0-.10*iod, y1:b.y1+.10*iod }); }
   return t;
@@ -858,11 +866,11 @@ function pose(lm){
 }
 
 // ---------- câmera da pele ----------
-let peleStream = null, peleRodando = false, peleRaf = null, okSeq = 0, ultimoProb = ['Mostre o rosto 🙂', ''], narizAnt = null, cabeloDesde = 0, peleTs = 0, quadro = 0;
+let peleStream = null, peleRodando = false, peleRaf = null, okSeq = 0, okDesde = 0, ultimoProb = ['Mostre o rosto', ''], narizAnt = null, cabeloDesde = 0, peleTs = 0, quadro = 0;
 let captura = null, opcoes = { olhos:true, sobrancelhas:false, boca:false, retalhos:false }, peleErroRede = false;
 function guiaPele(txt, ok){ const g = $('pele-guia'); if (g.textContent !== txt) g.textContent = txt; g.classList.toggle('ok', !!ok); }
 function pararCameraPele(){ peleRodando = false; cancelAnimationFrame(peleRaf); if (peleStream){ peleStream.getTracks().forEach(t => t.stop()); peleStream = null; } const v = $('pele-video'); v.srcObject = null; }
-function descartarCaptura(){ if (captura?.src){ captura.src.width = captura.src.height = 0; } captura = null; }
+function descartarCaptura(){ if (captura?.src){ captura.src.width = captura.src.height = 0; } captura = null; const pv = $('pele-previa'); if (pv){ pv.width = pv.height = 0; } }
 
 // mapeia o quadro da câmera para o palco 3:4 (como object-fit: cover)
 function palco(v){
@@ -872,17 +880,16 @@ function palco(v){
 }
 function desenharAoVivo(v, lm, bom){
   const { cv, cw, ch, X, Y } = palco(v), ctx = cv.getContext('2d');
-  ctx.fillStyle = '#0b1210'; ctx.fillRect(0, 0, cw, ch);
-  ctx.setLineDash([10, 9]); ctx.lineWidth = 3; ctx.strokeStyle = bom ? '#52c99c' : 'rgba(255,255,255,.35)';
+  ctx.clearRect(0, 0, cw, ch);
+  ctx.setLineDash([10, 9]); ctx.lineWidth = 4; ctx.strokeStyle = bom ? '#52c99c' : 'rgba(255,255,255,.85)';
+  ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 6;
   ctx.beginPath(); ctx.ellipse(cw/2, ch*.47, cw*.33, ch*.33, 0, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
   if (!lm) return;
-  ctx.strokeStyle = bom ? '#52c99c' : '#e8ad55'; ctx.globalAlpha = .55; ctx.lineWidth = 1;
-  ctx.beginPath(); for (const { start, end } of FaceLandmarker.FACE_LANDMARKS_TESSELATION){ ctx.moveTo(X(lm[start]), Y(lm[start])); ctx.lineTo(X(lm[end]), Y(lm[end])); } ctx.stroke();
-  ctx.globalAlpha = 1; ctx.lineWidth = 3; ctx.beginPath(); OVAL.forEach((i,j) => j ? ctx.lineTo(X(lm[i]), Y(lm[i])) : ctx.moveTo(X(lm[i]), Y(lm[i]))); ctx.closePath(); ctx.stroke();
+  ctx.strokeStyle = bom ? '#52c99c' : '#e8ad55'; ctx.lineWidth = 3; ctx.beginPath(); OVAL.forEach((i,j) => j ? ctx.lineTo(X(lm[i]), Y(lm[i])) : ctx.moveTo(X(lm[i]), Y(lm[i]))); ctx.closePath(); ctx.stroke();
 }
 // [texto na tela, frase falada] ou null se está bom
 function avaliarCamera(faces, v){
-  if (!faces.length) return ['Mostre o rosto 🙂', 'Mostre o rosto para a câmera'];
+  if (!faces.length) return ['Mostre o rosto', 'Mostre o rosto para a câmera'];
   if (faces.length > 1) return ['Só você na foto', 'Deixe só o seu rosto na tela'];
   const lm = faces[0], { cw, ch, X, Y } = palco(v), b = caixa(OVAL.map(i => ({ x:X(lm[i])/cw, y:Y(lm[i])/ch })));
   const fw = b.x1 - b.x0, cx = (b.x0 + b.x1)/2, cy = (b.y0 + b.y1)/2;
@@ -895,16 +902,16 @@ function avaliarCamera(faces, v){
   if (Math.abs(p.roll) > 15) return ['Endireite a cabeça', 'Endireite a cabeça'];
   if (p.pitch < .25 || p.pitch > .62) return ['Celular na altura do rosto', 'Deixe o celular na altura do rosto'];
   const m = medir(v, lm, v.videoWidth, v.videoHeight); Object.assign(diag, { lum:Math.round(m.lum), lado:+m.lado.toFixed(2), nitidez:Math.round(m.nitidez), testa:Math.round(m.testa), bochecha:Math.round(m.bochecha) });
-  if (m.lum < 70) return ['Procure mais luz 💡', 'Procure mais luz. Fique de frente para uma janela ou uma lâmpada'];
+  if (m.lum < 70) return ['Procure mais luz', 'Procure mais luz. Fique de frente para uma janela ou uma lâmpada'];
   if (m.lum > 220) return ['Luz forte demais', 'A luz está forte demais. Saia um pouco dela'];
   if (m.lado > .3) return ['Fique de frente pra luz', 'A luz está batendo de lado. Vire de frente para ela'];
-  const nz = lm[1], mexeu = narizAnt && Math.hypot(nz.x - narizAnt.x, nz.y - narizAnt.y) > .008; narizAnt = { x:nz.x, y:nz.y };
+  const nz = lm[1], mexeu = narizAnt && Math.hypot(nz.x - narizAnt.x, nz.y - narizAnt.y) > .012; narizAnt = { x:nz.x, y:nz.y };
   if (mexeu || m.nitidez < NITIDEZ_MIN) return ['Segure parado', 'Segure parado'];
   if (m.testa < .62*m.bochecha){ cabeloDesde ||= performance.now(); if (performance.now() - cabeloDesde < 6000) return ['Tire o cabelo da testa', 'Se der, tire o cabelo da testa']; }
   return null;
 }
 async function abrirCameraPele(){
-  guiaPele('Abrindo a câmera…'); okSeq = 0; narizAnt = null; cabeloDesde = 0; descartarCaptura();
+  guiaPele('Abrindo a câmera…'); okSeq = 0; okDesde = 0; narizAnt = null; cabeloDesde = 0; zerarFala(); descartarCaptura();
   try {
     faceVideo ??= await criarFace('VIDEO');
     peleStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:1280 }, height:{ ideal:960 } }, audio:false });
@@ -925,10 +932,10 @@ function loopPele(){
     if (quadro++ % 2 === 0 || okSeq) ultimoProb = avaliarCamera(faces, v);   // luz e nitidez a cada 2 quadros
     const prob = ultimoProb;
     desenharAoVivo(v, faces[0], !prob && faces.length === 1);
-    if (prob){ okSeq = 0; guiaPele(prob[0]); falar(prob[1]); }
+    if (prob){ okSeq = 0; okDesde = 0; guiaPele(prob[0]); falarEstavel(prob[1]); }
     else if (faces.length === 1){
-      okSeq++; guiaPele('Segure assim…', true); if (okSeq === 2) falar('Segure assim', true);
-      if (okSeq >= 8){ capturarCamera(v); return; }
+      okSeq++; okDesde ||= performance.now(); guiaPele('Segure assim…', true); falarEstavel('Segure assim');
+      if (okSeq >= 8 && performance.now() - okDesde >= 700){ capturarCamera(v); return; }
     }
   }
   peleRaf = requestAnimationFrame(loopPele);
@@ -939,7 +946,7 @@ function capturarCamera(v){
   peleTs = Math.max(peleTs + 1, performance.now());
   const lm = (faceVideo.detectForVideo(cv, peleTs).faceLandmarks || [])[0];   // pontos do MESMO quadro capturado
   if (window.__peleDiag) window.__peleDiag.tentativas = (window.__peleDiag.tentativas || 0) + 1, window.__peleDiag.achou = !!lm, window.__peleDiag.tam = cv.width + 'x' + cv.height;
-  if (!lm){ cv.width = 0; okSeq = 0; peleRaf = requestAnimationFrame(loopPele); return; }
+  if (!lm){ cv.width = 0; okSeq = 0; okDesde = 0; peleRaf = requestAnimationFrame(loopPele); return; }
   pararCameraPele(); falar('Pronto!', true); try { navigator.vibrate?.(60); } catch {}
   captura = { src:cv, g:geometria(lm, cv.width, cv.height), origem:'camera' };
   show('pele-envio'); atualizarEnvio();
@@ -978,9 +985,11 @@ function atualizarEnvio(){
   if (!captura) return;
   const { modo, ocultas } = escolhidas();
   document.querySelectorAll('#pele-opts .opt').forEach(b => { b.setAttribute('aria-pressed', String(!!opcoes[b.dataset.o])); b.hidden = modo === 'retalhos' && b.dataset.o !== 'retalhos'; });
-  requestAnimationFrame(() => desenharEsquema($('pele-esquema'), captura.g, modo, ocultas));
-  const fica = ['cabelo', 'orelhas', 'fundo', 'roupa'], vai = ['testa', 'bochechas', 'nariz', 'queixo'];
-  if (ocultas.includes('olhos')) fica.push('olhos'); else vai.push('olhos');
+  const img = montarEnvio(captura.src, captura.g, modo, ocultas), pv = $('pele-previa');   // exatamente o que será enviado
+  pv.width = img.width; pv.height = img.height; pv.getContext('2d').drawImage(img, 0, 0); img.width = img.height = 0;
+  pv.classList.toggle('ret', modo === 'retalhos');
+  const fica = ['cabelo', 'orelhas', 'fundo', 'roupa'], vai = ['testa', 'bochechas', 'nariz', 'queixo', 'cantos dos olhos'];
+  if (ocultas.includes('olhos')) fica.push('a abertura dos olhos'); else vai.push('olhos');
   if (ocultas.includes('sobrancelhas')) fica.push('sobrancelhas'); else vai.push('sobrancelhas');
   if (ocultas.includes('boca')) fica.push('boca'); else vai.push('boca');
   const lista = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a.at(-1) : a[0];
@@ -989,7 +998,6 @@ function atualizarEnvio(){
     : `<b>Vai:</b> ${lista(vai)}.<br><b>Fica no seu celular:</b> ${lista(fica)}.`;
   const perde = [];
   if (modo === 'retalhos') perde.push('a firmeza do contorno e a olheira');
-  if (ocultas.includes('olhos')) perde.push('os pés de galinha e a olheira');
   if (ocultas.includes('sobrancelhas')) perde.push('as linhas entre as sobrancelhas');
   if (ocultas.includes('boca')) perde.push('as linhas em volta da boca');
   $('pele-perde').hidden = !perde.length;
@@ -1005,7 +1013,7 @@ $('cta-2').addEventListener('click', () => { if (cur === 'pele-inicio' && !$('pe
 // ---------- envio e resultado ----------
 function erroPele(txt, rede){
   peleErroRede = !!rede;
-  $('pele-erro-emo').textContent = rede ? '📶' : '📸';
+  
   $('pele-erro-tit').textContent = rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler';
   $('pele-erro-txt').textContent = txt;
   show('pele-erro');
@@ -1016,7 +1024,7 @@ async function enviarPele(){
   const { modo, ocultas } = escolhidas();
   const cv = montarEnvio(captura.src, captura.g, modo, ocultas);
   const imagem = cv.toDataURL('image/jpeg', .9).split(',')[1]; cv.width = cv.height = 0;
-  ultimoEnvio = { modo, ocultas, kb: Math.round(imagem.length*3/4/1024) };
+  ultimoEnvio = { modo, ocultas, origem:captura.origem, kb: Math.round(imagem.length*3/4/1024) };
   Analytics.track('answer', { stepId:'pele-envio', valueText: modo === 'retalhos' ? 'retalhos' : (ocultas.join('+') || 'sem-tarja'), props:{ origem:captura.origem } });
   show('pele-analise');
   const etapas = ['Olhando linhas, manchas e textura', 'Conferindo testa, bochechas e sulco', 'Montando o seu resultado'];
@@ -1041,28 +1049,18 @@ async function enviarPele(){
   } finally { clearTimeout(to); }
 }
 const esc = t => String(t).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
-const EMO = { linhas_testa:'〰️', olhos:'👁️', sulco_nasolabial:'👃', manchas:'🟤', textura_poros:'🔍', flacidez:'🙂' };
-const ROTULO = ['quase nada', 'leve', 'moderado', 'bem marcado'];
 function resultadoPele(j){
-  const { min, max } = j.faixa, idade = dados.idade;
+  // decisão do Lucca (28/10): o resultado NÃO aparece; vai no 'complete' com o mesmo código das pernas e ele responde
+  const { min, max } = j.faixa, idade = dados.idade ?? null;
   peleRes = { min, max };
-  $('pr-age').textContent = `${min} a ${max} anos`;
-  $('pr-vs').textContent = !pernas ? '' : idade < min ? `Você tem ${idade}: a faixa ficou um pouco acima da sua idade.` :
-                          idade > max ? `Você tem ${idade}: sua pele aparenta menos que a sua idade.` : `Você tem ${idade}: bem na sua idade.`;
-  const vis = j.sinais.filter(s => s.visivel);
-  const alto = vis.filter(s => s.nivel >= 2).map(s => s.nome.toLowerCase()), baixo = vis.filter(s => s.nivel <= 1).map(s => s.nome.toLowerCase());
-  const lista = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a.at(-1) : a[0];
-  $('pr-resumo').textContent = alto.length ? `O que mais aparece: ${lista(alto)}.` : '';
-  $('pr-duo').hidden = !pernas; if (pernas){ $('pr-pernas').textContent = pernas.faixa; $('pr-pele').textContent = `${min} a ${max} anos`; }
-  $('pr-sinais').innerHTML = j.sinais.map(s => s.visivel
-    ? `<div class="sinal"><span class="e">${EMO[s.id] || '•'}</span><b>${esc(s.nome)}</b><span class="meter" title="${ROTULO[s.nivel]}">${[1,2,3].map(k => `<i class="${s.nivel >= k ? 'on' : ''}"></i>`).join('')}</span><small></small></div>`
-    : `<div class="sinal off"><span class="e">🙈</span><b>${esc(s.nome)}</b><span></span><small>Ficou coberto, não entrou na análise.</small></div>`).join('');
-  [...$('pr-sinais').querySelectorAll('.sinal:not(.off) small')].forEach((el, k) => el.textContent = ROTULO[vis[k].nivel]);
+  $('pr-tit').innerHTML = pernas ? 'Seus testes foram enviados ao <em>Dr. Lucca</em>' : 'Sua análise foi enviada ao <em>Dr. Lucca</em>';
   $('pr-cod').textContent = meuCodigo();
   ctaPernas();
-  const { modo, ocultas } = ultimoEnvio || {};
+  const { modo, ocultas, origem } = ultimoEnvio || {};
   Analytics.track('complete', { stepId:'pele-resultado', stepIndex:order.indexOf('pele-resultado'), valueText:`${min}-${max}`,
-    props:{ codigo:meuCodigo(), modo, ocultas:(ocultas || []).join('+') || 'nenhuma', qualidade:j.qualidade?.nota, confianca:j.confianca, idade } });
+    props:{ codigo:meuCodigo(), faixa:`${min} a ${max} anos`, confianca:j.confianca, qualidade:j.qualidade?.nota, qualidade_motivo:j.qualidade?.motivo || null,
+            modo, ocultas:(ocultas || []).join('+') || 'nenhuma', origem, idade,
+            sinais:j.sinais.map(x => ({ id:x.id, visivel:x.visivel, nivel:x.nivel, obs:x.obs })) } });
   falar('Pronto.', true);
   show('pele-resultado');
   if (window.__peleResult) window.__peleResult(j);
