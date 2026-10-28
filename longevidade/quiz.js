@@ -471,7 +471,7 @@ function renderResult() {
   if (medico) {
     const msg = CONFIG.whatsapp.msgMedico(state, curto, op, cod);
     main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_medico', onclick: () => clique('whatsapp_medico') }, R.medico.cta);
-    alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.direct, target: '_blank', rel: 'noopener', 'data-cta': 'direct',
+    alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.direct, 'data-cta': 'direct',   // sem _blank: o toque abre o app do Instagram (universal link)
       onclick: () => { copiar(msg); clique('direct'); toast(R.medico.copiado); } }, R.medico.alt);
   } else {
     const msg = CONFIG.whatsapp.msgPlano(state, curto, op, cod);

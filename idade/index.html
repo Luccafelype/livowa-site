@@ -17,9 +17,6 @@
   --mono:"IBM Plex Mono",ui-monospace,monospace;
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
-  --bg:#0e1311; --surface:#171f1b; --fg:#e7ede9; --muted:#9aa89f; --line:#27322c;
-  --accent:#52c99c; --accent-2:#173328; --on-accent:#08130e; --warn:#e8ad55; --warn-bg:#33270f; color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%}
@@ -146,7 +143,7 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .aviso-dm b{font:800 1.5rem/1.15 var(--display)}
 .aviso-dm q{font:600 1.15rem/1.35 var(--body);color:var(--accent);quotes:'“' '”'}
 .aviso-dm span{font-size:1.05rem}
-.aviso-dm a{color:var(--muted);font-size:.9rem}
+.aviso-dm a.btn{color:var(--on-accent)}
 .esquema{display:block;width:min(196px,52vw);aspect-ratio:1/1.15;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:22px}
 .legenda{font-size:.9rem;color:var(--muted)}
 .legenda b{color:var(--fg);font-weight:600}
@@ -253,11 +250,10 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
   </section>
 
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
-    <span class="pill">Pronto</span>
-    <h2>Seu teste foi enviado ao <em>Dr. Lucca</em></h2>
-    <p class="sub">Ele olha o seu resultado e te responde pessoalmente, por áudio.</p>
+    <span class="pill">Último passo</span>
+    <h2>Seu teste está <em>em análise</em></h2>
+    <p class="sub">Mande uma mensagem no WhatsApp ou no Direct do Dr. Lucca com este código.</p>
     <div class="codigo grande"><span>Seu código</span><b id="res-cod">LV-0000</b></div>
-    <small class="cod-nota">Mande o código pelo WhatsApp ou pelo Direct.</small>
     <div class="pele-card" id="pele-card" hidden>
       <div>
         <span class="pill sm">Uma selfie</span>
@@ -274,7 +270,7 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
     <h2>Quantos anos a sua <em>pele</em> aparenta?</h2>
     <p class="sub">Tire uma selfie de frente para a luz. O Dr. Lucca olha a análise e te responde pessoalmente.</p>
     <label class="consent"><input type="checkbox" id="pele-ok"><span>Tenho 18 anos ou mais e autorizo a análise da minha foto.</span></label>
-    <p class="seguro">É seguro: não guardamos suas imagens.</p>
+    <p class="seguro">Observação: não guardamos suas imagens.</p>
   </section>
 
   <section class="screen" data-s="pele-camera" data-p="45" hidden>
@@ -316,11 +312,10 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
   </section>
 
   <section class="screen c final" data-s="pele-resultado" data-p="100" hidden>
-    <span class="pill">Pronto</span>
-    <h2 id="pr-tit">Sua análise foi enviada ao <em>Dr. Lucca</em></h2>
-    <p class="sub">Ele olha o seu resultado e te responde pessoalmente, por áudio.</p>
+    <span class="pill">Último passo</span>
+    <h2 id="pr-tit">Sua foto está <em>em análise</em></h2>
+    <p class="sub">Mande uma mensagem no WhatsApp ou no Direct do Dr. Lucca com este código.</p>
     <div class="codigo grande"><span>Seu código</span><b id="pr-cod">LV-0000</b></div>
-    <small class="cod-nota">Mande o código pelo WhatsApp ou pelo Direct.</small>
   </section>
 
   <div class="cta"><div>
@@ -333,7 +328,7 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
     <b>Copiamos a sua mensagem</b>
     <q id="aviso-msg">Oi, Dr. Lucca! Meu código é LV-0000</q>
     <span>No Direct, toque e segure na caixa de mensagem e escolha <b style="font:inherit;font-weight:700">Colar</b>.</span>
-    <a id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrindo o Direct… toque aqui se não abrir</a>
+    <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
   </div></div>
 </div>
 
@@ -713,10 +708,10 @@ function abrirDirect(e){
   const txt = `Oi, Dr. Lucca! Meu código é ${meuCodigo()}`, url = $('cta-dm').href;
   copiar(txt);
   Analytics.track('cta_click', { stepId:cur, valueText:'direct' });
-  $('aviso-msg').textContent = txt; $('aviso-link').href = url; $('aviso-dm').hidden = false;
-  setTimeout(() => { location.href = url; setTimeout(() => { $('aviso-dm').hidden = true; }, 2500); }, 1500);
+  $('aviso-msg').innerHTML = `Oi, Dr. Lucca! Meu código é <span style="white-space:nowrap">${meuCodigo()}</span>`; $('aviso-link').href = url; $('aviso-dm').hidden = false;   // a pessoa toca em "Abrir o Direct": abre o app
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
+$('aviso-link').addEventListener('click', () => setTimeout(() => { $('aviso-dm').hidden = true; }, 800));
 
 // =====================================================================
 // PELE: a pessoa se vê na tela e vê a foto já recortada e com tarja antes de enviar. Recorte, tarja e limpeza do arquivo
@@ -1053,7 +1048,7 @@ function resultadoPele(j){
   // decisão do Lucca (28/10): o resultado NÃO aparece; vai no 'complete' com o mesmo código das pernas e ele responde
   const { min, max } = j.faixa, idade = dados.idade ?? null;
   peleRes = { min, max };
-  $('pr-tit').innerHTML = pernas ? 'Seus testes foram enviados ao <em>Dr. Lucca</em>' : 'Sua análise foi enviada ao <em>Dr. Lucca</em>';
+  $('pr-tit').innerHTML = pernas ? 'Seus testes estão <em>em análise</em>' : 'Sua foto está <em>em análise</em>';
   $('pr-cod').textContent = meuCodigo();
   ctaPernas();
   const { modo, ocultas, origem } = ultimoEnvio || {};
