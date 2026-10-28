@@ -744,7 +744,9 @@ function contorno(R, enc = 0.025){ const c = media(OVAL.map(i => R[i])); return 
 function tarjas(g, ocultas){
   const { R, iod } = g, t = [];
   // só a abertura dos olhos, de um canto ao outro; pés de galinha (lateral) e olheira (abaixo) ficam à mostra
-  if (ocultas.includes('olhos')){ const b = caixa([...OLHO_A, ...OLHO_B].map(i => R[i])); t.push({ nome:'olhos', x0:Math.min(R[33].x, b.x0)-.04*iod, x1:Math.max(R[263].x, b.x1)+.04*iod, y0:b.y0-.05*iod, y1:b.y1+.05*iod }); }
+  // uma tarja pequena em cada olho, só na abertura: pés de galinha (canto de fora) e olheira (abaixo) ficam à mostra
+  if (ocultas.includes('olhos')) for (const olho of [OLHO_A, OLHO_B]){ const b = caixa(olho.map(i => R[i]));
+    t.push({ nome:'olhos', x0:b.x0-.02*iod, x1:b.x1+.02*iod, y0:b.y0-.025*iod, y1:b.y1+.025*iod }); }
   if (ocultas.includes('sobrancelhas')){ const b = caixa(SOBRANCELHAS.map(i => R[i])); t.push({ nome:'sobrancelhas', x0:b.x0-.08*iod, x1:b.x1+.08*iod, y0:b.y0-.10*iod, y1:b.y1+.07*iod }); }
   if (ocultas.includes('boca')){ const b = caixa(LABIOS.map(i => R[i])); t.push({ nome:'boca', x0:b.x0-.12*iod, x1:b.x1+.12*iod, y0:b.y0-.10*iod, y1:b.y1+.10*iod }); }
   return t;
