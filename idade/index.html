@@ -252,8 +252,8 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Último passo</span>
-    <h2>Seu teste está <em>em análise</em></h2>
-    <p class="sub">Mande uma mensagem no WhatsApp ou no Direct do Dr. Lucca com este código.</p>
+    <h2>Seu resultado está <em>pronto</em></h2>
+    <p class="sub">Mande uma mensagem no WhatsApp ou no Direct do Dr. Lucca com este código para receber a explicação.</p>
     <div class="codigo grande"><span>Seu código</span><b id="res-cod">LV-0000</b></div>
     <div class="pele-card" id="pele-card" hidden>
       <div>
@@ -1055,7 +1055,7 @@ function resultadoPele(j){
   // decisão do Lucca (28/10): o resultado NÃO aparece; vai no 'complete' com o mesmo código das pernas e ele responde
   const { min, max } = j.faixa, idade = dados.idade ?? null;
   peleRes = { min, max };
-  $('pr-tit').innerHTML = pernas ? 'Seus testes estão <em>em análise</em>' : 'Sua foto está <em>em análise</em>';
+  $('pr-tit').innerHTML = 'Sua foto está <em>em análise</em>';
   $('pr-cod').textContent = meuCodigo();
   ctaPernas();
   const { modo, ocultas, origem } = ultimoEnvio || {};
