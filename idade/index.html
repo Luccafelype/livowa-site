@@ -300,9 +300,9 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
   </section>
 
   <section class="screen c" data-s="pele-analise" data-p="85" hidden>
-    <video class="logo-anim" autoplay loop muted playsinline aria-hidden="true">
-      <source src="img/logo/logo-cometa-pagina.webm" type="video/webm">
-      <source src="img/logo/logo-cometa-pagina.mp4" type="video/mp4">
+    <video class="logo-anim" autoplay muted playsinline aria-hidden="true">
+      <source src="img/logo/logo-caligrafia-pagina.webm" type="video/webm">
+      <source src="img/logo/logo-caligrafia-pagina.mp4" type="video/mp4">
     </video>
     <h2>Enviando ao <em>Dr. Lucca</em>…</h2>
     <p class="sub" id="pele-etapa">Preparando sua foto</p>
@@ -1028,7 +1028,7 @@ async function enviarPele(){
   const imagem = cv.toDataURL('image/jpeg', .9).split(',')[1]; cv.width = cv.height = 0;
   ultimoEnvio = { modo, ocultas, origem:captura.origem, kb: Math.round(imagem.length*3/4/1024) };
   Analytics.track('answer', { stepId:'pele-envio', valueText: modo === 'retalhos' ? 'retalhos' : (ocultas.join('+') || 'sem-tarja'), props:{ origem:captura.origem } });
-  show('pele-analise');
+  show('pele-analise'); { const v = document.querySelector('.logo-anim'); if (v){ v.currentTime = 0; v.play().catch(() => {}); } }   // a caligrafia toca uma vez ao entrar na espera
   const etapas = ['Preparando sua foto', 'Enviando', 'Quase pronto'];
   let pct = 0, i = 0;
   const tick = setInterval(() => { pct = Math.min(92, pct + (pct < 60 ? 7 : 3)); $('pele-bar').style.width = pct + '%'; $('pele-pct').textContent = pct + '%'; if (pct > 35*(i+1) && i < 2) $('pele-etapa').textContent = etapas[++i]; }, 450);
