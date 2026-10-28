@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Seu perfil de longevidade</title>
+<meta name="description" content="6 perguntas, 1 minuto. Veja o que os estudos mostram para pessoas com o seu perfil. Dr. Lucca Marques, médico, CRM-GO 33.990.">
+<meta property="og:title" content="Seu perfil de longevidade">
+<meta property="og:description" content="6 perguntas, 1 minuto. O que os estudos mostram para o seu perfil.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f2f4f1">
+<link rel="icon" href="data:,">
+<script>
+  // livowa.com/longevidade (sem barra) quebraria os caminhos relativos: força a barra final.
+  (function () {
+    var p = location.pathname;
+    if (!/\/$/.test(p) && !/\.[a-z0-9]+$/i.test(p)) location.replace(p + '/' + location.search + location.hash);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="style.css?v=lg1">
+</head>
+<body>
+<div class="app">
+  <div class="top" id="top" hidden>
+    <button class="back" id="back" type="button" aria-label="Voltar">←</button>
+    <div class="bar" aria-hidden="true"><i id="progress"></i></div>
+  </div>
+  <main id="screens"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script type="module" src="quiz.js?v=lg1"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Livowa</title>
+<style>body{margin:0;background:#0e1311;color:#e7ede9;font:16px system-ui,sans-serif;display:grid;place-items:center;min-height:100vh}a{color:#52c99c}</style>
+</head>
+<body>
+<noscript><a href="/idade/">Continuar</a></noscript>
+<script type="module">
+// Link da bio: um endereço, vários funis. Troque TEMA quando outro vídeo viralizar; o peso divide o tráfego.
+// ?f=<id> força um braço (ex.: link mandado na DM da palavra-chave).
+const TEMA = 'longevidade';
+const BRACOS = {
+  longevidade: [
+    { id:'teste', url:'/idade/',       peso:50 },
+    { id:'quiz',  url:'/longevidade/', peso:50 },
+  ],
+};
+import * as Analytics from './funnel-analytics.js';
+const q = new URLSearchParams(location.search), lista = BRACOS[TEMA], chave = 'livowa_braco_' + TEMA;
+let id = q.get('f');
+if (!lista.some(b => b.id === id)){
+  try { id = localStorage.getItem(chave); } catch {}
+  if (!lista.some(b => b.id === id)){
+    let r = Math.random() * lista.reduce((a,b) => a + b.peso, 0);
+    id = lista.find(b => (r -= b.peso) < 0).id;
+  }
+}
+try { localStorage.setItem(chave, id); } catch {}
+const braco = lista.find(b => b.id === id);
+Analytics.init({ enabled:true, funnelId:'link-bio', variant:id,
+  supabaseUrl:'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', supabaseKey:'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K' });
+Analytics.track('view', { stepId:'roteador', valueText:TEMA });
+q.delete('f'); q.set('v', id);   // sem ?sid: cada funil abre a própria sessão (a tabela de sessões é por sid) if (!q.has('utm_source')) q.set('utm_source', 'ig_bio');
+setTimeout(() => location.replace(braco.url + '?' + q), 150);   // dá tempo do evento sair (keepalive)
+</script>
+</body>
+</html>
