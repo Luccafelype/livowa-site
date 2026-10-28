@@ -1,15 +1,28 @@
 // ============================================================
 // LIVOWA — Quiz de longevidade (livowa.com/longevidade/)
 // Motor herdado de ~/Desktop/Code/livowa-quiz (flow declarativo + funnel-analytics).
-// EDITAR AQUI: textos, perguntas, mensagens de WhatsApp, links, analytics.
+// EDITAR AQUI: textos, perguntas, VSLs, mensagens de WhatsApp, links, analytics.
 //
 // Regras que este arquivo segue (não quebrar ao editar):
 // - Sem promessa de resultado, sem "grátis" ligado a consulta, sem depoimento,
 //   sem número de clientes, sem estrela (CFM 2.336/2023; regras da Livowa).
-// - Nada diz o que a pessoa "tem": o resultado é o relato dela + o que os estudos
-//   mostram em populações, sempre com a fonte na tela.
+// - Nada diz o que a pessoa "tem". Estudo entra com uma frase e a fonte embaixo.
 // - "6 perguntas" na capa é verdadeiro: objetivo, idade, rotina, incomoda,
 //   atrapalha, sozinho/médico. Se mudar o número de perguntas, mude a capa.
+// - value das opções = o que vai pro analytics. Não trocar (só label/curto).
+//
+// Marcação nos textos de tela (lida pelo quiz.js; o texto é escapado antes):
+//   *trecho*    → cor de destaque
+//   ==trecho==  → marca-texto
+//   **trecho**  → negrito
+// Tom (lg2, 28/10): o do beconfident, falado, 2ª pessoa, frases curtas, desejo e dor
+// com as palavras do público (VOZ-DO-PUBLICO.md, pesquisa/voz-do-empresario.md).
+// Nada de explicar como o quiz funciona.
+//
+// lg2b (28/10, depois do teste do Lucca no celular): objetivo virou múltipla; saiu o
+// gráfico (ele não entendeu) e entrou a demo do teste das pernas; ciência em 1 frase;
+// resultado mínimo com VSL por perfil (tabela vsls); a mensagem leva só um CÓDIGO
+// (as respostas vão no evento 'complete' do analytics, props.codigo + props.respostas).
 // ============================================================
 
 // variante do A/B lida da URL: livowa.com/longevidade/?v=B
@@ -22,7 +35,7 @@ function varianteDaUrl() {
 
 export const CONFIG = {
 
-  versao: 'lg1',
+  versao: 'lg2',
 
   // true = pede nome + WhatsApp (com consentimento LGPD) ANTES do resultado.
   // Padrão false: a pesquisa do projeto (quiz-pos-teste.md, CFM 2.336 art. 11 §4º "a")
@@ -30,147 +43,156 @@ export const CONFIG = {
   pedirContatoAntes: false,
 
   links: {
-    teste: '/idade/',                                       // teste das pernas (botão secundário)
+    teste: '/idade/',                                       // teste das pernas (link pequeno no resultado)
     direct: 'https://ig.me/m/dr.luccamarques',              // DM do Instagram (não aceita texto pronto)
     instagram: 'https://www.instagram.com/dr.luccamarques/',
     politica: ''                                            // URL da política de privacidade (vazio = sem link)
   },
 
   // ---- Tela 1: capa ----
+  // Desejo como processo ("pra chegar aos 70 subindo escada"), nunca prazo de resultado.
   hero: {
-    who: '<b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990',
-    title: 'Seu perfil de longevidade em 1 minuto',
-    subtitle: 'Você responde 6 perguntas, só com toques. No fim, vê o que os estudos mostram para pessoas com o seu perfil.',
-    cards: [
-      { big: '6 perguntas', small: 'só toque, sem digitar' },
-      { big: '1 minuto', small: 'o resumo sai na hora' }
-    ],
-    cta: 'Começar'
+    pill: '🔒 6 perguntas · leva 1 minuto',
+    title: 'Responda 6 perguntas e veja o que pesa pra chegar ==aos 70== *subindo escada sem pensar*',
+    subtitle: 'No fim, tem *um vídeo do Dr. Lucca pra quem está na sua fase*.',
+    subtitleSemVideo: 'No fim, você vê *o próximo passo pra quem está na sua fase*.',   // usado enquanto nenhuma VSL tiver vídeo
+    cta: 'Responder quiz de 1 minuto →',
+    who: 'Feito pelo **Dr. Lucca Marques** · Médico · CRM-GO 33.990'
   },
 
   // ============================================================
   // FLOW — uma tela por item, na ordem.
   // type: info | single | multi | capture
   // condition: (state) => boolean  (false = tela pulada)
-  // Opções: value (vai pro analytics), emoji, label (na tela), curto (no perfil e na mensagem)
+  // Opções: value (vai pro analytics), emoji, label (na tela), curto (no perfil/loading)
   // ============================================================
   flow: [
 
-    // ---- Tela 2: autoridade ----
+    // ---- Tela 2: autoridade (no lugar da prova social do beconfident: médico + estudo com fonte) ----
     {
       id: 'autoridade', type: 'info', view: 'autoridade',
-      eyebrow: 'Quem fez este quiz',
-      title: 'Feito por médico, com estudo publicado',
+      pill: '🩺 Quem montou este quiz',
+      title: 'Quem vai ler *as suas respostas*',
       medico: { nome: 'Dr. Lucca Marques', linha: 'Médico · CRM-GO 33.990', iniciais: 'LM' },
-      texto: 'As perguntas e o resumo do fim usam estudos publicados. A fonte aparece na tela.',
       estudo: {
         numero: '12.864',
-        texto: 'pessoas de 18 a 98 anos fizeram o mesmo teste de pernas que usamos como referência.',
+        texto: 'pessoas fizeram o teste de pernas que ele usa como régua.',
         fonte: 'Coelho-Junior et al., J Cachexia Sarcopenia Muscle, 2024'
       },
-      cta: 'Continuar'
+      cta: 'Continuar →'
     },
 
-    // ---- Tela 3: objetivo (pergunta 1) ----
+    // ---- Tela 3: objetivo (pergunta 1, MÚLTIPLA desde lg2b) ----
     {
-      id: 'objetivo', type: 'single',
-      title: 'Daqui a 10 anos, o que você quer estar fazendo?',
+      id: 'objetivo', type: 'multi',
+      title: 'Daqui a 10 anos, o que você quer *continuar fazendo*?',
+      subtitle: '(Marque tudo o que você quer)',
       options: [
-        { value: 'escada',      emoji: '🪜', label: 'Subir escada e carregar peso sem pensar', curto: 'subir escada e carregar peso sem pensar' },
-        { value: 'familia',     emoji: '👨‍👩‍👧', label: 'Ter disposição para filhos e netos',        curto: 'ter disposição para filhos e netos' },
-        { value: 'trabalho',    emoji: '💼', label: 'Trabalhar no meu ritmo, sem me arrastar',  curto: 'trabalhar no meu ritmo, sem me arrastar' },
-        { value: 'viajar',      emoji: '🧳', label: 'Viajar e andar o dia inteiro',             curto: 'viajar e andar o dia inteiro' },
-        { value: 'esporte',     emoji: '🎾', label: 'Continuar no esporte que eu gosto',        curto: 'continuar no esporte que eu gosto' },
-        { value: 'independente',emoji: '🧍', label: 'Não depender de ninguém',                  curto: 'não depender de ninguém' }
+        { value: 'escada',      emoji: '🪜', label: 'Subir escada e carregar as compras sem pensar duas vezes', curto: 'subir escada e carregar peso sem pensar' },
+        { value: 'familia',     emoji: '👪', label: 'Ter disposição pra acompanhar filho e neto, sem ficar de fora', curto: 'ter disposição com filhos e netos' },
+        { value: 'trabalho',    emoji: '💼', label: 'Trabalhar no meu ritmo sem chegar no fim do dia no limite', curto: 'trabalhar sem chegar no limite no fim do dia' },
+        { value: 'viajar',      emoji: '🧳', label: 'Viajar e andar o dia inteiro sem procurar banco pra sentar', curto: 'viajar e andar o dia inteiro' },
+        { value: 'esporte',     emoji: '🎾', label: 'Continuar no futebol, na corrida ou no tênis sem me machucar', curto: 'continuar no esporte' },
+        { value: 'independente',emoji: '🧍', label: 'Não depender de ninguém pra levantar, sair e resolver minhas coisas', curto: 'não depender de ninguém' }
       ]
     },
 
-    // ---- Pergunta 2: idade (marca a faixa no gráfico e escolhe o estudo do resultado) ----
+    // ---- Pergunta 2: idade ----
     {
       id: 'idade', type: 'single',
       title: 'Quantos anos você tem?',
-      subtitle: 'Para comparar com pessoas da sua idade.',
       options: [
-        { value: 'ate39', label: 'Até 39 anos', curto: 'até 39 anos', faixa: [18, 39] },
-        { value: '40-49', label: '40 a 49 anos', curto: '40 a 49 anos', faixa: [40, 49] },
-        { value: '50-59', label: '50 a 59 anos', curto: '50 a 59 anos', faixa: [50, 59] },
-        { value: '60-69', label: '60 a 69 anos', curto: '60 a 69 anos', faixa: [60, 69] },
-        { value: '70+',   label: '70 anos ou mais', curto: '70 anos ou mais', faixa: [70, 88] }
+        { value: 'ate39', emoji: '🌱', label: 'Até 39 anos',     curto: 'até 39 anos' },
+        { value: '40-49', emoji: '🌿', label: '40 a 49 anos',    curto: 'entre 40 e 49 anos' },
+        { value: '50-59', emoji: '🌳', label: '50 a 59 anos',    curto: 'entre 50 e 59 anos' },
+        { value: '60-69', emoji: '🍂', label: '60 a 69 anos',    curto: 'entre 60 e 69 anos' },
+        { value: '70+',   emoji: '🌾', label: '70 anos ou mais', curto: '70 anos ou mais' }
       ]
     },
 
-    // ---- Tela 4: "você está no lugar certo" + gráfico de potência por idade ----
+    // ---- Tela 4: "você está no lugar certo" + demo viva do teste das pernas ----
+    // A demo mostra o produto real (livowa.com/idade): 5 levantadas, cronômetro, barra medindo.
+    // Sem seta de resultado ("↑ subindo" seria promessa implícita).
     {
-      id: 'lugar-certo', type: 'info', view: 'grafico',
-      eyebrow: '🎯 Você está no lugar certo',
-      title: 'Muito disso passa pelas pernas',
-      texto: (s, curto) => `Você quer ${curto('objetivo') || 'chegar bem aos próximos 10 anos'}. A potência das pernas ajuda nisso, e ela dá para medir.`,
-      legenda: 'Potência mediana das pernas por idade, em W/kg. 12.864 pessoas.',
-      fonte: 'Coelho-Junior et al., J Cachexia Sarcopenia Muscle, 2024',
-      cta: 'Continuar'
+      id: 'lugar-certo', type: 'info', view: 'demo',
+      emoji: '🎯',
+      title: 'Perfeito, você está no lugar certo!',
+      texto: (s, curto) => {
+        const n = (s.answers.objetivo || []).length;
+        const quer = n === 1 ? curto('objetivo') : 'tudo isso';
+        return `Pra ${quer || 'chegar bem aos próximos 10 anos'}, muita coisa passa pelas pernas. E a força delas *dá pra medir em 1 minuto*.`;
+      },
+      demo: {
+        titulo: '🪑 Teste das pernas',
+        tag: '📱 câmera do celular',
+        contagem: 'levantadas da cadeira',
+        barra: 'Potência das pernas',
+        medindo: 'medindo…',
+        pronto: '✓ medida'
+      },
+      cta: 'Continuar →'
     },
 
     // ---- Tela 5: rotina (pergunta 3) ----
     {
       id: 'rotina', type: 'single',
-      title: 'Como é a sua rotina?',
+      title: 'E a sua semana, *como é hoje*?',
       options: [
-        { value: 'empresario', emoji: '💼', label: 'Tenho empresa ou cargo de gestão, agenda cheia', curto: 'empresa ou gestão, agenda cheia', perfil: 'Agenda cheia' },
-        { value: 'liberal',    emoji: '📋', label: 'Profissional liberal',               curto: 'profissional liberal',               perfil: 'Profissional liberal' },
-        { value: 'fixo',       emoji: '🕘', label: 'Trabalho em horário fixo',           curto: 'trabalho em horário fixo',           perfil: 'Horário fixo' },
-        { value: 'aposentado', emoji: '🌿', label: 'Já me aposentei', curto: 'já me aposentei', perfil: 'Aposentadoria' }
+        { value: 'empresario', emoji: '📈', label: 'Cuido de empresa ou equipe, e a agenda não para', curto: 'cuido de empresa ou equipe, com a agenda cheia', perfil: 'Agenda cheia' },
+        { value: 'liberal',    emoji: '📋', label: 'Sou profissional liberal',                curto: 'sou profissional liberal',  perfil: 'Profissional liberal' },
+        { value: 'fixo',       emoji: '🕘', label: 'Trabalho com hora pra entrar e pra sair',  curto: 'trabalho em horário fixo',  perfil: 'Horário fixo' },
+        { value: 'aposentado', emoji: '🌿', label: 'Já me aposentei',                          curto: 'já me aposentei',           perfil: 'Aposentadoria' }
       ]
     },
 
-    // ---- Tela 6: ciência (um estudo, uma frase, a fonte) ----
+    // ---- Tela 6: ciência — UMA frase + fonte pequena ----
     // Araújo 2025 (CLINIMEX, Rio): potência relativa, quartil mais baixo vs. mais alto, HR 5,88 (H) e 6,90 (M);
     // força relativa não significativa. Conferido no abstract (PMID 40304660); ver pesquisa/potencia-mortalidade.md.
+    // Atenção: o estudo NÃO mediu pernas (não escrever "potência das pernas" aqui).
     {
       id: 'ciencia', type: 'info', view: 'ciencia',
-      eyebrow: 'Um estudo brasileiro',
-      title: 'Na sobrevida, a potência muscular pesou mais que a força',
-      texto: 'Médicos no Rio acompanharam 3.889 pessoas de 46 a 75 anos por quase 11 anos. Quem tinha mais potência teve menos mortes no período.',
-      nota: 'Potência é força com velocidade: levantar rápido, subir rápido.',
-      fonte: 'Araújo et al., Mayo Clinic Proceedings, 2025',
-      cta: 'Continuar'
+      pill: '🎓 Pesquisa · Mayo Clinic Proceedings',
+      citacao: 'Na sobrevida, *a potência muscular pesou mais que a força*.',
+      fonte: 'Araújo et al., 2025 · 3.889 pessoas no Rio, por quase 11 anos',
+      cta: 'Continuar →'
     },
 
     // ---- Tela 7: o que incomoda (pergunta 4, múltipla) ----
     {
       id: 'incomoda', type: 'multi',
-      title: 'O que mais te incomoda hoje?',
-      subtitle: 'Pode marcar mais de uma.',
+      title: 'O que mais *te incomoda* hoje?',
+      subtitle: '(Marque tudo o que vale pra você)',
       options: [
-        { value: 'cansaco', emoji: '😮‍💨', label: 'Cansaço no fim do dia',            curto: 'cansaço no fim do dia' },
-        { value: 'peso',    emoji: '⚖️', label: 'Peso que não sai',                 curto: 'peso que não sai' },
-        { value: 'dor',     emoji: '🦵', label: 'Dor nas costas ou no joelho',      curto: 'dor nas costas ou no joelho' },
-        { value: 'exame',   emoji: '🧪', label: 'Exame alterado (glicose, colesterol, pressão)', curto: 'exame alterado' },
-        { value: 'forca',   emoji: '🏋️', label: 'Sentir que perdi força ou fôlego', curto: 'sentir que perdi força ou fôlego' },
-        { value: 'nada',    emoji: '🙂', label: 'Nada, quero me prevenir',          curto: 'nada, quero me prevenir', exclusiva: true }
+        { value: 'cansaco', emoji: '😮‍💨', label: 'Cansaço que não passa nem depois de dormir',         curto: 'o cansaço que não passa' },
+        { value: 'peso',    emoji: '⚖️', label: 'A barriga que só cresce, mesmo comendo igual',        curto: 'a barriga que só cresce' },
+        { value: 'dor',     emoji: '🦵', label: 'Dor nas costas ou no joelho que atrapalha o dia',     curto: 'a dor nas costas ou no joelho' },
+        { value: 'exame',   emoji: '🧪', label: 'Exame que veio alterado: pressão, glicose ou colesterol', curto: 'um exame que veio alterado' },
+        { value: 'forca',   emoji: '🏋️', label: 'Não consigo fazer as mesmas coisas que antes',        curto: 'não conseguir fazer as mesmas coisas que antes' },
+        { value: 'nada',    emoji: '🙂', label: 'Nada por enquanto, quero me cuidar antes',            curto: 'nada por enquanto, quero me cuidar antes', exclusiva: true }
       ]
     },
 
     // ---- Tela 8: o que atrapalha (pergunta 5, múltipla) ----
     {
       id: 'atrapalha', type: 'multi',
-      title: 'O que mais atrapalha hoje?',
-      subtitle: 'Pode marcar mais de uma.',
+      title: 'E o que *te trava* pra cuidar disso?',
+      subtitle: '(Marque tudo o que vale pra você)',
       options: [
-        { value: 'tempo',      emoji: '⏱️', label: 'Falta de tempo',              curto: 'falta de tempo' },
-        { value: 'comecar',    emoji: '🧭', label: 'Não sei por onde começar',    curto: 'não saber por onde começar' },
-        { value: 'constancia', emoji: '🔁', label: 'Manter a constância',         curto: 'manter a constância' },
-        { value: 'clinica',    emoji: '🏥', label: 'Ir a clínica e laboratório',  curto: 'ir a clínica e laboratório' },
-        { value: 'dor',        emoji: '🩹', label: 'Dor ou medo de me machucar',  curto: 'dor ou medo de me machucar' }
+        { value: 'tempo',      emoji: '⏱️', label: 'Não tenho tempo nem pra cuidar da saúde',      curto: 'a falta de tempo' },
+        { value: 'comecar',    emoji: '🧭', label: 'Não sei por onde começar',                    curto: 'não saber por onde começar' },
+        { value: 'constancia', emoji: '🔁', label: 'Começo bem e largo na segunda semana',        curto: 'começar e largar no meio' },
+        { value: 'clinica',    emoji: '🏥', label: 'Perder meio dia em clínica e laboratório',    curto: 'perder tempo em clínica e laboratório' },
+        { value: 'dor',        emoji: '🩹', label: 'Medo de me machucar ou piorar uma dor',       curto: 'o medo de me machucar' }
       ]
     },
 
     // ---- Tela 9: decoy (pergunta 6) — decide o CTA ----
     {
       id: 'ajuda', type: 'single',
-      title: 'Prefere fazer sozinho ou com médico acompanhando de perto?',
+      title: 'Você prefere fazer isso *por conta própria* ou com *um médico do lado*?',
       options: [
-        { value: 'sozinho', emoji: '🧭', label: 'Sozinho, com um plano',           desc: 'Um plano de 4 semanas para fazer em casa.', curto: 'fazer sozinho, com um plano' },
-        { value: 'medico',  emoji: '🩺', label: 'Com médico acompanhando de perto', desc: 'O Dr. Lucca acompanha e ajusta com você.',  curto: 'com médico acompanhando de perto' }
+        { value: 'sozinho', emoji: '🧭', label: 'Por conta própria, no meu ritmo',  desc: 'Um plano de 4 semanas pra fazer em casa.',  curto: 'por conta própria' },
+        { value: 'medico',  emoji: '🩺', label: 'Com um médico do lado',  desc: 'O Dr. Lucca acompanha e ajusta com você.',  curto: 'com médico acompanhando de perto' }
       ]
     },
 
@@ -178,114 +200,125 @@ export const CONFIG = {
     {
       id: 'contato', type: 'capture',
       condition: () => CONFIG.pedirContatoAntes,
-      title: 'Antes do resumo: seu nome e WhatsApp',
-      subtitle: 'O Dr. Lucca usa só para falar com você sobre estas respostas.',
+      title: 'Quase lá. *Pra onde* o Dr. Lucca pode te chamar?',
+      subtitle: 'Ele usa só pra falar com você sobre estas respostas.',
       fields: [
         { name: 'nome',     label: 'Nome',     placeholder: 'Como você se chama', type: 'text', required: true },
         { name: 'whatsapp', label: 'WhatsApp', placeholder: '(62) 99999-9999',    type: 'tel',  required: true, mask: 'phone' }
       ],
       consent: 'Autorizo o Dr. Lucca Marques e a Livowa a guardar meu nome, meu WhatsApp e minhas respostas deste quiz, que incluem informações de saúde, para falar comigo sobre elas. Posso pedir a exclusão quando quiser (LGPD, Lei 13.709/2018).',
-      consentErro: 'Para continuar, marque a autorização. Suas respostas incluem informações de saúde, e a lei pede o seu consentimento.',
-      cta: 'Ver meu resumo'
+      consentErro: 'Pra continuar, marque a autorização. Suas respostas falam de saúde, e a lei pede o seu consentimento.',
+      cta: 'Ver meu resultado →'
     }
   ],
 
-  // ---- Tela 10: loading que repete 3 respostas ----
+  // ---- Tela 10: loading (repete 3 respostas; não fala em IA) ----
   loading: {
-    title: 'Juntando suas respostas…',
+    emoji: '🚀',
+    title: 'Você chegou na melhor parte',
+    texto: 'Estou separando *o vídeo certo pra quem está na sua fase*.',
+    textoSemVideo: 'Estou juntando *o que você me contou*.',
+    barra: 'Montando seu resultado…',
     linhas: (s, curto) => [
       curto('rotina'),
-      'Incomoda: ' + curto('incomoda'),
-      'Atrapalha: ' + curto('atrapalha')
+      'O que incomoda: ' + curto('incomoda'),
+      'O que trava: ' + curto('atrapalha')
     ],
-    final: 'Separando os estudos da sua faixa de idade…',
+    final: 'Gerando o seu código…',
     durationMs: 3800
   },
 
-  // ---- Tela 11: resultado ----
+  // ---- Tela 11: resultado (mínimo: perfil + 1 frase + vídeo + botão) ----
+  // Título e frase vêm da VSL escolhida (tabela vsls abaixo).
   resultado: {
-    eyebrow: 'Seu perfil',
-    titulo: (s, curto, op) => `${op('rotina')?.perfil || 'Seu perfil'}, ${op('idade')?.curto || ''}`.replace(/, $/, ''),
-    linhas: (s, curto) => [
-      ['Daqui a 10 anos', curto('objetivo')],
-      ['Hoje incomoda', curto('incomoda')],
-      ['O que atrapalha', curto('atrapalha')],
-      ['Prefere', curto('ajuda')]
-    ],
-    estudosTitulo: 'O que os estudos mostram para esse perfil',
-    aviso: 'Este resumo junta suas respostas com estudos feitos em grupos de pessoas. Não é diagnóstico.',
-    teste: {
-      titulo: 'Quer um número só seu?',
-      texto: 'O teste das pernas mede a sua potência com a câmera do celular, em 1 minuto.',
-      cta: 'Fazer o teste das pernas'
-    },
+    pill: '✅ Seu resultado está pronto',
+    codigoLinha: 'Seu código guarda suas respostas para o Dr. Lucca ver.',
+    codigoRotulo: 'Seu código',
+    teste: 'Ou meça suas pernas agora, em 1 minuto →',
     medico: {
-      cta: 'Conversar com o Dr. Lucca',
-      linha: 'Abre o WhatsApp com a mensagem pronta, com suas respostas.',
+      cta: '💬 FALAR COM O DR. LUCCA',
       alt: 'Prefiro pelo Direct',
-      copiado: 'Mensagem copiada. No Direct, é só colar.'
+      copiado: 'Mensagem com o código copiada. No Direct, é só colar.'
     },
     sozinho: {
-      cta: 'Quero o plano de 4 semanas',
-      linha: 'Chega pelo WhatsApp. A mensagem já vai pronta.',
+      cta: '📲 QUERO O PLANO DE 4 SEMANAS',
       alt: 'Seguir @dr.luccamarques'
     }
   },
 
-  // Estudos do resultado. Cada um: texto curto + fonte. Todos conferidos na fonte:
-  // - Alcazar 2021 (PMC8350203, texto completo): sem mudança 20–30, queda não significativa 30–50,
-  //   queda de 0,10 (M) e 0,13 (H) W/kg/ano de 50 a 80. n=9.906, 20–103 anos.
-  // - Coelho-Junior 2024 (Lookup 7+, tab. S3/S6): mediana H 5,4 (46 a) → 4,0 (75 a) = −26%;
-  //   M 4,8 → 3,2 = −33%. "Um quarto" e "um terço" são conta sobre a tabela.
-  // - Baltasar-Fernandez 2021 (Sci Rep, PMC8484545, texto completo): potência baixa (<2,5 H; <1,9 M)
-  //   ligada a fragilidade (OR 5,6 e 6,9) e marcha lenta, em ≥60–65 anos.
-  // - Momma 2022 (Br J Sports Med, doi 10.1136/bjsports-2021-105061, abstract): 16 coortes; 30–60 min/semana
-  //   de exercício de força = maior redução (~10–20%) de mortalidade por todas as causas.
-  // - Lacroix 2017 (Sports Med, doi 10.1007/s40279-017-0747-6, abstract): 11 estudos, ≥65 anos saudáveis;
-  //   treino supervisionado > não supervisionado em força/potência (SMD 0,51).
-  estudos: {
-    idade: {
-      'ate39': { txt: 'Até perto dos 50 anos, a potência das pernas muda pouco. A queda média começa depois dos 50.', fonte: 'Alcazar et al., J Cachexia Sarcopenia Muscle, 2021 · 9.906 pessoas' },
-      '40-49': { txt: 'Antes dos 50, a potência das pernas cai pouco. Dos 50 aos 80 anos, ela cai um pouco a cada ano, em média.', fonte: 'Alcazar et al., J Cachexia Sarcopenia Muscle, 2021 · 9.906 pessoas' },
-      '50-59': { txt: 'Dos 46 aos 75 anos, a potência mediana das pernas cai cerca de um quarto nos homens e um terço nas mulheres.', fonte: 'Coelho-Junior et al., J Cachexia Sarcopenia Muscle, 2024 · 12.864 pessoas' },
-      '60-69': { txt: 'Dos 46 aos 75 anos, a potência mediana das pernas cai cerca de um quarto nos homens e um terço nas mulheres.', fonte: 'Coelho-Junior et al., J Cachexia Sarcopenia Muscle, 2024 · 12.864 pessoas' },
-      '70+':   { txt: 'A partir dos 65 anos, potência baixa nas pernas aparece junto com mais fragilidade e passo mais lento.', fonte: 'Baltasar-Fernandez et al., Scientific Reports, 2021' }
-    },
-    tempo:      { txt: 'Numa revisão de 16 estudos, 30 a 60 minutos por semana de exercício de força estiveram ligados a 10% a 20% menos mortes por qualquer causa.', fonte: 'Momma et al., Br J Sports Med, 2022' },
-    supervisao: { txt: 'Em pessoas com 65 anos ou mais, o treino de força com supervisão melhorou mais a força e a potência do que o treino feito sem supervisão.', fonte: 'Lacroix et al., Sports Medicine, 2017 · revisão de 11 estudos' }
-  },
+  // ============================================================
+  // VSLs POR PERFIL — o Lucca grava uma para cada perfil (roteiro em VSLS-PARA-GRAVAR.txt).
+  // Escolha: a PRIMEIRA cujo `quando` casar; se nenhuma casar, a que tem `padrao: true`.
+  // `quando`: { pergunta: [valores] } — todas as perguntas listadas precisam casar (E);
+  //           numa pergunta de múltipla, basta marcar um dos valores (OU).
+  //           Também aceita uma lista de objetos: casa se QUALQUER um casar.
+  // `video`: link do YouTube (não listado) ou de um .mp4 próprio. Vazio = o bloco de vídeo
+  //          não aparece (a tela fica só com título, frase e botão).
+  // `titulo` e `frase` aparecem no resultado com ou sem vídeo: escritos como espelho da
+  //          situação, sem prometer resultado.
+  // ============================================================
+  vslFormato: '9/16',          // proporção do player (9/16 = vertical de celular; 16/9 = deitado)
+  vsls: [
+    { id: 'exame-alterado',
+      quando: { incomoda: ['exame'] },
+      titulo: 'Exame alterado, e você quer agir antes',
+      frase: 'Exame alterado assusta. Dá pra olhar com calma e escolher o primeiro passo.',
+      video: '' },
+    { id: 'dor-medo',
+      quando: [{ incomoda: ['dor'] }, { atrapalha: ['dor'] }],
+      titulo: 'Dor e medo de piorar',
+      frase: 'Com dor, o primeiro passo é o que não machuca. Dá pra começar por aí.',
+      video: '' },
+    { id: 'prevencao-60',
+      quando: { idade: ['60-69', '70+'] },
+      titulo: 'Depois dos 60, sem depender de ninguém',
+      frase: 'Depois dos 60, as pernas viram prioridade. E dá pra começar em qualquer idade.',
+      video: '' },
+    { id: 'agenda-cheia',
+      quando: [{ atrapalha: ['tempo'] }, { rotina: ['empresario'] }],
+      titulo: 'Agenda cheia, pouco tempo',
+      frase: 'Você não precisa de duas horas por dia. Precisa de um plano que caiba na sua semana.',
+      video: '' },
+    { id: 'corpo-cobrando',
+      quando: { incomoda: ['cansaco', 'peso', 'forca'] },
+      titulo: 'O corpo começou a cobrar',
+      frase: 'Dá pra começar pelas pernas, sem virar a sua rotina de cabeça pra baixo.',
+      video: '' },
+    { id: 'padrao', padrao: true,
+      titulo: 'Quer chegar bem aos próximos 10 anos',
+      frase: 'O caminho passa pelas pernas, e começa simples.',
+      video: '' }
+  ],
 
   // ============================================================
-  // WhatsApp — mesmo número do livowa.com/idade
+  // CÓDIGO — vai na mensagem no lugar do resumo das respostas.
+  // Formato LV-XXXX, sem letras/números que se confundem (0/O, 1/I/L, 2/Z, 5/S, 8/B).
+  // As respostas ficam no evento 'complete' do analytics (props.codigo + props.respostas).
+  // Quem atende busca no Supabase:
+  //   select created_at, props from analytics.funnel_events
+  //   where funnel_id = 'quiz-longevidade' and event_type = 'complete' and props->>'codigo' = 'LV-7K3Q'
+  //   order by created_at desc;
+  // ============================================================
+  codigo: { prefixo: 'LV-', alfabeto: 'ACDEFHJKMNPQRTUVWXY34679', tamanho: 4 },
+
+  // ============================================================
+  // WhatsApp — mesmo número do livowa.com/idade. Mensagem curta e humana, só com o código.
+  // Assinatura: (state, curto, op, codigo)
   // ============================================================
   whatsapp: {
     number: '5562992836713',
-    msgMedico: (s, curto) =>
-      `Oi, Dr. Lucca! Fiz o quiz de longevidade.\n` +
-      `Daqui a 10 anos quero: ${curto('objetivo')}.\n` +
-      `Hoje me incomoda: ${curto('incomoda')}.\n` +
-      `O que atrapalha: ${curto('atrapalha')}.\n` +
-      `Prefiro: ${curto('ajuda')}.\n` +
-      `Tenho ${curto('idade')}; rotina: ${curto('rotina')}.\n` +
-      `Queria conversar sobre isso.`,
-    msgPlano: (s, curto) =>
-      `Oi! Fiz o quiz de longevidade e quero o plano de 4 semanas para fazer sozinho.\n` +
-      `Daqui a 10 anos quero: ${curto('objetivo')}.\n` +
-      `Hoje me incomoda: ${curto('incomoda')}.\n` +
-      `O que atrapalha: ${curto('atrapalha')}.\n` +
-      `Tenho ${curto('idade')}; rotina: ${curto('rotina')}.`
-  },
-
-  // Potência relativa (W/kg) por idade, P50 — Coelho-Junior 2024, Lookup 7+, tab. S3 (H) e S6 (M).
-  // [idade média da faixa, P50]. Só faixas medidas (sem extrapolação).
-  norma: {
-    homens:   [[24.4, 5.9], [36.1, 5.5], [46.0, 5.4], [55.6, 5.0], [65.6, 4.5], [74.8, 4.0], [84.2, 3.5]],
-    mulheres: [[25.0, 5.3], [35.7, 5.1], [46.4, 4.8], [55.4, 4.3], [65.4, 3.8], [74.7, 3.2], [83.6, 2.8]]
+    msgMedico: (s, curto, op, codigo) =>
+      `Oi, Dr. Lucca! Fiz o quiz da longevidade. Meu código é ${codigo}.\n` +
+      `Queria fazer isso com você acompanhando de perto.`,
+    msgPlano: (s, curto, op, codigo) =>
+      `Oi! Fiz o quiz da longevidade. Meu código é ${codigo}.\n` +
+      `Quero o plano de 4 semanas pra fazer por conta própria.`
   },
 
   // ============================================================
   // ANALYTICS — mesmo Supabase do quiz antigo. Em localhost só loga no console.
   // Eventos: view, step_view (cada tela), answer, lead_capture, complete, cta_click.
+  // complete: valueText = ajuda; props = { durationMs, codigo, vsl, respostas }.
   // ============================================================
   analytics: {
     enabled: true,

@@ -6,7 +6,7 @@
 // Conteúdo: config.js. Este arquivo não precisa mudar para trocar textos.
 // ============================================================
 
-import { CONFIG } from './config.js?v=lg1';
+import { CONFIG } from './config.js?v=lg2';
 import * as Analytics from './funnel-analytics.js?v=lg1';
 
 const FLOW = CONFIG.flow;
@@ -18,7 +18,8 @@ const state = {
   step: 0,            // 0 = capa · 1..N = flow · N+1 = loading · N+2 = resultado
   answers: {},        // { id: value | [values] }
   startedAt: null,
-  lead: { nome: '', whatsapp: '', consent: false }
+  lead: { nome: '', whatsapp: '', consent: false },
+  codigo: null        // LV-XXXX, gerado no fim do loading (vai na mensagem e no evento 'complete')
 };
 
 const $ = (id) => document.getElementById(id);
@@ -44,6 +45,13 @@ function el(tag, attrs = {}, ...children) {
 function haptic() { try { if ('vibrate' in navigator) navigator.vibrate(8); } catch (e) {} }
 function shake(n) { n.classList.remove('shake'); void n.offsetWidth; n.classList.add('shake'); }
 function ctaBar(...nodes) { return el('div', { class: 'cta' }, el('div', {}, ...nodes)); }
+function ctaInline(...nodes) { return el('div', { class: 'cta-inline' }, ...nodes); }
+// marcação do config: *cor* · ==marca-texto== · **negrito** (escapa o texto antes)
+function fmt(t) {
+  const esc = String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return esc.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/==(.+?)==/g, '<mark>$1</mark>').replace(/\*(.+?)\*/g, '<em class="hl">$1</em>');
+}
+const pill = (t, extra = '') => el('div', { class: 'pill' + extra, html: fmt(t) });
 function toast(msg) {
   const t = $('toast'); t.textContent = msg; t.hidden = false;
   clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, 3200);
@@ -143,21 +151,14 @@ function saveAnswer(id, value) {
 // ------------------------------------------------------------
 function renderHero() {
   const h = CONFIG.hero;
-  const cards = h.cards.map(c => el('div', { class: 'mini' }, el('b', {}, c.big), el('span', {}, c.small)));
-  if (CONFIG.pedirContatoAntes) cards[1].querySelector('span').textContent = 'e o resumo sai na hora';
-  return el('section', { class: 'screen' },
-    el('div', { class: 'who', style: 'margin-top:28px' }, el('span', { class: 'dot' }), el('span', { html: h.who })),
-    el('h1', {}, h.title),
-    el('p', { class: 'sub' }, h.subtitle),
-    el('div', { class: 'hero-card' }, cards),
-    el('ol', { class: 'steps' },
-      el('li', {}, el('em', {}, '1'), el('span', {}, 'Você responde, tocando na opção.')),
-      el('li', {}, el('em', {}, '2'), el('span', {}, 'Suas respostas são cruzadas com estudos publicados.')),
-      el('li', {}, el('em', {}, '3'), el('span', {}, 'Você vê o resumo e escolhe o próximo passo.'))
-    ),
-    ctaBar(el('button', { class: 'btn', id: 'go', type: 'button', onclick: () => {
+  return el('section', { class: 'screen hero no-cta' },
+    pill(h.pill),
+    el('h1', { html: fmt(h.title) }),
+    el('p', { class: 'sub', html: fmt(temVideo() ? h.subtitle : (h.subtitleSemVideo || h.subtitle)) }),
+    ctaInline(el('button', { class: 'btn', id: 'go', type: 'button', onclick: () => {
       haptic(); state.startedAt = state.startedAt || Date.now(); next();
-    } }, h.cta))
+    } }, h.cta)),
+    el('p', { class: 'who', html: fmt(h.who) })
   );
 }
 
@@ -168,9 +169,9 @@ function renderItem(it) {
   if (it.type === 'info') return renderInfo(it);
   if (it.type === 'capture') return renderCapture(it);
   const screen = el('section', { class: 'screen', 'data-id': it.id });
-  if (it.eyebrow) screen.appendChild(el('div', { class: 'eyebrow' }, txt(it.eyebrow)));
-  screen.appendChild(el('h2', {}, txt(it.title)));
-  if (it.subtitle) screen.appendChild(el('p', { class: 'sub' }, txt(it.subtitle)));
+  screen.classList.add('q');
+  screen.appendChild(el('h2', { html: fmt(txt(it.title)) }));
+  if (it.subtitle) screen.appendChild(el('p', { class: 'sub hint' }, txt(it.subtitle)));
   const box = el('div', { class: 'opts' });
   const saved = state.answers[it.id];
 
@@ -185,6 +186,7 @@ function renderItem(it) {
           setTimeout(next, 260);
         } },
         o.emoji ? el('span', { class: 'em', 'aria-hidden': 'true' }, o.emoji) : null,
+        el('span', { class: 'rd', 'aria-hidden': 'true' }),
         el('span', { class: 'tx' }, o.label, o.desc ? el('small', {}, o.desc) : null));
       box.appendChild(b);
     });
@@ -199,7 +201,7 @@ function renderItem(it) {
     if (!sel.size) { shake(go); return; }
     saveAnswer(it.id, it.options.filter(o => sel.has(o.value)).map(o => o.value));   // ordem da tela
     next();
-  } }, 'Continuar');
+  } }, 'Continuar →');
   const sync = () => {
     box.querySelectorAll('.opt').forEach(b => b.classList.toggle('on', sel.has(b.dataset.v)));
     if (sel.size) go.removeAttribute('disabled'); else go.setAttribute('disabled', 'disabled');
@@ -216,8 +218,8 @@ function renderItem(it) {
       sync();
     } },
       o.emoji ? el('span', { class: 'em', 'aria-hidden': 'true' }, o.emoji) : null,
-      el('span', { class: 'tx' }, o.label),
-      el('span', { class: 'ck', 'aria-hidden': 'true' }, '✓'));
+      el('span', { class: 'ck', 'aria-hidden': 'true' }, '✓'),
+      el('span', { class: 'tx' }, o.label));
     box.appendChild(b);
   });
   sync();
@@ -227,65 +229,66 @@ function renderItem(it) {
 }
 
 function renderInfo(it) {
-  const screen = el('section', { class: 'screen', 'data-id': it.id });
-  if (it.eyebrow) screen.appendChild(el('div', { class: 'eyebrow' }, txt(it.eyebrow)));
+  const screen = el('section', { class: 'screen info no-cta', 'data-id': it.id });
 
   if (it.view === 'autoridade') {
     screen.append(
-      el('h2', {}, txt(it.title)),
-      el('div', { class: 'card' },
-        el('div', { class: 'doc' }, el('div', { class: 'avatar', 'aria-hidden': 'true' }, it.medico.iniciais),
-          el('div', {}, el('b', {}, it.medico.nome), el('span', {}, it.medico.linha))),
-        el('p', {}, it.texto)),
-      el('div', { class: 'stat' }, el('b', {}, it.estudo.numero), el('p', {}, it.estudo.texto), el('span', { class: 'src' }, it.estudo.fonte))
+      pill(it.pill),
+      el('h2', { html: fmt(txt(it.title)) }),
+      el('div', { class: 'card doc' },
+        el('div', { class: 'avatar', 'aria-hidden': 'true' }, it.medico.iniciais),
+        el('div', {}, el('b', {}, it.medico.nome), el('span', {}, it.medico.linha))),
+      el('div', { class: 'bignum' },
+        el('b', {}, it.estudo.numero),
+        el('p', {}, it.estudo.texto),
+        el('span', { class: 'src' }, it.estudo.fonte))
     );
-  } else if (it.view === 'grafico') {
+  } else if (it.view === 'demo') {
     screen.append(
-      el('h2', {}, txt(it.title)),
-      el('p', { class: 'sub' }, txt(it.texto)),
-      el('div', { class: 'card' },
-        grafico(),
-        el('div', { class: 'legend' },
-          el('span', {}, el('i', { style: 'background:var(--accent)' }), 'homens'),
-          el('span', {}, el('i', { style: 'background:var(--f-line)' }), 'mulheres'),
-          op('idade') ? el('span', {}, el('i', { style: 'background:var(--accent);opacity:.25;height:10px' }), 'sua idade') : null),
-        el('p', {}, it.legenda),
-        el('span', { class: 'src' }, it.fonte))
+      it.emoji ? el('div', { class: 'big-emoji', 'aria-hidden': 'true' }, it.emoji) : null,
+      el('h2', { html: fmt(txt(it.title)) }),
+      el('p', { class: 'sub', html: fmt(txt(it.texto)) }),
+      demoPernas(it.demo)
     );
   } else if (it.view === 'ciencia') {
     screen.append(
-      el('p', { class: 'big-quote' }, txt(it.title)),
-      el('p', { class: 'sub' }, txt(it.texto)),
-      it.nota ? el('p', { class: 'note' }, it.nota) : null,
-      el('span', { class: 'src' }, it.fonte)
+      pill(it.pill, ' muted'),
+      el('figure', { class: 'quote' },
+        el('span', { class: 'qmark', 'aria-hidden': 'true' }, '\u201C'),
+        el('blockquote', { html: fmt(txt(it.citacao)) }),
+        el('figcaption', { class: 'src' }, it.fonte))
     );
   }
-  screen.appendChild(ctaBar(el('button', { class: 'btn', type: 'button', id: 'go', onclick: () => { haptic(); next(); } }, it.cta || 'Continuar')));
+  screen.appendChild(ctaInline(el('button', { class: 'btn', type: 'button', id: 'go', onclick: () => { haptic(); next(); } }, it.cta || 'Continuar →')));
   return screen;
 }
 
-// Mini gráfico: potência mediana das pernas por idade (homens e mulheres), com a faixa da pessoa marcada
-function grafico() {
-  const W = 320, H = 190, L = 24, R = 10, T = 14, B = 22, X0 = 18, X1 = 90, Y1 = 7;
-  const x = a => L + (a - X0) / (X1 - X0) * (W - L - R);
-  const y = v => T + (1 - v / Y1) * (H - T - B);
-  const path = rows => rows.map((r, i) => (i ? 'L' : 'M') + x(r[0]).toFixed(1) + ' ' + y(r[1]).toFixed(1)).join(' ');
-  let g = '';
-  for (const v of [0, 2, 4, 6]) g += `<line class="ax" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${v}</text>`;
-  for (const a of [20, 40, 60, 80]) g += `<text x="${x(a)}" y="${H - 6}" text-anchor="middle">${a}</text>`;
-  g += `<text x="${W - R}" y="${H - 6}" text-anchor="end" dy="-12">idade</text>`;
-  const f = op('idade')?.faixa;
-  if (f) {
-    g += `<rect class="band" x="${x(f[0])}" y="${T - 6}" width="${x(f[1] + 1) - x(f[0])}" height="${y(0) - T + 6}" rx="4"/>`;
-    g += `<text class="bandl" x="${(x(f[0]) + x(f[1] + 1)) / 2}" y="${T + 4}" text-anchor="middle">você</text>`;
-  }
-  const { homens, mulheres } = CONFIG.norma;
-  g += `<path class="lm" d="${path(homens)}"/><path class="lf" d="${path(mulheres)}"/>`;
-  homens.forEach(r => { g += `<circle class="pm" cx="${x(r[0])}" cy="${y(r[1])}" r="2.6"/>`; });
-  mulheres.forEach(r => { g += `<circle class="pf" cx="${x(r[0])}" cy="${y(r[1])}" r="2.6"/>`; });
-  const box = document.createElement('div');   // innerHTML cria o <svg> no namespace certo
-  box.innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Potência mediana das pernas por idade: cai devagar até os 50 e mais rápido depois, em homens e mulheres">${g}</svg>`;
-  return box.firstElementChild;
+// Demo viva do teste das pernas (o produto real em livowa.com/idade): conta 5 levantadas,
+// o cronômetro corre e a barra mede. Repete em loop. Sem número de resultado, sem seta.
+function demoPernas(d) {
+  const cont = el('b', { class: 'dn' }, '0'), tempo = el('span', { class: 'dt' }, '0,0 s');
+  const fill = el('i'), estado = el('span', { class: 'ds' }, d.medindo);
+  const box = el('div', { class: 'card demo' },
+    el('div', { class: 'chart-head' }, el('b', {}, d.titulo), el('span', { class: 'tag' }, d.tag)),
+    el('div', { class: 'drow' },
+      el('div', { class: 'dcount' }, cont, el('small', {}, '/5'), el('span', {}, d.contagem, ' · ', tempo)),
+      el('div', { class: 'dchair', 'aria-hidden': 'true' }, el('span', {}, '🪑'), el('span', { class: 'dman' }, '🧍'))),
+    el('div', { class: 'dbar' }, el('div', { class: 'lhead' }, el('span', {}, d.barra), estado), el('div', { class: 'lbar' }, fill)));
+  const ciclo = 5200, t0 = performance.now();
+  requestAnimationFrame(function tick(now) {
+    if (!box.isConnected && now - t0 > 300) return;
+    const t = (now - t0) % ciclo, ativo = Math.min(t, 4200);
+    const n = Math.min(5, Math.floor(ativo / 840));
+    cont.textContent = String(n);
+    tempo.textContent = (ativo / 1000 * 2.1).toFixed(1).replace('.', ',') + ' s';
+    fill.style.width = Math.min(100, ativo / 4200 * 100) + '%';
+    const pronto = t >= 4200;
+    estado.textContent = pronto ? d.pronto : d.medindo;
+    box.classList.toggle('ok', pronto);
+    box.classList.toggle('up', !pronto && (Math.floor(ativo / 420) % 2 === 1));
+    requestAnimationFrame(tick);
+  });
+  return box;
 }
 
 // ------------------------------------------------------------
@@ -314,7 +317,8 @@ function formatPhone(raw) {
 }
 function renderCapture(it) {
   const screen = el('section', { class: 'screen', 'data-id': it.id });
-  screen.append(el('h2', {}, it.title), el('p', { class: 'sub' }, it.subtitle));
+  screen.classList.add('q');
+  screen.append(el('h2', { html: fmt(it.title) }), el('p', { class: 'sub' }, it.subtitle));
   const inputs = {};
   it.fields.forEach(f => {
     const isPhone = f.mask === 'phone';
@@ -357,17 +361,33 @@ function renderLoading() {
   const L = CONFIG.loading;
   const linhas = txt(L.linhas).filter(Boolean);
   const ul = el('ul', {}, linhas.map(t => el('li', {}, el('i', {}, '✓'), el('span', {}, t.charAt(0).toUpperCase() + t.slice(1)))));
-  const bar = el('i'), fin = el('p', { class: 'lfinal' });
-  const screen = el('section', { class: 'screen no-cta', 'data-id': 'loading' },
+  const bar = el('i'), fin = el('p', { class: 'lfinal' }), pct = el('span', { class: 'pct' }, '0%');
+  const screen = el('section', { class: 'screen info no-cta loading', 'data-id': 'loading' },
+    el('div', { class: 'big-emoji rocket', 'aria-hidden': 'true' }, L.emoji || '🚀'),
     el('h2', {}, L.title),
-    el('div', { class: 'load' }, ul, el('div', { class: 'lbar' }, bar), fin));
+    L.texto ? el('p', { class: 'sub', html: fmt(txt(temVideo() ? L.texto : (L.textoSemVideo || L.texto))) }) : null,
+    el('div', { class: 'load' },
+      el('div', { class: 'lhead' }, el('span', {}, L.barra || ''), pct),
+      el('div', { class: 'lbar' }, bar),
+      fin, ul));
   const lis = [...ul.children], passo = L.durationMs / (lis.length + 2);
   lis.forEach((li, i) => setTimeout(() => { li.classList.add('on'); bar.style.width = ((i + 1) / (lis.length + 1) * 100) + '%'; }, passo * (i + 0.4)));
-  setTimeout(() => { fin.textContent = L.final; bar.style.width = '100%'; }, passo * (lis.length + 0.4));
+  setTimeout(() => { fin.textContent = txt(L.final); bar.style.width = '100%'; }, passo * (lis.length + 0.4));
+  // % acompanha a barra
+  const t0 = performance.now();
+  requestAnimationFrame(function tick() {
+    if (!pct.isConnected && performance.now() - t0 > 300) return;   // saiu da tela
+    const w = bar.getBoundingClientRect().width, tot = bar.parentElement.getBoundingClientRect().width || 1;
+    pct.textContent = Math.min(100, Math.round(w / tot * 100)) + '%';
+    if (performance.now() - t0 < L.durationMs + 500) requestAnimationFrame(tick);
+  });
   const meu = state.step;
   setTimeout(() => {
     if (state.step !== meu) return;                          // a pessoa voltou no meio
-    Analytics.track('complete', { stepId: 'complete', valueText: state.answers.ajuda || null, props: { durationMs: Date.now() - (state.startedAt || Date.now()) } });
+    state.codigo = state.codigo || gerarCodigo();
+    Analytics.track('complete', { stepId: 'complete', valueText: state.answers.ajuda || null, props: {
+      durationMs: Date.now() - (state.startedAt || Date.now()),
+      codigo: state.codigo, vsl: escolherVsl().id, respostas: state.answers } });
     persistLocal();
     show(RESULT_STEP, { push: false });                      // o "voltar" do resultado pula o loading
   }, L.durationMs);
@@ -376,7 +396,7 @@ function renderLoading() {
 function persistLocal() {
   try {
     localStorage.setItem('livowa_longevidade_' + Date.now(), JSON.stringify({
-      ts: new Date().toISOString(), answers: state.answers, variant: CONFIG.analytics.variant,
+      ts: new Date().toISOString(), codigo: state.codigo, answers: state.answers, variant: CONFIG.analytics.variant,
       lead: state.lead.consent ? state.lead : null
     }));
   } catch (e) {}
@@ -385,15 +405,46 @@ function persistLocal() {
 // ------------------------------------------------------------
 // Tela 11: resultado
 // ------------------------------------------------------------
-function estudosDoPerfil() {
-  const E = CONFIG.estudos, a = state.answers, out = [];
-  if (E.idade[a.idade]) out.push(E.idade[a.idade]);
-  const atr = a.atrapalha || [];
-  if (atr.includes('tempo') || a.rotina === 'empresario') out.push(E.tempo);
-  if (atr.includes('comecar') || atr.includes('constancia') || a.ajuda === 'medico') out.push(E.supervisao);
-  if (out.length < 2) out.push(E.tempo);
-  return out.slice(0, 3);
+// Código curto e legível (LV-XXXX). Busca no Supabase: props->>'codigo'.
+function gerarCodigo() {
+  const C = CONFIG.codigo, A = C.alfabeto;
+  let out = '';
+  try {
+    const r = new Uint32Array(C.tamanho); crypto.getRandomValues(r);
+    r.forEach(v => { out += A[v % A.length]; });
+  } catch (e) { for (let i = 0; i < C.tamanho; i++) out += A[Math.floor(Math.random() * A.length)]; }
+  return C.prefixo + out;
 }
+
+// VSL do perfil: a primeira cujo `quando` casa; senão a padrão.
+function casa(cond) {
+  if (Array.isArray(cond)) return cond.some(casa);
+  return Object.entries(cond || {}).every(([id, vals]) => {
+    const v = state.answers[id];
+    return Array.isArray(v) ? v.some(x => vals.includes(x)) : vals.includes(v);
+  });
+}
+function escolherVsl() {
+  const L = CONFIG.vsls || [];
+  return L.find(v => !v.padrao && v.quando && casa(v.quando)) || L.find(v => v.padrao) || L[0] || { id: 'nenhuma' };
+}
+const temVideo = () => (CONFIG.vsls || []).some(v => v.video);
+
+// Player simples: YouTube (não listado) por iframe sem cookie, ou .mp4 próprio. Vazio = nada.
+function playerVsl(vsl) {
+  const url = (vsl.video || '').trim();
+  if (!url) return null;
+  const box = el('div', { class: 'vsl', style: `aspect-ratio:${vsl.formato || CONFIG.vslFormato || '9/16'}` });
+  const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/))([A-Za-z0-9_-]{6,})/);
+  if (yt) {
+    box.appendChild(el('iframe', { src: `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0&modestbranding=1&playsinline=1`,
+      title: vsl.titulo || 'Vídeo do Dr. Lucca', allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture', allowfullscreen: '', loading: 'lazy' }));
+  } else {
+    box.appendChild(el('video', { src: url, controls: '', playsinline: '', preload: 'metadata' }));
+  }
+  return box;
+}
+
 function copiar(texto) {
   let ok = false;
   try {
@@ -412,40 +463,33 @@ function clique(valor) {
 
 function renderResult() {
   const R = CONFIG.resultado, medico = state.answers.ajuda === 'medico';
-  const linhas = txt(R.linhas).filter(l => l[1]);
-  const screen = el('section', { class: 'screen', 'data-id': 'resultado' },
-    el('div', { class: 'perfil' },
-      el('div', { class: 'eyebrow' }, R.eyebrow),
-      el('h2', {}, txt(R.titulo)),
-      el('dl', {}, linhas.map(([k, v]) => [el('dt', {}, k), el('dd', {}, v.charAt(0).toUpperCase() + v.slice(1) + '.')]))),
-    el('div', { class: 'card' },
-      el('h3', {}, R.estudosTitulo),
-      el('ul', { class: 'facts' }, estudosDoPerfil().map(f => el('li', {}, f.txt, el('small', {}, f.fonte))))),
-    el('div', { class: 'card' },
-      el('h3', {}, R.teste.titulo),
-      el('p', {}, R.teste.texto),
-      el('a', { class: 'btn outline', id: 'cta-teste', href: CONFIG.links.teste, onclick: () => clique('teste_idade') }, R.teste.cta)),
-    el('p', { class: 'aviso' }, R.aviso)
-  );
+  const vsl = escolherVsl();
+  state.codigo = state.codigo || gerarCodigo();
+  const cod = state.codigo;
 
-  let bar;
+  let main, alt;
   if (medico) {
-    const msg = CONFIG.whatsapp.msgMedico(state, curto, op);
-    bar = ctaBar(
-      el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_medico', onclick: () => clique('whatsapp_medico') }, R.medico.cta),
-      el('p', { class: 'linha' }, R.medico.linha),
-      el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.direct, target: '_blank', rel: 'noopener', 'data-cta': 'direct',
-        onclick: () => { copiar(msg); clique('direct'); toast(R.medico.copiado); } }, R.medico.alt));
+    const msg = CONFIG.whatsapp.msgMedico(state, curto, op, cod);
+    main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_medico', onclick: () => clique('whatsapp_medico') }, R.medico.cta);
+    alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.direct, target: '_blank', rel: 'noopener', 'data-cta': 'direct',
+      onclick: () => { copiar(msg); clique('direct'); toast(R.medico.copiado); } }, R.medico.alt);
   } else {
-    const msg = CONFIG.whatsapp.msgPlano(state, curto, op);
-    bar = ctaBar(
-      el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_plano', onclick: () => clique('whatsapp_plano') }, R.sozinho.cta),
-      el('p', { class: 'linha' }, R.sozinho.linha),
-      el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.instagram, target: '_blank', rel: 'noopener', 'data-cta': 'seguir_instagram', onclick: () => clique('seguir_instagram') }, R.sozinho.alt));
+    const msg = CONFIG.whatsapp.msgPlano(state, curto, op, cod);
+    main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_plano', onclick: () => clique('whatsapp_plano') }, R.sozinho.cta);
+    alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.instagram, target: '_blank', rel: 'noopener', 'data-cta': 'seguir_instagram', onclick: () => clique('seguir_instagram') }, R.sozinho.alt);
   }
-  screen.appendChild(bar);
-  screen.style.paddingBottom = '190px';
-  return screen;
+  const video = playerVsl(vsl);
+  return el('section', { class: 'screen info no-cta result' + (video ? ' com-video' : ''), 'data-id': 'resultado', 'data-vsl': vsl.id },
+    pill(R.pill),
+    el('h2', { html: fmt(vsl.titulo || '') }),
+    vsl.frase ? el('p', { class: 'sub', html: fmt(vsl.frase) }) : null,
+    video,
+    ctaInline(
+      el('div', { class: 'codigo' }, el('span', {}, R.codigoRotulo), el('b', { id: 'codigo' }, cod)),
+      el('p', { class: 'linha' }, R.codigoLinha),
+      main, alt),
+    el('a', { class: 'link-teste', id: 'cta-teste', href: CONFIG.links.teste, onclick: () => clique('teste_idade') }, R.teste)
+  );
 }
 
 // ------------------------------------------------------------
