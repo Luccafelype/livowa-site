@@ -225,6 +225,11 @@ p{margin:0}
 
 <script type="module">
 import { PoseLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
+import * as Analytics from './funnel-analytics.js';
+// Medição do funil (Supabase); a variante e a sessão vêm do link da bio (?v=, ?sid=)
+Analytics.init({ enabled:true, funnelId:'teste-pernas', variant:new URLSearchParams(location.search).get('v') || 'direto',
+  supabaseUrl:'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', supabaseKey:'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K' });
+Analytics.track('view');
 
 const WHATSAPP = '5562992836713';   // número que recebe o "quero meu plano"
 const CHAIR = 0.45;                 // cadeira comum (os protocolos usam 43 a 46 cm)
@@ -269,7 +274,7 @@ const order = ['inicio','como','dados','camera','resultado'];
 let cur = 'inicio';
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
-  cur = s; const el = document.querySelector(`[data-s="${s}"]`);
+  cur = s; const el = document.querySelector(`[data-s="${s}"]`); Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s) });
   $('top').hidden = s === 'inicio';
   $('progress').style.width = (el.dataset.p || 0) + '%';
   const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true; $('cta-dm').hidden = true;
@@ -469,8 +474,10 @@ function resultado(c){
   const comp = pc >= 96 ? `entre os 5% mais potentes dos ${quem} da minha idade` : pc <= 4 ? `entre os 5% menos potentes dos ${quem} da minha idade` : `mais potente que ${pc} de cada 100 ${quem} da minha idade`;
   const msg = `Oi, Dr. Lucca! Fiz o teste das pernas: ${fmt(rel,1)} W/kg, ${comp} (tenho ${idade}), pernas de ${eq.txt}. Quero entender meu resultado.`;
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-  $('cta-dm').onclick = () => { try { navigator.clipboard.writeText(msg); } catch {} };   // a DM não aceita texto pronto: vai copiado
+  $('cta-dm').onclick = () => { try { navigator.clipboard.writeText(msg); } catch {} Analytics.track('cta_click', { valueText:'direct' }); };
+  $('cta-link').onclick = () => Analytics.track('cta_click', { valueText:'whatsapp' });   // a DM não aceita texto pronto: vai copiado
   falar('Pronto.', true);
+  Analytics.track('complete', { stepId:'resultado', stepIndex:order.length, valueText:eq.txt, props:{ rel:+rel.toFixed(2), pc, t:+t.toFixed(1), idade, sexo } });
   show('resultado');
   if (window.__stsResult) window.__stsResult({t, watts, rel, vel, reps:c.reps, faixa:eq.txt, pc});
 }
