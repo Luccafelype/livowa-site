@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Consulta por código</title>
+<style>
+/* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos. */
+:root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1311;--s:#171f1b;--fg:#e7ede9;--m:#9aa89f;--l:#27322c;--a:#52c99c;--a2:#173328;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,sans-serif}
+main{max-width:560px;margin:auto;padding:20px 16px 48px}
+h1{font-size:1.4rem;margin:0 0 14px}
+form{display:flex;gap:8px;margin-bottom:18px}
+input{flex:1;min-width:0;font:700 1.2rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;padding:12px;border:1.5px solid var(--l);border-radius:12px;background:var(--s);color:var(--fg)}
+button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;background:var(--a);color:var(--bg)}
+.card{background:var(--s);border:1px solid var(--l);border-radius:16px;padding:14px;margin-bottom:12px}
+.card h2{font-size:1.05rem;margin:0}
+.q{color:var(--m);font-size:.85rem;margin-bottom:8px}
+.res{font-size:1.3rem;font-weight:800;color:var(--a);margin:4px 0 8px}
+.l{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--l);font-size:.95rem}
+.l span{color:var(--m)} .l b{text-align:right}
+.si{padding:6px 0;border-top:1px solid var(--l)} .si small{display:block;color:var(--m)}
+.aviso{color:var(--m)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Consulta por código</h1>
+  <form id="f"><input id="c" placeholder="LV-XXXX" autocomplete="off" autocapitalize="characters"><button>Ver</button></form>
+  <div id="out"></div>
+</main>
+<script>
+const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
+const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ROT = { idade:'Idade', sexo:'Sexo', peso:'Peso (kg)', altura:'Altura (cm)', t:'5 levantadas (s)', rel:'Potência (W/kg)',
+  pc:'Percentil na idade', vel:'Subida média (m/s)', reps:'Repetições', faixa:'Faixa', modo:'Modo da foto', ocultas:'Áreas cobertas',
+  qualidade:'Qualidade da foto', confianca:'Confiança' };
+const num = v => typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits:2 }) : v;
+function campo(k, v){
+  if (v === null || v === undefined || v === '' || k === 'codigo') return '';
+  if (k === 'sexo') v = v === 'f' ? 'mulher' : v === 'm' ? 'homem' : v;
+  if (k === 'sinais' && Array.isArray(v)) return v.map(s => `<div class="si"><b>${esc(s.nome ?? s.id)}</b> ${s.visivel === false ? '· coberto' : `· nível ${esc(s.nivel)}/3`}${s.obs ? `<small>${esc(s.obs)}</small>` : ''}</div>`).join('');
+  if (Array.isArray(v)) v = v.join(', '); else if (typeof v === 'object') v = JSON.stringify(v);
+  return `<div class="l"><span>${esc(ROT[k] ?? k)}</span><b>${esc(num(v))}</b></div>`;
+}
+async function ver(c){
+  $('out').innerHTML = '<p class="aviso">Buscando…</p>';
+  try {
+    const r = await fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ k:K, c }) });
+    if (r.status === 404) return $('out').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>';
+    const j = await r.json();
+    if (!j.ok) return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`;
+    if (!j.lista.length) return $('out').innerHTML = c ? `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>` : '';
+    $('out').innerHTML = j.lista.map(e => {
+      const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', dateStyle:'short', timeStyle:'short' });
+      const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}</div>`;
+    }).join('');
+  } catch { $('out').innerHTML = '<p class="aviso">Sem conexão.</p>'; }
+}
+$('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').value.trim().toUpperCase(); if (c) ver(c); });
+if (!K) $('out').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>';
+</script>
+</body>
+</html>
