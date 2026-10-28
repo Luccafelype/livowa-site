@@ -12,9 +12,9 @@
 // - value das opções = o que vai pro analytics. Não trocar (só label/curto).
 //
 // Marcação nos textos de tela (lida pelo quiz.js; o texto é escapado antes):
-//   *trecho*    → cor de destaque
-//   ==trecho==  → marca-texto
-//   **trecho**  → negrito
+//   *trecho*    cor de destaque
+//   ==trecho==  marca-texto
+//   **trecho**  negrito
 // Tom (lg2, 28/10): o do beconfident, falado, 2ª pessoa, frases curtas, desejo e dor
 // com as palavras do público (VOZ-DO-PUBLICO.md, pesquisa/voz-do-empresario.md).
 // Nada de explicar como o quiz funciona.
@@ -52,11 +52,11 @@ export const CONFIG = {
   // ---- Tela 1: capa ----
   // Desejo como processo ("pra chegar aos 70 subindo escada"), nunca prazo de resultado.
   hero: {
-    pill: '🔒 6 perguntas · leva 1 minuto',
+    pill: '6 perguntas · leva 1 minuto',
     title: 'Responda 6 perguntas e veja o que pesa pra chegar ==aos 70== *subindo escada sem pensar*',
     subtitle: 'No fim, tem *um vídeo do Dr. Lucca pra quem está na sua fase*.',
     subtitleSemVideo: 'No fim, você vê *o próximo passo pra quem está na sua fase*.',   // usado enquanto nenhuma VSL tiver vídeo
-    cta: 'Responder quiz de 1 minuto →',
+    cta: 'Responder quiz de 1 minuto',
     who: 'Feito pelo **Dr. Lucca Marques** · Médico · CRM-GO 33.990'
   },
 
@@ -71,7 +71,7 @@ export const CONFIG = {
     // ---- Tela 2: autoridade (no lugar da prova social do beconfident: médico + estudo com fonte) ----
     {
       id: 'autoridade', type: 'info', view: 'autoridade',
-      pill: '🩺 Quem montou este quiz',
+      pill: 'Quem montou este quiz',
       title: 'Quem vai ler *as suas respostas*',
       medico: { nome: 'Dr. Lucca Marques', linha: 'Médico · CRM-GO 33.990', iniciais: 'LM' },
       estudo: {
@@ -79,7 +79,7 @@ export const CONFIG = {
         texto: 'pessoas fizeram o teste de pernas que ele usa como régua.',
         fonte: 'Coelho-Junior et al., J Cachexia Sarcopenia Muscle, 2024'
       },
-      cta: 'Continuar →'
+      cta: 'Continuar'
     },
 
     // ---- Tela 3: objetivo (pergunta 1, MÚLTIPLA desde lg2b) ----
@@ -88,12 +88,12 @@ export const CONFIG = {
       title: 'Daqui a 10 anos, o que você quer *continuar fazendo*?',
       subtitle: '(Marque tudo o que você quer)',
       options: [
-        { value: 'escada',      emoji: '🪜', label: 'Subir escada e carregar as compras sem pensar duas vezes', curto: 'subir escada e carregar peso sem pensar' },
-        { value: 'familia',     emoji: '👪', label: 'Ter disposição pra acompanhar filho e neto, sem ficar de fora', curto: 'ter disposição com filhos e netos' },
-        { value: 'trabalho',    emoji: '💼', label: 'Trabalhar no meu ritmo sem chegar no fim do dia no limite', curto: 'trabalhar sem chegar no limite no fim do dia' },
-        { value: 'viajar',      emoji: '🧳', label: 'Viajar e andar o dia inteiro sem procurar banco pra sentar', curto: 'viajar e andar o dia inteiro' },
-        { value: 'esporte',     emoji: '🎾', label: 'Continuar no futebol, na corrida ou no tênis sem me machucar', curto: 'continuar no esporte' },
-        { value: 'independente',emoji: '🧍', label: 'Não depender de ninguém pra levantar, sair e resolver minhas coisas', curto: 'não depender de ninguém' }
+        { value: 'escada',      emoji: '', label: 'Subir escada e carregar as compras sem pensar duas vezes', curto: 'subir escada e carregar peso sem pensar' },
+        { value: 'familia',     emoji: '', label: 'Ter disposição pra acompanhar filho e neto, sem ficar de fora', curto: 'ter disposição com filhos e netos' },
+        { value: 'trabalho',    emoji: '', label: 'Trabalhar no meu ritmo sem chegar no fim do dia no limite', curto: 'trabalhar sem chegar no limite no fim do dia' },
+        { value: 'viajar',      emoji: '', label: 'Viajar e andar o dia inteiro sem procurar banco pra sentar', curto: 'viajar e andar o dia inteiro' },
+        { value: 'esporte',     emoji: '', label: 'Continuar no futebol, na corrida ou no tênis sem me machucar', curto: 'continuar no esporte' },
+        { value: 'independente',emoji: '', label: 'Não depender de ninguém pra levantar, sair e resolver minhas coisas', curto: 'não depender de ninguém' }
       ]
     },
 
@@ -102,11 +102,11 @@ export const CONFIG = {
       id: 'idade', type: 'single',
       title: 'Quantos anos você tem?',
       options: [
-        { value: 'ate39', emoji: '🌱', label: 'Até 39 anos',     curto: 'até 39 anos' },
-        { value: '40-49', emoji: '🌿', label: '40 a 49 anos',    curto: 'entre 40 e 49 anos' },
-        { value: '50-59', emoji: '🌳', label: '50 a 59 anos',    curto: 'entre 50 e 59 anos' },
-        { value: '60-69', emoji: '🍂', label: '60 a 69 anos',    curto: 'entre 60 e 69 anos' },
-        { value: '70+',   emoji: '🌾', label: '70 anos ou mais', curto: '70 anos ou mais' }
+        { value: 'ate39', emoji: '', label: 'Até 39 anos',     curto: 'até 39 anos' },
+        { value: '40-49', emoji: '', label: '40 a 49 anos',    curto: 'entre 40 e 49 anos' },
+        { value: '50-59', emoji: '', label: '50 a 59 anos',    curto: 'entre 50 e 59 anos' },
+        { value: '60-69', emoji: '', label: '60 a 69 anos',    curto: 'entre 60 e 69 anos' },
+        { value: '70+',   emoji: '', label: '70 anos ou mais', curto: '70 anos ou mais' }
       ]
     },
 
@@ -115,7 +115,7 @@ export const CONFIG = {
     // Sem seta de resultado ("↑ subindo" seria promessa implícita).
     {
       id: 'lugar-certo', type: 'info', view: 'demo',
-      emoji: '🎯',
+      emoji: '',
       title: 'Perfeito, você está no lugar certo!',
       texto: (s, curto) => {
         const n = (s.answers.objetivo || []).length;
@@ -123,14 +123,14 @@ export const CONFIG = {
         return `Pra ${quer || 'chegar bem aos próximos 10 anos'}, muita coisa passa pelas pernas. E a força delas *dá pra medir em 1 minuto*.`;
       },
       demo: {
-        titulo: '🪑 Teste das pernas',
-        tag: '📱 câmera do celular',
+        titulo: 'Teste das pernas',
+        tag: 'câmera do celular',
         contagem: 'levantadas da cadeira',
         barra: 'Potência das pernas',
         medindo: 'medindo…',
-        pronto: '✓ medida'
+        pronto: 'medida'
       },
-      cta: 'Continuar →'
+      cta: 'Continuar'
     },
 
     // ---- Tela 5: rotina (pergunta 3) ----
@@ -138,10 +138,10 @@ export const CONFIG = {
       id: 'rotina', type: 'single',
       title: 'E a sua semana, *como é hoje*?',
       options: [
-        { value: 'empresario', emoji: '📈', label: 'Cuido de empresa ou equipe, e a agenda não para', curto: 'cuido de empresa ou equipe, com a agenda cheia', perfil: 'Agenda cheia' },
-        { value: 'liberal',    emoji: '📋', label: 'Sou profissional liberal',                curto: 'sou profissional liberal',  perfil: 'Profissional liberal' },
-        { value: 'fixo',       emoji: '🕘', label: 'Trabalho com hora pra entrar e pra sair',  curto: 'trabalho em horário fixo',  perfil: 'Horário fixo' },
-        { value: 'aposentado', emoji: '🌿', label: 'Já me aposentei',                          curto: 'já me aposentei',           perfil: 'Aposentadoria' }
+        { value: 'empresario', emoji: '', label: 'Cuido de empresa ou equipe, e a agenda não para', curto: 'cuido de empresa ou equipe, com a agenda cheia', perfil: 'Agenda cheia' },
+        { value: 'liberal',    emoji: '', label: 'Sou profissional liberal',                curto: 'sou profissional liberal',  perfil: 'Profissional liberal' },
+        { value: 'fixo',       emoji: '', label: 'Trabalho com hora pra entrar e pra sair',  curto: 'trabalho em horário fixo',  perfil: 'Horário fixo' },
+        { value: 'aposentado', emoji: '', label: 'Já me aposentei',                          curto: 'já me aposentei',           perfil: 'Aposentadoria' }
       ]
     },
 
@@ -151,10 +151,10 @@ export const CONFIG = {
     // Atenção: o estudo NÃO mediu pernas (não escrever "potência das pernas" aqui).
     {
       id: 'ciencia', type: 'info', view: 'ciencia',
-      pill: '🎓 Pesquisa · Mayo Clinic Proceedings',
+      pill: 'Pesquisa · Mayo Clinic Proceedings',
       citacao: 'Na sobrevida, *a potência muscular pesou mais que a força*.',
       fonte: 'Araújo et al., 2025 · 3.889 pessoas no Rio, por quase 11 anos',
-      cta: 'Continuar →'
+      cta: 'Continuar'
     },
 
     // ---- Tela 7: o que incomoda (pergunta 4, múltipla) ----
@@ -163,12 +163,12 @@ export const CONFIG = {
       title: 'O que mais *te incomoda* hoje?',
       subtitle: '(Marque tudo o que vale pra você)',
       options: [
-        { value: 'cansaco', emoji: '😮‍💨', label: 'Cansaço que não passa nem depois de dormir',         curto: 'o cansaço que não passa' },
-        { value: 'peso',    emoji: '⚖️', label: 'A barriga que só cresce, mesmo comendo igual',        curto: 'a barriga que só cresce' },
-        { value: 'dor',     emoji: '🦵', label: 'Dor nas costas ou no joelho que atrapalha o dia',     curto: 'a dor nas costas ou no joelho' },
-        { value: 'exame',   emoji: '🧪', label: 'Exame que veio alterado: pressão, glicose ou colesterol', curto: 'um exame que veio alterado' },
-        { value: 'forca',   emoji: '🏋️', label: 'Não consigo fazer as mesmas coisas que antes',        curto: 'não conseguir fazer as mesmas coisas que antes' },
-        { value: 'nada',    emoji: '🙂', label: 'Nada por enquanto, quero me cuidar antes',            curto: 'nada por enquanto, quero me cuidar antes', exclusiva: true }
+        { value: 'cansaco', emoji: '', label: 'Cansaço que não passa nem depois de dormir',         curto: 'o cansaço que não passa' },
+        { value: 'peso',    emoji: '', label: 'A barriga que só cresce, mesmo comendo igual',        curto: 'a barriga que só cresce' },
+        { value: 'dor',     emoji: '', label: 'Dor nas costas ou no joelho que atrapalha o dia',     curto: 'a dor nas costas ou no joelho' },
+        { value: 'exame',   emoji: '', label: 'Exame que veio alterado: pressão, glicose ou colesterol', curto: 'um exame que veio alterado' },
+        { value: 'forca',   emoji: '', label: 'Não consigo fazer as mesmas coisas que antes',        curto: 'não conseguir fazer as mesmas coisas que antes' },
+        { value: 'nada',    emoji: '', label: 'Nada por enquanto, quero me cuidar antes',            curto: 'nada por enquanto, quero me cuidar antes', exclusiva: true }
       ]
     },
 
@@ -178,11 +178,11 @@ export const CONFIG = {
       title: 'E o que *te trava* pra cuidar disso?',
       subtitle: '(Marque tudo o que vale pra você)',
       options: [
-        { value: 'tempo',      emoji: '⏱️', label: 'Não tenho tempo nem pra cuidar da saúde',      curto: 'a falta de tempo' },
-        { value: 'comecar',    emoji: '🧭', label: 'Não sei por onde começar',                    curto: 'não saber por onde começar' },
-        { value: 'constancia', emoji: '🔁', label: 'Começo bem e largo na segunda semana',        curto: 'começar e largar no meio' },
-        { value: 'clinica',    emoji: '🏥', label: 'Perder meio dia em clínica e laboratório',    curto: 'perder tempo em clínica e laboratório' },
-        { value: 'dor',        emoji: '🩹', label: 'Medo de me machucar ou piorar uma dor',       curto: 'o medo de me machucar' }
+        { value: 'tempo',      emoji: '', label: 'Não tenho tempo nem pra cuidar da saúde',      curto: 'a falta de tempo' },
+        { value: 'comecar',    emoji: '', label: 'Não sei por onde começar',                    curto: 'não saber por onde começar' },
+        { value: 'constancia', emoji: '', label: 'Começo bem e largo na segunda semana',        curto: 'começar e largar no meio' },
+        { value: 'clinica',    emoji: '', label: 'Perder meio dia em clínica e laboratório',    curto: 'perder tempo em clínica e laboratório' },
+        { value: 'dor',        emoji: '', label: 'Medo de me machucar ou piorar uma dor',       curto: 'o medo de me machucar' }
       ]
     },
 
@@ -191,8 +191,8 @@ export const CONFIG = {
       id: 'ajuda', type: 'single',
       title: 'Você prefere fazer isso *por conta própria* ou com *um médico do lado*?',
       options: [
-        { value: 'sozinho', emoji: '🧭', label: 'Por conta própria, no meu ritmo',  desc: 'Um plano de 4 semanas pra fazer em casa.',  curto: 'por conta própria' },
-        { value: 'medico',  emoji: '🩺', label: 'Com um médico do lado',  desc: 'O Dr. Lucca acompanha e ajusta com você.',  curto: 'com médico acompanhando de perto' }
+        { value: 'sozinho', emoji: '', label: 'Por conta própria, no meu ritmo',  desc: 'Um plano de 4 semanas pra fazer em casa.',  curto: 'por conta própria' },
+        { value: 'medico',  emoji: '', label: 'Com um médico do lado',  desc: 'O Dr. Lucca acompanha e ajusta com você.',  curto: 'com médico acompanhando de perto' }
       ]
     },
 
@@ -208,13 +208,13 @@ export const CONFIG = {
       ],
       consent: 'Autorizo o Dr. Lucca Marques e a Livowa a guardar meu nome, meu WhatsApp e minhas respostas deste quiz, que incluem informações de saúde, para falar comigo sobre elas. Posso pedir a exclusão quando quiser (LGPD, Lei 13.709/2018).',
       consentErro: 'Pra continuar, marque a autorização. Suas respostas falam de saúde, e a lei pede o seu consentimento.',
-      cta: 'Ver meu resultado →'
+      cta: 'Ver meu resultado'
     }
   ],
 
   // ---- Tela 10: loading (repete 3 respostas; não fala em IA) ----
   loading: {
-    emoji: '🚀',
+    emoji: '',
     title: 'Você chegou na melhor parte',
     texto: 'Estou separando *o vídeo certo pra quem está na sua fase*.',
     textoSemVideo: 'Estou juntando *o que você me contou*.',
@@ -231,17 +231,17 @@ export const CONFIG = {
   // ---- Tela 11: resultado (mínimo: perfil + 1 frase + vídeo + botão) ----
   // Título e frase vêm da VSL escolhida (tabela vsls abaixo).
   resultado: {
-    pill: '✅ Seu resultado está pronto',
+    pill: 'Seu resultado está pronto',
     codigoLinha: 'Seu código guarda suas respostas para o Dr. Lucca ver.',
     codigoRotulo: 'Seu código',
-    teste: 'Ou meça suas pernas agora, em 1 minuto →',
+    teste: 'Ou meça suas pernas agora, em 1 minuto',
     medico: {
-      cta: '💬 FALAR COM O DR. LUCCA',
+      cta: 'FALAR COM O DR. LUCCA',
       alt: 'Prefiro pelo Direct',
       copiado: 'Mensagem com o código copiada. No Direct, é só colar.'
     },
     sozinho: {
-      cta: '📲 QUERO O PLANO DE 4 SEMANAS',
+      cta: 'QUERO O PLANO DE 4 SEMANAS',
       alt: 'Seguir @dr.luccamarques'
     }
   },

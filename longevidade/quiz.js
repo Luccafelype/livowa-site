@@ -58,7 +58,7 @@ function toast(msg) {
 }
 
 // ------------------------------------------------------------
-// Respostas → texto (perfil, loading, mensagens)
+// Respostas texto (perfil, loading, mensagens)
 // ------------------------------------------------------------
 function item(id) { return FLOW.find(f => f.id === id); }
 function op(id) {
@@ -201,7 +201,7 @@ function renderItem(it) {
     if (!sel.size) { shake(go); return; }
     saveAnswer(it.id, it.options.filter(o => sel.has(o.value)).map(o => o.value));   // ordem da tela
     next();
-  } }, 'Continuar →');
+  } }, 'Continuar');
   const sync = () => {
     box.querySelectorAll('.opt').forEach(b => b.classList.toggle('on', sel.has(b.dataset.v)));
     if (sel.size) go.removeAttribute('disabled'); else go.setAttribute('disabled', 'disabled');
@@ -218,7 +218,7 @@ function renderItem(it) {
       sync();
     } },
       o.emoji ? el('span', { class: 'em', 'aria-hidden': 'true' }, o.emoji) : null,
-      el('span', { class: 'ck', 'aria-hidden': 'true' }, '✓'),
+      el('span', { class: 'ck', 'aria-hidden': 'true' }, ''),
       el('span', { class: 'tx' }, o.label));
     box.appendChild(b);
   });
@@ -259,7 +259,7 @@ function renderInfo(it) {
         el('figcaption', { class: 'src' }, it.fonte))
     );
   }
-  screen.appendChild(ctaInline(el('button', { class: 'btn', type: 'button', id: 'go', onclick: () => { haptic(); next(); } }, it.cta || 'Continuar →')));
+  screen.appendChild(ctaInline(el('button', { class: 'btn', type: 'button', id: 'go', onclick: () => { haptic(); next(); } }, it.cta || 'Continuar')));
   return screen;
 }
 
@@ -272,7 +272,7 @@ function demoPernas(d) {
     el('div', { class: 'chart-head' }, el('b', {}, d.titulo), el('span', { class: 'tag' }, d.tag)),
     el('div', { class: 'drow' },
       el('div', { class: 'dcount' }, cont, el('small', {}, '/5'), el('span', {}, d.contagem, ' · ', tempo)),
-      el('div', { class: 'dchair', 'aria-hidden': 'true' }, el('span', {}, '🪑'), el('span', { class: 'dman' }, '🧍'))),
+      el('div', { class: 'dchair', 'aria-hidden': 'true' }, el('span', {}, ''), el('span', { class: 'dman' }, ''))),
     el('div', { class: 'dbar' }, el('div', { class: 'lhead' }, el('span', {}, d.barra), estado), el('div', { class: 'lbar' }, fill)));
   const ciclo = 5200, t0 = performance.now();
   requestAnimationFrame(function tick(now) {
@@ -360,10 +360,10 @@ function renderCapture(it) {
 function renderLoading() {
   const L = CONFIG.loading;
   const linhas = txt(L.linhas).filter(Boolean);
-  const ul = el('ul', {}, linhas.map(t => el('li', {}, el('i', {}, '✓'), el('span', {}, t.charAt(0).toUpperCase() + t.slice(1)))));
+  const ul = el('ul', {}, linhas.map(t => el('li', {}, el('i', {}, ''), el('span', {}, t.charAt(0).toUpperCase() + t.slice(1)))));
   const bar = el('i'), fin = el('p', { class: 'lfinal' }), pct = el('span', { class: 'pct' }, '0%');
   const screen = el('section', { class: 'screen info no-cta loading', 'data-id': 'loading' },
-    el('div', { class: 'big-emoji rocket', 'aria-hidden': 'true' }, L.emoji || '🚀'),
+    null,
     el('h2', {}, L.title),
     L.texto ? el('p', { class: 'sub', html: fmt(txt(temVideo() ? L.texto : (L.textoSemVideo || L.texto))) }) : null,
     el('div', { class: 'load' },
