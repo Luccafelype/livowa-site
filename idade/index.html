@@ -117,6 +117,59 @@ p{margin:0}
 .facts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
 .facts li{font-size:.92rem;padding-left:14px;border-left:3px solid var(--accent-2)}
 .facts small{display:block;color:var(--muted);font-size:.75rem}
+/* ---- pele: mesmo sistema visual; capa centrada, pílula, palavra-chave em cor, opções com emoji ---- */
+.screen.c{text-align:center}
+h1 em,h2 em,h3 em{font-style:normal;color:var(--accent)}
+.pill{align-self:center;display:inline-flex;align-items:center;gap:6px;background:var(--accent-2);color:var(--accent);border-radius:999px;padding:6px 14px;font:600 .85rem var(--body)}
+.pill.sm{align-self:flex-start;font-size:.75rem;padding:4px 10px}
+.big-emoji{font-size:3.2rem;line-height:1;margin-top:28px}
+.face-ill{display:block;width:min(150px,40vw);aspect-ratio:1/1.12;margin:0 auto}
+.btn:disabled,.btn.off{opacity:.45}
+.consent.alerta{border-color:var(--warn);background:var(--warn-bg)}
+.consent{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:14px;font-size:.9rem;cursor:pointer}
+.consent:has(input:checked){border-color:var(--accent)}
+.consent input{width:22px;height:22px;flex:none;margin:1px 0 0;accent-color:var(--accent)}
+details.how{text-align:left;font-size:.9rem}
+details.how summary{color:var(--accent);font-weight:600;cursor:pointer;text-align:center;list-style:none}
+details.how summary::-webkit-details-marker{display:none}
+details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+.tips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.tips span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:.82rem}
+.stage .oculto{opacity:0!important;pointer-events:none}
+.esquema{display:block;width:min(196px,52vw);aspect-ratio:1/1.15;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:22px}
+.legenda{font-size:.9rem;color:var(--muted)}
+.legenda b{color:var(--fg);font-weight:600}
+.perde{font-size:.85rem;color:var(--warn);background:var(--warn-bg);border-radius:12px;padding:8px 12px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:10px 14px;font:500 1rem var(--body);color:var(--fg);text-align:left;cursor:pointer}
+.opt .emo{font-size:1.5rem;flex:none}
+.opt .txt{flex:1;display:flex;flex-direction:column;line-height:1.25}
+.opt small{color:var(--muted);font-size:.78rem}
+.opt .box{width:24px;height:24px;flex:none;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-2)}
+.opt[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent)}
+.opt[aria-pressed="true"] .box::after{content:"✓";color:var(--on-accent);font-weight:700;font-size:.85rem}
+.opt:disabled{opacity:.4;cursor:not-allowed}
+.loadrow{display:flex;justify-content:space-between;font:600 .82rem var(--body);letter-spacing:.02em;margin-top:14px}
+.loadbar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.loadbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s ease}
+.pele-card{background:var(--surface);border:1.5px solid var(--accent);border-radius:22px;padding:18px;display:grid;grid-template-columns:84px 1fr;gap:6px 14px;align-items:center}
+.pele-card canvas{width:84px;height:96px;grid-row:span 1}
+.pele-card div{display:flex;flex-direction:column;gap:6px}
+.pele-card h3{margin:0;font:700 1.3rem/1.1 var(--display)}
+.pele-card p{margin:0;font-size:.9rem;color:var(--muted)}
+.pele-card .btn{grid-column:1/3;margin-top:8px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.duo .mini b{font-size:1.15rem}
+.sinal{display:grid;grid-template-columns:30px 1fr auto;gap:0 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.sinal:first-child{border-top:0;padding-top:0}
+.sinal .e{font-size:1.25rem;grid-row:span 2;text-align:center}
+.sinal b{font:600 .95rem var(--body)}
+.sinal small{grid-column:2/4;color:var(--muted);font-size:.82rem}
+.sinal.off b,.sinal.off .e{opacity:.55}
+.meter{display:flex;gap:3px}
+.meter i{width:14px;height:8px;border-radius:3px;background:var(--line)}
+.meter i.on{background:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -184,6 +237,15 @@ p{margin:0}
       <span class="pct" id="res-pct"></span>
       <span id="res-vs"></span>
     </div>
+    <div class="pele-card" id="pele-card" hidden>
+      <canvas id="pele-mini" aria-hidden="true"></canvas>
+      <div>
+        <span class="pill sm">🔒 sua foto não aparece</span>
+        <h3>Agora a <em>pele</em>: 30 segundos</h3>
+        <p>Uma selfie e você vê a idade que a sua pele aparenta.</p>
+      </div>
+      <button class="btn" id="pele-ir" type="button">Ver a idade da minha pele →</button>
+    </div>
     <div class="card">
       <h3>Onde você está</h3>
       <svg class="chart" id="res-chart" viewBox="0 0 320 210" role="img" aria-label="Potência das pernas por idade"></svg>
@@ -215,6 +277,100 @@ p{margin:0}
     </div>
   </section>
 
+  <!-- ===================== PELE ===================== -->
+  <section class="screen c" data-s="pele-inicio" data-p="20" hidden>
+    <span class="pill">🔒 30 segundos · sua foto não aparece</span>
+    <canvas class="face-ill" id="pele-ill" role="img" aria-label="Desenho de um rosto com uma tarja preta nos olhos"></canvas>
+    <h2>Quantos anos a sua <em>pele</em> aparenta?</h2>
+    <p class="sub">Uma selfie, de frente pra luz. Sua foto não aparece aqui e seus olhos vão cobertos.</p>
+    <div class="hero-card">
+      <div class="mini"><b>30 s</b><span>uma selfie e pronto</span></div>
+      <div class="mini"><b>0 fotos</b><span>guardadas pela Livowa</span></div>
+    </div>
+    <label class="consent"><input type="checkbox" id="pele-ok"><span>Tenho 18 anos ou mais e autorizo usar a imagem do meu rosto, recortada e com tarja, só para esta análise. Quem analisa é o Gemini, do Google, na versão paga, que não treina a IA com ela.</span></label>
+    <details class="how"><summary>Como funciona</summary>
+      <ol>
+        <li>A câmera acha o seu rosto e tira a foto sozinha. Você vê só um desenho, nunca a foto.</li>
+        <li>Ainda no seu celular, a gente recorta só o rosto (sai cabelo, orelhas, fundo e roupa), apaga os dados do arquivo, como local e aparelho, e cobre os olhos com uma tarja preta.</li>
+        <li>Só essa imagem vai para o Gemini, do Google (servidores do Google, que podem ficar fora do Brasil). Na versão paga, o Google não usa a imagem para treinar a IA.</li>
+        <li>Ela serve só para esta análise. A Livowa não guarda a foto nem o resultado com o seu nome.</li>
+        <li>É uma estimativa estética, não é exame nem diagnóstico. Rosto é dado sensível pela LGPD (art. 11): você pode desistir a qualquer momento.</li>
+      </ol>
+    </details>
+  </section>
+
+  <section class="screen" data-s="pele-camera" data-p="45" hidden>
+    <div class="stage">
+      <video id="pele-video" class="oculto" playsinline muted></video>
+      <canvas id="pele-live"></canvas>
+      <div class="guide"><span id="pele-guia">Abrindo a câmera…</span></div>
+    </div>
+    <div class="tips"><span>💡 luz de frente</span><span>👓 sem óculos</span><span>💇 testa livre</span><span>📱 bem perto</span></div>
+    <div class="sound"><button type="button" class="mute-pele">🔊 Voz ligada</button></div>
+    <input type="file" id="pele-arquivo" accept="image/*" hidden>
+  </section>
+
+  <section class="screen c" data-s="pele-envio" data-p="70" hidden>
+    <span class="pill">✅ Foto tirada · ela não aparece aqui</span>
+    <h2>É <em>isto</em> que vai para a análise</h2>
+    <canvas class="esquema" id="pele-esquema" role="img" aria-label="Desenho do que vai para a análise"></canvas>
+    <p class="legenda" id="pele-legenda"></p>
+    <div class="opts" id="pele-opts">
+      <button type="button" class="opt" data-o="olhos" aria-pressed="true"><span class="emo">🙈</span><span class="txt">Tarja nos olhos<small>já vem ligada</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-o="sobrancelhas" aria-pressed="false"><span class="emo">🤨</span><span class="txt">Tarja nas sobrancelhas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-o="boca" aria-pressed="false"><span class="emo">🤐</span><span class="txt">Tarja na boca</span><span class="box"></span></button>
+      <button type="button" class="opt" data-o="retalhos" aria-pressed="false"><span class="emo">🧩</span><span class="txt">Só pedacinhos de pele<small>vai sem o formato do rosto</small></span><span class="box"></span></button>
+    </div>
+    <p class="perde" id="pele-perde"></p>
+  </section>
+
+  <section class="screen c" data-s="pele-analise" data-p="85" hidden>
+    <div class="big-emoji">🔬</div>
+    <h2>Lendo a sua <em>pele</em>…</h2>
+    <p class="sub" id="pele-etapa">Olhando linhas, manchas e textura</p>
+    <div class="loadrow"><span>ANALISANDO</span><span id="pele-pct">0%</span></div>
+    <div class="loadbar"><i id="pele-bar"></i></div>
+  </section>
+
+  <section class="screen c" data-s="pele-erro" data-p="70" hidden>
+    <div class="big-emoji" id="pele-erro-emo">📸</div>
+    <h2 id="pele-erro-tit">Essa foto não deu para ler</h2>
+    <p class="sub" id="pele-erro-txt"></p>
+  </section>
+
+  <section class="screen" data-s="pele-resultado" data-p="100" hidden>
+    <span class="pill">🔒 Sua foto já foi descartada</span>
+    <div class="result">
+      <span class="lbl">Sua pele aparenta ter</span>
+      <span class="age" id="pr-age">40 a 46 anos</span>
+      <span class="pct" id="pr-vs"></span>
+      <span class="lbl" id="pr-resumo"></span>
+    </div>
+    <div class="card" id="pr-duo">
+      <h3>Pernas e pele</h3>
+      <div class="duo">
+        <div class="mini"><span>🦵 pernas de</span><b id="pr-pernas">—</b></div>
+        <div class="mini"><span>🧴 pele de</span><b id="pr-pele">—</b></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>O que a foto mostra</h3>
+      <div id="pr-sinais"></div>
+    </div>
+    <div class="card">
+      <h3>O que isso quer dizer</h3>
+      <ul class="facts">
+        <li>É a idade que a pele aparenta numa foto, estimada por inteligência artificial. Estimando a idade de alguém por foto, o Gemini erra em média uns 4 anos, por isso o resultado sai em faixa.<small>Ren et al., arXiv 2602.07815, 2026 (pré-publicação)</small></li>
+        <li>Entre pessoas da mesma idade, a idade que o rosto aparenta varia bastante, e rugas e manchas são o que mais pesa.<small>Mayes et al., J Eur Acad Dermatol Venereol 2010</small></li>
+        <li>Luz e câmera mudam o resultado. É uma estimativa estética, não é exame nem diagnóstico.</li>
+      </ul>
+    </div>
+    <div class="plan">
+      <b>Quer entender o seu resultado?</b>
+      <span>O Dr. Lucca responde pessoalmente, por áudio, e explica o que ele quer dizer no seu dia a dia.</span>
+    </div>
+  </section>
+
   <div class="cta"><div>
     <a class="btn" id="cta-link" href="#" target="_blank" rel="noopener" hidden>Conversar pelo WhatsApp</a>
     <a class="btn ghost" id="cta-dm" href="https://ig.me/m/dr.luccamarques" target="_blank" rel="noopener" hidden>Prefiro pelo Direct do Instagram</a>
@@ -224,12 +380,21 @@ p{margin:0}
 </div>
 
 <script type="module">
-import { PoseLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
+import { PoseLandmarker, FaceLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
 import * as Analytics from './funnel-analytics.js';
 // Medição do funil (Supabase); a variante e a sessão vêm do link da bio (?v=, ?sid=)
+const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 Analytics.init({ enabled:true, funnelId:'teste-pernas', variant:new URLSearchParams(location.search).get('v') || 'direto',
-  supabaseUrl:'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', supabaseKey:'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K' });
+  supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
 Analytics.track('view');
+
+// Análise da pele: endereço da edge `analisar-pele`. VAZIO = o cartão da pele não aparece.
+// Depois do deploy: `${SUPA_URL}/functions/v1/analisar-pele`. Em localhost dá para testar com ?pele=<url do mock>.
+// Fase de teste (28/10): público não vê a pele; só livowa.com/idade/?pele=teste. Abrir = copiar PELE_TESTE para PELE_PRODUCAO.
+const PELE_PRODUCAO = '';
+const PELE_TESTE = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/analisar-pele';
+const LOCAL = ['localhost','127.0.0.1'].includes(location.hostname), PELE_Q = new URLSearchParams(location.search).get('pele');
+const PELE_ENDPOINT = (LOCAL && PELE_Q && PELE_Q !== 'teste' && PELE_Q) || (PELE_Q === 'teste' && PELE_TESTE) || PELE_PRODUCAO;
 
 const WHATSAPP = '5562992836713';   // número que recebe o "quero meu plano"
 const CHAIR = 0.45;                 // cadeira comum (os protocolos usam 43 a 46 cm)
@@ -266,11 +431,15 @@ function falar(txt, forcar){
   ultimaFala = txt; ultimoT = now;
   speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'pt-BR'; u.rate = 1.05; speechSynthesis.speak(u);
 }
-$('mute').addEventListener('click', () => { voz = !voz; $('mute').textContent = voz ? '🔊 Voz ligada' : '🔇 Voz desligada'; if (!voz) speechSynthesis.cancel(); });
+document.querySelectorAll('#mute,.mute-pele').forEach(b => b.addEventListener('click', () => {
+  voz = !voz; document.querySelectorAll('#mute,.mute-pele').forEach(x => x.textContent = voz ? '🔊 Voz ligada' : '🔇 Voz desligada');
+  if (!voz && 'speechSynthesis' in window) speechSynthesis.cancel();
+}));
 function guia(txt, ok){ const g = $('guide'); if (g.textContent !== txt) g.textContent = txt; g.classList.toggle('ok', !!ok); }
 
 // ---------- navegação ----------
-const order = ['inicio','como','dados','camera','resultado'];
+const order = ['inicio','como','dados','camera','resultado','pele-inicio','pele-camera','pele-envio','pele-analise','pele-resultado','pele-erro'];
+const VOLTA = { 'pele-inicio':'resultado', 'pele-camera':'pele-inicio', 'pele-envio':'pele-camera', 'pele-analise':'pele-envio', 'pele-resultado':'resultado', 'pele-erro':'pele-inicio' };
 let cur = 'inicio';
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
@@ -282,17 +451,34 @@ function show(s){
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
-  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; c2.hidden = false; c2.textContent = 'Refazer o teste'; }
+  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; c2.hidden = false; c2.textContent = 'Refazer o teste'; ctaPernas(); }
+  cta.disabled = false;
+  cta.classList.remove('off');
+  if (s === 'pele-inicio'){ cta.textContent = 'Abrir a câmera →'; cta.classList.toggle('off', !$('pele-ok').checked); c2.hidden = false; c2.textContent = 'Prefiro escolher uma foto 🖼️'; desenharIlustracao(); }
+  if (s === 'pele-camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
+  if (s === 'pele-envio'){ cta.textContent = 'Analisar minha pele →'; c2.hidden = false; c2.textContent = 'Tirar outra foto'; }
+  if (s === 'pele-analise'){ cta.hidden = true; }
+  if (s === 'pele-erro'){ cta.textContent = peleErroRede ? 'Tentar de novo →' : 'Tirar outra foto →'; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
+  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; c2.hidden = false; c2.textContent = 'Refazer a foto'; }
   window.scrollTo(0,0);
 }
-$('back').addEventListener('click', () => { pararCamera(); show(order[Math.max(0, order.indexOf(cur)-1)]); });
+$('back').addEventListener('click', () => {
+  pararCamera(); pararCameraPele();
+  if (VOLTA[cur]){ const d = VOLTA[cur]; show(d); if (d === 'pele-camera') abrirCameraPele(); return; }
+  show(order[Math.max(0, order.indexOf(cur)-1)]);
+});
 $('cta').addEventListener('click', () => {
   if (cur === 'inicio') show('como');
   else if (cur === 'como') show('dados');
   else if (cur === 'dados'){ falar(' ', true); show('camera'); abrirCamera(); }
+  else if (cur === 'pele-inicio'){ if (!$('pele-ok').checked) return apontarAceite(); falar(' ', true); show('pele-camera'); abrirCameraPele(); }
+  else if (cur === 'pele-envio') enviarPele();
+  else if (cur === 'pele-erro'){ if (peleErroRede && captura) enviarPele(); else { show('pele-camera'); abrirCameraPele(); } }
 });
 $('cta-2').addEventListener('click', () => {
-  pararCamera();
+  pararCamera(); pararCameraPele();
+  if (cur === 'pele-inicio' || cur === 'pele-camera' || cur === 'pele-erro'){ if ($('pele-ok').checked) $('pele-arquivo').click(); return; }
+  if (cur === 'pele-envio' || cur === 'pele-resultado'){ descartarCaptura(); show('pele-camera'); abrirCameraPele(); return; }
   if (cur === 'resultado'){ show('camera'); abrirCamera(); } else show('dados');
 });
 
@@ -472,10 +658,9 @@ function resultado(c){
     ' Referência medida por sensor: cerca de 0,68 m/s aos 18–29 anos e 0,37 aos 80–89 (Campitelli et al., 2022).';
   $('res-t').textContent = fmt(t,1) + ' s'; $('res-w').textContent = fmt(rel,1); $('res-v').textContent = vel ? fmt(vel,2) : '—';
   const comp = pc >= 96 ? `entre os 5% mais potentes dos ${quem} da minha idade` : pc <= 4 ? `entre os 5% menos potentes dos ${quem} da minha idade` : `mais potente que ${pc} de cada 100 ${quem} da minha idade`;
-  const msg = `Oi, Dr. Lucca! Fiz o teste das pernas: ${fmt(rel,1)} W/kg, ${comp} (tenho ${idade}), pernas de ${eq.txt}. Quero entender meu resultado.`;
-  $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
-  $('cta-dm').onclick = () => { try { navigator.clipboard.writeText(msg); } catch {} Analytics.track('cta_click', { valueText:'direct' }); };
-  $('cta-link').onclick = () => Analytics.track('cta_click', { valueText:'whatsapp' });   // a DM não aceita texto pronto: vai copiado
+  pernas = { rel, comp, idade, faixa:eq.txt };
+  $('pele-card').hidden = !PELE_ENDPOINT;
+  if (PELE_ENDPOINT) requestAnimationFrame(() => desenharEsquema($('pele-mini'), geoCanon(), 'rosto', ['olhos']));
   falar('Pronto.', true);
   Analytics.track('complete', { stepId:'resultado', stepIndex:order.length, valueText:eq.txt, props:{ rel:+rel.toFixed(2), pc, t:+t.toFixed(1), idade, sexo } });
   show('resultado');
@@ -547,6 +732,375 @@ async function abrirCamera(){
     guia(e?.name === 'NotAllowedError' ? 'Libere a câmera para este site' : 'Não consegui abrir a câmera');
   }
 }
+// ---------- mensagem do botão (pernas + pele, se houver) ----------
+let pernas = null, peleRes = null;
+function ctaPernas(){
+  const partes = [];
+  if (pernas) partes.push(`Fiz o teste das pernas: ${fmt(pernas.rel,1)} W/kg, ${pernas.comp} (tenho ${pernas.idade}), pernas de ${pernas.faixa}.`);
+  if (peleRes) partes.push(`${pernas ? 'E na análise da pele' : 'Fiz a análise da pele'}: minha pele aparenta ${peleRes.min} a ${peleRes.max} anos.`);
+  const msg = `Oi, Dr. Lucca! ${partes.join(' ')} Quero entender meu resultado.`;
+  $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  $('cta-dm').onclick = () => { try { navigator.clipboard.writeText(msg); } catch {} Analytics.track('cta_click', { stepId:cur, valueText:'direct' }); };
+  $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp' });   // a DM não aceita texto pronto: vai copiado
+}
+
+// =====================================================================
+// PELE: a foto nunca aparece na tela. Recorte, tarja e limpeza do arquivo
+// acontecem aqui no aparelho; só a imagem já mascarada sai.
+// =====================================================================
+const MODELO_ROSTO = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+const OVAL = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+const OLHO_A = [33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246];   // à esquerda na imagem
+const OLHO_B = [263,249,390,373,374,380,381,382,362,398,384,385,386,387,388,466];
+const SOBRANCELHAS = [70,63,105,66,107,55,65,52,53,46,336,296,334,293,300,276,283,282,295,285];
+const LABIOS = [61,146,91,181,84,17,314,405,321,375,291,409,270,269,267,0,37,39,40,185];
+// rosto neutro (modelo canônico do MediaPipe, 468 pontos, x/y × 1000) para os desenhos de exemplo
+const CANON=[500,753,500,606,500,668,470,472,500,563,500,510,500,374,225,367,500,274,500,218,500,0,500,773,500,787,500,791,500,827,500,840,500,858,500,880,500,931,500,630,473,628,42,183,330,402,293,405,256,402,212,377,360,392,293,325,327,327,258,329,231,336,173,409,354,1013,213,361,34,387,125,382,316,580,454,748,461,787,408,760,376,779,427,790,399,797,329,857,472,604,468,564,161,283,389,471,396,594,393,573,192,579,469,514,259,242,204,256,95,106,421,266,358,333,300,815,66,843,423,618,453,636,341,814,358,811,178,223,397,615,329,241,322,204,272,17,138,164,302,109,131,259,88,224,457,772,418,778,388,789,433,628,350,813,367,823,361,810,439,600,405,794,434,791,466,791,450,927,455,875,457,853,459,837,462,825,401,819,396,823,388,832,381,845,347,734,13,601,500,645,382,818,375,818,461,664,409,644,457,651,349,497,285,527,389,593,169,50,207,125,243,204,360,885,410,210,395,107,378,2,229,389,130,442,380,381,178,335,416,442,416,577,83,473,160,472,214,487,287,478,343,460,382,439,464,384,91,568,139,326,484,628,396,512,0,381,410,414,385,597,198,361,414,552,30,720,380,367,440,529,177,930,172,997,38,586,123,872,58,297,344,1067,488,643,364,544,86,389,263,381,295,385,358,830,97,659,417,1134,293,1085,237,1050,500,111,500,1141,324,384,352,379,371,372,104,314,352,347,324,342,295,342,263,344,241,349,12,268,241,373,500,696,385,707,421,610,453,697,500,322,233,985,286,1028,415,1091,116,935,371,356,442,454,500,1099,351,1113,51,691,429,821,424,829,419,843,414,863,400,909,374,804,363,801,352,795,316,770,159,678,439,410,415,333,385,349,381,798,149,794,451,328,375,961,500,465,467,431,500,422,419,519,500,1046,500,985,436,981,288,881,351,635,327,928,252,633,309,680,217,707,421,1039,400,542,250,924,301,973,258,824,106,741,204,839,75,788,274,740,419,482,427,594,407,607,440,568,387,306,330,294,281,293,237,296,201,309,166,370,29,484,196,427,237,438,289,439,337,429,373,413,398,398,5,490,410,620,443,491,450,596,470,620,452,602,420,636,475,625,479,637,394,368,419,374,433,380,225,354,207,346,530,472,775,367,527,628,958,183,670,402,707,405,744,402,788,377,640,392,707,325,673,327,742,329,769,336,827,409,646,1013,787,361,966,387,875,382,684,580,546,748,539,787,592,760,624,779,573,790,601,797,671,857,528,604,532,564,839,283,611,471,604,594,607,573,808,579,531,514,741,242,796,256,905,106,579,266,642,333,700,815,934,843,577,618,547,636,659,814,642,811,822,223,603,615,671,241,678,204,728,17,862,164,698,109,869,259,912,224,543,772,582,778,612,789,567,628,650,813,633,823,639,810,561,600,595,794,566,791,534,791,550,927,545,875,543,853,541,837,538,825,599,819,604,823,612,832,619,845,653,734,987,601,618,818,625,818,539,664,591,644,543,651,651,497,715,527,611,593,831,50,793,125,757,204,640,885,590,210,605,107,622,2,771,389,870,442,620,381,822,335,584,442,584,577,917,473,840,472,786,487,713,478,657,460,618,439,536,384,909,568,861,326,516,628,604,512,1000,381,590,414,615,597,802,361,586,552,970,720,620,367,560,529,823,930,828,997,962,586,877,872,942,297,656,1067,512,643,636,544,914,389,737,381,705,385,642,830,903,659,583,1134,707,1085,763,1050,676,384,648,379,629,372,896,314,648,347,676,342,705,342,737,344,759,349,988,268,759,373,615,707,579,610,547,697,767,985,714,1028,585,1091,884,935,629,356,558,454,649,1113,949,691,571,821,576,829,581,843,586,863,600,909,626,804,637,801,648,795,684,770,841,678,561,410,585,333,615,349,619,798,851,794,549,328,625,961,533,431,581,519,564,981,712,881,649,635,673,928,748,633,691,680,783,707,579,1039,600,542,750,924,699,973,742,824,894,741,796,839,925,788,726,740,581,482,573,594,593,607,560,568,613,306,670,294,719,293,763,296,799,309,834,370,971,484,804,427,763,438,711,439,663,429,627,413,602,398,995,490,590,620,557,491,550,596,530,620,548,602,580,636,525,625,521,637,606,368,581,374,567,380,775,354,793,346];
+
+const media = pts => ({ x: pts.reduce((s,p) => s+p.x, 0)/pts.length, y: pts.reduce((s,p) => s+p.y, 0)/pts.length });
+const caixa = pts => ({ x0:Math.min(...pts.map(p=>p.x)), y0:Math.min(...pts.map(p=>p.y)), x1:Math.max(...pts.map(p=>p.x)), y1:Math.max(...pts.map(p=>p.y)) });
+
+// Pontos em pixels e "alinhados" (girados para os olhos ficarem na horizontal)
+function geometria(lm, W, H){
+  const P = lm.map(p => ({ x:p.x*W, y:p.y*H }));
+  const eA = media(OLHO_A.map(i => P[i])), eB = media(OLHO_B.map(i => P[i]));
+  const ang = Math.atan2(eB.y - eA.y, eB.x - eA.x), C = media(OVAL.map(i => P[i]));
+  const cs = Math.cos(-ang), sn = Math.sin(-ang);
+  const R = P.map(p => ({ x: C.x + (p.x-C.x)*cs - (p.y-C.y)*sn, y: C.y + (p.x-C.x)*sn + (p.y-C.y)*cs }));
+  return { P, R, C, ang, iod: Math.hypot(eB.x-eA.x, eB.y-eA.y) };
+}
+let _canon = null;
+function geoCanon(){ if (!_canon){ const lm = []; for (let i = 0; i < CANON.length; i += 2) lm.push({ x:CANON[i]/1000, y:CANON[i+1]/1000 }); _canon = geometria(lm, 1000, 1000); } return _canon; }
+function contorno(R, enc = 0.025){ const c = media(OVAL.map(i => R[i])); return OVAL.map(i => ({ x:R[i].x + (c.x-R[i].x)*enc, y:R[i].y + (c.y-R[i].y)*enc })); }
+function tarjas(g, ocultas){
+  const { R, iod } = g, t = [];
+  if (ocultas.includes('olhos')){ const b = caixa([...OLHO_A, ...OLHO_B].map(i => R[i])); t.push({ nome:'olhos', x0:b.x0-.30*iod, x1:b.x1+.30*iod, y0:b.y0-.15*iod, y1:b.y1+.22*iod }); }
+  if (ocultas.includes('sobrancelhas')){ const b = caixa(SOBRANCELHAS.map(i => R[i])); t.push({ nome:'sobrancelhas', x0:b.x0-.08*iod, x1:b.x1+.08*iod, y0:b.y0-.10*iod, y1:b.y1+.07*iod }); }
+  if (ocultas.includes('boca')){ const b = caixa(LABIOS.map(i => R[i])); t.push({ nome:'boca', x0:b.x0-.12*iod, x1:b.x1+.12*iod, y0:b.y0-.10*iod, y1:b.y1+.10*iod }); }
+  return t;
+}
+function retalhos(g){
+  const { R, iod } = g;
+  return [
+    { nome:'testa',         c:{ x:R[151].x, y:R[151].y - .14*iod }, s:.60*iod },
+    { nome:'canto do olho', c:{ x:R[33].x  - .30*iod, y:R[33].y  + .06*iod }, s:.40*iod },
+    { nome:'canto do olho', c:{ x:R[263].x + .30*iod, y:R[263].y + .06*iod }, s:.40*iod },
+    { nome:'bochecha',      c:{ x:R[50].x  - .10*iod, y:R[50].y  + .12*iod }, s:.50*iod },
+    { nome:'bochecha',      c:{ x:R[280].x + .10*iod, y:R[280].y + .12*iod }, s:.50*iod },
+    { nome:'sulco',         c:media([R[129], R[61], R[206]]), s:.42*iod },
+  ];
+}
+function girarFonte(ctx, src, g){ ctx.translate(g.C.x, g.C.y); ctx.rotate(-g.ang); ctx.translate(-g.C.x, -g.C.y); ctx.drawImage(src, 0, 0); }
+function retangulo(ctx, x, y, w, h, r){ ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
+
+// A imagem que sai do aparelho. Canvas nunca entra na página; toDataURL não leva EXIF.
+function montarEnvio(src, g, modo, ocultas){
+  const cv = document.createElement('canvas'), ctx = cv.getContext('2d');
+  if (modo === 'retalhos'){
+    const T = 200, L = 28, G = 14, rs = retalhos(g);
+    cv.width = 3*T + 4*G; cv.height = 2*(T+L) + 3*G;
+    ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, cv.width, cv.height);
+    rs.forEach((r, i) => {
+      const tx = G + (i%3)*(T+G), ty = G + Math.floor(i/3)*(T+L+G), k = T/r.s;
+      ctx.save(); ctx.beginPath(); ctx.rect(tx, ty, T, T); ctx.clip();
+      ctx.setTransform(k, 0, 0, k, tx - (r.c.x - r.s/2)*k, ty - (r.c.y - r.s/2)*k);
+      girarFonte(ctx, src, g); ctx.restore();
+      ctx.fillStyle = '#ffffff'; ctx.font = '600 18px system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.fillText(r.nome, tx + T/2, ty + T + 21);
+    });
+  } else {
+    const ov = contorno(g.R), b = caixa(ov), bw = b.x1 - b.x0, bh = b.y1 - b.y0;
+    const s = Math.min(560/bw, 700/bh, 2);
+    cv.width = Math.round(bw*s); cv.height = Math.round(bh*s);
+    ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, cv.width, cv.height);
+    const T = () => ctx.setTransform(s, 0, 0, s, -b.x0*s, -b.y0*s);
+    ctx.save(); T(); ctx.beginPath(); ov.forEach((p,i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.clip();
+    girarFonte(ctx, src, g); ctx.restore();
+    ctx.save(); T(); ctx.fillStyle = '#000000';
+    for (const t of tarjas(g, ocultas)){ retangulo(ctx, t.x0, t.y0, t.x1-t.x0, t.y1-t.y0, .05*g.iod); ctx.fill(); }
+    ctx.restore();
+  }
+  return cv;
+}
+
+// Desenho esquemático (malha), nunca pixels da foto
+function desenharEsquema(cv, g, modo, ocultas){
+  const dpr = devicePixelRatio || 1, Wc = cv.clientWidth || 240, Hc = cv.clientHeight || 276;
+  cv.width = Math.round(Wc*dpr); cv.height = Math.round(Hc*dpr);
+  const ctx = cv.getContext('2d'), css = getComputedStyle(document.documentElement), cor = n => css.getPropertyValue(n).trim();
+  const ov = contorno(g.R, 0), b = caixa(ov), bw = b.x1-b.x0, bh = b.y1-b.y0;
+  const s = Math.min(Wc/(bw*1.22), Hc/(bh*1.18)) * dpr, ox = cv.width/2 - (b.x0 + bw/2)*s, oy = cv.height/2 - (b.y0 + bh/2)*s;
+  const X = p => p.x*s + ox, Y = p => p.y*s + oy;
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.lineWidth = Math.max(.6, .55*dpr); ctx.strokeStyle = cor('--accent'); ctx.globalAlpha = modo === 'retalhos' ? .14 : .42;
+  ctx.beginPath();
+  for (const { start, end } of FaceLandmarker.FACE_LANDMARKS_TESSELATION){ const a = g.R[start], c = g.R[end]; if (!a || !c) continue; ctx.moveTo(X(a), Y(a)); ctx.lineTo(X(c), Y(c)); }
+  ctx.stroke();
+  ctx.globalAlpha = .85; ctx.lineWidth = 2*dpr; ctx.strokeStyle = cor('--fg');
+  ctx.beginPath(); ov.forEach((p,i) => i ? ctx.lineTo(X(p), Y(p)) : ctx.moveTo(X(p), Y(p))); ctx.closePath(); ctx.stroke();
+  ctx.globalAlpha = 1;
+  if (modo === 'retalhos'){
+    retalhos(g).forEach(r => {
+      const x = X({ x:r.c.x - r.s/2 }), y = Y({ y:r.c.y - r.s/2 }), w = r.s*s;
+      ctx.fillStyle = cor('--accent'); ctx.globalAlpha = .28; retangulo(ctx, x, y, w, w, 4*dpr); ctx.fill();
+      ctx.globalAlpha = 1; ctx.strokeStyle = cor('--accent'); ctx.lineWidth = 2*dpr; ctx.stroke();
+    });
+  } else {
+    const ts = tarjas(g, ocultas).map(t => ({ x:X({ x:t.x0 }), y:Y({ y:t.y0 }), w:(t.x1-t.x0)*s, h:(t.y1-t.y0)*s }));
+    ts.forEach(t => { ctx.fillStyle = '#000'; retangulo(ctx, t.x, t.y, t.w, t.h, 5*dpr); ctx.fill(); });
+    const rotulos = [];   // um rótulo por bloco preto (tarjas que se encostam viram um bloco só)
+    ts.forEach(t => { if (t.h > 13*dpr && !rotulos.some(r => t.y < r.y + r.h + 2*dpr && r.y < t.y + t.h + 2*dpr)) rotulos.push(t); });
+    rotulos.forEach(t => { ctx.fillStyle = '#fff'; ctx.font = `600 ${Math.min(11*dpr, t.h*.55)}px system-ui,sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('tarja', t.x + t.w/2, t.y + t.h/2); });
+  }
+}
+function desenharIlustracao(){ requestAnimationFrame(() => desenharEsquema($('pele-ill'), geoCanon(), 'rosto', ['olhos'])); }
+
+// ---------- detector de rosto ----------
+let visionFiles = null, faceVideo = null, faceImagem = null;
+async function criarFace(modo){
+  visionFiles ??= await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm");
+  const opts = delegate => ({ baseOptions:{ modelAssetPath:MODELO_ROSTO, delegate }, runningMode:modo, numFaces:2,
+    minFaceDetectionConfidence:.5, minFacePresenceConfidence:.5, minTrackingConfidence:.5 });
+  try { return await FaceLandmarker.createFromOptions(visionFiles, opts("GPU")); }
+  catch { return await FaceLandmarker.createFromOptions(visionFiles, opts("CPU")); }
+}
+
+// Luz, nitidez e testa: lidas numa amostra pequena do rosto (canvas fora da página)
+const amostra = document.createElement('canvas'); amostra.width = amostra.height = 96;
+const actx = amostra.getContext('2d', { willReadFrequently:true });
+function medir(src, lm, W, H){
+  const b = caixa(OVAL.map(i => ({ x:lm[i].x*W, y:lm[i].y*H })));
+  const bw = b.x1-b.x0, bh = b.y1-b.y0, N = 96;
+  actx.drawImage(src, b.x0, b.y0, bw, bh, 0, 0, N, N);
+  const d = actx.getImageData(0, 0, N, N).data, Y = new Float32Array(N*N);
+  for (let i = 0; i < N*N; i++) Y[i] = .299*d[i*4] + .587*d[i*4+1] + .114*d[i*4+2];
+  const regiao = (cx, cy, r) => { let s = 0, n = 0; for (let y = Math.max(0, cy-r); y < Math.min(N, cy+r); y++) for (let x = Math.max(0, cx-r); x < Math.min(N, cx+r); x++){ s += Y[y*N+x]; n++; } return n ? s/n : 0; };
+  const em = i => [Math.round((lm[i].x*W - b.x0)/bw*N), Math.round((lm[i].y*H - b.y0)/bh*N)];
+  const esq = regiao(...em(50), 8), dir = regiao(...em(280), 8), testa = regiao(...em(151), 7);
+  let soma = 0; for (let y = 20; y < 80; y++) for (let x = 20; x < 76; x++) soma += Y[y*N+x];
+  const lum = soma / (60*56);
+  let m = 0, m2 = 0, n = 0;   // variância do laplaciano no miolo do rosto
+  for (let y = 24; y < 76; y++) for (let x = 24; x < 72; x++){ const l = 4*Y[y*N+x] - Y[y*N+x-1] - Y[y*N+x+1] - Y[(y-1)*N+x] - Y[(y+1)*N+x]; m += l; m2 += l*l; n++; }
+  return { lum, lado: Math.abs(esq - dir) / Math.max(1, (esq + dir)/2), testa, bochecha:(esq + dir)/2, nitidez: m2/n - (m/n)**2 };
+}
+const NITIDEZ_MIN = 12;
+function pose(lm){
+  const yaw = (lm[1].x - lm[234].x) / ((lm[454].x - lm[234].x) || 1e-6);
+  const olhoY = (lm[33].y + lm[263].y)/2, pitch = (lm[1].y - olhoY) / ((lm[152].y - olhoY) || 1e-6);
+  const roll = Math.atan2(lm[263].y - lm[33].y, lm[263].x - lm[33].x) * 180/Math.PI;
+  return { yaw, pitch, roll };
+}
+
+// ---------- câmera da pele ----------
+let peleStream = null, peleRodando = false, peleRaf = null, okSeq = 0, ultimoProb = ['Mostre o rosto 🙂', ''], narizAnt = null, cabeloDesde = 0, peleTs = 0, quadro = 0;
+let captura = null, opcoes = { olhos:true, sobrancelhas:false, boca:false, retalhos:false }, peleErroRede = false;
+function guiaPele(txt, ok){ const g = $('pele-guia'); if (g.textContent !== txt) g.textContent = txt; g.classList.toggle('ok', !!ok); }
+function pararCameraPele(){ peleRodando = false; cancelAnimationFrame(peleRaf); if (peleStream){ peleStream.getTracks().forEach(t => t.stop()); peleStream = null; } const v = $('pele-video'); v.srcObject = null; }
+function descartarCaptura(){ if (captura?.src){ captura.src.width = captura.src.height = 0; } captura = null; }
+
+// mapeia o quadro da câmera para o palco 3:4 (como object-fit: cover)
+function palco(v){
+  const cv = $('pele-live'), cw = cv.width = 480, ch = cv.height = 640, vw = v.videoWidth, vh = v.videoHeight;
+  const k = Math.max(cw/vw, ch/vh), ox = (cw - vw*k)/2, oy = (ch - vh*k)/2;
+  return { cv, cw, ch, X: p => p.x*vw*k + ox, Y: p => p.y*vh*k + oy };
+}
+function desenharAoVivo(v, lm, bom){
+  const { cv, cw, ch, X, Y } = palco(v), ctx = cv.getContext('2d');
+  ctx.fillStyle = '#0b1210'; ctx.fillRect(0, 0, cw, ch);
+  ctx.setLineDash([10, 9]); ctx.lineWidth = 3; ctx.strokeStyle = bom ? '#52c99c' : 'rgba(255,255,255,.35)';
+  ctx.beginPath(); ctx.ellipse(cw/2, ch*.47, cw*.33, ch*.33, 0, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+  if (!lm) return;
+  ctx.strokeStyle = bom ? '#52c99c' : '#e8ad55'; ctx.globalAlpha = .55; ctx.lineWidth = 1;
+  ctx.beginPath(); for (const { start, end } of FaceLandmarker.FACE_LANDMARKS_TESSELATION){ ctx.moveTo(X(lm[start]), Y(lm[start])); ctx.lineTo(X(lm[end]), Y(lm[end])); } ctx.stroke();
+  ctx.globalAlpha = 1; ctx.lineWidth = 3; ctx.beginPath(); OVAL.forEach((i,j) => j ? ctx.lineTo(X(lm[i]), Y(lm[i])) : ctx.moveTo(X(lm[i]), Y(lm[i]))); ctx.closePath(); ctx.stroke();
+}
+// [texto na tela, frase falada] ou null se está bom
+function avaliarCamera(faces, v){
+  if (!faces.length) return ['Mostre o rosto 🙂', 'Mostre o rosto para a câmera'];
+  if (faces.length > 1) return ['Só você na foto', 'Deixe só o seu rosto na tela'];
+  const lm = faces[0], { cw, ch, X, Y } = palco(v), b = caixa(OVAL.map(i => ({ x:X(lm[i])/cw, y:Y(lm[i])/ch })));
+  const fw = b.x1 - b.x0, cx = (b.x0 + b.x1)/2, cy = (b.y0 + b.y1)/2;
+  const diag = window.__peleDiag = { fw:+fw.toFixed(2), cx:+cx.toFixed(2), cy:+cy.toFixed(2) };   // só números, para o teste
+  if (fw < .48) return ['Chegue mais perto', 'Chegue o celular mais perto do rosto'];
+  if (fw > .86 || b.y0 < -.02 || b.y1 > 1.02) return ['Afaste um pouco', 'Afaste um pouquinho o celular'];
+  if (Math.abs(cx - .5) > .11 || Math.abs(cy - .47) > .12) return ['Rosto no meio do desenho', 'Coloque o rosto no meio do desenho'];
+  const p = pose(lm); Object.assign(diag, { yaw:+p.yaw.toFixed(2), pitch:+p.pitch.toFixed(2), roll:+p.roll.toFixed(1) });
+  if (Math.abs(p.yaw - .5) > .1) return ['Olhe reto para a câmera', 'Olhe reto para a câmera'];
+  if (Math.abs(p.roll) > 15) return ['Endireite a cabeça', 'Endireite a cabeça'];
+  if (p.pitch < .25 || p.pitch > .62) return ['Celular na altura do rosto', 'Deixe o celular na altura do rosto'];
+  const m = medir(v, lm, v.videoWidth, v.videoHeight); Object.assign(diag, { lum:Math.round(m.lum), lado:+m.lado.toFixed(2), nitidez:Math.round(m.nitidez), testa:Math.round(m.testa), bochecha:Math.round(m.bochecha) });
+  if (m.lum < 70) return ['Procure mais luz 💡', 'Procure mais luz. Fique de frente para uma janela ou uma lâmpada'];
+  if (m.lum > 220) return ['Luz forte demais', 'A luz está forte demais. Saia um pouco dela'];
+  if (m.lado > .3) return ['Fique de frente pra luz', 'A luz está batendo de lado. Vire de frente para ela'];
+  const nz = lm[1], mexeu = narizAnt && Math.hypot(nz.x - narizAnt.x, nz.y - narizAnt.y) > .008; narizAnt = { x:nz.x, y:nz.y };
+  if (mexeu || m.nitidez < NITIDEZ_MIN) return ['Segure parado', 'Segure parado'];
+  if (m.testa < .62*m.bochecha){ cabeloDesde ||= performance.now(); if (performance.now() - cabeloDesde < 6000) return ['Tire o cabelo da testa', 'Se der, tire o cabelo da testa']; }
+  return null;
+}
+async function abrirCameraPele(){
+  guiaPele('Abrindo a câmera…'); okSeq = 0; narizAnt = null; cabeloDesde = 0; descartarCaptura();
+  try {
+    faceVideo ??= await criarFace('VIDEO');
+    peleStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:1280 }, height:{ ideal:960 } }, audio:false });
+    const v = $('pele-video'); v.srcObject = peleStream; await v.play();
+    falar('Segure o celular na altura do rosto, de frente para a luz, e tire os óculos', true);
+    peleRodando = true; loopPele();
+  } catch (e) {
+    console.error(e); pararCameraPele();
+    guiaPele(e?.name === 'NotAllowedError' ? 'Libere a câmera, ou escolha uma foto' : 'Não consegui abrir a câmera');
+  }
+}
+function loopPele(){
+  if (!peleRodando) return;
+  const v = $('pele-video');
+  if (v.readyState >= 2 && v.videoWidth){
+    peleTs = Math.max(peleTs + 1, performance.now());
+    const faces = faceVideo.detectForVideo(v, peleTs).faceLandmarks || [];
+    if (quadro++ % 2 === 0 || okSeq) ultimoProb = avaliarCamera(faces, v);   // luz e nitidez a cada 2 quadros
+    const prob = ultimoProb;
+    desenharAoVivo(v, faces[0], !prob && faces.length === 1);
+    if (prob){ okSeq = 0; guiaPele(prob[0]); falar(prob[1]); }
+    else if (faces.length === 1){
+      okSeq++; guiaPele('Segure assim…', true); if (okSeq === 2) falar('Segure assim', true);
+      if (okSeq >= 8){ capturarCamera(v); return; }
+    }
+  }
+  peleRaf = requestAnimationFrame(loopPele);
+}
+function capturarCamera(v){
+  const cv = document.createElement('canvas'); cv.width = v.videoWidth; cv.height = v.videoHeight;
+  cv.getContext('2d').drawImage(v, 0, 0);
+  peleTs = Math.max(peleTs + 1, performance.now());
+  const lm = (faceVideo.detectForVideo(cv, peleTs).faceLandmarks || [])[0];   // pontos do MESMO quadro capturado
+  if (window.__peleDiag) window.__peleDiag.tentativas = (window.__peleDiag.tentativas || 0) + 1, window.__peleDiag.achou = !!lm, window.__peleDiag.tam = cv.width + 'x' + cv.height;
+  if (!lm){ cv.width = 0; okSeq = 0; peleRaf = requestAnimationFrame(loopPele); return; }
+  pararCameraPele(); falar('Pronto!', true); try { navigator.vibrate?.(60); } catch {}
+  captura = { src:cv, g:geometria(lm, cv.width, cv.height), origem:'camera' };
+  show('pele-envio'); atualizarEnvio();
+}
+
+// ---------- galeria ----------
+$('pele-arquivo').addEventListener('change', async e => {
+  const f = e.target.files?.[0]; e.target.value = ''; if (!f) return;
+  pararCameraPele(); descartarCaptura();
+  try {
+    const url = URL.createObjectURL(f), img = new Image(); img.src = url;   // a imagem nunca entra na página
+    await img.decode(); URL.revokeObjectURL(url);
+    const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    const cv = document.createElement('canvas'); cv.width = Math.round(img.naturalWidth*k); cv.height = Math.round(img.naturalHeight*k);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); img.src = '';
+    faceImagem ??= await criarFace('IMAGE');
+    const faces = faceImagem.detect(cv).faceLandmarks || [];
+    let prob = null;
+    if (!faces.length) prob = 'Não achei um rosto nessa foto. Escolha uma de frente, com o rosto bem visível.';
+    else if (faces.length > 1) prob = 'Tem mais de uma pessoa nessa foto. Escolha uma só com você.';
+    else {
+      const lm = faces[0], b = caixa(OVAL.map(i => ({ x:lm[i].x*cv.width, y:lm[i].y*cv.height }))), p = pose(lm), m = medir(cv, lm, cv.width, cv.height);
+      if (b.x1 - b.x0 < 160) prob = 'O rosto ficou pequeno nessa foto. Escolha uma mais de perto.';
+      else if (Math.abs(p.yaw - .5) > .14 || Math.abs(p.roll) > 15) prob = 'Nessa foto o rosto está de lado. Escolha uma olhando reto para a câmera.';
+      else if (m.lum < 60) prob = 'Essa foto está escura. Escolha uma com mais luz no rosto.';
+      else if (m.nitidez < NITIDEZ_MIN*.6) prob = 'Essa foto está tremida. Escolha uma mais nítida.';
+      else { captura = { src:cv, g:geometria(lm, cv.width, cv.height), origem:'galeria' }; show('pele-envio'); atualizarEnvio(); return; }
+    }
+    cv.width = 0; erroPele(prob, false);
+  } catch (err) { console.error(err); erroPele('Não consegui abrir essa foto. Tente outra, ou use a câmera.', false); }
+});
+
+// ---------- o que vai para a análise ----------
+function escolhidas(){ const modo = opcoes.retalhos ? 'retalhos' : 'rosto'; return { modo, ocultas: modo === 'rosto' ? ['olhos','sobrancelhas','boca'].filter(k => opcoes[k]) : [] }; }
+function atualizarEnvio(){
+  if (!captura) return;
+  const { modo, ocultas } = escolhidas();
+  document.querySelectorAll('#pele-opts .opt').forEach(b => { b.setAttribute('aria-pressed', String(!!opcoes[b.dataset.o])); b.hidden = modo === 'retalhos' && b.dataset.o !== 'retalhos'; });
+  requestAnimationFrame(() => desenharEsquema($('pele-esquema'), captura.g, modo, ocultas));
+  const fica = ['cabelo', 'orelhas', 'fundo', 'roupa'], vai = ['testa', 'bochechas', 'nariz', 'queixo'];
+  if (ocultas.includes('olhos')) fica.push('olhos'); else vai.push('olhos');
+  if (ocultas.includes('sobrancelhas')) fica.push('sobrancelhas'); else vai.push('sobrancelhas');
+  if (ocultas.includes('boca')) fica.push('boca'); else vai.push('boca');
+  const lista = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a.at(-1) : a[0];
+  $('pele-legenda').innerHTML = modo === 'retalhos'
+    ? '<b>Vão só 6 pedacinhos de pele, separados:</b> testa, cantos dos olhos, bochechas e sulco. O formato do rosto fica no seu celular.'
+    : `<b>Vai:</b> ${lista(vai)}.<br><b>Fica no seu celular:</b> ${lista(fica)}.`;
+  const perde = [];
+  if (modo === 'retalhos') perde.push('a firmeza do contorno e a olheira');
+  if (ocultas.includes('olhos')) perde.push('os pés de galinha e a olheira');
+  if (ocultas.includes('sobrancelhas')) perde.push('as linhas entre as sobrancelhas');
+  if (ocultas.includes('boca')) perde.push('as linhas em volta da boca');
+  $('pele-perde').hidden = !perde.length;
+  $('pele-perde').textContent = modo === 'retalhos' ? `Sem o formato do rosto, ficam de fora ${perde[0]}.` : `A tarja tira da análise ${lista(perde)}.`;
+}
+document.querySelectorAll('#pele-opts .opt').forEach(b => b.addEventListener('click', () => { opcoes[b.dataset.o] = !opcoes[b.dataset.o]; atualizarEnvio(); }));
+$('pele-ok').addEventListener('change', () => { if (cur === 'pele-inicio') $('cta').classList.toggle('off', !$('pele-ok').checked); $('pele-ok').closest('.consent').classList.remove('alerta'); });
+function apontarAceite(){ const l = $('pele-ok').closest('.consent'); l.classList.add('alerta'); l.scrollIntoView({ block:'center', behavior:'smooth' }); falar('Marque a autorização para continuar', true); }
+$('pele-ir').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'resultado', valueText:'pele' }); show('pele-inicio'); });
+// galeria sem o aceite: aponta o aceite em vez de não fazer nada
+$('cta-2').addEventListener('click', () => { if (cur === 'pele-inicio' && !$('pele-ok').checked) apontarAceite(); }, true);
+
+// ---------- envio e resultado ----------
+function erroPele(txt, rede){
+  peleErroRede = !!rede;
+  $('pele-erro-emo').textContent = rede ? '📶' : '📸';
+  $('pele-erro-tit').textContent = rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler';
+  $('pele-erro-txt').textContent = txt;
+  show('pele-erro');
+}
+let ultimoEnvio = null;
+async function enviarPele(){
+  if (!captura) return show('pele-camera');
+  const { modo, ocultas } = escolhidas();
+  const cv = montarEnvio(captura.src, captura.g, modo, ocultas);
+  const imagem = cv.toDataURL('image/jpeg', .9).split(',')[1]; cv.width = cv.height = 0;
+  ultimoEnvio = { modo, ocultas, kb: Math.round(imagem.length*3/4/1024) };
+  Analytics.track('answer', { stepId:'pele-envio', valueText: modo === 'retalhos' ? 'retalhos' : (ocultas.join('+') || 'sem-tarja'), props:{ origem:captura.origem } });
+  show('pele-analise');
+  const etapas = ['Olhando linhas, manchas e textura', 'Conferindo testa, bochechas e sulco', 'Montando o seu resultado'];
+  let pct = 0, i = 0;
+  const tick = setInterval(() => { pct = Math.min(92, pct + (pct < 60 ? 7 : 3)); $('pele-bar').style.width = pct + '%'; $('pele-pct').textContent = pct + '%'; if (pct > 35*(i+1) && i < 2) $('pele-etapa').textContent = etapas[++i]; }, 450);
+  $('pele-bar').style.width = '0%'; $('pele-pct').textContent = '0%'; $('pele-etapa').textContent = etapas[0];
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 45000);
+  try {
+    const r = await fetch(PELE_ENDPOINT, { method:'POST', signal:ctl.signal, headers:{ 'Content-Type':'application/json', apikey:SUPA_KEY },
+      body: JSON.stringify({ imagem, modo, ocultas }) });
+    const j = await r.json().catch(() => null);
+    clearInterval(tick);
+    if (r.status === 429) return erroPele('Você já fez algumas análises agora. Espere uns minutos e tente de novo.', false);
+    if (!r.ok || !j) return erroPele('Pode ser a internet. Sua foto ainda está só no seu celular; é só tentar de novo.', true);
+    if (!j.ok) return erroPele((j.dica ? j.dica + ' ' : '') + 'Tente de novo de frente para a luz, com o rosto inteiro na tela.', false);
+    $('pele-bar').style.width = '100%'; $('pele-pct').textContent = '100%';
+    descartarCaptura();
+    await new Promise(res => setTimeout(res, 350));
+    resultadoPele(j);
+  } catch (e) {
+    clearInterval(tick); erroPele('Pode ser a internet. Sua foto ainda está só no seu celular; é só tentar de novo.', true);
+  } finally { clearTimeout(to); }
+}
+const esc = t => String(t).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+const EMO = { linhas_testa:'〰️', olhos:'👁️', sulco_nasolabial:'👃', manchas:'🟤', textura_poros:'🔍', flacidez:'🙂' };
+const ROTULO = ['quase nada', 'leve', 'moderado', 'bem marcado'];
+function resultadoPele(j){
+  const { min, max } = j.faixa, idade = dados.idade;
+  peleRes = { min, max };
+  $('pr-age').textContent = `${min} a ${max} anos`;
+  $('pr-vs').textContent = !pernas ? '' : idade < min ? `Você tem ${idade}: a faixa ficou um pouco acima da sua idade.` :
+                          idade > max ? `Você tem ${idade}: sua pele aparenta menos que a sua idade.` : `Você tem ${idade}: bem na sua idade.`;
+  const vis = j.sinais.filter(s => s.visivel);
+  const alto = vis.filter(s => s.nivel >= 2).map(s => s.nome.toLowerCase()), baixo = vis.filter(s => s.nivel <= 1).map(s => s.nome.toLowerCase());
+  const lista = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a.at(-1) : a[0];
+  $('pr-resumo').textContent = [baixo.length ? `Mais tranquilo: ${lista(baixo)}.` : '', alto.length ? `O que mais aparece: ${lista(alto)}.` : ''].filter(Boolean).join(' ');
+  $('pr-duo').hidden = !pernas; if (pernas){ $('pr-pernas').textContent = pernas.faixa; $('pr-pele').textContent = `${min} a ${max} anos`; }
+  $('pr-sinais').innerHTML = j.sinais.map(s => s.visivel
+    ? `<div class="sinal"><span class="e">${EMO[s.id] || '•'}</span><b>${esc(s.nome)}</b><span class="meter" title="${ROTULO[s.nivel]}">${[1,2,3].map(k => `<i class="${s.nivel >= k ? 'on' : ''}"></i>`).join('')}</span><small></small></div>`
+    : `<div class="sinal off"><span class="e">🙈</span><b>${esc(s.nome)}</b><span></span><small>Ficou coberto, não entrou na análise.</small></div>`).join('');
+  [...$('pr-sinais').querySelectorAll('.sinal:not(.off) small')].forEach((el, k) => el.textContent = `${vis[k].obs} · ${ROTULO[vis[k].nivel]}`);
+  ctaPernas();
+  const { modo, ocultas } = ultimoEnvio || {};
+  Analytics.track('complete', { stepId:'pele-resultado', stepIndex:order.indexOf('pele-resultado'), valueText:`${min}-${max}`,
+    props:{ modo, ocultas:(ocultas || []).join('+') || 'nenhuma', qualidade:j.qualidade?.nota, confianca:j.confianca, idade } });
+  falar('Pronto.', true);
+  show('pele-resultado');
+  if (window.__peleResult) window.__peleResult(j);
+}
+window.__peleEstado = () => ({ ultimoEnvio, captura: !!captura, cur });
+
 // teste da tela de resultado sem câmera (desenvolvimento)
 window.__testarResultado = (c, d, s) => { Object.assign(dados, d); if (s) sexo = s; voz = false; resultado(c); };
 // teste automático com vídeo (usado só no desenvolvimento)
