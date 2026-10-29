@@ -136,12 +136,16 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .previa{display:block;width:min(210px,54vw);height:auto;margin:0 auto;border-radius:18px;background:#808080}
 .previa.ret{width:min(300px,78vw)}
 .final h2{font-size:1.9rem}
-.codigo.grande{padding:8px 10px 8px 18px;font-size:1rem}
-.codigo.grande b{font-size:1.7rem;padding:8px 18px}
+.cod-ref{color:var(--muted);font-size:.88rem;margin-top:-4px}
+.cod-ref b{font:600 .88rem var(--mono);color:var(--fg);letter-spacing:.04em;white-space:nowrap}
+.btn.ico{display:flex;align-items:center;justify-content:center;gap:10px}
+.btn.ico svg{width:22px;height:22px;flex:none}
+.toast{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;width:min(440px,calc(100% - 32px));background:var(--fg);color:#fff;border-radius:16px;padding:12px 16px;font-size:.95rem;text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.toast b{display:block;font-size:1.05rem}
 .aviso-dm{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:20px}
 .aviso-dm div{background:var(--surface);color:var(--fg);border-radius:22px;padding:24px 22px;max-width:420px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3)}
 .aviso-dm b{font:800 1.5rem/1.15 var(--display)}
-.aviso-dm q{font:600 1.15rem/1.35 var(--body);color:var(--accent);quotes:'“' '”'}
+.aviso-dm q{font:600 1.15rem/1.35 var(--body);color:var(--accent);quotes:'“' '”';-webkit-user-select:all;user-select:all}
 .aviso-dm span{font-size:1.05rem}
 .aviso-dm a.btn{color:var(--on-accent)}
 .esquema{display:block;width:min(196px,52vw);aspect-ratio:1/1.15;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:22px}
@@ -169,8 +173,6 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .regua .m span{position:absolute;transform:translateX(-50%)}
 .regua .m.voce{color:var(--muted)} .regua .m.voce span{top:4px} .regua .m.voce i{background:var(--surface);border:3px solid var(--muted)}
 .regua .m.pernas{color:var(--accent)} .regua .m.pernas span{top:60px} .regua .m.pernas i{background:var(--accent)}
-.codigo{align-self:center;display:inline-flex;align-items:center;gap:10px;border:1.5px dashed var(--line);border-radius:999px;padding:6px 8px 6px 16px;color:var(--muted);font:600 .9rem var(--body)}
-.codigo b{background:var(--accent-2);color:var(--fg);border-radius:999px;padding:6px 14px;font:700 1.15rem var(--mono);letter-spacing:.08em}
 .cod-nota{color:var(--muted);font-size:.8rem;margin-top:-10px}
 .pele-card{background:var(--surface);border:1.5px solid var(--accent);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:8px;text-align:left}
 .pele-card canvas{width:84px;height:96px;grid-row:span 1}
@@ -259,8 +261,8 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Último passo</span>
     <h2>Seu resultado está <em>pronto</em></h2>
-    <p class="sub">Mande uma mensagem no WhatsApp ou no Direct do Dr. Lucca com este código para receber a explicação.</p>
-    <div class="codigo grande"><span>Seu código</span><b id="res-cod">LV-0000</b></div>
+    <p class="sub">Só falta um passo para você receber a explicação do seu resultado: mandar uma mensagem para o Dr. Lucca. Escolha o WhatsApp ou o Direct do Instagram.</p>
+    <p class="cod-ref">A mensagem já vai pronta, com o seu código <b id="res-cod">LV-0000</b>. No Direct, ela vai copiada: é só colar.</p>
     <div class="pele-card" id="pele-card" hidden>
       <div>
         <span class="pill sm" id="pele-card-pill">Uma selfie</span>
@@ -325,20 +327,23 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
   <section class="screen c final" data-s="pele-resultado" data-p="100" hidden>
     <span class="pill">Último passo</span>
     <h2 id="pr-tit">Sua foto está <em>em análise</em></h2>
-    <p class="sub">Mande uma mensagem no WhatsApp ou no Direct do Dr. Lucca com este código.</p>
-    <div class="codigo grande"><span>Seu código</span><b id="pr-cod">LV-0000</b></div>
+    <p class="sub" id="pr-sub">Só falta um passo para você receber a análise total da sua pele: mandar uma mensagem para o Dr. Lucca. Escolha o WhatsApp ou o Direct do Instagram.</p>
+    <p class="cod-ref">A mensagem já vai pronta, com o seu código <b id="pr-cod">LV-0000</b>. No Direct, ela vai copiada: é só colar.</p>
   </section>
 
   <div class="cta"><div>
-    <a class="btn" id="cta-link" href="#" target="_blank" rel="noopener" hidden>FALAR COM O DR. LUCCA</a>
-    <a class="btn ghost" id="cta-dm" href="https://ig.me/m/dr.luccamarques" target="_blank" rel="noopener" hidden>Prefiro pelo Direct</a>
+    <!-- fim: dois canais com o mesmo peso. WhatsApp leva a mensagem pronta; o Direct não aceita texto pronto, então ela vai copiada -->
+    <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg>WhatsApp</a>
+    <a class="btn ico" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>Direct do Instagram</a>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
     <button class="btn ghost" id="cta-2" type="button" hidden></button>
   </div></div>
+  <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
+  <!-- só aparece se o navegador não deixou copiar sozinho -->
   <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
-    <b>Copiamos a sua mensagem</b>
+    <b>Mande esta mensagem no Direct</b>
     <q id="aviso-msg">Oi, Dr. Lucca! Meu código é LV-0000</q>
-    <span>No Direct, toque e segure na caixa de mensagem e escolha <b style="font:inherit;font-weight:700">Colar</b>.</span>
+    <span>Toque e segure na mensagem, escolha <b style="font:inherit;font-weight:700">Copiar</b> e cole no Direct.</span>
     <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
   </div></div>
 </div>
@@ -707,17 +712,21 @@ async function abrirCamera(){
     guia(e?.name === 'NotAllowedError' ? 'Libere a câmera para este site' : 'Não consegui abrir a câmera');
   }
 }
-// ---------- mensagem do botão (pernas + pele, se houver) ----------
+// ---------- mensagem dos botões (pernas + pele, se houver): a mesma no WhatsApp e no Direct ----------
 let pernas = null, peleRes = null;
-function ctaPernas(){
+function mensagem(){
   const fiz = pernas && peleRes ? 'o teste das pernas e da pele' : peleRes ? 'o teste da pele' : 'o teste das pernas';
-  const msg = `Oi, Dr. Lucca! Fiz ${fiz}. Meu código é ${meuCodigo()}. Quero entender meu resultado.`;
-  $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+  return `Oi, Dr. Lucca! Fiz ${fiz}. Meu código é ${meuCodigo()}. Quero entender meu resultado.`;
+}
+function ctaPernas(){
+  $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
+  $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp', props:{ canal:'whatsapp' } });
   $('cta-dm').onclick = e => abrirDirect(e);
-  $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp' });   // a DM não aceita texto pronto: vai copiado
 }
 
-// Direct: o Instagram não aceita texto pronto. Copia DENTRO do toque (exigência do iOS), mostra o aviso 1,5 s e abre.
+// Direct: o Instagram não aceita texto pronto. Um toque só: copia DENTRO do toque (exigência do iOS), avisa e deixa o
+// link abrir o app (sem target, para o iOS tratar como link do app). Se o navegador não deixou copiar, mostra a
+// mensagem para copiar à mão e o botão "Abrir o Direct".
 function copiar(txt){
   let ok = false;
   try { const t = document.createElement('textarea'); t.value = txt; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
@@ -725,15 +734,16 @@ function copiar(txt){
   try { navigator.clipboard?.writeText(txt).catch(() => {}); } catch {}
   return ok;
 }
+let toastT = null;
 function abrirDirect(e){
+  const txt = mensagem(), copiou = copiar(txt);
+  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou } });
+  if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }   // o link segue e abre o app
   e.preventDefault();
-  const txt = `Oi, Dr. Lucca! Meu código é ${meuCodigo()}`, url = $('cta-dm').href;
-  copiar(txt);
-  Analytics.track('cta_click', { stepId:cur, valueText:'direct' });
-  $('aviso-msg').innerHTML = `Oi, Dr. Lucca! Meu código é <span style="white-space:nowrap">${meuCodigo()}</span>`; $('aviso-link').href = url; $('aviso-dm').hidden = false;   // a pessoa toca em "Abrir o Direct": abre o app
+  $('aviso-msg').textContent = txt; $('aviso-link').href = $('cta-dm').href; $('aviso-dm').hidden = false;
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
-$('aviso-link').addEventListener('click', () => setTimeout(() => { $('aviso-dm').hidden = true; }, 800));
+$('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:cur, valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 
 // =====================================================================
 // PELE: a pessoa se vê na tela e vê a foto já recortada e com tarja antes de enviar. Recorte, tarja e limpeza do arquivo
@@ -762,7 +772,20 @@ function geometria(lm, W, H){
 }
 let _canon = null;
 function geoCanon(){ if (!_canon){ const lm = []; for (let i = 0; i < CANON.length; i += 2) lm.push({ x:CANON[i]/1000, y:CANON[i+1]/1000 }); _canon = geometria(lm, 1000, 1000); } return _canon; }
-function contorno(R, enc = 0.025){ const c = media(OVAL.map(i => R[i])); return OVAL.map(i => ({ x:R[i].x + (c.x-R[i].x)*enc, y:R[i].y + (c.y-R[i].y)*enc })); }
+// A malha do MediaPipe acaba no meio da testa (ponto 10), e as linhas da testa vão até o cabelo (print do Lucca, 29/10).
+// Sobe a parte de cima do contorno: no ponto 10, TESTA_EXTRA da distância olhos→ponto 10 (em fotos frontais, ~0,35 da
+// distância entre os olhos, perto da linha do cabelo); a subida diminui até zero na altura dos olhos, então lateral e
+// tarjas não mudam. Proporcional à própria malha: com o celular abaixo do rosto (testa encurtada), sobe menos.
+const TESTA_EXTRA = .42;
+function subirTesta(pts, olhoY, topoY){
+  const alto = olhoY - topoY, sobe = TESTA_EXTRA*alto;
+  return pts.map(p => { const t = Math.max(0, Math.min(1, (olhoY - p.y)/alto)); return { x:p.x, y:p.y - sobe*t*t }; });
+}
+const olhoMedioY = Q => (media(OLHO_A.map(i => Q[i])).y + media(OLHO_B.map(i => Q[i])).y)/2;
+function contorno(R, enc = 0.025){
+  const pts = subirTesta(OVAL.map(i => R[i]), olhoMedioY(R), R[10].y), c = media(pts);
+  return pts.map(p => ({ x:p.x + (c.x-p.x)*enc, y:p.y + (c.y-p.y)*enc }));
+}
 function tarjas(g, ocultas){
   const { R, iod } = g, t = [];
   // só a abertura dos olhos, de um canto ao outro; pés de galinha (lateral) e olheira (abaixo) ficam à mostra
@@ -928,7 +951,8 @@ function desenharAoVivo(v, lm, bom){
   ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 6;
   ctx.beginPath(); ctx.ellipse(cw/2, ch*.47, cw*.33, ch*.33, 0, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
   if (!lm) return;
-  ctx.strokeStyle = bom ? '#52c99c' : '#e8ad55'; ctx.lineWidth = 3; ctx.beginPath(); OVAL.forEach((i,j) => j ? ctx.lineTo(X(lm[i]), Y(lm[i])) : ctx.moveTo(X(lm[i]), Y(lm[i]))); ctx.closePath(); ctx.stroke();
+  const tela = OVAL.map(i => ({ x:X(lm[i]), y:Y(lm[i]) })), Q = lm.map(p => ({ y:Y(p) }));   // com a testa que vai junto
+  ctx.strokeStyle = bom ? '#52c99c' : '#e8ad55'; ctx.lineWidth = 3; ctx.beginPath(); subirTesta(tela, olhoMedioY(Q), Y(lm[10])).forEach((p,j) => j ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.stroke();
 }
 // [texto na tela, frase falada] ou null se está bom
 function avaliarCamera(faces, v){
@@ -936,9 +960,10 @@ function avaliarCamera(faces, v){
   if (faces.length > 1) return ['Só você na foto', 'Deixe só o seu rosto na tela'];
   const lm = faces[0], { cw, ch, X, Y } = palco(v), b = caixa(OVAL.map(i => ({ x:X(lm[i])/cw, y:Y(lm[i])/ch })));
   const fw = b.x1 - b.x0, cx = (b.x0 + b.x1)/2, cy = (b.y0 + b.y1)/2;
+  const olhoY = olhoMedioY(lm.map(p => ({ y:Y(p)/ch }))), testaY = Y(lm[10])/ch - TESTA_EXTRA*(olhoY - Y(lm[10])/ch);   // topo da testa que vai junto
   const diag = window.__peleDiag = { fw:+fw.toFixed(2), cx:+cx.toFixed(2), cy:+cy.toFixed(2) };   // só números, para o teste
   if (fw < .48) return ['Chegue mais perto', 'Chegue o celular mais perto do rosto'];
-  if (fw > .86 || b.y0 < -.02 || b.y1 > 1.02) return ['Afaste um pouco', 'Afaste um pouquinho o celular'];
+  if (fw > .86 || testaY < -.02 || b.y1 > 1.02) return ['Afaste um pouco', 'Afaste um pouquinho o celular'];
   if (Math.abs(cx - .5) > .11 || Math.abs(cy - .47) > .12) return ['Rosto no meio do desenho', 'Coloque o rosto no meio do desenho'];
   const p = pose(lm); Object.assign(diag, { yaw:+p.yaw.toFixed(2), pitch:+p.pitch.toFixed(2), roll:+p.roll.toFixed(1) });
   if (Math.abs(p.yaw - .5) > .1) return ['Olhe reto para a câmera', 'Olhe reto para a câmera'];
@@ -1119,6 +1144,7 @@ function resultadoPele(j){
   peleRes = { min, max };
   $('pr-tit').innerHTML = (ultimoEnvio?.n || 1) > 1 ? 'Suas fotos estão <em>em análise</em>' : 'Sua foto está <em>em análise</em>';
   $('pr-cod').textContent = meuCodigo();
+  $('pr-sub').textContent = `Só falta um passo para você receber a análise total da sua pele${pernas ? ' e das suas pernas' : ''}: mandar uma mensagem para o Dr. Lucca. Escolha o WhatsApp ou o Direct do Instagram.`;
   ctaPernas();
   const { modo, ocultas, origem, n } = ultimoEnvio || {};
   Analytics.track('complete', { stepId:'pele-resultado', stepIndex:order.indexOf('pele-resultado'), valueText:`${min}-${max}`,
