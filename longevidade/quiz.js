@@ -245,10 +245,10 @@ function renderInfo(it) {
     );
   } else if (it.view === 'demo') {
     screen.append(
-      it.emoji ? el('div', { class: 'big-emoji', 'aria-hidden': 'true' }, it.emoji) : null,
+      ...[it.emoji ? el('div', { class: 'big-emoji', 'aria-hidden': 'true' }, it.emoji) : null,
       el('h2', { html: fmt(txt(it.title)) }),
       el('p', { class: 'sub', html: fmt(txt(it.texto)) }),
-      demoPernas(it.demo)
+      demoPernas(it.demo)].filter(Boolean)   // append(null) escreveria "null" na tela
     );
   } else if (it.view === 'ciencia') {
     screen.append(

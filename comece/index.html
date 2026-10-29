@@ -34,8 +34,10 @@ const braco = lista.find(b => b.id === id);
 Analytics.init({ enabled:true, funnelId:'link-bio', variant:id,
   supabaseUrl:'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', supabaseKey:'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K' });
 Analytics.track('view', { stepId:'roteador', valueText:TEMA });
-q.delete('f'); q.set('v', id);   // sem ?sid: cada funil abre a própria sessão (a tabela de sessões é por sid) if (!q.has('utm_source')) q.set('utm_source', 'ig_bio');
-setTimeout(() => location.replace(braco.url + '?' + q), 150);   // dá tempo do evento sair (keepalive)
+q.delete('f'); q.set('v', id);   // sem ?sid: cada funil abre a própria sessão (a tabela de sessões é por sid)
+if (!q.has('utm_source')) q.set('utm_source', 'ig_bio');
+// o sid da bio fica na aba; apagar para o funil abrir sessão nova e não cair na linha 'link-bio' do resumo
+setTimeout(() => { try { sessionStorage.removeItem('livowa_sid'); } catch {} location.replace(braco.url + '?' + q); }, 150);   // dá tempo do evento sair (keepalive)
 </script>
 </body>
 </html>
