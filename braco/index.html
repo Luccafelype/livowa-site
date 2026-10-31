@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quantos anos têm os seus braços</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: o mesmo app do teste das pernas (livowa.com/idade): uma coluna, uma etapa por tela, ação principal fixa
+   embaixo, imagem antes do texto. Teste de potência dos braços pelo sensor de movimento do celular (31/10/2026). */
+:root{
+  --bg:#f2f4f1; --surface:#ffffff; --fg:#141c17; --muted:#5f6d65; --line:#dbe1dc;
+  --accent:#0d6a4d; --accent-2:#d9efe5; --on-accent:#ffffff; --warn:#8a5200; --warn-bg:#f7ecdc;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top,0px) max(20px,env(safe-area-inset-right,0px)) 0 max(20px,env(safe-area-inset-left,0px))}
+.top{display:flex;align-items:center;gap:12px;padding-block:16px 8px}
+.back{background:none;border:0;color:var(--fg);font-size:1.4rem;padding:4px 8px 4px 0;cursor:pointer}
+.bar{flex:1;height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
+.screen{flex:1;display:flex;flex-direction:column;gap:18px;padding-block:12px 190px;animation:in .25s ease}
+@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1,h2{font-family:var(--display);margin:0;line-height:1.02;text-wrap:balance}
+h1{font-size:clamp(2.4rem,10vw,3.2rem);font-weight:800;letter-spacing:-.025em}
+h2{font-size:1.7rem;font-weight:700;letter-spacing:-.01em}
+h1 em,h2 em{font-style:normal;color:var(--accent)}
+p{margin:0}
+.sub{color:var(--muted);font-size:1.05rem}
+.who{display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
+.who b{color:var(--fg);font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+/* demonstração: antes/depois alternando (troca pelo vídeo do Flow quando existir) */
+.anim{position:relative;width:auto;height:min(40vh,420px);aspect-ratio:9/16;margin-inline:auto;border-radius:22px;overflow:hidden;background:#f3f2ef;border:1px solid var(--line)}
+.anim img,.anim video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.anim .depois{animation:troca 1.6s steps(1,end) infinite}
+@keyframes troca{0%{opacity:0}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.anim .depois{animation:none;opacity:0}}
+.hero-card{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mini{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.mini b{font:800 1.3rem/1.1 var(--display);color:var(--accent)}
+.mini span{font-size:.82rem;color:var(--muted)}
+.steps{display:flex;flex-direction:column;gap:14px;margin:0;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:flex-start;font-size:1.05rem}
+.steps li em{font-style:normal;flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent-2);color:var(--accent);display:grid;place-items:center;font:600 .9rem var(--mono)}
+.notice{font-size:.85rem;color:var(--warn);background:var(--warn-bg);border-radius:12px;padding:10px 12px}
+
+/* dados */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{font:600 1.05rem var(--body);padding:15px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.wheels{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.wheelbox{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.wheelbox label{font-size:.82rem;color:var(--muted)}
+.wheel-wrap{position:relative;width:100%;height:220px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.wheel-wrap::before{content:"";position:absolute;left:6px;right:6px;top:88px;height:44px;border-radius:10px;background:var(--accent-2);pointer-events:none}
+.wheel-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(var(--surface),transparent 35%,transparent 65%,var(--surface))}
+.wheel{position:relative;height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;padding-block:88px;outline:none}
+.wheel::-webkit-scrollbar{display:none}
+.wheel div{height:44px;display:grid;place-items:center;scroll-snap-align:center;font:600 1.3rem var(--mono);color:var(--muted);cursor:pointer}
+.wheel div.sel{color:var(--fg)}
+
+/* permissão do sensor */
+.screen.c{text-align:center}
+.sensor-ill{width:min(170px,46vw);height:auto;margin:16px auto 0;display:block}
+.ok-sensor{display:inline-flex;align-self:center;align-items:center;gap:8px;background:var(--accent-2);color:var(--accent);border-radius:999px;padding:8px 16px;font:600 .95rem var(--body)}
+
+/* medição */
+.palco{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;min-height:56vh}
+.num{font:800 clamp(6rem,38vw,9rem)/.9 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.num small{font-size:.35em;color:var(--muted);font-weight:700}
+.dica{font-size:1.2rem;color:var(--muted)}
+.ponto{display:flex;gap:10px;justify-content:center}
+.ponto i{width:14px;height:14px;border-radius:50%;background:var(--line);transition:background .15s}
+.ponto i.on{background:var(--accent)}
+
+/* fim */
+.pill{align-self:center;display:inline-flex;align-items:center;gap:6px;background:var(--accent-2);color:var(--accent);border-radius:999px;padding:6px 14px;font:600 .85rem var(--body)}
+.final h2{font-size:1.9rem}
+.trava{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px;text-align:left;overflow:hidden}
+.trava .rot{font:600 .78rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.regua{position:relative;height:70px;margin:10px 8px 0;filter:blur(5px);opacity:.9}
+.regua .trilho{position:absolute;left:0;right:0;top:30px;height:10px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent-2) 55%,var(--warn-bg))}
+.regua i{position:absolute;top:24px;width:22px;height:22px;border-radius:50%;margin-left:-11px}
+.regua .a{left:38%;background:var(--fg)} .regua .b{left:66%;background:var(--accent);border:3px solid var(--surface)}
+.regua span{position:absolute;top:56px;font:600 .8rem var(--body);transform:translateX(-50%)}
+.cadeado{position:absolute;inset:0;display:grid;place-items:center;padding:16px}
+.cadeado div{display:flex;align-items:center;gap:10px;background:var(--fg);color:#fff;border-radius:999px;padding:10px 16px;font:600 .92rem var(--body)}
+.cadeado svg{width:18px;height:18px;flex:none}
+.cod-ref{color:var(--muted);font-size:.88rem}
+.cod-ref b{font:600 .88rem var(--mono);color:var(--fg);letter-spacing:.04em;white-space:nowrap}
+
+.cta{position:fixed;left:0;right:0;bottom:0;padding:14px max(20px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+  background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.cta div{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.btn{width:100%;font:700 1.08rem var(--body);border:0;border-radius:14px;padding:17px;cursor:pointer;background:var(--accent);color:var(--on-accent);text-decoration:none;text-align:center;display:block}
+.btn.ico{display:flex;align-items:center;justify-content:center;gap:10px}
+.btn.ico svg{width:22px;height:22px;flex:none}
+.btn.ghost{background:transparent;color:var(--muted);padding:6px;font-weight:600;font-size:.95rem}
+.btn:disabled{opacity:.45}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.toast{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;width:min(440px,calc(100% - 32px));background:var(--fg);color:#fff;border-radius:16px;padding:12px 16px;font-size:.95rem;text-align:center}
+.toast b{display:block;font-size:1.05rem}
+.aviso-dm{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:20px}
+.aviso-dm>div{background:var(--surface);color:var(--fg);border-radius:22px;padding:24px 22px;max-width:420px;display:flex;flex-direction:column;gap:12px;text-align:center}
+.aviso-dm b{font:800 1.5rem/1.15 var(--display)}
+.aviso-dm q{font:600 1.15rem/1.35 var(--body);color:var(--accent);-webkit-user-select:all;user-select:all}
+.aviso-dm a.btn{color:var(--on-accent)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top" id="top" hidden>
+    <button class="back" id="back" type="button" aria-label="Voltar">←</button>
+    <div class="bar" aria-hidden="true"><i id="progress"></i></div>
+  </div>
+
+  <section class="screen" data-s="inicio" data-p="0">
+    <div class="who" style="margin-top:20px"><span class="dot"></span><span><b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990</span></div>
+    <h1>Quantos anos têm os seus <em>braços</em>?</h1>
+    <p class="sub">Faça 5 roscas rápidas com o celular na mão e descubra a idade que a potência dos seus braços mostra.</p>
+    <div class="anim" id="anim" aria-hidden="true">
+      <img src="img/antes.jpg" alt="">
+      <img class="depois" src="img/depois.jpg" alt="">
+    </div>
+    <div class="hero-card">
+      <div class="mini"><b>30 segundos</b><span>só o celular na mão</span></div>
+      <div class="mini"><b>Sem cadastro</b><span>só um código</span></div>
+    </div>
+  </section>
+
+  <section class="screen" data-s="como" data-p="20" hidden>
+    <h2>Como fazer</h2>
+    <ol class="steps">
+      <li><em>1</em><span>Fique em pé, com o cotovelo colado no corpo.</span></li>
+      <li><em>2</em><span>Segure o celular firme na mão, com a tela para cima. Punho firme: quem dobra é o cotovelo.</span></li>
+      <li><em>3</em><span>No "Já!", dobre o cotovelo o mais rápido que conseguir e volte. 5 vezes. O celular vibra no fim.</span></li>
+    </ol>
+    <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
+  </section>
+
+  <section class="screen" data-s="dados" data-p="40" hidden>
+    <h2>Sobre você</h2>
+    <div class="seg" role="group" aria-label="Sexo">
+      <button type="button" data-sexo="m" aria-pressed="true">Homem</button>
+      <button type="button" data-sexo="f" aria-pressed="false">Mulher</button>
+    </div>
+    <div class="wheels">
+      <div class="wheelbox"><label id="l-idade">Idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade"></div></div></div>
+      <div class="wheelbox"><label id="l-peso">Peso (kg)</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso"></div></div></div>
+    </div>
+    <p class="sub" style="font-size:.85rem;text-align:center">Role para escolher.</p>
+  </section>
+
+  <section class="screen c" data-s="sensor" data-p="60" hidden>
+    <svg class="sensor-ill" viewBox="0 0 170 170" aria-hidden="true">
+      <rect x="55" y="20" width="60" height="120" rx="14" fill="none" stroke="var(--fg)" stroke-width="6"/>
+      <rect x="74" y="28" width="22" height="5" rx="2.5" fill="var(--fg)"/>
+      <path d="M30 70a58 58 0 0 1 14-34M140 70a58 58 0 0 0-14-34M22 92a76 76 0 0 1 8-46M148 92a76 76 0 0 0-8-46" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="85" cy="80" r="16" fill="var(--accent-2)"/><circle cx="85" cy="80" r="6" fill="var(--accent)"/>
+    </svg>
+    <h2>Libere o sensor de movimento</h2>
+    <p class="sub">O teste usa o sensor que gira a tela do seu celular. Nada é filmado e só o resultado sai do aparelho.</p>
+    <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o movimento. Toque em <b>Permitir</b>.</p>
+    <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
+  </section>
+
+  <section class="screen" data-s="medir" data-p="80" hidden>
+    <div class="palco">
+      <div class="num" id="grande" aria-live="assertive">3</div>
+      <p class="dica" id="dica">Prepare o braço</p>
+      <div class="ponto" id="pontos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
+  <section class="screen c final" data-s="resultado" data-p="100" hidden>
+    <span class="pill">Último passo</span>
+    <h2>Seu resultado está <em>pronto</em></h2>
+    <div class="trava" aria-label="Resultado bloqueado: o Dr. Lucca explica">
+      <span class="rot">A idade dos seus braços × a sua idade</span>
+      <div class="regua" aria-hidden="true"><div class="trilho"></div><i class="a"></i><i class="b"></i><span style="left:38%">00 anos</span><span style="left:66%">00 anos</span></div>
+      <div class="cadeado"><div><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>O Dr. Lucca te explica</div></div>
+    </div>
+    <p class="sub">Só falta um passo para você receber a explicação do seu resultado e o que fazer com ele: mandar uma mensagem para o Dr. Lucca. Escolha o WhatsApp ou o Direct do Instagram.</p>
+    <p class="cod-ref">A mensagem já vai pronta, com o seu código <b id="res-cod">LV-0000</b>. No Direct, ela vai copiada: é só colar.</p>
+  </section>
+
+  <section class="screen c" data-s="erro" data-p="60" hidden>
+    <h2 id="e-tit">O sensor não respondeu</h2>
+    <p class="sub" id="e-txt"></p>
+  </section>
+
+  <div class="cta"><div>
+    <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg>WhatsApp</a>
+    <a class="btn ico" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>Direct do Instagram</a>
+    <button class="btn" id="cta" type="button">Fazer o teste</button>
+  </div></div>
+  <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
+  <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
+    <b>Mande esta mensagem no Direct</b>
+    <q id="aviso-msg">Oi, Dr. Lucca! Meu código é LV-0000</q>
+    <span>Toque e segure na mensagem, escolha <b style="font:inherit;font-weight:700">Copiar</b> e cole no Direct.</span>
+    <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
+  </div></div>
+</div>
+
+<script type="module">
+import * as Analytics from '/idade/funnel-analytics.js';
+const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
+Analytics.init({ enabled:true, funnelId:'teste-braco', variant:new URLSearchParams(location.search).get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
+Analytics.track('view');
+
+const $ = id => document.getElementById(id);
+const WHATSAPP = '5562991774809';
+const ANTEBRACO = 0.30;                    // m, do cotovelo à mão: converte giro (°/s) em velocidade da mão
+const REPS = 5, LIMITE_MS = 12000, PICO = 150, ESPACO = 180;
+const ua = navigator.userAgent;
+const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
+const order = ['inicio','como','dados','sensor','medir','resultado','erro'];
+let cur = 'inicio', sexo = 'm', sensorOk = false;
+
+// ---------- rodinhas (iguais às do teste das pernas) ----------
+const dados = {};
+function wheel(id, from, to, start){
+  const w = $(id), items = [], H = 44, key = id.slice(2);
+  for (let v = from; v <= to; v++){ const d = document.createElement('div'); d.textContent = v; d.setAttribute('role','option'); w.appendChild(d); items.push(d); }
+  const pick = () => { const i = Math.max(0, Math.min(items.length-1, Math.round(w.scrollTop / H)));
+    items.forEach((d,j) => { d.classList.toggle('sel', j === i); d.setAttribute('aria-selected', String(j === i)); }); dados[key] = from + i; };
+  w.addEventListener('scroll', pick, {passive:true});
+  w.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); w.scrollBy({top: e.key === 'ArrowDown' ? H : -H, behavior:'smooth'}); } });
+  items.forEach((d,j) => d.addEventListener('click', () => w.scrollTo({top: j*H, behavior:'smooth'})));
+  dados[key] = start; w._set = v => { w.scrollTop = (v - from) * H; pick(); };
+  return w;
+}
+const wheels = [wheel('w-idade', 18, 90, 40), wheel('w-peso', 40, 180, 80)], starts = [40, 80];
+document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click', () => {
+  sexo = b.dataset.sexo; document.querySelectorAll('[data-sexo]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+
+// ---------- telas ----------
+function show(s){
+  document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
+  cur = s; const el = document.querySelector(`[data-s="${s}"]`);
+  Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s) });
+  $('top').hidden = s === 'inicio' || s === 'medir' || s === 'resultado';
+  $('progress').style.width = (el.dataset.p || 0) + '%';
+  const cta = $('cta'); cta.hidden = false; cta.disabled = false; $('cta-link').hidden = true; $('cta-dm').hidden = true;
+  if (s === 'inicio') cta.textContent = 'Fazer o teste';
+  if (s === 'como') cta.textContent = 'Entendi';
+  if (s === 'dados'){ cta.textContent = 'Continuar'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
+  if (s === 'sensor') cta.textContent = sensorOk ? 'Começar' : 'Liberar o sensor';
+  if (s === 'medir') cta.hidden = true;
+  if (s === 'resultado'){ cta.hidden = true; $('cta-link').hidden = false; $('cta-dm').hidden = false; ctaFim(); }
+  if (s === 'erro') cta.textContent = 'Tentar de novo';
+  scrollTo(0, 0);
+}
+$('back').addEventListener('click', () => { const i = order.indexOf(cur); show(cur === 'erro' ? 'sensor' : order[Math.max(0, i - 1)]); });
+$('cta').addEventListener('click', async () => {
+  if (cur === 'inicio') return show('como');
+  if (cur === 'como') return show('dados');
+  if (cur === 'dados') return show('sensor');
+  if (cur === 'sensor' && !sensorOk) return liberar();
+  if (cur === 'sensor' || cur === 'erro') return sensorOk ? medir() : (show('sensor'));
+});
+
+// ---------- sensor ----------
+let amostras = [], picos = [], gravando = false, t0 = 0, hz = [], ouvindo = false, fim = null;
+function onMotion(ev){
+  const now = performance.now(); hz.push(now); while (hz.length && now - hz[0] > 1000) hz.shift();
+  if (!gravando) return;
+  const r = ev.rotationRate || {}, a = ev.acceleration || {};
+  const s = { t: now - t0, w: Math.hypot(r.alpha || 0, r.beta || 0, r.gamma || 0), acc: Math.hypot(a.x || 0, a.y || 0, a.z || 0) };
+  amostras.push(s);
+  const n = amostras.length;
+  if (n >= 3){   // pico de giro: cada rosca dá 2 (subida e descida)
+    const p = amostras[n - 2];
+    if (p.w > PICO && p.w >= amostras[n - 3].w && p.w >= s.w && (!picos.length || p.t - picos[picos.length - 1].t > ESPACO)){
+      picos.push(p);
+      if (picos.length % 2 === 0){
+        const rep = picos.length / 2; $('grande').innerHTML = rep + '<small>/' + REPS + '</small>';
+        document.querySelectorAll('#pontos i').forEach((x, i) => x.classList.toggle('on', i < rep));
+        if (rep >= REPS) encerrar();
+      }
+    }
+  }
+}
+function erro(t, txt){ $('e-tit').textContent = t; $('e-txt').textContent = txt; show('erro'); }
+const SAFARI = 'Abra este link no Safari: toque nos três pontinhos, no canto da tela, e em "Abrir no navegador".';
+async function liberar(){
+  Analytics.track('answer', { stepId:'sensor', valueText:'pedido', props:{ nav:NAV } });
+  if (typeof DeviceMotionEvent === 'undefined') return erro('Este aparelho não tem o sensor', 'Faça o teste no celular.');
+  try {
+    if (typeof DeviceMotionEvent.requestPermission === 'function'){
+      const p = await DeviceMotionEvent.requestPermission();
+      if (p !== 'granted'){ Analytics.track('answer', { stepId:'sensor', valueText:'negado', props:{ nav:NAV } }); return erro('Permissão negada', 'Sem a permissão o celular não mede o movimento. Toque em Tentar de novo e depois em Permitir.'); }
+    }
+  } catch (e) {
+    Analytics.track('answer', { stepId:'sensor', valueText:'erro', props:{ nav:NAV, e:e && e.name } });
+    return erro('O pedido de permissão não abriu', NAV === 'instagram' ? 'O Instagram não deixou usar o sensor. ' + SAFARI : 'Toque em Tentar de novo. Se continuar, abra o link no Safari.');
+  }
+  if (!ouvindo){ addEventListener('devicemotion', onMotion); ouvindo = true; }
+  await new Promise(r => setTimeout(r, 700));
+  if (!hz.length){ Analytics.track('answer', { stepId:'sensor', valueText:'mudo', props:{ nav:NAV } }); return erro('O sensor não mandou leituras', NAV === 'instagram' ? 'Dentro do Instagram o sensor ficou mudo. ' + SAFARI : 'Toque em Tentar de novo.'); }
+  sensorOk = true; Analytics.track('answer', { stepId:'sensor', valueText:'ok', props:{ nav:NAV, hz:hz.length } });
+  $('sensor-ok').hidden = false; $('sensor-dica').hidden = true; show('sensor');
+}
+const vibrar = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
+function medir(){
+  show('medir'); $('grande').textContent = '3'; $('dica').textContent = 'Prepare o braço';
+  document.querySelectorAll('#pontos i').forEach(x => x.classList.remove('on'));
+  let n = 3;
+  const iv = setInterval(() => {
+    n--; if (n > 0){ $('grande').textContent = n; return; }
+    clearInterval(iv); $('grande').innerHTML = '0<small>/' + REPS + '</small>'; $('dica').textContent = 'Já! O mais rápido que conseguir'; vibrar(80);
+    amostras = []; picos = []; t0 = performance.now(); gravando = true;
+    fim = setTimeout(encerrar, LIMITE_MS);
+  }, 900);
+}
+
+// ---------- código e resultado ----------
+const ALFA = 'ACDEFGHJKMNPQRTUVWXY34679';
+let codigo = null;
+function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
+function encerrar(){
+  if (!gravando) return; gravando = false; clearTimeout(fim); vibrar([60, 60, 60]);
+  const reps = Math.floor(picos.length / 2);
+  if (!reps) return erro('Não contei nenhuma rosca', 'Dobre o cotovelo mais rápido, com o celular firme na mão.');
+  // decisão do Lucca (28/10): o resultado NÃO aparece; vai no 'complete' com o código e ele explica na conversa
+  const vel = []; for (let i = 0; i < reps; i++) vel.push(picos[2 * i].w * Math.PI / 180 * ANTEBRACO);   // subida de cada rosca
+  const vmax = Math.max(...vel), tempo = picos[2 * reps - 1].t / 1000;
+  const queda = reps > 1 ? Math.max(0, Math.round((Math.max(vel[0], vel[1] || 0) - vel[reps - 1]) / Math.max(vel[0], vel[1] || 0) * 100)) : null;
+  const aMax = Math.max(...amostras.map(s => s.acc));
+  $('res-cod').textContent = meuCodigo();
+  Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
+    valueText:`pico ${vmax.toFixed(1)} m/s · ${reps} em ${tempo.toFixed(1)} s` + (queda !== null ? ` · queda ${queda}%` : ''),
+    props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, reps, vmax:+vmax.toFixed(2), vel:vel.map(v => +v.toFixed(2)),
+      t:+tempo.toFixed(1), queda, wmax:Math.round(Math.max(...picos.map(p => p.w))), amax:+aMax.toFixed(1), hz:hz.length, nav:NAV } });
+  setTimeout(() => show('resultado'), 500);
+}
+function mensagem(){ return `Oi, Dr. Lucca! Fiz o teste dos braços. Meu código é ${meuCodigo()}. Quero entender meu resultado.`; }
+function ctaFim(){
+  $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
+  $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp', props:{ canal:'whatsapp' } });
+  $('cta-dm').onclick = e => abrirDirect(e);
+}
+// Direct: o Instagram não aceita texto pronto; copia dentro do toque e deixa o link abrir o app (igual ao teste das pernas)
+function copiar(txt){
+  let ok = false;
+  try { const t = document.createElement('textarea'); t.value = txt; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(t); t.select(); t.setSelectionRange(0, txt.length); ok = document.execCommand('copy'); t.remove(); } catch {}
+  try { navigator.clipboard?.writeText(txt).catch(() => {}); } catch {}
+  return ok;
+}
+let toastT = null;
+function abrirDirect(e){
+  const txt = mensagem(), copiou = copiar(txt);
+  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou } });
+  if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }
+  e.preventDefault(); $('aviso-msg').textContent = txt; $('aviso-dm').hidden = false;
+}
+$('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
+$('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:cur, valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
+
+show('inicio');
+window.__braco = { show, dados };   // só para teste automatizado
+</script>
+</body>
+</html>
