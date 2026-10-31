@@ -127,7 +127,7 @@ function resumo(l){
     if (n === 'Pernas') return `Pernas: ${p.resumo || d.faixa || '?'}${d.idade ? ` (tem ${d.idade})` : ''}`;
     if (n === 'Pele') return `Pele: ${d.faixa || p.resumo || '?'}`;
     if (n === 'Quiz') return `Quiz: ${d.ajuda === 'medico' || p.resumo === 'medico' ? 'quer com médico' : d.ajuda || p.resumo ? 'por conta própria' : 'respondido'}`;
-    if (n === 'Idade muscular') return `Idade muscular: ${p.resumo || '?'}${d.idade ? ` (tem ${d.idade})` : ''}`;
+    if (n === 'Idade muscular') return `Idade muscular: ${(p.resumo || '?').replace(/ · queda -?\d+%/, '')}${d.idade ? ` (tem ${d.idade})` : ''}`;
     return `${n}: ${p.resumo || ''}`;
   }).join(' · ');
 }
@@ -273,7 +273,7 @@ function interpretaBraco(d){
     ${comp ? `<div class="l"><span>Comparação</span><b>${esc(comp)}</b></div>` : ''}
     <div class="l"><span>Velocidade (flexão + extensão)</span><b>${esc(num(v))} °/s · ref. 50 anos ${Math.round(VREF)}</b></div>
     ${reps != null ? `<div class="l"><span>Roscas (em 20 s)</span><b>${reps} · robusto 25 · frágil 15</b></div>` : ''}
-    <div class="l"><span>Queda do começo para o fim</span><b>${esc(qtxt)}</b></div>
+    ${curto10 ? '' : `<div class="l"><span>Queda do começo para o fim</span><b>${esc(qtxt)}</b></div>`}
     ${curto ? `<p class="alerta">Medição curta (${esc(num(d.dur))} s de ${curto10 ? 10 : 20}): repetir o teste antes de concluir.</p>` : ''}
     <p class="rot"><b>Para o áudio (sugestão):</b> ${esc(roteiro)}</p>
     <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado (sexo não informado × 0,95).${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e roscas dobradas para comparar com os 20 s.' : ''}</p></div>`;

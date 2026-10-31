@@ -387,7 +387,7 @@ function encerrar(){
   analisar(() => {
     $('res-cod').textContent = meuCodigo();
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
-      valueText:`${reps} roscas em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s` + (queda !== null ? ` · queda ${queda}%` : ''),
+      valueText:`${reps} roscas em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em 10 s ela mistura a aceleração do começo
       props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
         queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'10s',
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
