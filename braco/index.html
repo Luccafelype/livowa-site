@@ -131,7 +131,7 @@ body.valendo{background:var(--accent-2);transition:background .2s}
   <section class="screen" data-s="inicio" data-p="0">
     <div class="who" style="margin-top:20px"><span class="dot"></span><span><b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990</span></div>
     <h1>Qual é a sua idade <em>muscular</em>?</h1>
-    <p class="sub">Com o celular na mão, faça o máximo desse movimento em 20 segundos e descubra a idade que a potência dos seus braços mostra.</p>
+    <p class="sub">Com o celular na mão, faça o máximo desse movimento em 10 segundos e descubra a idade que a potência dos seus braços mostra.</p>
     <div class="anim" id="anim" aria-hidden="true">
       <video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video>
     </div>
@@ -143,7 +143,7 @@ body.valendo{background:var(--accent-2);transition:background .2s}
     <ol class="steps">
       <li><em>1</em><span>Fique em pé, com o cotovelo colado no corpo.</span></li>
       <li><em>2</em><span>Segure o celular firme na mão, com a tela para cima. Punho firme: quem dobra é o cotovelo.</span></li>
-      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 20 segundos, sem parar. Um bip avisa o começo; dois bips, o fim.</span></li>
+      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 10 segundos, sem parar. Um bip avisa o começo; dois bips, o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
   </section>
@@ -172,14 +172,14 @@ body.valendo{background:var(--accent-2);transition:background .2s}
     <p class="sub">O teste usa o sensor que gira a tela do seu celular. Nada é filmado e só o resultado sai do aparelho.</p>
     <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o movimento. Toque em <b>Permitir</b>.</p>
     <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
-    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 20 segundos. Um bip avisa o começo; dois bips, o fim.</p>
+    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 10 segundos. Um bip avisa o começo; dois bips, o fim.</p>
   </section>
 
   <section class="screen" data-s="medir" data-p="80" hidden>
     <div class="palco">
       <div class="num" id="grande" aria-live="assertive">3</div>
       <p class="dica" id="dica">Prepare o braço</p>
-      <p class="relogio" id="relogio">20 s</p>
+      <p class="relogio" id="relogio">10 s</p>
     </div>
   </section>
 
@@ -234,7 +234,7 @@ Analytics.track('view');
 const $ = id => document.getElementById(id);
 const WHATSAPP = '5562991774809';
 const ANTEBRACO = 0.30;                    // m, do cotovelo à mão: converte giro (°/s) em velocidade da mão
-const DURACAO = 20000, ESPERA_MAX = 8000, PICO = 120, ESPACO = 160;   // protocolo dos estudos: 20 s de flexão rápida (Toosizadeh 2015/2017)
+const DURACAO = 10000, ESPERA_MAX = 8000;   // 10 s (decisão do Lucca, 31/10); o protocolo dos estudos é 20 s (Toosizadeh): a ficha corrige
 const ua = navigator.userAgent;
 const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
 const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro'];
@@ -308,7 +308,7 @@ function onMotion(ev){
   const v = [r.alpha || 0, r.beta || 0, r.gamma || 0];
   const s = { t: now - t0, v, w: Math.hypot(...v), acc: Math.hypot(a.x || 0, a.y || 0, a.z || 0) };
   amostras.push(s);
-  if (ini === null && s.w > 150){ ini = s.t; clearTimeout(fim); fim = setTimeout(encerrar, DURACAO); }   // 20 s contados do 1º movimento
+  if (ini === null && s.w > 150){ ini = s.t; clearTimeout(fim); fim = setTimeout(encerrar, DURACAO); }   // 10 s contados do 1º movimento
   if (amostras.length % 10 === 0) atualizaEixo();
   if (ini === null) return;   // só conta depois que o movimento de verdade começou
   const p = v[0]*eixo[0] + v[1]*eixo[1] + v[2]*eixo[2];
@@ -342,9 +342,9 @@ function bip(){ try { audio = audio || new (window.AudioContext || window.webkit
   o.frequency.value = 880; g.gain.setValueAtTime(.25, audio.currentTime); g.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .35);
   o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + .36); } catch {} }
 function medir(){
-  // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; os 20 s contam do 1º movimento.
+  // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; os 10 s contam do 1º movimento.
   try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {}   // libera o bip dentro do toque
-  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Valendo! O máximo que conseguir, sem parar'; $('relogio').textContent = '20 s';
+  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Valendo! O máximo que conseguir, sem parar'; $('relogio').textContent = '10 s';
   bip(); document.body.classList.add('valendo'); setTimeout(() => document.body.classList.remove('valendo'), 600);   // sinal claro de início: bip + tela pisca
   amostras = []; picos = []; meias = []; estado = 0; picoAtual = 0; eixo = [1, 0, 0]; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
   fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 8 s, encerra
@@ -370,7 +370,7 @@ function encerrar(){
   const z = ini ?? 0, dur = Math.min(DURACAO, (picos[picos.length - 1].t - z)) / 1000;
   const media = a => a.reduce((x, y) => x + y, 0) / (a.length || 1);
   const amp = []; for (let i = 0; i + 1 < picos.length; i += 2) amp.push(picos[i].w + picos[i + 1].w);   // flexão + extensão (≈ "speed" do UEF)
-  const ini5 = picos.filter(p => p.t - z <= 5000).map(p => p.w), fim5 = picos.filter(p => p.t - z >= DURACAO - 5000).map(p => p.w);
+  const ini5 = picos.filter(p => p.t - z <= 3000).map(p => p.w), fim5 = picos.filter(p => p.t - z >= DURACAO - 3000).map(p => p.w);   // 3 primeiros × 3 últimos segundos
   const queda = ini5.length && fim5.length ? Math.round((1 - media(fim5) / media(ini5)) * 100) : null;
   const dp = a => { const m = media(a); return Math.sqrt(media(a.map(x => (x - m) ** 2))); };
   const variab = amp.length > 2 ? Math.round(dp(amp) / media(amp) * 100) : null;
@@ -380,11 +380,11 @@ function encerrar(){
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
       valueText:`${reps} roscas em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s` + (queda !== null ? ` · queda ${queda}%` : ''),
       props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
-        queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'20s',
+        queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'10s',
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
-          leit5s:[0,1,2,3,4].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
-          picos5s:[0,1,2,3,4].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length),
-          wmaxSeg:Array.from({ length:22 }, (_, k) => Math.round(Math.max(0, ...amostras.filter(a => a.t - z >= k * 1000 && a.t - z < (k + 1) * 1000).map(a => a.w)))),
+          leit5s:[0,1].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
+          picos5s:[0,1].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length),
+          wmaxSeg:Array.from({ length:12 }, (_, k) => Math.round(Math.max(0, ...amostras.filter(a => a.t - z >= k * 1000 && a.t - z < (k + 1) * 1000).map(a => a.w)))),
           picosT:picos.slice(0, 60).map(p => Math.round((p.t - z) / 100) / 10) } } });
     show('resultado');
   });

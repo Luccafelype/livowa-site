@@ -244,7 +244,8 @@ function campo(k, v){
 // pré-frágeis 812, frágeis 535; flexões 25/21/15; queda 3/6/15%. Toji 2007: velocidade igual até 50 anos, −0,8%/ano depois.
 // Junção (extrapolação): referência aos 50 = 1.099 / (1 − 0,008 × 26) ≈ 1.390 °/s. Mulher × 0,9 (estimativa).
 function interpretaBraco(d){
-  const v = d.velMedia, f = d.sexo === 'f' ? 0.9 : 1, VREF = 1390 * f, ROB = 1099 * f, PRE = 955 * f, FRA = 673 * f;
+  const curto10 = d.protocolo === '10s';   // 10 s: a média sai ~1–7% acima da de 20 s (menos cansaço) → corrige ×0,97
+  const v = d.velMedia ? Math.round(d.velMedia * (curto10 ? 0.97 : 1)) : 0, f = d.sexo === 'f' ? 0.9 : 1, VREF = 1390 * f, ROB = 1099 * f, PRE = 955 * f, FRA = 673 * f;
   if (!v) return '';
   let idadeM = null, faixa, cor;
   if (v >= VREF){ faixa = 'até 50 anos'; cor = 'ok'; }
@@ -258,9 +259,10 @@ function interpretaBraco(d){
     else if (v >= VREF) comp = d.idade <= 50 ? `dentro do esperado para ${d.idade} anos` : `melhor que o esperado para ${d.idade} anos`;
     else { comp = d.idade < 60 ? `muito abaixo do esperado para ${d.idade} anos` : `abaixo do idoso robusto (tem ${d.idade})`; if (d.idade < 60 && cor === 'meh') cor = 'bad'; }
   }
-  const q = d.queda, qtxt = q == null ? '—' : q <= 4 ? `${q}% (como robustos, ~3%)` : q <= 10 ? `${q}% (como pré-frágeis, ~6%)` : `${q}% (como frágeis, ~15%)`;
+  const q = d.queda, k = curto10 ? 0.5 : 1;   // em 10 s a queda esperada é cerca de metade da de 20 s
+  const qtxt = q == null ? '—' : q <= 4 * k ? `${q}% (como robustos)` : q <= 10 * k ? `${q}% (como pré-frágeis)` : `${q}% (como frágeis)`;
   const reps = d.reps != null && d.dur ? Math.round(d.reps * 20 / Math.max(d.dur, 1)) : null;
-  const curto = d.dur != null && d.dur < 15;
+  const curto = d.dur != null && d.dur < (curto10 ? 7 : 15);
   const roteiro = cor === 'ok'
     ? 'O seu braço respondeu com velocidade boa para a idade. O que mantém isso é treino de força com intenção de velocidade; no programa a gente mede de novo em 90 dias.'
     : cor === 'meh'
@@ -272,9 +274,9 @@ function interpretaBraco(d){
     <div class="l"><span>Velocidade (flexão + extensão)</span><b>${esc(num(v))} °/s · ref. 50 anos ${Math.round(VREF)}</b></div>
     ${reps != null ? `<div class="l"><span>Roscas (em 20 s)</span><b>${reps} · robusto 25 · frágil 15</b></div>` : ''}
     <div class="l"><span>Queda do começo para o fim</span><b>${esc(qtxt)}</b></div>
-    ${curto ? `<p class="alerta">Medição curta (${esc(num(d.dur))} s de 20): repetir o teste antes de concluir.</p>` : ''}
+    ${curto ? `<p class="alerta">Medição curta (${esc(num(d.dur))} s de ${curto10 ? 10 : 20}): repetir o teste antes de concluir.</p>` : ''}
     <p class="rot"><b>Para o áudio (sugestão):</b> ${esc(roteiro)}</p>
-    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado.</p></div>`;
+    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado.${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e roscas dobradas para comparar com os 20 s.' : ''}</p></div>`;
 }
 async function ver(c){
   codigoAtual = c; desenhaGestao(c);
