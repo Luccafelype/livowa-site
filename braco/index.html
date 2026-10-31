@@ -297,8 +297,10 @@ function onMotion(ev){
   const n = amostras.length;
   if (n >= 3){   // pico de giro: cada rosca dá 2 (subida e descida)
     const p = amostras[n - 2];
-    if (p.w > PICO && p.w >= amostras[n - 3].w && p.w >= s.w && (!picos.length || p.t - picos[picos.length - 1].t > ESPACO)){
-      picos.push(p); $('grande').textContent = Math.floor(picos.length / 2);
+    if (p.w > PICO && p.w >= amostras[n - 3].w && p.w >= s.w){
+      const ult = picos[picos.length - 1];
+      if (ult && p.t - ult.t <= ESPACO){ if (p.w > ult.w) picos[picos.length - 1] = p; }   // dois picos colados: fica o maior
+      else { picos.push(p); $('grande').textContent = Math.floor(picos.length / 2); }
     }
   }
 }
@@ -373,7 +375,9 @@ function encerrar(){
         queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'20s',
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
           leit5s:[0,1,2,3,4].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
-          picos5s:[0,1,2,3,4].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length) } } });
+          picos5s:[0,1,2,3,4].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length),
+          wmaxSeg:Array.from({ length:22 }, (_, k) => Math.round(Math.max(0, ...amostras.filter(a => a.t - z >= k * 1000 && a.t - z < (k + 1) * 1000).map(a => a.w)))),
+          picosT:picos.slice(0, 60).map(p => Math.round((p.t - z) / 100) / 10) } } });
     show('resultado');
   });
 }
