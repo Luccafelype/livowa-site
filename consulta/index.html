@@ -232,7 +232,7 @@ let FOTOS = [], codigoAtual = '';
 const num = v => typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits:2 }) : v;
 function campo(k, v){
   if (v === null || v === undefined || v === '' || k === 'codigo' || k === 'foto') return '';
-  if (k === 'sexo') v = v === 'f' ? 'mulher' : v === 'm' ? 'homem' : v;
+  if (k === 'sexo') v = v === 'f' ? 'mulher' : v === 'm' ? 'homem' : v === 'n' ? 'não informou' : v;
   if (k === 'sinais' && Array.isArray(v)) return v.map(s => `<div class="si"><b>${esc(s.nome ?? SINAL[s.id] ?? s.id)}</b> ${s.visivel === false ? '· coberto' : s.expressao != null
       ? `<span class="din">Repouso ${esc(s.repouso ?? s.nivel)}/3 · ${EXPR[s.id] === 'sorriso' ? 'Sorriso' : 'Sobrancelhas'} ${esc(s.expressao)}/3</span>`
       : `· nível ${esc(s.nivel)}/3`}${s.obs ? `<small>${esc(s.obs)}</small>` : ''}</div>`).join('');
@@ -245,7 +245,7 @@ function campo(k, v){
 // Junção (extrapolação): referência aos 50 = 1.099 / (1 − 0,008 × 26) ≈ 1.390 °/s. Mulher × 0,9 (estimativa).
 function interpretaBraco(d){
   const curto10 = d.protocolo === '10s';   // 10 s: a média sai ~1–7% acima da de 20 s (menos cansaço) → corrige ×0,97
-  const v = d.velMedia ? Math.round(d.velMedia * (curto10 ? 0.97 : 1)) : 0, f = d.sexo === 'f' ? 0.9 : 1, VREF = 1390 * f, ROB = 1099 * f, PRE = 955 * f, FRA = 673 * f;
+  const v = d.velMedia ? Math.round(d.velMedia * (curto10 ? 0.97 : 1)) : 0, f = d.sexo === 'f' ? 0.9 : d.sexo === 'n' ? 0.95 : 1, VREF = 1390 * f, ROB = 1099 * f, PRE = 955 * f, FRA = 673 * f;
   if (!v) return '';
   let idadeM = null, faixa, cor;
   if (v >= VREF){ faixa = 'até 50 anos'; cor = 'ok'; }
@@ -276,7 +276,7 @@ function interpretaBraco(d){
     <div class="l"><span>Queda do começo para o fim</span><b>${esc(qtxt)}</b></div>
     ${curto ? `<p class="alerta">Medição curta (${esc(num(d.dur))} s de ${curto10 ? 10 : 20}): repetir o teste antes de concluir.</p>` : ''}
     <p class="rot"><b>Para o áudio (sugestão):</b> ${esc(roteiro)}</p>
-    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado.${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e roscas dobradas para comparar com os 20 s.' : ''}</p></div>`;
+    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado (sexo não informado × 0,95).${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e roscas dobradas para comparar com os 20 s.' : ''}</p></div>`;
 }
 async function ver(c){
   codigoAtual = c; desenhaGestao(c);

@@ -57,6 +57,9 @@ p{margin:0}
 .seg button{font:600 1.05rem var(--body);padding:15px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .wheels{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.seg3{grid-template-columns:1fr 1fr}
+.seg3 button:last-child{grid-column:1/-1;font-size:.95rem;padding:11px}
+.mini-anim{height:min(30vh,280px)}
 .wheelbox{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .wheelbox label{font-size:.82rem;color:var(--muted)}
 .wheel-wrap{position:relative;width:100%;height:220px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
@@ -141,19 +144,21 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 
   <section class="screen" data-s="como" data-p="20" hidden>
     <h2>Como fazer</h2>
+    <div class="anim mini-anim" aria-hidden="true"><video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video></div>
     <ol class="steps">
-      <li><em>1</em><span>Fique em pé, com o cotovelo colado no corpo.</span></li>
-      <li><em>2</em><span>Segure o celular firme na mão, com a tela para cima. Punho firme: quem dobra é o cotovelo.</span></li>
+      <li><em>1</em><span>Fique em pé e segure o celular firme na mão, com a tela para cima.</span></li>
+      <li><em>2</em><span>Dobre e estique o cotovelo o mais rápido que conseguir, com o punho firme, como no vídeo.</span></li>
       <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 10 segundos, sem parar. Um bip avisa o começo; dois bips, o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
   </section>
-
   <section class="screen" data-s="dados" data-p="40" hidden>
     <h2>Sobre você</h2>
-    <div class="seg" role="group" aria-label="Sexo">
+    <p class="sub">Antes do teste, informe seu sexo, sua idade e seu peso. O resultado é comparado com pessoas parecidas com você.</p>
+    <div class="seg seg3" role="group" aria-label="Sexo">
       <button type="button" data-sexo="m" aria-pressed="true">Homem</button>
       <button type="button" data-sexo="f" aria-pressed="false">Mulher</button>
+      <button type="button" data-sexo="n" aria-pressed="false">Prefiro não informar</button>
     </div>
     <div class="wheels">
       <div class="wheelbox"><label id="l-idade">Idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade"></div></div></div>
