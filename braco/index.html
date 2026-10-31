@@ -370,7 +370,10 @@ function encerrar(){
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
       valueText:`${reps} roscas em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s` + (queda !== null ? ` · queda ${queda}%` : ''),
       props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
-        queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'20s' } });
+        queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'20s',
+        diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
+          leit5s:[0,1,2,3,4].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
+          picos5s:[0,1,2,3,4].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length) } } });
     show('resultado');
   });
 }
