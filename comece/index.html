@@ -25,7 +25,7 @@ const q = new URLSearchParams(location.search), lista = BRACOS[TEMA], chave = 'l
 let id = q.get('f');
 if (!lista.some(b => b.id === id)){
   try { id = localStorage.getItem(chave); } catch {}
-  if (!lista.some(b => b.id === id)){
+  if (!lista.some(b => b.id === id && b.peso > 0)){   // braço com peso 0 guardado de antes não prende mais a pessoa (31/10: Lucca caía sempre nas pernas)
     let r = Math.random() * lista.reduce((a,b) => a + b.peso, 0);
     id = lista.find(b => (r -= b.peso) < 0).id;
   }
