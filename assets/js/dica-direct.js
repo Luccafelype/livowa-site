@@ -126,11 +126,27 @@ const CSS = `
 @keyframes ddx-ddlv{0%{left:120px;top:250px;opacity:0;transform:scale(1)} 4%{left:120px;top:250px;opacity:1}
   14%{left:23px;top:22px;transform:scale(1)} 16%{transform:scale(.72)} 18%{transform:scale(1)} 23%{left:23px;top:22px;opacity:1} 25%,100%{left:23px;top:22px;opacity:0}}
 @media (prefers-reduced-motion:reduce){.ddx *{animation-play-state:paused!important}}
+.ddx-aviso{position:fixed;left:50%;top:50%;z-index:10000;transform:translate(-50%,-50%);background:#141c17;color:#fff;border-radius:16px;padding:14px 20px;font:700 1rem -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.35);animation:ddx-av 1.4s ease forwards}
+.ddx-aviso b{width:22px;height:22px;border-radius:50%;background:#52c99c;color:#08130e;display:grid;place-items:center;font-size:13px}
+@keyframes ddx-av{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}12%,75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0}}
 `;
 
 let estilo = null, audio = null;
 function injetarEstilo(){ if (estilo) return; estilo = document.createElement('style'); estilo.textContent = CSS; document.head.appendChild(estilo); }
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+// copia de novo dentro do toque em Entendi (o iOS só deixa copiar num gesto) e mostra a confirmação rápida
+function copiar(txt){
+  let ok = false;
+  try { const t = document.createElement('textarea'); t.value = txt; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+        document.body.appendChild(t); t.select(); t.setSelectionRange(0, txt.length); ok = document.execCommand('copy'); t.remove(); } catch {}
+  try { navigator.clipboard?.writeText(txt).catch(() => {}); } catch {}
+  return ok;
+}
+function confirmar(texto){
+  document.querySelector('.ddx-aviso')?.remove();
+  const a = document.createElement('div'); a.className = 'ddx-aviso'; a.setAttribute('role', 'status');
+  a.innerHTML = `<b>✓</b>${esc(texto)}`; document.body.appendChild(a); setTimeout(() => a.remove(), 1500);
+}
 const foto = () => `<span class="ddx-foto" style="background-image:url('${FOTO}')"></span>`;
 
 function celular(mensagem, lv){
@@ -177,7 +193,10 @@ export function dicaDirect({ mensagem = '', copiou = true, lv = false, voz = tru
     ${lv ? '' : `<p class="ddx-msg">“${esc(mensagem)}”</p>`}
     <button type="button" class="ddx-ok">Entendi</button></div>`;
   const fechar = () => { el.remove(); try { audio?.pause(); } catch {} };
-  el.addEventListener('click', ev => { if (ev.target === el || ev.target.closest('.ddx-ok')) fechar(); });
+  el.addEventListener('click', ev => {
+    if (ev.target.closest('.ddx-ok')){ fechar(); if (lv) return; const ok = copiar(mensagem); confirmar(ok || copiou ? 'Mensagem copiada' : 'Copie a mensagem e cole no Direct'); return; }
+    if (ev.target === el) fechar();
+  });
   document.body.appendChild(el);
   // o áudio toca dentro do mesmo toque (o iOS exige um gesto); sem o arquivo, falha em silêncio
   if (voz){ try { audio = new Audio(lv ? AUDIO_LV : AUDIO); audio.play().catch(() => {}); } catch {} }

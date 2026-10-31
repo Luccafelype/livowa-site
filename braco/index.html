@@ -233,7 +233,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 
 <script type="module">
 import * as Analytics from '/idade/funnel-analytics.js';
-import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js?v=2';
+import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js?v=3';
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 Analytics.init({ enabled:true, funnelId:'teste-braco', variant:new URLSearchParams(location.search).get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
 Analytics.track('view');
