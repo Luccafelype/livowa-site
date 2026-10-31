@@ -38,7 +38,7 @@ p{margin:0}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 
 /* demonstração: antes/depois alternando (troca pelo vídeo do Flow quando existir) */
-.anim{position:relative;width:auto;height:min(40vh,420px);aspect-ratio:9/16;margin-inline:auto;border-radius:22px;overflow:hidden;background:#f3f2ef;border:1px solid var(--line)}
+.anim{position:relative;width:auto;height:min(44vh,440px);aspect-ratio:460/1100;margin-inline:auto;border-radius:22px;overflow:hidden;background:#f3f2ef;border:1px solid var(--line)}
 .anim img,.anim video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .anim .depois{animation:troca 1.6s steps(1,end) infinite}
 @keyframes troca{0%{opacity:0}50%{opacity:1}}
@@ -140,7 +140,7 @@ p{margin:0}
     <ol class="steps">
       <li><em>1</em><span>Fique em pé, com o cotovelo colado no corpo.</span></li>
       <li><em>2</em><span>Segure o celular firme na mão, com a tela para cima. Punho firme: quem dobra é o cotovelo.</span></li>
-      <li><em>3</em><span>No "Já!", dobre o cotovelo o mais rápido que conseguir e volte. 5 vezes. O celular vibra no fim.</span></li>
+      <li><em>3</em><span>Toque em Começar e já dobre o cotovelo o mais rápido que conseguir e volte. 5 vezes. O teste termina sozinho.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
   </section>
@@ -169,6 +169,7 @@ p{margin:0}
     <p class="sub">O teste usa o sensor que gira a tela do seu celular. Nada é filmado e só o resultado sai do aparelho.</p>
     <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o movimento. Toque em <b>Permitir</b>.</p>
     <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
+    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça as 5 roscas, o mais rápido que conseguir. O teste termina sozinho.</p>
   </section>
 
   <section class="screen" data-s="medir" data-p="80" hidden>
@@ -219,7 +220,7 @@ Analytics.track('view');
 const $ = id => document.getElementById(id);
 const WHATSAPP = '5562991774809';
 const ANTEBRACO = 0.30;                    // m, do cotovelo à mão: converte giro (°/s) em velocidade da mão
-const REPS = 5, LIMITE_MS = 12000, PICO = 150, ESPACO = 180;
+const REPS = 5, LIMITE_MS = 15000, PICO = 120, ESPACO = 180;
 const ua = navigator.userAgent;
 const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
 const order = ['inicio','como','dados','sensor','medir','resultado','erro'];
@@ -308,19 +309,15 @@ async function liberar(){
   await new Promise(r => setTimeout(r, 700));
   if (!hz.length){ Analytics.track('answer', { stepId:'sensor', valueText:'mudo', props:{ nav:NAV } }); return erro('O sensor não mandou leituras', NAV === 'instagram' ? 'Dentro do Instagram o sensor ficou mudo. ' + SAFARI : 'Toque em Tentar de novo.'); }
   sensorOk = true; Analytics.track('answer', { stepId:'sensor', valueText:'ok', props:{ nav:NAV, hz:hz.length } });
-  $('sensor-ok').hidden = false; $('sensor-dica').hidden = true; show('sensor');
+  $('sensor-ok').hidden = false; $('sensor-prox').hidden = false; $('sensor-dica').hidden = true; show('sensor');
 }
 const vibrar = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
 function medir(){
-  show('medir'); $('grande').textContent = '3'; $('dica').textContent = 'Prepare o braço';
+  // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; o tempo conta do 1º movimento.
+  show('medir'); $('grande').innerHTML = '0<small>/' + REPS + '</small>'; $('dica').textContent = 'Agora! 5 roscas, o mais rápido que conseguir';
   document.querySelectorAll('#pontos i').forEach(x => x.classList.remove('on'));
-  let n = 3;
-  const iv = setInterval(() => {
-    n--; if (n > 0){ $('grande').textContent = n; return; }
-    clearInterval(iv); $('grande').innerHTML = '0<small>/' + REPS + '</small>'; $('dica').textContent = 'Já! O mais rápido que conseguir'; vibrar(80);
-    amostras = []; picos = []; t0 = performance.now(); gravando = true;
-    fim = setTimeout(encerrar, LIMITE_MS);
-  }, 900);
+  amostras = []; picos = []; t0 = performance.now(); gravando = true; vibrar(60);
+  fim = setTimeout(encerrar, LIMITE_MS);
 }
 
 // ---------- código e resultado ----------
@@ -329,11 +326,21 @@ let codigo = null;
 function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
 function encerrar(){
   if (!gravando) return; gravando = false; clearTimeout(fim); vibrar([60, 60, 60]);
-  const reps = Math.floor(picos.length / 2);
-  if (!reps) return erro('Não contei nenhuma rosca', 'Dobre o cotovelo mais rápido, com o celular firme na mão.');
+  if (picos.length < 2){   // recontagem com limiar menor, sobre todas as leituras
+    picos = []; let ult = -1e9;
+    for (let i = 1; i < amostras.length - 1; i++){ const p = amostras[i];
+      if (p.w > 80 && p.w >= amostras[i-1].w && p.w >= amostras[i+1].w && p.t - ult > ESPACO){ picos.push(p); ult = p.t; } }
+  }
+  const reps = Math.min(REPS, Math.floor(picos.length / 2));
+  if (!reps){
+    const wmax = amostras.length ? Math.round(Math.max(...amostras.map(s => s.w))) : 0;
+    Analytics.track('answer', { stepId:'medir', valueText:'sem-rosca', props:{ nav:NAV, leituras:amostras.length, wmax, hz:hz.length } });
+    return erro('Não contei nenhuma rosca', `Segure o celular firme na mão, toque em Começar e já dobre o cotovelo rápido, 5 vezes. (${amostras.length} leituras, giro máximo ${wmax} °/s)`);
+  }
   // decisão do Lucca (28/10): o resultado NÃO aparece; vai no 'complete' com o código e ele explica na conversa
   const vel = []; for (let i = 0; i < reps; i++) vel.push(picos[2 * i].w * Math.PI / 180 * ANTEBRACO);   // subida de cada rosca
-  const vmax = Math.max(...vel), tempo = picos[2 * reps - 1].t / 1000;
+  const ini = (amostras.find(s => s.w > 60) || amostras[0]).t;
+  const vmax = Math.max(...vel), tempo = (picos[2 * reps - 1].t - ini) / 1000;
   const queda = reps > 1 ? Math.max(0, Math.round((Math.max(vel[0], vel[1] || 0) - vel[reps - 1]) / Math.max(vel[0], vel[1] || 0) * 100)) : null;
   const aMax = Math.max(...amostras.map(s => s.acc));
   $('res-cod').textContent = meuCodigo();
