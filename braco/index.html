@@ -271,7 +271,7 @@ function show(s){
   if (s === 'dados'){ cta.textContent = 'Continuar'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'sensor') cta.textContent = sensorOk ? 'Começar' : 'Liberar o sensor';
   if (s === 'medir' || s === 'analise') cta.hidden = true;
-  if (s === 'resultado'){ cta.hidden = true; $('cta-link').hidden = false; $('cta-dm').hidden = false; ctaFim(); }
+  if (s === 'resultado'){ cta.hidden = true; $('cta-link').hidden = false; $('cta-dm').hidden = false; ctaFim(); fimDirect(s); }
   if (s === 'erro') cta.textContent = 'Tentar de novo';
   scrollTo(0, 0);
 }
@@ -384,6 +384,19 @@ function analisar(fim){
   }, 100);
 }
 function mensagem(){ return `Oi, Dr. Lucca! Fiz o teste de idade muscular. Meu código é ${meuCodigo()}. Quero entender meu resultado.`; }
+// ---------- link marcado (?lv=, 31/10/2026): quem veio do Direct pelo link do Dr. Lucca não precisa de código ----------
+const LV = Analytics.getLv();
+function fimDirect(sec){
+  if (!LV) return;
+  const el = document.querySelector(`[data-s="${sec}"]`); if (!el) return;
+  const sub = el.querySelector('.sub'); if (sub) sub.textContent = 'Pronto! O Dr. Lucca já recebeu o seu teste e te responde aqui no Direct.';
+  el.querySelectorAll('.cod-ref').forEach(x => { x.hidden = true; });
+  const dm = $('cta-dm'), wa = $('cta-link');
+  if (dm.lastChild && dm.lastChild.nodeType === 3) dm.lastChild.textContent = 'Voltar ao Instagram';
+  dm.onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'direct-lv', props:{ canal:'direct' } });
+  wa.classList.add('ghost'); if (wa.lastChild && wa.lastChild.nodeType === 3) wa.lastChild.textContent = 'Prefere WhatsApp?';
+  if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);   // Direct primeiro, WhatsApp pequeno embaixo
+}
 function ctaFim(){
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp', props:{ canal:'whatsapp' } });

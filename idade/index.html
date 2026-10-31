@@ -441,7 +441,7 @@ function show(s){
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
-  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; ctaPernas(); }
+  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; ctaPernas(); fimDirect(s); }
   cta.disabled = false;
   cta.classList.remove('off');
   if (s === 'pele-inicio'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('pele-ok').checked); c2.hidden = false; c2.textContent = 'Prefiro escolher uma foto'; }
@@ -449,7 +449,7 @@ function show(s){
   if (s === 'pele-envio'){ cta.textContent = 'Analisar minha pele'; c2.hidden = false; c2.textContent = capturas.length > 1 ? 'Tirar de novo' : 'Tirar outra foto'; }
   if (s === 'pele-analise'){ cta.hidden = true; }
   if (s === 'pele-erro'){ cta.textContent = peleErroRede ? 'Tentar de novo' : FOTOS === 3 ? 'Tirar de novo' : 'Tirar outra foto'; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
-  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; }
+  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; fimDirect(s); }
   window.scrollTo(0,0);
   medirBarra();
 }
@@ -717,6 +717,19 @@ let pernas = null, peleRes = null;
 function mensagem(){
   const fiz = pernas && peleRes ? 'o teste das pernas e da pele' : peleRes ? 'o teste da pele' : 'o teste das pernas';
   return `Oi, Dr. Lucca! Fiz ${fiz}. Meu código é ${meuCodigo()}. Quero entender meu resultado.`;
+}
+// ---------- link marcado (?lv=, 31/10/2026): quem veio do Direct pelo link do Dr. Lucca não precisa de código ----------
+const LV = Analytics.getLv();
+function fimDirect(sec){
+  if (!LV) return;
+  const el = document.querySelector(`[data-s="${sec}"]`); if (!el) return;
+  const sub = el.querySelector('.sub'); if (sub) sub.textContent = 'Pronto! O Dr. Lucca já recebeu o seu teste e te responde aqui no Direct.';
+  el.querySelectorAll('.cod-ref').forEach(x => { x.hidden = true; });
+  const dm = $('cta-dm'), wa = $('cta-link');
+  if (dm.lastChild && dm.lastChild.nodeType === 3) dm.lastChild.textContent = 'Voltar ao Instagram';
+  dm.onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'direct-lv', props:{ canal:'direct' } });
+  wa.classList.add('ghost'); if (wa.lastChild && wa.lastChild.nodeType === 3) wa.lastChild.textContent = 'Prefere WhatsApp?';
+  if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);   // Direct primeiro, WhatsApp pequeno embaixo
 }
 function ctaPernas(){
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;

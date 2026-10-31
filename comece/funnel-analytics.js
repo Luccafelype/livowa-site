@@ -60,6 +60,18 @@ export function getSessionId() {
 
 export function getLeadKey() { return leadKey; }
 
+// Link marcado por pessoa (31/10/2026): o link mandado no Direct pelo OpenReply traz ?lv=<marca de 22 caracteres>
+// (hash da pessoa, nunca o @). Guarda na aba para sobreviver a recarga e vai no 'complete' e no 'cta_click',
+// para a caixa de leads mostrar o @ sem a pessoa precisar mandar código.
+export function getLv() {
+  const ok = v => typeof v === 'string' && /^[A-Za-z0-9_-]{22}$/.test(v);
+  try {
+    const q = new URLSearchParams(location.search).get('lv');
+    if (ok(q)) { try { sessionStorage.setItem('livowa_lv', q); } catch (e) {} return q; }
+    const s = sessionStorage.getItem('livowa_lv'); return ok(s) ? s : null;
+  } catch (e) { return null; }
+}
+
 function collectContext() {
   const p = new URLSearchParams(location.search);
   const ctx = {};
@@ -77,6 +89,7 @@ export function track(eventType, opts = {}) {
     if (!cfg.enabled) return;
     const props = { ...(opts.props || {}) };
     if (!contextSent) { Object.assign(props, collectContext()); contextSent = true; }
+    if ((eventType === 'complete' || eventType === 'cta_click') && !props.lv) { const lv = getLv(); if (lv) props.lv = lv; }
     send('log_funnel_event', {
       p_event_id: uuid(),
       p_funnel_id: cfg.funnelId,

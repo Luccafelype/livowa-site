@@ -65,6 +65,8 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .fotos-pe button{background:var(--s);color:var(--r);border:1.5px solid #e3b9b1;padding:8px 14px;font-size:.9rem}
 .fotos-pe button.conf{background:var(--r);color:#fff;border-color:var(--r)}
 .mais{width:100%;background:var(--s);color:var(--a);border:1.5px solid var(--l)}
+.ig{font-weight:700;font-size:1.15rem;color:var(--a);overflow-wrap:anywhere}
+.sub-ig{font-size:.8rem;color:var(--m);margin-top:-4px}
 </style>
 </head>
 <body>
@@ -135,7 +137,8 @@ function desenhaCaixa(){
     const funis = [...new Set((l.partes || []).map(NOME_FUNIL))];
     const canais = (l.canais || []).map(c => c === 'whatsapp' ? 'WhatsApp' : 'Direct');
     return `<article class="lead ${l.status === 'novo' ? 'novo' : ''}" data-c="${esc(l.codigo)}">
-      <div class="topo"><span class="cod">${esc(l.codigo)}</span><span class="quando">${esc(quando)}</span></div>
+      <div class="topo">${l.instagram ? `<span class="ig">@${esc(l.instagram)}</span>` : `<span class="cod">${esc(l.codigo)}</span>`}<span class="quando">${esc(quando)}</span></div>
+      ${l.instagram ? `<div class="sub-ig">veio pelo Direct · ${esc(l.codigo)}</div>` : l.lv ? `<div class="sub-ig">veio pelo Direct (o @ aparece quando o OpenReply responder)</div>` : ''}
       <div class="tags">${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
         <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
       <div class="resumo">${esc(resumo(l))}</div>
