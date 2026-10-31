@@ -6,7 +6,8 @@
 //      if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem, copiou, lv, voz }); }
 
 export const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);
-const AUDIO = '/assets/audio/dica-direct.m4a';   // gravação do Dr. Lucca; sem o arquivo, a janela fica muda
+const AUDIO = '/assets/audio/dica-direct.m4a';         // gravação do Dr. Lucca (copiar → X → Mensagem → colar); sem o arquivo, fica muda
+const AUDIO_LV = '/assets/audio/dica-direct-voltar.m4a'; // quem veio pelo link marcado: só voltar à conversa
 
 const CSS = `
 .ddx{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:16px;font:16px/1.4 system-ui,-apple-system,sans-serif}
@@ -105,6 +106,6 @@ export function dicaDirect({ mensagem = '', copiou = true, lv = false, voz = tru
   el.addEventListener('click', ev => { if (ev.target === el || ev.target.closest('.ddx-ok')) fechar(); });
   document.body.appendChild(el);
   // o áudio toca dentro do mesmo toque (o iOS exige um gesto); sem o arquivo, falha em silêncio
-  if (voz){ try { audio = audio || new Audio(AUDIO); audio.currentTime = 0; audio.play().catch(() => {}); } catch {} }
+  if (voz){ try { audio = new Audio(lv ? AUDIO_LV : AUDIO); audio.play().catch(() => {}); } catch {} }
   return el;
 }
