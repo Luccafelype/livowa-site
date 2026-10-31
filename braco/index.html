@@ -130,14 +130,11 @@ p{margin:0}
   <section class="screen" data-s="inicio" data-p="0">
     <div class="who" style="margin-top:20px"><span class="dot"></span><span><b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990</span></div>
     <h1>Qual é a sua idade <em>muscular</em>?</h1>
-    <p class="sub">Faça roscas rápidas por 20 segundos com o celular na mão e descubra a idade que a potência dos seus braços mostra.</p>
+    <p class="sub">Com o celular na mão, faça o máximo desse movimento em 20 segundos e descubra a idade que a potência dos seus braços mostra.</p>
     <div class="anim" id="anim" aria-hidden="true">
       <video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video>
     </div>
-    <div class="hero-card">
-      <div class="mini"><b>20 segundos</b><span>só o celular na mão</span></div>
-      <div class="mini"><b>Sem cadastro</b><span>só um código</span></div>
-    </div>
+
   </section>
 
   <section class="screen" data-s="como" data-p="20" hidden>
@@ -145,7 +142,7 @@ p{margin:0}
     <ol class="steps">
       <li><em>1</em><span>Fique em pé, com o cotovelo colado no corpo.</span></li>
       <li><em>2</em><span>Segure o celular firme na mão, com a tela para cima. Punho firme: quem dobra é o cotovelo.</span></li>
-      <li><em>3</em><span>Toque em Começar e faça roscas o mais rápido que conseguir, sem parar, por 20 segundos. Um bip avisa o fim.</span></li>
+      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 20 segundos, sem parar. Um bip avisa o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
   </section>
@@ -174,7 +171,7 @@ p{margin:0}
     <p class="sub">O teste usa o sensor que gira a tela do seu celular. Nada é filmado e só o resultado sai do aparelho.</p>
     <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o movimento. Toque em <b>Permitir</b>.</p>
     <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
-    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça roscas o mais rápido que conseguir, sem parar. Um bip avisa quando acabarem os 20 segundos.</p>
+    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 20 segundos. Um bip avisa o fim.</p>
   </section>
 
   <section class="screen" data-s="medir" data-p="80" hidden>
@@ -332,7 +329,7 @@ function bip(){ try { audio = audio || new (window.AudioContext || window.webkit
 function medir(){
   // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; os 20 s contam do 1º movimento.
   try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {}   // libera o bip dentro do toque
-  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Agora! Roscas rápidas, sem parar'; $('relogio').textContent = '20 s';
+  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Agora! O máximo que conseguir, sem parar'; $('relogio').textContent = '20 s';
   amostras = []; picos = []; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
   fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 8 s, encerra
   clearInterval(relogioT); relogioT = setInterval(() => {
