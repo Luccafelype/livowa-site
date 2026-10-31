@@ -4,18 +4,50 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Consulta por código</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-title" content="Leads">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Caixa de leads</title>
 <style>
-/* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos. */
-:root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;color-scheme:light}
+/* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
+   Duas abas: Caixa (os leads que chegaram, com status em 1 toque) e Código (buscar um LV-XXXX). Desde 31/10. */
+:root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,sans-serif}
-main{max-width:560px;margin:auto;padding:20px 16px 48px}
-h1{font-size:1.4rem;margin:0 0 14px}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
+main{max-width:560px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 16px 48px}
+h1{font-size:1.4rem;margin:0 0 12px}
+.abas{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:4px;margin-bottom:14px}
+.abas button{background:none;color:var(--m);border:0;border-radius:10px;padding:11px;font:600 1rem system-ui}
+.abas button[aria-selected="true"]{background:var(--a);color:#fff}
 form{display:flex;gap:8px;margin-bottom:18px}
 input{flex:1;min-width:0;font:700 1.2rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;padding:12px;border:1.5px solid var(--l);border-radius:12px;background:var(--s);color:var(--fg)}
-button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;background:var(--a);color:var(--bg)}
+button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;background:var(--a);color:#fff;cursor:pointer}
+.conta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.conta div{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:10px 12px}
+.conta b{display:block;font-size:1.6rem;line-height:1.1}
+.conta span{color:var(--m);font-size:.85rem}
+.filtro{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filtro button{background:var(--s);color:var(--fg);border:1.5px solid var(--l);padding:8px 12px;font-weight:600;font-size:.9rem;border-radius:999px}
+.filtro button[aria-pressed="true"]{background:var(--a2);border-color:var(--a);color:var(--a)}
+.lead{background:var(--s);border:1px solid var(--l);border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.lead.novo{border-left:5px solid var(--w)}
+.topo{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.cod{font:700 1.05rem ui-monospace,monospace;letter-spacing:.04em}
+.quando{color:var(--m);font-size:.85rem;white-space:nowrap}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.tag{font-size:.78rem;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--bg);border:1px solid var(--l);color:var(--m)}
+.tag.f{background:var(--a2);border-color:transparent;color:var(--a)}
+.tag.t{background:var(--w2);border-color:transparent;color:var(--w)}
+.resumo{font-size:.95rem;margin:2px 0 8px}
+.st{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.st button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:10px 4px;font-size:.82rem;font-weight:600;border-radius:10px;line-height:1.2}
+.st button[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:#fff}
+.st button[data-s="nao_quis"][aria-pressed="true"]{background:var(--m);border-color:var(--m)}
+.nota{width:100%;margin-top:8px;font:15px/1.4 system-ui;padding:9px 11px;border:1.5px solid var(--l);border-radius:10px;background:var(--bg);color:var(--fg);resize:vertical;min-height:40px}
+.acoes{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px}
+.acoes small{color:var(--m)}
+.ver{background:none;color:var(--a);padding:6px 0;font-weight:600;text-decoration:underline}
+.voltar{background:var(--s);color:var(--a);border:1.5px solid var(--l);margin-bottom:12px}
 .card{background:var(--s);border:1px solid var(--l);border-radius:16px;padding:14px;margin-bottom:12px}
 .card h2{font-size:1.05rem;margin:0}
 .q{color:var(--m);font-size:.85rem;margin-bottom:8px}
@@ -30,21 +62,156 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .fotos img{width:100%;border-radius:10px;background:#808080;display:block}
 .fotos.n1{max-width:240px;margin-inline:auto}
 .fotos-pe{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.85rem;color:var(--m);margin-bottom:6px}
-.fotos-pe button{background:var(--s);color:#9a2c1c;border:1.5px solid #e3b9b1;padding:8px 14px;font-size:.9rem}
-.fotos-pe button.conf{background:#9a2c1c;color:#fff;border-color:#9a2c1c}
+.fotos-pe button{background:var(--s);color:var(--r);border:1.5px solid #e3b9b1;padding:8px 14px;font-size:.9rem}
+.fotos-pe button.conf{background:var(--r);color:#fff;border-color:var(--r)}
+.mais{width:100%;background:var(--s);color:var(--a);border:1.5px solid var(--l)}
 </style>
 </head>
 <body>
 <main>
-  <h1>Consulta por código</h1>
-  <form id="f"><input id="c" placeholder="LV-XXXX" autocomplete="off" autocapitalize="characters"><button>Ver</button></form>
-  <div id="out"></div>
+  <h1 id="tit">Caixa de leads</h1>
+  <div class="abas" role="tablist">
+    <button role="tab" id="t-caixa" aria-selected="true">Caixa</button>
+    <button role="tab" id="t-cod" aria-selected="false">Buscar código</button>
+  </div>
+
+  <section id="caixa">
+    <div class="conta"><div><b id="n-hoje">–</b><span>chegaram hoje</span></div><div><b id="n-sem">–</b><span>sem resposta</span></div></div>
+    <div class="filtro" id="filtro">
+      <button type="button" data-f="abertos" aria-pressed="true">Sem resposta</button>
+      <button type="button" data-f="todos" aria-pressed="false">Todos</button>
+      <button type="button" data-f="testes" aria-pressed="false">Mostrar testes</button>
+    </div>
+    <div id="lista"><p class="aviso">Carregando…</p></div>
+  </section>
+
+  <section id="busca" hidden>
+    <button type="button" class="voltar" id="voltar" hidden>Voltar para a caixa</button>
+    <form id="f"><input id="c" placeholder="LV-XXXX" autocomplete="off" autocapitalize="characters"><button>Ver</button></form>
+    <div id="gestao"></div>
+    <div id="out"></div>
+  </section>
 </main>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const post = corpo => fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ k:K, ...corpo }) });
+const TZ = 'America/Sao_Paulo';
+
+// ---------- Caixa ----------
+const STATUS = [['novo','Novo'],['respondi','Respondi'],['consulta','Consulta marcada'],['nao_quis','Não quis']];
+const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil;
+let LEADS = [], filtro = 'abertos';
+const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '');
+function origem(o){
+  if (!o || !o.source) return 'Direto';
+  const s = o.source, c = o.campaign || '';
+  if (s === 'ig_bio') return 'Bio';
+  if (s === 'ig_direct') return 'Direct' + (c ? ' · ' + c.toUpperCase() : '');
+  if (s === 'whatsapp_perfil') return 'Perfil do WhatsApp';
+  return s + (c ? ' · ' + c : '');
+}
+function resumo(l){
+  return (l.partes || []).map(p => {
+    const n = NOME_FUNIL(p), d = p.dados || {};
+    if (n === 'Pernas') return `Pernas: ${p.resumo || d.faixa || '?'}${d.idade ? ` (tem ${d.idade})` : ''}`;
+    if (n === 'Pele') return `Pele: ${d.faixa || p.resumo || '?'}`;
+    if (n === 'Quiz') return `Quiz: ${d.ajuda === 'medico' || p.resumo === 'medico' ? 'quer com médico' : d.ajuda || p.resumo ? 'por conta própria' : 'respondido'}`;
+    return `${n}: ${p.resumo || ''}`;
+  }).join(' · ');
+}
+const hojeSP = () => new Date().toLocaleDateString('pt-BR', { timeZone:TZ });
+function desenhaCaixa(){
+  const reais = LEADS.filter(l => !ehTeste(l));
+  $('n-hoje').textContent = reais.filter(l => new Date(l.chegou).toLocaleDateString('pt-BR', { timeZone:TZ }) === hojeSP()).length;
+  $('n-sem').textContent = reais.filter(l => l.status === 'novo').length;
+  const xs = filtro === 'testes' ? LEADS : filtro === 'todos' ? reais : reais.filter(l => l.status === 'novo');
+  if (!xs.length){ $('lista').innerHTML = `<p class="aviso">${filtro === 'abertos' ? 'Ninguém esperando resposta.' : 'Nenhum lead nos últimos 30 dias.'}</p>`; return; }
+  $('lista').innerHTML = xs.map(l => {
+    const quando = new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    const funis = [...new Set((l.partes || []).map(NOME_FUNIL))];
+    const canais = (l.canais || []).map(c => c === 'whatsapp' ? 'WhatsApp' : 'Direct');
+    return `<article class="lead ${l.status === 'novo' ? 'novo' : ''}" data-c="${esc(l.codigo)}">
+      <div class="topo"><span class="cod">${esc(l.codigo)}</span><span class="quando">${esc(quando)}</span></div>
+      <div class="tags">${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
+        <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
+      <div class="resumo">${esc(resumo(l))}</div>
+      ${botoes(l)}
+      <textarea class="nota" data-c="${esc(l.codigo)}" maxlength="500" rows="1" placeholder="Nota (ex.: mandei áudio, volta segunda)">${esc(l.nota || '')}</textarea>
+      <div class="acoes"><small id="ok-${esc(l.codigo)}">${l.atualizado_em ? 'Marcado ' + esc(new Date(l.atualizado_em).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })) : ''}</small>
+        <button type="button" class="ver" data-ver="${esc(l.codigo)}">Ver resultado completo</button></div>
+    </article>`;
+  }).join('');
+}
+const botoes = l => `<div class="st" role="group" aria-label="Status">${STATUS.map(([s, t]) => `<button type="button" data-s="${s}" data-c="${esc(l.codigo)}" aria-pressed="${l.status === s}">${t}</button>`).join('')}</div>`;
+async function carregar(){
+  if (!K){ $('lista').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
+  try {
+    const r = await post({ acao:'lista', dias:30 });
+    if (r.status === 404){ $('lista').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
+    const j = await r.json();
+    if (!j.ok) throw 0;
+    LEADS = j.leads || []; desenhaCaixa();
+  } catch { $('lista').innerHTML = '<p class="aviso">Não consegui carregar a caixa agora. Puxe para atualizar.</p>'; }
+}
+async function marcar(c, status, nota){
+  const l = LEADS.find(x => x.codigo === c) || { codigo:c, status:'novo', nota:'' };
+  const antes = { status:l.status, nota:l.nota };
+  if (status) l.status = status; if (nota !== undefined) l.nota = nota;
+  const ok = $('ok-' + c); if (ok) ok.textContent = 'Salvando…';
+  try {
+    const r = await post({ acao:'status', c, status:l.status, nota:l.nota || '' });
+    const j = await r.json(); if (!j.ok) throw 0;
+    l.atualizado_em = j.gestao?.atualizado_em || new Date().toISOString();
+    if (status && filtro !== 'abertos') desenhaCaixa();
+    if (status && filtro === 'abertos') setTimeout(desenhaCaixa, 700);   // deixa ver o toque antes de sair da lista
+    const ok2 = $('ok-' + c); if (ok2) ok2.textContent = 'Salvo';
+    if (codigoAtual === c) desenhaGestao(c);
+    document.querySelectorAll(`.st button[data-c="${c}"]`).forEach(b => b.setAttribute('aria-pressed', b.dataset.s === l.status));
+    if (!LEADS.includes(l)) LEADS.unshift(l);
+    const sem = LEADS.filter(x => !ehTeste(x) && x.status === 'novo').length; $('n-sem').textContent = sem;
+  } catch {
+    Object.assign(l, antes);
+    const ok3 = $('ok-' + c); if (ok3) ok3.textContent = 'Não salvou. Tente de novo.';
+    document.querySelectorAll(`.st button[data-c="${c}"]`).forEach(b => b.setAttribute('aria-pressed', b.dataset.s === l.status));
+  }
+}
+document.addEventListener('click', ev => {
+  const s = ev.target.closest('.st button');
+  if (s){ s.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === s)); marcar(s.dataset.c, s.dataset.s); return; }
+  const v = ev.target.closest('[data-ver]'); if (v){ abrirCodigo(v.dataset.ver, true); return; }
+  const f = ev.target.closest('#filtro button');
+  if (f){ filtro = f.dataset.f; document.querySelectorAll('#filtro button').forEach(b => b.setAttribute('aria-pressed', b === f)); desenhaCaixa(); }
+});
+const timers = {};
+document.addEventListener('input', ev => {
+  const t = ev.target; if (!t.classList.contains('nota')) return;
+  const ok = $('ok-' + t.dataset.c); if (ok) ok.textContent = 'Digitando…';
+  clearTimeout(timers[t.dataset.c]); timers[t.dataset.c] = setTimeout(() => marcar(t.dataset.c, null, t.value), 900);
+});
+
+// ---------- Abas ----------
+function aba(qual){
+  $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod');
+  $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod';
+  $('tit').textContent = qual === 'caixa' ? 'Caixa de leads' : 'Consulta por código';
+  if (qual === 'caixa'){ $('voltar').hidden = true; desenhaCaixa(); }
+  window.scrollTo(0, 0);
+}
+$('t-caixa').onclick = () => aba('caixa');
+$('t-cod').onclick = () => aba('cod');
+$('voltar').onclick = () => aba('caixa');
+function abrirCodigo(c, daCaixa){ aba('cod'); $('voltar').hidden = !daCaixa; $('c').value = c; ver(c); }
+function desenhaGestao(c){
+  const l = LEADS.find(x => x.codigo === c);
+  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2><div class="q">Status</div>${botoes(l || { codigo:c, status:'novo' })}
+    <textarea class="nota" data-c="${esc(c)}" maxlength="500" rows="1" placeholder="Nota">${esc(l?.nota || '')}</textarea>
+    <div class="acoes"><small id="ok-${esc(c)}"></small></div></div>`;
+}
+
+// ---------- Consulta de um código (a de 28/10) ----------
 const ROT = { idade:'Idade', sexo:'Sexo', peso:'Peso (kg)', altura:'Altura (cm)', t:'5 levantadas (s)', rel:'Potência (W/kg)',
   pc:'Percentil na idade', vel:'Subida média (m/s)', reps:'Repetições', faixa:'Faixa', modo:'Modo da foto', ocultas:'Áreas cobertas',
   qualidade:'Qualidade da foto', confianca:'Confiança', fotos:'Variante (fotos pedidas)', enviadas:'Fotos enviadas', qualidade_motivo:'Sobre a foto', origem:'Origem da foto' };
@@ -63,17 +230,18 @@ function campo(k, v){
   return `<div class="l"><span>${esc(ROT[k] ?? k)}</span><b>${esc(num(v))}</b></div>`;
 }
 async function ver(c){
+  codigoAtual = c; desenhaGestao(c);
   $('out').innerHTML = '<p class="aviso">Buscando…</p>';
   try {
-    const r = await fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ k:K, c }) });
+    const r = await post({ c });
     if (r.status === 404) return $('out').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>';
     const j = await r.json();
     if (!j.ok) return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`;
-    FOTOS = j.fotos || []; codigoAtual = c;
+    FOTOS = j.fotos || [];
     const usados = new Set();
-    if (!j.lista.length && !FOTOS.length) return $('out').innerHTML = c ? `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>` : '';
+    if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return $('out').innerHTML = `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`; }
     $('out').innerHTML = j.lista.map(e => {
-      const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', dateStyle:'short', timeStyle:'short' });
+      const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:TZ, dateStyle:'short', timeStyle:'short' });
       const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil;
       const g = e.etapa === 'pele-resultado' && e.dados?.foto; if (g) usados.add(g);
       return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}</div>`;
@@ -85,7 +253,7 @@ async function ver(c){
 function blocoFotos(g){
   const fs = FOTOS.filter(f => f.grupo === g);
   if (!fs.length) return '<div class="fotos-pe"><span>Foto apagada.</span></div>';
-  const dia = new Date(fs[0].apagaEm).toLocaleDateString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit' });
+  const dia = new Date(fs[0].apagaEm).toLocaleDateString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit' });
   return `<div class="fotos n${fs.length}" style="--n:${fs.length}">${fs.map(f => `<figure>${f.url ? `<img src="${esc(f.url)}" alt="${esc(TIPO[f.tipo] || f.tipo)}">` : ''}${fs.length > 1 ? `<figcaption>${esc(TIPO[f.tipo] || f.tipo)}</figcaption>` : ''}</figure>`).join('')}</div>
     <div class="fotos-pe" data-g="${esc(g)}"><span>Apaga sozinha em ${esc(dia)}.</span><button type="button" class="apagar">${fs.length > 1 ? 'Apagar fotos' : 'Apagar foto'}</button></div>`;
 }
@@ -97,7 +265,7 @@ $('out').addEventListener('click', async ev => {
   if (!b.classList.contains('conf')){ b.classList.add('conf'); b.textContent = 'Toque de novo para apagar'; setTimeout(() => { if (b.isConnected && b.classList.contains('conf') && !b.disabled){ b.classList.remove('conf'); b.textContent = b.dataset.t; } }, 4000); return; }
   b.disabled = true; b.textContent = 'Apagando…';
   try {
-    const r = await fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ k:K, c:codigoAtual, apagar:g }) });
+    const r = await post({ c:codigoAtual, apagar:g });
     const j = await r.json().catch(() => ({}));
     if (!r.ok || !j.ok) throw 0;
     FOTOS = FOTOS.filter(f => f.grupo !== g);
@@ -105,8 +273,10 @@ $('out').addEventListener('click', async ev => {
     pe.innerHTML = '<span>Foto apagada.</span>';
   } catch { b.disabled = false; b.classList.remove('conf'); b.textContent = 'Não apagou. Tente de novo'; b.dataset.t = b.textContent; }
 });
-$('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').value.trim().toUpperCase(); if (c) ver(c); });
-if (!K) $('out').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>';
+$('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').value.trim().toUpperCase(); if (c){ $('voltar').hidden = true; ver(c); } });
+// volta ao app (iPhone): recarrega a caixa
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('caixa').hidden) carregar(); });
+carregar();
 </script>
 </body>
 </html>
