@@ -79,6 +79,7 @@ p{margin:0}
 .dica{font-size:1.2rem;color:var(--muted)}
 .relogio{font:600 1.6rem var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
 body.valendo{background:var(--accent-2);transition:background .2s}
+html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-action:none}   /* durante a medição: sem rolar e sem puxar para recarregar */
 .ponto{display:flex;gap:10px;justify-content:center}
 .ponto i{width:14px;height:14px;border-radius:50%;background:var(--line);transition:background .15s}
 .ponto i.on{background:var(--accent)}
@@ -261,6 +262,7 @@ document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click'
 // ---------- telas ----------
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
+  document.documentElement.classList.toggle('medindo', s === 'medir');
   cur = s; const el = document.querySelector(`[data-s="${s}"]`);
   Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s) });
   $('top').hidden = s === 'inicio' || s === 'medir' || s === 'analise' || s === 'resultado';
@@ -275,6 +277,8 @@ function show(s){
   if (s === 'erro') cta.textContent = 'Tentar de novo';
   scrollTo(0, 0);
 }
+// iPhone: puxar a página para baixo recarrega o Safari e apagaria o teste; durante a medição o arraste fica desligado
+document.addEventListener('touchmove', e => { if (cur === 'medir') e.preventDefault(); }, { passive:false });
 $('back').addEventListener('click', () => { const i = order.indexOf(cur); show(cur === 'erro' ? 'sensor' : order[Math.max(0, i - 1)]); });
 $('cta').addEventListener('click', async () => {
   if (cur === 'inicio') return show('como');
