@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Checagem do sensor do braço</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Página de checagem (31/10/2026): o sensor de movimento funciona aqui (inclusive dentro do Instagram)
+   e quanto ele mede numa rosca rápida segurando o celular. Uma coluna, tema claro como as páginas do funil. */
+:root{
+  --bg:#f2f4f1; --surface:#ffffff; --fg:#141c17; --muted:#5f6d65; --line:#dbe1dc;
+  --accent:#0d6a4d; --accent-2:#d9efe5; --warn:#8a5200; --warn-bg:#f7ecdc; --bad:#a3271b; --bad-bg:#f8e3e0;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+main{max-width:520px;margin:0 auto;padding-block:max(24px,env(safe-area-inset-top,0px)) 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+h1{font:800 1.9rem/1.05 var(--display);margin:0;text-wrap:balance}
+p{margin:0}
+.sub{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.lin{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.lin span{color:var(--muted);font-size:.93rem}
+.lin b{font:500 1rem var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.btn{font:600 1.1rem var(--body);border:0;border-radius:14px;padding:16px;background:var(--accent);color:#fff;cursor:pointer;width:100%}
+.btn:disabled{opacity:.45}
+.btn:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+.pill{align-self:flex-start;font:600 .75rem var(--body);letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px}
+.ok{background:var(--accent-2);color:var(--accent)} .meh{background:var(--warn-bg);color:var(--warn)} .bad{background:var(--bad-bg);color:var(--bad)}
+.grande{font:800 3.2rem/1 var(--display);text-align:center;font-variant-numeric:tabular-nums}
+ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+canvas{width:100%;height:120px;display:block;background:var(--bg);border-radius:10px}
+.picos{font:500 .9rem var(--mono);color:var(--muted);overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Checagem do sensor do braço</h1>
+    <p class="sub">Abra este link pelo Instagram, no iPhone. Leva 1 minuto.</p>
+  </header>
+
+  <section class="card" aria-labelledby="t1">
+    <strong id="t1">1. Ligar o sensor</strong>
+    <div class="lin"><span>Navegador</span><b id="nav">…</b></div>
+    <div class="lin"><span>Permissão</span><b id="perm">ainda não pedida</b></div>
+    <div class="lin"><span>Leituras por segundo</span><b id="hz">–</b></div>
+    <span class="pill meh" id="estado">Toque no botão</span>
+    <button class="btn" id="ligar" type="button">Ligar o sensor</button>
+  </section>
+
+  <section class="card" aria-labelledby="t2">
+    <strong id="t2">2. Três roscas rápidas</strong>
+    <ol>
+      <li>Segure o celular firme na mão, tela para cima, cotovelo colado no corpo.</li>
+      <li>Toque em Começar. Depois do "Já!", dobre o cotovelo o mais rápido que conseguir e volte. Três vezes.</li>
+      <li>A medição para sozinha em 6 segundos.</li>
+    </ol>
+    <div class="grande" id="contagem" aria-live="polite">–</div>
+    <button class="btn" id="comecar" type="button" disabled>Começar</button>
+  </section>
+
+  <section class="card" aria-labelledby="t3">
+    <strong id="t3">3. Resultado</strong>
+    <div class="lin"><span>Repetições contadas</span><b id="reps">–</b></div>
+    <div class="lin"><span>Giro máximo do braço</span><b id="omega">–</b></div>
+    <div class="lin"><span>Velocidade da mão (estimada)</span><b id="vel">–</b></div>
+    <div class="lin"><span>Aceleração máxima</span><b id="acc">–</b></div>
+    <canvas id="graf" width="600" height="160" aria-label="Gráfico do giro do braço durante a medição"></canvas>
+    <p class="picos" id="picos"></p>
+    <p class="sub">Tire um print desta tela e mande ao Claude.</p>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const ua = navigator.userAgent;
+$('nav').textContent = /Instagram/i.test(ua) ? 'Instagram' : /FBAN|FBAV/i.test(ua) ? 'Facebook' : /CriOS/i.test(ua) ? 'Chrome' : /Safari/i.test(ua) && /iPhone|iPad/i.test(ua) ? 'Safari' : 'outro';
+const ANTEBRACO = 0.30;            // m, cotovelo até a mão (estimativa para converter giro em velocidade)
+let amostras = [], gravando = false, t0 = 0, contHz = [], ouvindo = false;
+
+function estado(txt, cls){ const e = $('estado'); e.textContent = txt; e.className = 'pill ' + cls; }
+function onMotion(ev){
+  const now = performance.now(); contHz.push(now); while (contHz.length && now - contHz[0] > 1000) contHz.shift();
+  if (!gravando) return;
+  const r = ev.rotationRate || {}, a = ev.acceleration || {};
+  const w = Math.hypot(r.alpha || 0, r.beta || 0, r.gamma || 0);          // graus por segundo
+  const acc = Math.hypot(a.x || 0, a.y || 0, a.z || 0);                    // m/s², sem a gravidade
+  amostras.push({ t: now - t0, w, acc });
+}
+setInterval(() => { if (ouvindo) $('hz').textContent = contHz.length + ' por segundo'; }, 500);
+
+$('ligar').addEventListener('click', async () => {
+  if (typeof DeviceMotionEvent === 'undefined'){ $('perm').textContent = 'sem sensor'; estado('Este navegador não tem o sensor', 'bad'); return; }
+  try {
+    if (typeof DeviceMotionEvent.requestPermission === 'function'){
+      const p = await DeviceMotionEvent.requestPermission();
+      $('perm').textContent = p === 'granted' ? 'permitida' : 'negada';
+      if (p !== 'granted'){ estado('Permissão negada', 'bad'); return; }
+    } else { $('perm').textContent = 'não precisa (Android)'; }
+  } catch (e) { $('perm').textContent = 'erro: ' + (e && e.name || 'desconhecido'); estado('O pedido de permissão falhou aqui', 'bad'); return; }
+  window.addEventListener('devicemotion', onMotion); ouvindo = true;
+  setTimeout(() => {
+    if (!contHz.length){ estado('Permitiu, mas nenhuma leitura chegou', 'bad'); return; }
+    estado('Sensor funcionando', 'ok'); $('comecar').disabled = false; $('ligar').disabled = true;
+  }, 1200);
+});
+
+const falar = t => { try { const u = new SpeechSynthesisUtterance(t); u.lang = 'pt-BR'; speechSynthesis.speak(u); } catch {} };
+$('comecar').addEventListener('click', () => {
+  $('comecar').disabled = true; let n = 3; $('contagem').textContent = n; falar('Três');
+  const iv = setInterval(() => {
+    n--; if (n > 0){ $('contagem').textContent = n; falar(n === 2 ? 'Dois' : 'Um'); return; }
+    clearInterval(iv); $('contagem').textContent = 'Já!'; falar('Já'); try { navigator.vibrate && navigator.vibrate(80); } catch {}
+    amostras = []; t0 = performance.now(); gravando = true;
+    setTimeout(() => { gravando = false; $('contagem').textContent = 'Pronto'; falar('Pronto'); mostrar(); $('comecar').disabled = false; }, 6000);
+  }, 1000);
+});
+
+function mostrar(){
+  if (!amostras.length){ $('reps').textContent = '0 (nenhuma leitura)'; return; }
+  // picos de giro acima de 120 °/s separados por 200 ms; cada rosca dá 2 picos (subida e descida)
+  const picos = []; let ult = -1e9;
+  for (let i = 1; i < amostras.length - 1; i++){
+    const s = amostras[i];
+    if (s.w > 120 && s.w >= amostras[i-1].w && s.w >= amostras[i+1].w && s.t - ult > 200){ picos.push(s); ult = s.t; }
+  }
+  const wMax = Math.max(...amostras.map(s => s.w)), aMax = Math.max(...amostras.map(s => s.acc));
+  $('reps').textContent = Math.round(picos.length / 2) + ' (' + picos.length + ' picos)';
+  $('omega').textContent = Math.round(wMax) + ' °/s';
+  $('vel').textContent = (wMax * Math.PI / 180 * ANTEBRACO).toFixed(2) + ' m/s';
+  $('acc').textContent = aMax.toFixed(1) + ' m/s²';
+  $('picos').textContent = 'Picos (°/s): ' + picos.map(p => Math.round(p.w)).join(' · ') + ' · ' + amostras.length + ' leituras em 6 s';
+  const c = $('graf'), g = c.getContext('2d'), W = c.width, H = c.height, top = Math.max(wMax, 200);
+  g.clearRect(0, 0, W, H); g.strokeStyle = '#0d6a4d'; g.lineWidth = 3; g.beginPath();
+  amostras.forEach((s, i) => { const x = s.t / 6000 * W, y = H - 8 - s.w / top * (H - 16); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+  g.stroke(); g.fillStyle = '#a3271b'; picos.forEach(p => { g.beginPath(); g.arc(p.t / 6000 * W, H - 8 - p.w / top * (H - 16), 5, 0, 7); g.fill(); });
+}
+</script>
+</body>
+</html>
