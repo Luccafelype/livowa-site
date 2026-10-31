@@ -233,6 +233,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 
 <script type="module">
 import * as Analytics from '/idade/funnel-analytics.js';
+import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js';
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 Analytics.init({ enabled:true, funnelId:'teste-braco', variant:new URLSearchParams(location.search).get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
 Analytics.track('view');
@@ -417,7 +418,7 @@ function fimDirect(sec){
   el.querySelectorAll('.cod-ref').forEach(x => { x.hidden = true; });
   const dm = $('cta-dm'), wa = $('cta-link');
   if (dm.lastChild && dm.lastChild.nodeType === 3) dm.lastChild.textContent = 'Voltar ao Instagram';
-  dm.onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'direct-lv', props:{ canal:'direct' } });
+  dm.onclick = e => { Analytics.track('cta_click', { stepId:cur, valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM } }); if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ lv:true }); } };
   wa.classList.add('ghost'); if (wa.lastChild && wa.lastChild.nodeType === 3) wa.lastChild.textContent = 'Prefere WhatsApp?';
   if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);   // Direct primeiro, WhatsApp pequeno embaixo
 }
@@ -437,7 +438,8 @@ function copiar(txt){
 let toastT = null;
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou } });
+  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM } });
+  if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem:txt, copiou }); return; }   // dentro do Instagram o link pede login (31/10)
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }
   e.preventDefault(); $('aviso-msg').textContent = txt; $('aviso-dm').hidden = false;
 }

@@ -8,6 +8,7 @@
 
 import { CONFIG } from './config.js?v=lg2';
 import * as Analytics from './funnel-analytics.js?v=lg3';
+import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js';
 
 const FLOW = CONFIG.flow;
 const N = FLOW.length;
@@ -472,7 +473,7 @@ function renderResult() {
     const msg = CONFIG.whatsapp.msgMedico(state, curto, op, cod);
     main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_medico', onclick: () => clique('whatsapp_medico') }, R.medico.cta);
     alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.direct, 'data-cta': 'direct',   // sem _blank: o toque abre o app do Instagram (universal link)
-      onclick: () => { copiar(msg); clique('direct'); toast(R.medico.copiado); } }, R.medico.alt);
+      onclick: (e) => { const ok = copiar(msg); clique('direct'); if (NO_INSTAGRAM) { e.preventDefault(); dicaDirect({ mensagem: msg, copiou: ok }); return; } toast(R.medico.copiado); } }, R.medico.alt);
   } else {
     const msg = CONFIG.whatsapp.msgPlano(state, curto, op, cod);
     main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_plano', onclick: () => clique('whatsapp_plano') }, R.sozinho.cta);
@@ -482,7 +483,7 @@ function renderResult() {
   const lv = Analytics.getLv();
   if (lv) {
     const msgWa = medico ? CONFIG.whatsapp.msgMedico(state, curto, op, cod) : CONFIG.whatsapp.msgPlano(state, curto, op, cod);
-    main = el('a', { class: 'btn', id: 'cta-main', href: CONFIG.links.direct, 'data-cta': 'direct-lv', onclick: () => clique('direct-lv') }, 'Voltar ao Instagram');
+    main = el('a', { class: 'btn', id: 'cta-main', href: CONFIG.links.direct, 'data-cta': 'direct-lv', onclick: (e) => { clique('direct-lv'); if (NO_INSTAGRAM) { e.preventDefault(); dicaDirect({ lv: true }); } } }, 'Voltar ao Instagram');
     alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: wa(msgWa), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp', onclick: () => clique('whatsapp') }, 'Prefere WhatsApp?');
   }
   const video = playerVsl(vsl);

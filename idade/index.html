@@ -362,6 +362,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
 <script type="module">
 import { PoseLandmarker, FaceLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
 import * as Analytics from './funnel-analytics.js';
+import { dicaDirect } from '/assets/js/dica-direct.js';
 // Medição do funil (Supabase); a variante e a sessão vêm do link da bio (?v=, ?sid=)
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 Analytics.init({ enabled:true, funnelId:'teste-pernas', variant:new URLSearchParams(location.search).get('v') || 'direto',
@@ -741,9 +742,7 @@ function fimDirect(sec){
   dm.onclick = e => {
     Analytics.track('cta_click', { stepId:cur, valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM } });
     if (!NO_INSTAGRAM) return;   // fora do app, o link abre o Instagram; dentro dele, abriria a página de login
-    e.preventDefault();
-    $('aviso-tit').textContent = 'Já está tudo com o Dr. Lucca'; $('aviso-txt').textContent = 'Toque no X, lá em cima, para voltar à conversa no Instagram.';
-    $('aviso-msg').hidden = true; $('aviso-link').hidden = true; $('aviso-ok').hidden = false; $('aviso-dm').hidden = false;
+    e.preventDefault(); dicaDirect({ lv:true, voz });
   };
   wa.classList.add('ghost'); if (wa.lastChild && wa.lastChild.nodeType === 3) wa.lastChild.textContent = 'Prefere WhatsApp?';
   if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);   // Direct primeiro, WhatsApp pequeno embaixo
@@ -770,10 +769,7 @@ function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
   Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM } });
   if (NO_INSTAGRAM){
-    e.preventDefault();
-    $('aviso-tit').textContent = copiou ? 'Mensagem copiada' : 'Copie a mensagem';
-    $('aviso-txt').textContent = 'Toque no X, lá em cima, para voltar ao Instagram. No perfil do Dr. Lucca, toque em Mensagem e cole.';
-    $('aviso-msg').textContent = txt; $('aviso-msg').hidden = false; $('aviso-link').hidden = true; $('aviso-ok').hidden = false; $('aviso-dm').hidden = false; return;
+    e.preventDefault(); dicaDirect({ mensagem:txt, copiou, voz }); return;   // animação X → Mensagem → colar (assets/js/dica-direct.js)
   }
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }   // o link segue e abre o app
   e.preventDefault();
