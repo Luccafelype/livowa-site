@@ -8,7 +8,7 @@
 
 import { CONFIG } from './config.js?v=lg2';
 import * as Analytics from './funnel-analytics.js?v=lg3';
-import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js';
+import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js?v=2';
 
 const FLOW = CONFIG.flow;
 const N = FLOW.length;
