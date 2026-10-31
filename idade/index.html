@@ -188,10 +188,17 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .sinal b{font:600 .95rem var(--body)}
 .sinal small{grid-column:2/4;color:var(--muted);font-size:.82rem}
 .sinal.off b,.sinal.off .e{opacity:.55}
-.passos3{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
-.passos3 span{font:600 .82rem var(--body);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
-.passos3 span.feito{color:var(--accent);border-color:var(--accent)}
-.passos3 span.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.passos3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0;padding:0;list-style:none}
+.passos3[hidden]{display:none}
+.passos3 li{display:flex;align-items:center;justify-content:center;gap:6px;font:600 .85rem var(--body);color:var(--muted);border-bottom:3px solid var(--line);padding:6px 0}
+.passos3 li b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--fg);font-size:.75rem}
+.passos3 li.on{color:var(--fg);border-color:var(--accent)} .passos3 li.on b{background:var(--accent);color:var(--on-accent)}
+.passos3 li.feito{color:var(--accent);border-color:var(--accent)} .passos3 li.feito b{background:var(--accent-2);color:var(--accent)}
+.voz-cam{position:absolute;right:12px;bottom:12px;z-index:3;background:rgba(0,0,0,.72);color:#fff;border:1.5px solid rgba(255,255,255,.85);border-radius:999px;font:700 .9rem var(--body);padding:9px 14px 9px 36px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 5 6 9H2v6h4l5 4z'/%3E%3Cpath d='M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center;background-size:18px}
+.voz-cam[aria-pressed="false"]{background-color:rgba(0,0,0,.45);border-color:rgba(255,255,255,.45);color:rgba(255,255,255,.75);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-opacity='.75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 5 6 9H2v6h4l5 4z'/%3E%3Cpath d='m22 9-6 6M16 9l6 6'/%3E%3C/svg%3E")}
+.dica-linha{margin:0;text-align:center;font-size:.85rem;color:var(--muted)}
 .previas{display:flex;justify-content:center;gap:8px}
 .previas figure{margin:0;flex:1;min-width:0;max-width:150px;display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--muted)}
 .previas.n3 .previa,.previas.n3 .previa.ret{width:100%;border-radius:12px}
@@ -200,6 +207,9 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .meter i.on{background:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<script>/* link da pele (?pele=1|teste): esconde a página até o script abrir a pele, para não piscar a tela das pernas */
+if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.classList.add('vai-pele'); setTimeout(() => document.documentElement.classList.remove('vai-pele'), 6000); }</script>
+<style>.vai-pele .app{visibility:hidden}</style>
 </head>
 <body>
 <div class="app">
@@ -278,18 +288,18 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
     <span class="pill" id="pele-ini-pill">30 segundos · uma selfie</span>
     <h2>Quantos anos a sua <em>pele</em> aparenta?</h2>
     <p class="sub" id="pele-ini-sub">Tire uma selfie de frente para a luz.</p>
-    <label class="consent"><input type="checkbox" id="pele-ok"><span id="pele-aceite">Tenho 18 anos ou mais. Estou ciente de que a Livowa segue a Lei Geral de Proteção de Dados: o médico responsável verá minha foto só para analisá-la conforme os meus interesses e depois ela será apagada definitivamente.</span></label>
+    <label class="consent"><input type="checkbox" id="pele-ok"><span id="pele-aceite">Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minha foto só para analisá-la conforme os meus interesses, e depois ela será apagada definitivamente.</span></label>
   </section>
 
   <section class="screen" data-s="pele-camera" data-p="45" hidden>
+    <ol class="passos3" id="pele-passos" hidden aria-label="Fotos"><li><b>1</b>Parado</li><li><b>2</b>Sorriso</li><li><b>3</b>Sobrancelhas</li></ol>
     <div class="stage">
       <video id="pele-video" playsinline muted></video>
       <canvas id="pele-live"></canvas>
       <div class="guide"><span id="pele-guia">Abrindo a câmera…</span></div>
+      <button type="button" class="mute-pele voz-cam" aria-pressed="true" aria-label="Voz ligada">Voz ligada</button>
     </div>
-    <div class="passos3" id="pele-passos" hidden><span>Parado</span><span>Sorriso</span><span>Sobrancelhas</span></div>
-    <div class="tips"><span>Luz de frente</span><span>Sem óculos</span><span>Testa livre</span><span>Bem perto</span></div>
-    <div class="sound"><button type="button" class="mute-pele">Voz ligada</button></div>
+    <p class="dica-linha">Luz de frente · sem óculos · testa livre · bem perto</p>
     <input type="file" id="pele-arquivo" accept="image/*" hidden>
   </section>
 
@@ -341,10 +351,11 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
   <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
   <!-- só aparece se o navegador não deixou copiar sozinho -->
   <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
-    <b>Mande esta mensagem no Direct</b>
+    <b id="aviso-tit">Mande esta mensagem no Direct</b>
     <q id="aviso-msg">Oi, Dr. Lucca! Meu código é LV-0000</q>
-    <span>Toque e segure na mensagem, escolha <b style="font:inherit;font-weight:700">Copiar</b> e cole no Direct.</span>
+    <span id="aviso-txt">Toque e segure na mensagem, escolha Copiar e cole no Direct.</span>
     <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
+    <button type="button" class="btn" id="aviso-ok" hidden>Entendi</button>
   </div></div>
 </div>
 
@@ -415,7 +426,7 @@ function falar(txt, forcar){
   speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'pt-BR'; u.rate = 1.05; speechSynthesis.speak(u);
 }
 document.querySelectorAll('#mute,.mute-pele').forEach(b => b.addEventListener('click', () => {
-  voz = !voz; document.querySelectorAll('#mute,.mute-pele').forEach(x => x.textContent = voz ? 'Voz ligada' : 'Voz desligada');
+  voz = !voz; document.querySelectorAll('#mute,.mute-pele').forEach(x => { x.textContent = voz ? 'Voz ligada' : 'Voz desligada'; x.setAttribute('aria-pressed', voz); x.setAttribute('aria-label', x.textContent); });
   if (!voz && 'speechSynthesis' in window) speechSynthesis.cancel();
 }));
 function falarEstavel(txt){
@@ -727,7 +738,13 @@ function fimDirect(sec){
   el.querySelectorAll('.cod-ref').forEach(x => { x.hidden = true; });
   const dm = $('cta-dm'), wa = $('cta-link');
   if (dm.lastChild && dm.lastChild.nodeType === 3) dm.lastChild.textContent = 'Voltar ao Instagram';
-  dm.onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'direct-lv', props:{ canal:'direct' } });
+  dm.onclick = e => {
+    Analytics.track('cta_click', { stepId:cur, valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM } });
+    if (!NO_INSTAGRAM) return;   // fora do app, o link abre o Instagram; dentro dele, abriria a página de login
+    e.preventDefault();
+    $('aviso-tit').textContent = 'Já está tudo com o Dr. Lucca'; $('aviso-txt').textContent = 'Toque no X, lá em cima, para voltar à conversa no Instagram.';
+    $('aviso-msg').hidden = true; $('aviso-link').hidden = true; $('aviso-ok').hidden = false; $('aviso-dm').hidden = false;
+  };
   wa.classList.add('ghost'); if (wa.lastChild && wa.lastChild.nodeType === 3) wa.lastChild.textContent = 'Prefere WhatsApp?';
   if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);   // Direct primeiro, WhatsApp pequeno embaixo
 }
@@ -748,14 +765,23 @@ function copiar(txt){
   return ok;
 }
 let toastT = null;
+const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // navegador de dentro do app: ig.me abre como página e pede login (31/10)
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou } });
+  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM } });
+  if (NO_INSTAGRAM){
+    e.preventDefault();
+    $('aviso-tit').textContent = copiou ? 'Mensagem copiada' : 'Copie a mensagem';
+    $('aviso-txt').textContent = 'Toque no X, lá em cima, para voltar ao Instagram. No perfil do Dr. Lucca, toque em Mensagem e cole.';
+    $('aviso-msg').textContent = txt; $('aviso-msg').hidden = false; $('aviso-link').hidden = true; $('aviso-ok').hidden = false; $('aviso-dm').hidden = false; return;
+  }
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }   // o link segue e abre o app
   e.preventDefault();
-  $('aviso-msg').textContent = txt; $('aviso-link').href = $('cta-dm').href; $('aviso-dm').hidden = false;
+  $('aviso-tit').textContent = 'Mande esta mensagem no Direct'; $('aviso-txt').textContent = 'Toque e segure na mensagem, escolha Copiar e cole no Direct.';
+  $('aviso-msg').textContent = txt; $('aviso-msg').hidden = false; $('aviso-link').href = $('cta-dm').href; $('aviso-link').hidden = false; $('aviso-ok').hidden = true; $('aviso-dm').hidden = false;
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
+$('aviso-ok').addEventListener('click', () => { $('aviso-dm').hidden = true; });
 $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:cur, valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 
 // =====================================================================
@@ -1164,7 +1190,7 @@ function resultadoPele(j){
     props:{ codigo:meuCodigo(), faixa:`${min} a ${max} anos`, confianca:j.confianca, qualidade:j.qualidade?.nota, qualidade_motivo:j.qualidade?.motivo || null,
             modo, ocultas:(ocultas || []).join('+') || 'nenhuma', origem, idade, fotos:FOTOS, enviadas:n || 1, foto:j.foto || null,
             sinais:j.sinais.map(x => ({ id:x.id, visivel:x.visivel, nivel:x.nivel, obs:x.obs, ...(x.expressao !== undefined ? { repouso:x.repouso, expressao:x.expressao } : {}) })) } });
-  falar('Pronto.', true);
+  if ('speechSynthesis' in window) speechSynthesis.cancel();   // sem voz na tela final (31/10, Lucca)
   show('pele-resultado');
   if (window.__peleResult) window.__peleResult(j);
 }
@@ -1176,12 +1202,13 @@ if (FOTOS === 3){
   $('pele-card-h').innerHTML = 'Agora a <em>pele</em>: 40 segundos';
   $('pele-ini-pill').textContent = '40 segundos · 3 selfies';
   $('pele-ini-sub').textContent = 'São 3 selfies de frente para a luz. Parado, sorrindo e com as sobrancelhas levantadas.';
-  $('pele-aceite').textContent = 'Tenho 18 anos ou mais. Estou ciente de que a Livowa segue a Lei Geral de Proteção de Dados: o médico responsável verá minhas fotos só para analisá-las conforme os meus interesses e depois elas serão apagadas definitivamente.';
+  $('pele-aceite').textContent = 'Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minhas fotos só para analisá-las conforme os meus interesses, e depois elas serão apagadas definitivamente.';
 }
 
 // link da pele: livowa.com/idade/?pele=teste abre direto na pele (sem passar pelas pernas)
 // ?pele=1 (link público da face, usado pelo /comece) também abre direto na pele
 if ((PELE_Q === 'teste' || PELE_Q === '1') && PELE_ENDPOINT) show('pele-inicio');
+document.documentElement.classList.remove('vai-pele');
 // teste da tela de resultado sem câmera (desenvolvimento)
 window.__testarResultado = (c, d, s) => { Object.assign(dados, d); if (s) sexo = s; voz = false; resultado(c); };
 // teste automático com vídeo (usado só no desenvolvimento)
