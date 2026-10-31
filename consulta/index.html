@@ -56,6 +56,12 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .l span{color:var(--m)} .l b{text-align:right}
 .si{padding:6px 0;border-top:1px solid var(--l)} .si small{display:block;color:var(--m)}
 .aviso{color:var(--m)}
+.interp{border-radius:14px;padding:12px;margin:8px 0 10px;background:var(--bg,#f2f4f1);border:1px solid var(--l)}
+.interp h3{margin:0 0 4px;font-size:.95rem}
+.interp.ok{border-color:#0d6a4d55}.interp.meh{border-color:#8a520066}.interp.bad{border-color:#a3271b66}
+.interp .alerta{margin:8px 0 0;color:#8a5200;font-weight:600;font-size:.9rem}
+.interp .rot{margin:8px 0 0;font-size:.92rem}
+.interp .fonte{margin:6px 0 0;font-size:.78rem;color:var(--m)}
 .si .din{display:block;font-size:.9rem;margin-top:2px}
 .fotos{display:grid;grid-template-columns:repeat(var(--n,1),1fr);gap:8px;margin:6px 0 4px}
 .fotos figure{margin:0;display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--m);text-align:center}
@@ -216,7 +222,7 @@ function desenhaGestao(c){
 }
 
 // ---------- Consulta de um código (a de 28/10) ----------
-const ROT = { idade:'Idade', sexo:'Sexo', peso:'Peso (kg)', altura:'Altura (cm)', t:'5 levantadas (s)', rel:'Potência (W/kg)',
+const ROT = { velMedia:'Velocidade média (°/s)', dur:'Duração medida (s)', queda:'Queda (%)', variab:'Variabilidade (%)', vmao:'Mão no pico (m/s)', wmax:'Giro máximo (°/s)', hz:'Leituras/s', nav:'Navegador', protocolo:'Protocolo', diag:'Diagnóstico', lv:'Marca do Direct', idade:'Idade', sexo:'Sexo', peso:'Peso (kg)', altura:'Altura (cm)', t:'5 levantadas (s)', rel:'Potência (W/kg)',
   pc:'Percentil na idade', vel:'Subida média (m/s)', reps:'Repetições', faixa:'Faixa', modo:'Modo da foto', ocultas:'Áreas cobertas',
   qualidade:'Qualidade da foto', confianca:'Confiança', fotos:'Variante (fotos pedidas)', enviadas:'Fotos enviadas', qualidade_motivo:'Sobre a foto', origem:'Origem da foto' };
 const SINAL = { linhas_testa:'Linhas da testa', olhos:'Ao redor dos olhos', sulco_nasolabial:'Sulco do nariz à boca', manchas:'Manchas', textura_poros:'Textura da pele', flacidez:'Firmeza do contorno' };
@@ -233,6 +239,43 @@ function campo(k, v){
   if (Array.isArray(v)) v = v.join(', '); else if (typeof v === 'object') v = JSON.stringify(v);
   return `<div class="l"><span>${esc(ROT[k] ?? k)}</span><b>${esc(num(v))}</b></div>`;
 }
+// ---------- Interpretação da idade muscular (régua de 31/10/2026; fontes em tarefas/escada-isca/pesquisa/braco-*.md) ----------
+// Toosizadeh 2017 (BMC Geriatr, PMID 28577355): 20 s de flexão rápida do cotovelo; robustos (76 anos) 1.099 °/s,
+// pré-frágeis 812, frágeis 535; flexões 25/21/15; queda 3/6/15%. Toji 2007: velocidade igual até 50 anos, −0,8%/ano depois.
+// Junção (extrapolação): referência aos 50 = 1.099 / (1 − 0,008 × 26) ≈ 1.390 °/s. Mulher × 0,9 (estimativa).
+function interpretaBraco(d){
+  const v = d.velMedia, f = d.sexo === 'f' ? 0.9 : 1, VREF = 1390 * f, ROB = 1099 * f, PRE = 955 * f, FRA = 673 * f;
+  if (!v) return '';
+  let idadeM = null, faixa, cor;
+  if (v >= VREF){ faixa = 'até 50 anos'; cor = 'ok'; }
+  else if (v >= ROB){ idadeM = Math.round(50 + (1 - v / VREF) / 0.008); faixa = idadeM + ' anos'; cor = 'ok'; }
+  else if (v >= PRE){ faixa = 'acima de 76 anos (ainda robusto)'; cor = 'meh'; }
+  else if (v >= FRA){ faixa = 'faixa pré-frágil'; cor = 'meh'; }
+  else { faixa = 'faixa frágil'; cor = 'bad'; }
+  let comp = '';
+  if (d.idade){
+    if (idadeM !== null){ const dif = idadeM - d.idade; comp = dif > 2 ? `${dif} anos acima da idade da pessoa (${d.idade})` : dif < -2 ? `${-dif} anos abaixo da idade da pessoa (${d.idade})` : `igual à idade da pessoa (${d.idade})`; if (dif > 5) cor = 'meh'; }
+    else if (v >= VREF) comp = d.idade <= 50 ? `dentro do esperado para ${d.idade} anos` : `melhor que o esperado para ${d.idade} anos`;
+    else { comp = d.idade < 60 ? `muito abaixo do esperado para ${d.idade} anos` : `abaixo do idoso robusto (tem ${d.idade})`; if (d.idade < 60 && cor === 'meh') cor = 'bad'; }
+  }
+  const q = d.queda, qtxt = q == null ? '—' : q <= 4 ? `${q}% (como robustos, ~3%)` : q <= 10 ? `${q}% (como pré-frágeis, ~6%)` : `${q}% (como frágeis, ~15%)`;
+  const reps = d.reps != null && d.dur ? Math.round(d.reps * 20 / Math.max(d.dur, 1)) : null;
+  const curto = d.dur != null && d.dur < 15;
+  const roteiro = cor === 'ok'
+    ? 'O seu braço respondeu com velocidade boa para a idade. O que mantém isso é treino de força com intenção de velocidade; no programa a gente mede de novo em 90 dias.'
+    : cor === 'meh'
+    ? 'A velocidade do seu braço ficou abaixo do esperado para a idade. Potência é a primeira coisa que o músculo perde, e é a que mais responde a treino; vale olhar isso junto com exames.'
+    : 'A velocidade ficou na faixa que os estudos ligam a fragilidade. Isso pede uma avaliação com calma, de força, equilíbrio e exames, antes de qualquer plano.';
+  return `<div class="interp ${cor}"><h3>Interpretação</h3>
+    <div class="l"><span>Idade muscular estimada</span><b>${esc(faixa)}</b></div>
+    ${comp ? `<div class="l"><span>Comparação</span><b>${esc(comp)}</b></div>` : ''}
+    <div class="l"><span>Velocidade (flexão + extensão)</span><b>${esc(num(v))} °/s · ref. 50 anos ${Math.round(VREF)}</b></div>
+    ${reps != null ? `<div class="l"><span>Roscas (em 20 s)</span><b>${reps} · robusto 25 · frágil 15</b></div>` : ''}
+    <div class="l"><span>Queda do começo para o fim</span><b>${esc(qtxt)}</b></div>
+    ${curto ? `<p class="alerta">Medição curta (${esc(num(d.dur))} s de 20): repetir o teste antes de concluir.</p>` : ''}
+    <p class="rot"><b>Para o áudio (sugestão):</b> ${esc(roteiro)}</p>
+    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado.</p></div>`;
+}
 async function ver(c){
   codigoAtual = c; desenhaGestao(c);
   $('out').innerHTML = '<p class="aviso">Buscando…</p>';
@@ -248,7 +291,7 @@ async function ver(c){
       const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:TZ, dateStyle:'short', timeStyle:'short' });
       const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil;
       const g = e.etapa === 'pele-resultado' && e.dados?.foto; if (g) usados.add(g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}</div>`;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : '');
