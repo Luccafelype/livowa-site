@@ -78,6 +78,7 @@ p{margin:0}
 .num small{font-size:.35em;color:var(--muted);font-weight:700}
 .dica{font-size:1.2rem;color:var(--muted)}
 .relogio{font:600 1.6rem var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
+body.valendo{background:var(--accent-2);transition:background .2s}
 .ponto{display:flex;gap:10px;justify-content:center}
 .ponto i{width:14px;height:14px;border-radius:50%;background:var(--line);transition:background .15s}
 .ponto i.on{background:var(--accent)}
@@ -142,7 +143,7 @@ p{margin:0}
     <ol class="steps">
       <li><em>1</em><span>Fique em pé, com o cotovelo colado no corpo.</span></li>
       <li><em>2</em><span>Segure o celular firme na mão, com a tela para cima. Punho firme: quem dobra é o cotovelo.</span></li>
-      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 20 segundos, sem parar. Um bip avisa o fim.</span></li>
+      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 20 segundos, sem parar. Um bip avisa o começo; dois bips, o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
   </section>
@@ -171,7 +172,7 @@ p{margin:0}
     <p class="sub">O teste usa o sensor que gira a tela do seu celular. Nada é filmado e só o resultado sai do aparelho.</p>
     <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o movimento. Toque em <b>Permitir</b>.</p>
     <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
-    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 20 segundos. Um bip avisa o fim.</p>
+    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 20 segundos. Um bip avisa o começo; dois bips, o fim.</p>
   </section>
 
   <section class="screen" data-s="medir" data-p="80" hidden>
@@ -329,7 +330,8 @@ function bip(){ try { audio = audio || new (window.AudioContext || window.webkit
 function medir(){
   // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; os 20 s contam do 1º movimento.
   try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {}   // libera o bip dentro do toque
-  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Agora! O máximo que conseguir, sem parar'; $('relogio').textContent = '20 s';
+  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Valendo! O máximo que conseguir, sem parar'; $('relogio').textContent = '20 s';
+  bip(); document.body.classList.add('valendo'); setTimeout(() => document.body.classList.remove('valendo'), 600);   // sinal claro de início: bip + tela pisca
   amostras = []; picos = []; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
   fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 8 s, encerra
   clearInterval(relogioT); relogioT = setInterval(() => {
@@ -342,7 +344,7 @@ const ALFA = 'ACDEFGHJKMNPQRTUVWXY34679';
 let codigo = null;
 function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
 function encerrar(){
-  if (!gravando) return; gravando = false; clearTimeout(fim); clearInterval(relogioT); bip(); vibrar([60, 60, 60]);
+  if (!gravando) return; gravando = false; clearTimeout(fim); clearInterval(relogioT); bip(); setTimeout(bip, 420); vibrar([60, 60, 60]);
   if (picos.length < 2){   // recontagem com limiar menor, sobre todas as leituras
     picos = []; let ult = -1e9;
     for (let i = 1; i < amostras.length - 1; i++){ const p = amostras[i];
