@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Quantos anos têm os seus braços</title>
+<title>Qual é a sua idade muscular</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: o mesmo app do teste das pernas (livowa.com/idade): uma coluna, uma etapa por tela, ação principal fixa
@@ -38,7 +38,7 @@ p{margin:0}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 
 /* demonstração: antes/depois alternando (troca pelo vídeo do Flow quando existir) */
-.anim{position:relative;width:auto;height:min(44vh,440px);aspect-ratio:460/1100;margin-inline:auto;border-radius:22px;overflow:hidden;background:#f3f2ef;border:1px solid var(--line)}
+.anim{position:relative;width:auto;height:min(46vh,460px);aspect-ratio:540/1278;margin-inline:auto;border-radius:22px;overflow:hidden;background:#f3f2ef;border:1px solid var(--line)}
 .anim img,.anim video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .anim .depois{animation:troca 1.6s steps(1,end) infinite}
 @keyframes troca{0%{opacity:0}50%{opacity:1}}
@@ -77,6 +77,7 @@ p{margin:0}
 .num{font:800 clamp(6rem,38vw,9rem)/.9 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
 .num small{font-size:.35em;color:var(--muted);font-weight:700}
 .dica{font-size:1.2rem;color:var(--muted)}
+.relogio{font:600 1.6rem var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
 .ponto{display:flex;gap:10px;justify-content:center}
 .ponto i{width:14px;height:14px;border-radius:50%;background:var(--line);transition:background .15s}
 .ponto i.on{background:var(--accent)}
@@ -95,6 +96,10 @@ p{margin:0}
 .cadeado div{display:flex;align-items:center;gap:10px;background:var(--fg);color:#fff;border-radius:999px;padding:10px 16px;font:600 .92rem var(--body)}
 .cadeado svg{width:18px;height:18px;flex:none}
 .cod-ref{color:var(--muted);font-size:.88rem}
+.logo-anim{display:block;width:min(170px,44vw);height:auto;margin:20px auto 0;mix-blend-mode:darken}
+.loadrow{display:flex;justify-content:space-between;font:600 .82rem var(--body);letter-spacing:.02em;margin-top:14px}
+.loadbar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.loadbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s ease}
 .cod-ref b{font:600 .88rem var(--mono);color:var(--fg);letter-spacing:.04em;white-space:nowrap}
 
 .cta{position:fixed;left:0;right:0;bottom:0;padding:14px max(20px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
@@ -124,13 +129,13 @@ p{margin:0}
 
   <section class="screen" data-s="inicio" data-p="0">
     <div class="who" style="margin-top:20px"><span class="dot"></span><span><b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990</span></div>
-    <h1>Quantos anos têm os seus <em>braços</em>?</h1>
-    <p class="sub">Faça 5 roscas rápidas com o celular na mão e descubra a idade que a potência dos seus braços mostra.</p>
+    <h1>Qual é a sua idade <em>muscular</em>?</h1>
+    <p class="sub">Faça roscas rápidas por 20 segundos com o celular na mão e descubra a idade que a potência dos seus braços mostra.</p>
     <div class="anim" id="anim" aria-hidden="true">
       <video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video>
     </div>
     <div class="hero-card">
-      <div class="mini"><b>30 segundos</b><span>só o celular na mão</span></div>
+      <div class="mini"><b>20 segundos</b><span>só o celular na mão</span></div>
       <div class="mini"><b>Sem cadastro</b><span>só um código</span></div>
     </div>
   </section>
@@ -140,7 +145,7 @@ p{margin:0}
     <ol class="steps">
       <li><em>1</em><span>Fique em pé, com o cotovelo colado no corpo.</span></li>
       <li><em>2</em><span>Segure o celular firme na mão, com a tela para cima. Punho firme: quem dobra é o cotovelo.</span></li>
-      <li><em>3</em><span>Toque em Começar e já dobre o cotovelo o mais rápido que conseguir e volte. 5 vezes. O teste termina sozinho.</span></li>
+      <li><em>3</em><span>Toque em Começar e faça roscas o mais rápido que conseguir, sem parar, por 20 segundos. Um bip avisa o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
   </section>
@@ -169,22 +174,33 @@ p{margin:0}
     <p class="sub">O teste usa o sensor que gira a tela do seu celular. Nada é filmado e só o resultado sai do aparelho.</p>
     <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o movimento. Toque em <b>Permitir</b>.</p>
     <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
-    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça as 5 roscas, o mais rápido que conseguir. O teste termina sozinho.</p>
+    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça roscas o mais rápido que conseguir, sem parar. Um bip avisa quando acabarem os 20 segundos.</p>
   </section>
 
   <section class="screen" data-s="medir" data-p="80" hidden>
     <div class="palco">
       <div class="num" id="grande" aria-live="assertive">3</div>
       <p class="dica" id="dica">Prepare o braço</p>
-      <div class="ponto" id="pontos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <p class="relogio" id="relogio">20 s</p>
     </div>
+  </section>
+
+  <section class="screen c" data-s="analise" data-p="90" hidden>
+    <video class="logo-anim" autoplay muted playsinline aria-hidden="true">
+      <source src="/idade/img/logo/logo-caligrafia-pagina.webm" type="video/webm">
+      <source src="/idade/img/logo/logo-caligrafia-pagina.mp4" type="video/mp4">
+    </video>
+    <h2>Analisando o seu <em>movimento</em>…</h2>
+    <p class="sub" id="an-etapa">Contando as roscas</p>
+    <div class="loadrow"><span>ANALISANDO</span><span id="an-pct">0%</span></div>
+    <div class="loadbar"><i id="an-bar"></i></div>
   </section>
 
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Último passo</span>
     <h2>Seu resultado está <em>pronto</em></h2>
     <div class="trava" aria-label="Resultado bloqueado: o Dr. Lucca explica">
-      <span class="rot">A idade dos seus braços × a sua idade</span>
+      <span class="rot">A sua idade muscular × a sua idade</span>
       <div class="regua" aria-hidden="true"><div class="trilho"></div><i class="a"></i><i class="b"></i><span style="left:38%">00 anos</span><span style="left:66%">00 anos</span></div>
       <div class="cadeado"><div><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>O Dr. Lucca te explica</div></div>
     </div>
@@ -220,10 +236,10 @@ Analytics.track('view');
 const $ = id => document.getElementById(id);
 const WHATSAPP = '5562991774809';
 const ANTEBRACO = 0.30;                    // m, do cotovelo à mão: converte giro (°/s) em velocidade da mão
-const REPS = 5, LIMITE_MS = 15000, PICO = 120, ESPACO = 180;
+const DURACAO = 20000, ESPERA_MAX = 8000, PICO = 120, ESPACO = 160;   // protocolo dos estudos: 20 s de flexão rápida (Toosizadeh 2015/2017)
 const ua = navigator.userAgent;
 const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
-const order = ['inicio','como','dados','sensor','medir','resultado','erro'];
+const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro'];
 let cur = 'inicio', sexo = 'm', sensorOk = false;
 
 // ---------- rodinhas (iguais às do teste das pernas) ----------
@@ -249,14 +265,14 @@ function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
   cur = s; const el = document.querySelector(`[data-s="${s}"]`);
   Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s) });
-  $('top').hidden = s === 'inicio' || s === 'medir' || s === 'resultado';
+  $('top').hidden = s === 'inicio' || s === 'medir' || s === 'analise' || s === 'resultado';
   $('progress').style.width = (el.dataset.p || 0) + '%';
   const cta = $('cta'); cta.hidden = false; cta.disabled = false; $('cta-link').hidden = true; $('cta-dm').hidden = true;
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Continuar'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'sensor') cta.textContent = sensorOk ? 'Começar' : 'Liberar o sensor';
-  if (s === 'medir') cta.hidden = true;
+  if (s === 'medir' || s === 'analise') cta.hidden = true;
   if (s === 'resultado'){ cta.hidden = true; $('cta-link').hidden = false; $('cta-dm').hidden = false; ctaFim(); }
   if (s === 'erro') cta.textContent = 'Tentar de novo';
   scrollTo(0, 0);
@@ -272,22 +288,19 @@ $('cta').addEventListener('click', async () => {
 
 // ---------- sensor ----------
 let amostras = [], picos = [], gravando = false, t0 = 0, hz = [], ouvindo = false, fim = null;
+let ini = null, relogioT = null;
 function onMotion(ev){
   const now = performance.now(); hz.push(now); while (hz.length && now - hz[0] > 1000) hz.shift();
   if (!gravando) return;
   const r = ev.rotationRate || {}, a = ev.acceleration || {};
   const s = { t: now - t0, w: Math.hypot(r.alpha || 0, r.beta || 0, r.gamma || 0), acc: Math.hypot(a.x || 0, a.y || 0, a.z || 0) };
   amostras.push(s);
+  if (ini === null && s.w > 60){ ini = s.t; clearTimeout(fim); fim = setTimeout(encerrar, DURACAO); }   // 20 s contados do 1º movimento
   const n = amostras.length;
   if (n >= 3){   // pico de giro: cada rosca dá 2 (subida e descida)
     const p = amostras[n - 2];
     if (p.w > PICO && p.w >= amostras[n - 3].w && p.w >= s.w && (!picos.length || p.t - picos[picos.length - 1].t > ESPACO)){
-      picos.push(p);
-      if (picos.length % 2 === 0){
-        const rep = picos.length / 2; $('grande').innerHTML = rep + '<small>/' + REPS + '</small>';
-        document.querySelectorAll('#pontos i').forEach((x, i) => x.classList.toggle('on', i < rep));
-        if (rep >= REPS) encerrar();
-      }
+      picos.push(p); $('grande').textContent = Math.floor(picos.length / 2);
     }
   }
 }
@@ -312,12 +325,19 @@ async function liberar(){
   $('sensor-ok').hidden = false; $('sensor-prox').hidden = false; $('sensor-dica').hidden = true; show('sensor');
 }
 const vibrar = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
+let audio = null;
+function bip(){ try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); const o = audio.createOscillator(), g = audio.createGain();
+  o.frequency.value = 880; g.gain.setValueAtTime(.25, audio.currentTime); g.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .35);
+  o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + .36); } catch {} }
 function medir(){
-  // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; o tempo conta do 1º movimento.
-  show('medir'); $('grande').innerHTML = '0<small>/' + REPS + '</small>'; $('dica').textContent = 'Agora! 5 roscas, o mais rápido que conseguir';
-  document.querySelectorAll('#pontos i').forEach(x => x.classList.remove('on'));
-  amostras = []; picos = []; t0 = performance.now(); gravando = true; vibrar(60);
-  fim = setTimeout(encerrar, LIMITE_MS);
+  // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; os 20 s contam do 1º movimento.
+  try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {}   // libera o bip dentro do toque
+  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Agora! Roscas rápidas, sem parar'; $('relogio').textContent = '20 s';
+  amostras = []; picos = []; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
+  fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 8 s, encerra
+  clearInterval(relogioT); relogioT = setInterval(() => {
+    if (ini === null) return; const resta = Math.max(0, Math.ceil((DURACAO - (performance.now() - t0 - ini)) / 1000)); $('relogio').textContent = resta + ' s';
+  }, 200);
 }
 
 // ---------- código e resultado ----------
@@ -325,32 +345,46 @@ const ALFA = 'ACDEFGHJKMNPQRTUVWXY34679';
 let codigo = null;
 function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
 function encerrar(){
-  if (!gravando) return; gravando = false; clearTimeout(fim); vibrar([60, 60, 60]);
+  if (!gravando) return; gravando = false; clearTimeout(fim); clearInterval(relogioT); bip(); vibrar([60, 60, 60]);
   if (picos.length < 2){   // recontagem com limiar menor, sobre todas as leituras
     picos = []; let ult = -1e9;
     for (let i = 1; i < amostras.length - 1; i++){ const p = amostras[i];
       if (p.w > 80 && p.w >= amostras[i-1].w && p.w >= amostras[i+1].w && p.t - ult > ESPACO){ picos.push(p); ult = p.t; } }
   }
-  const reps = Math.min(REPS, Math.floor(picos.length / 2));
+  const reps = Math.floor(picos.length / 2);
+  const wmaxAll = amostras.length ? Math.round(Math.max(...amostras.map(s => s.w))) : 0;
   if (!reps){
-    const wmax = amostras.length ? Math.round(Math.max(...amostras.map(s => s.w))) : 0;
-    Analytics.track('answer', { stepId:'medir', valueText:'sem-rosca', props:{ nav:NAV, leituras:amostras.length, wmax, hz:hz.length } });
-    return erro('Não contei nenhuma rosca', `Segure o celular firme na mão, toque em Começar e já dobre o cotovelo rápido, 5 vezes. (${amostras.length} leituras, giro máximo ${wmax} °/s)`);
+    Analytics.track('answer', { stepId:'medir', valueText:'sem-rosca', props:{ nav:NAV, leituras:amostras.length, wmax:wmaxAll, hz:hz.length } });
+    return erro('Não contei nenhuma rosca', `Segure o celular firme na mão, toque em Começar e já faça roscas rápidas. (${amostras.length} leituras, giro máximo ${wmaxAll} °/s)`);
   }
-  // decisão do Lucca (28/10): o resultado NÃO aparece; vai no 'complete' com o código e ele explica na conversa
-  const vel = []; for (let i = 0; i < reps; i++) vel.push(picos[2 * i].w * Math.PI / 180 * ANTEBRACO);   // subida de cada rosca
-  const ini = (amostras.find(s => s.w > 60) || amostras[0]).t;
-  const vmax = Math.max(...vel), tempo = (picos[2 * reps - 1].t - ini) / 1000;
-  const queda = reps > 1 ? Math.max(0, Math.round((Math.max(vel[0], vel[1] || 0) - vel[reps - 1]) / Math.max(vel[0], vel[1] || 0) * 100)) : null;
-  const aMax = Math.max(...amostras.map(s => s.acc));
-  $('res-cod').textContent = meuCodigo();
-  Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
-    valueText:`pico ${vmax.toFixed(1)} m/s · ${reps} em ${tempo.toFixed(1)} s` + (queda !== null ? ` · queda ${queda}%` : ''),
-    props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, reps, vmax:+vmax.toFixed(2), vel:vel.map(v => +v.toFixed(2)),
-      t:+tempo.toFixed(1), queda, wmax:Math.round(Math.max(...picos.map(p => p.w))), amax:+aMax.toFixed(1), hz:hz.length, nav:NAV } });
-  setTimeout(() => show('resultado'), 500);
+  // medidas no formato dos estudos (Toosizadeh 2015/2017): velocidade, nº de flexões, queda (1ºs × últimos 5 s), variabilidade
+  const z = ini ?? 0, dur = Math.min(DURACAO, (picos[picos.length - 1].t - z)) / 1000;
+  const media = a => a.reduce((x, y) => x + y, 0) / (a.length || 1);
+  const amp = []; for (let i = 0; i + 1 < picos.length; i += 2) amp.push(picos[i].w + picos[i + 1].w);   // flexão + extensão (≈ "speed" do UEF)
+  const ini5 = picos.filter(p => p.t - z <= 5000).map(p => p.w), fim5 = picos.filter(p => p.t - z >= DURACAO - 5000).map(p => p.w);
+  const queda = ini5.length && fim5.length ? Math.round((1 - media(fim5) / media(ini5)) * 100) : null;
+  const dp = a => { const m = media(a); return Math.sqrt(media(a.map(x => (x - m) ** 2))); };
+  const variab = amp.length > 2 ? Math.round(dp(amp) / media(amp) * 100) : null;
+  const vmao = Math.max(...picos.filter((_, i) => i % 2 === 0).map(p => p.w)) * Math.PI / 180 * ANTEBRACO;
+  analisar(() => {
+    $('res-cod').textContent = meuCodigo();
+    Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
+      valueText:`${reps} roscas em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s` + (queda !== null ? ` · queda ${queda}%` : ''),
+      props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
+        queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'20s' } });
+    show('resultado');
+  });
 }
-function mensagem(){ return `Oi, Dr. Lucca! Fiz o teste dos braços. Meu código é ${meuCodigo()}. Quero entender meu resultado.`; }
+function analisar(fim){
+  show('analise'); const etapas = ['Contando as roscas', 'Medindo a velocidade de cada uma', 'Comparando com os estudos de envelhecimento', 'Preparando o seu resultado'];
+  let k = 0; const T = 4200, t1 = performance.now();
+  const iv = setInterval(() => {
+    const f = Math.min(1, (performance.now() - t1) / T); $('an-bar').style.width = Math.round(f * 100) + '%'; $('an-pct').textContent = Math.round(f * 100) + '%';
+    const e = Math.min(etapas.length - 1, Math.floor(f * etapas.length)); if (e !== k || f === 0){ k = e; $('an-etapa').textContent = etapas[e]; }
+    if (f >= 1){ clearInterval(iv); fim(); }
+  }, 100);
+}
+function mensagem(){ return `Oi, Dr. Lucca! Fiz o teste de idade muscular. Meu código é ${meuCodigo()}. Quero entender meu resultado.`; }
 function ctaFim(){
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp', props:{ canal:'whatsapp' } });
@@ -375,7 +409,7 @@ $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm'))
 $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:cur, valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 
 show('inicio');
-window.__braco = { show, dados };   // só para teste automatizado
+window.__braco = { show, dados, DURACAO };   // só para teste automatizado
 </script>
 </body>
 </html>
