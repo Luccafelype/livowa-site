@@ -287,22 +287,34 @@ $('cta').addEventListener('click', async () => {
 // ---------- sensor ----------
 let amostras = [], picos = [], gravando = false, t0 = 0, hz = [], ouvindo = false, fim = null;
 let ini = null, relogioT = null;
+// Contagem pela DIREÇÃO do giro (31/10): projeta a rotação no eixo principal do movimento (o do cotovelo) e conta cada
+// troca de sentido como meia rosca, com histerese. Não depende de intervalo entre picos: funciona rápido ou devagar.
+const LIMIAR = 90;                       // °/s: abaixo disso não conta troca de sentido (tremor, ajuste da mão)
+let eixo = [1, 0, 0], estado = 0, picoAtual = 0, tPico = 0, meias = [];
+function atualizaEixo(){
+  const win = amostras.slice(-120); if (win.length < 20) return;
+  const M = [[0,0,0],[0,0,0],[0,0,0]];
+  for (const a of win){ const v = a.v; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) M[r][c] += v[r] * v[c]; }
+  let e = eixo.slice();
+  for (let k = 0; k < 10; k++){ const n = [0,1,2].map(r => M[r][0]*e[0] + M[r][1]*e[1] + M[r][2]*e[2]); const m = Math.hypot(...n) || 1; e = n.map(x => x / m); }
+  if (e[0]*eixo[0] + e[1]*eixo[1] + e[2]*eixo[2] < 0) e = e.map(x => -x);   // mantém o mesmo sentido
+  eixo = e;
+}
+function fechaMeia(){ if (estado !== 0 && picoAtual > 0){ meias.push({ t: tPico, w: picoAtual, sentido: estado }); picos = meias; $('grande').textContent = Math.floor(meias.length / 2); } }
 function onMotion(ev){
   const now = performance.now(); hz.push(now); while (hz.length && now - hz[0] > 1000) hz.shift();
   if (!gravando) return;
   const r = ev.rotationRate || {}, a = ev.acceleration || {};
-  const s = { t: now - t0, w: Math.hypot(r.alpha || 0, r.beta || 0, r.gamma || 0), acc: Math.hypot(a.x || 0, a.y || 0, a.z || 0) };
+  const v = [r.alpha || 0, r.beta || 0, r.gamma || 0];
+  const s = { t: now - t0, v, w: Math.hypot(...v), acc: Math.hypot(a.x || 0, a.y || 0, a.z || 0) };
   amostras.push(s);
-  if (ini === null && s.w > 60){ ini = s.t; clearTimeout(fim); fim = setTimeout(encerrar, DURACAO); }   // 20 s contados do 1º movimento
-  const n = amostras.length;
-  if (n >= 3){   // pico de giro: cada rosca dá 2 (subida e descida)
-    const p = amostras[n - 2];
-    if (p.w > PICO && p.w >= amostras[n - 3].w && p.w >= s.w){
-      const ult = picos[picos.length - 1];
-      if (ult && p.t - ult.t <= ESPACO){ if (p.w > ult.w) picos[picos.length - 1] = p; }   // dois picos colados: fica o maior
-      else { picos.push(p); $('grande').textContent = Math.floor(picos.length / 2); }
-    }
-  }
+  if (ini === null && s.w > 150){ ini = s.t; clearTimeout(fim); fim = setTimeout(encerrar, DURACAO); }   // 20 s contados do 1º movimento
+  if (amostras.length % 10 === 0) atualizaEixo();
+  if (ini === null) return;   // só conta depois que o movimento de verdade começou
+  const p = v[0]*eixo[0] + v[1]*eixo[1] + v[2]*eixo[2];
+  const sentido = p > LIMIAR ? 1 : p < -LIMIAR ? -1 : 0;
+  if (sentido !== 0 && sentido !== estado){ fechaMeia(); estado = sentido; picoAtual = 0; }
+  if (sentido !== 0 && Math.abs(p) > picoAtual){ picoAtual = Math.abs(p); tPico = s.t; }
 }
 function erro(t, txt){ $('e-tit').textContent = t; $('e-txt').textContent = txt; show('erro'); }
 const SAFARI = 'Abra este link no Safari: toque nos três pontinhos, no canto da tela, e em "Abrir no navegador".';
@@ -334,7 +346,7 @@ function medir(){
   try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {}   // libera o bip dentro do toque
   show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Valendo! O máximo que conseguir, sem parar'; $('relogio').textContent = '20 s';
   bip(); document.body.classList.add('valendo'); setTimeout(() => document.body.classList.remove('valendo'), 600);   // sinal claro de início: bip + tela pisca
-  amostras = []; picos = []; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
+  amostras = []; picos = []; meias = []; estado = 0; picoAtual = 0; eixo = [1, 0, 0]; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
   fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 8 s, encerra
   clearInterval(relogioT); relogioT = setInterval(() => {
     if (ini === null) return; const resta = Math.max(0, Math.ceil((DURACAO - (performance.now() - t0 - ini)) / 1000)); $('relogio').textContent = resta + ' s';
@@ -347,11 +359,7 @@ let codigo = null;
 function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
 function encerrar(){
   if (!gravando) return; gravando = false; clearTimeout(fim); clearInterval(relogioT); bip(); setTimeout(bip, 420); vibrar([60, 60, 60]);
-  if (picos.length < 2){   // recontagem com limiar menor, sobre todas as leituras
-    picos = []; let ult = -1e9;
-    for (let i = 1; i < amostras.length - 1; i++){ const p = amostras[i];
-      if (p.w > 80 && p.w >= amostras[i-1].w && p.w >= amostras[i+1].w && p.t - ult > ESPACO){ picos.push(p); ult = p.t; } }
-  }
+  fechaMeia(); picos = meias;
   const reps = Math.floor(picos.length / 2);
   const wmaxAll = amostras.length ? Math.round(Math.max(...amostras.map(s => s.w))) : 0;
   if (!reps){
