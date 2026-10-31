@@ -306,7 +306,7 @@ export const CONFIG = {
   // Assinatura: (state, curto, op, codigo)
   // ============================================================
   whatsapp: {
-    number: '5562992836713',
+    number: '5562991774809',
     msgMedico: (s, curto, op, codigo) =>
       `Oi, Dr. Lucca! Fiz o quiz da longevidade. Meu código é ${codigo}.\n` +
       `Queria fazer isso com você acompanhando de perto.`,
