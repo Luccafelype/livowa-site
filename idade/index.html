@@ -360,7 +360,7 @@ Analytics.track('view');
 // Análise da pele: endereço da edge `analisar-pele`. VAZIO = o cartão da pele não aparece.
 // Depois do deploy: `${SUPA_URL}/functions/v1/analisar-pele`. Em localhost dá para testar com ?pele=<url do mock>.
 // Fase de teste (28/10): público não vê a pele; só livowa.com/idade/?pele=teste. Abrir = copiar PELE_TESTE para PELE_PRODUCAO.
-const PELE_PRODUCAO = '';
+const PELE_PRODUCAO = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/analisar-pele';   // aberta ao público em 31/10 (ok do Lucca)
 const PELE_TESTE = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/analisar-pele';
 const LOCAL = ['localhost','127.0.0.1'].includes(location.hostname), PELE_Q = new URLSearchParams(location.search).get('pele');
 const PELE_ENDPOINT = (LOCAL && PELE_Q && PELE_Q !== 'teste' && PELE_Q) || (PELE_Q === 'teste' && PELE_TESTE) || PELE_PRODUCAO;
@@ -1167,7 +1167,8 @@ if (FOTOS === 3){
 }
 
 // link da pele: livowa.com/idade/?pele=teste abre direto na pele (sem passar pelas pernas)
-if (PELE_Q === 'teste' && PELE_ENDPOINT) show('pele-inicio');
+// ?pele=1 (link público da face, usado pelo /comece) também abre direto na pele
+if ((PELE_Q === 'teste' || PELE_Q === '1') && PELE_ENDPOINT) show('pele-inicio');
 // teste da tela de resultado sem câmera (desenvolvimento)
 window.__testarResultado = (c, d, s) => { Object.assign(dados, d); if (s) sexo = s; voz = false; resultado(c); };
 // teste automático com vídeo (usado só no desenvolvimento)
