@@ -88,6 +88,7 @@ export const REGIOES = {
   bochecha:g => ({ c:{ x:g.R[50].x - .06*g.iod, y:g.R[50].y + .06*g.iod }, s:.66*g.iod }),
   zonaT:   g => ({ c:media([g.R[4], g.R[195], g.R[5]]), s:.62*g.iod }),
   contorno:g => ({ c:media([g.R[172], g.R[150], g.R[136]]), s:.70*g.iod }),
+  queixo:  g => ({ c:{ x:g.R[152].x, y:g.R[152].y - .30*g.iod }, s:.62*g.iod }),
 };
 export function recorteRegiao(al, g, nome, outW = 200){
   const { c, s } = REGIOES[nome](g);

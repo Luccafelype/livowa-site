@@ -15,11 +15,14 @@
 // vale a RESERVA abaixo (o estado de 31/10).
 //   ?canal=direct   usa a rota do Direct (as campanhas do OpenReply mandam assim); sem canal = bio
 //   ?camp=PERNAS    a campanha pode ter um teste fixo (definido na aba Portas) ou seguir as % do Direct
-//   ?f=<id>         força um teste (link mandado à mão)
+//   ?f=<id>         força um teste (link mandado à mão; ?f=pele2 abre a pele nova)
+// Pele A/B (01/11, pedido do Lucca): a fatia "pele" das Portas se divide entre a selfie de /idade (pele) e o funil novo
+// /pele2 (pele2), PELE2_PCT % para o pele2, sorteado uma vez por aparelho. Sem mexer no banco: a aba Portas continua
+// com um só número para a pele. Desligar = PELE2_PCT = 0. Comparar na aba Funil: botão Pele (teste-pele) × Pele 2.
 import * as Analytics from './funnel-analytics.js';
 const SUPA = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', CHAVE = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';
 const DESTINOS = {
-  longevidade: { pele:'/idade/?pele=1', quiz:'/longevidade/', teste:'/idade/', braco:'/braco/' },
+  longevidade: { pele:'/idade/?pele=1', quiz:'/longevidade/', teste:'/idade/', braco:'/braco/', pele2:'/pele2/' },
   emagrecimento: {},   // nenhuma isca de emagrecimento no ar ainda
 };
 const RESERVA = {
@@ -27,6 +30,7 @@ const RESERVA = {
   direct: { tema:'longevidade', pesos:{ pele:25, quiz:25, teste:25, braco:25 }, fixo:null },
 };
 const CAMP_RESERVA = { PERNAS:'teste', MUSCULO:'braco', PELE:'pele', IDADE:'quiz' };
+const PELE2_PCT = 50;
 const q = new URLSearchParams(location.search);
 const canal = q.get('canal') === 'direct' ? 'direct' : 'bio', camp = (q.get('camp') || '').toUpperCase() || null;
 
@@ -55,6 +59,13 @@ if (!id){
     id = lista.find(([, p]) => (r -= p) < 0)[0];
   }
   try { localStorage.setItem(chave, id); } catch {}
+}
+// a pele sorteada (ou fixa por campanha) vira pele ou pele2; ?f=pele / ?f=pele2 não sorteiam
+if (id === 'pele' && q.get('f') !== 'pele' && PELE2_PCT > 0){
+  let lado = null;
+  try { lado = localStorage.getItem('livowa_pele_ab'); } catch {}
+  if (lado !== 'pele' && lado !== 'pele2'){ lado = Math.random()*100 < PELE2_PCT ? 'pele2' : 'pele'; try { localStorage.setItem('livowa_pele_ab', lado); } catch {} }
+  id = lado;
 }
 const url = todos[id];
 Analytics.init({ enabled:true, funnelId:'link-bio', variant:id, supabaseUrl:SUPA, supabaseKey:CHAVE });

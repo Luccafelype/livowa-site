@@ -122,6 +122,47 @@
     "Flament 2013, Clin Cosmet Investig Dermatol (efeito do sol, 298 caucasianas) — https://doi.org/10.2147/CCID.S44686 (conferido (texto PMC))",
     "Mendelson 2012, Aesthetic Plast Surg (esqueleto facial) — https://doi.org/10.1007/s00266-012-9904-3 (conferido (resumo))"
    ]
+  },
+  "acne_ativa": {
+   "regiao": "Espinhas",
+   "recorte": "bochecha",
+   "tema": "acne",
+   "nome": "Espinhas e cravos",
+   "titulos": [
+    "Sem espinhas inflamadas",
+    "Poucas espinhas inflamadas",
+    "Várias espinhas inflamadas",
+    "Muitas espinhas inflamadas"
+   ],
+   "mecanismo": "A espinha nasce dentro do poro: o hormônio aumenta o óleo, a pele do poro descama errado e entope, e aí vêm a bactéria da pele e a inflamação.",
+   "mais": [
+    "Cravo é o poro entupido; quando inflama, vira a bolinha vermelha ou com ponta branca.",
+    "Num estudo com quase 2 mil pacientes, demorar para começar um tratamento que funcione foi um dos fatores ligados a mais cicatriz."
+   ],
+   "fontes": [
+    "Williams 2012, Lancet (revisão Acne vulgaris) — https://doi.org/10.1016/S0140-6736(11)60321-8 (conferido (resumo))",
+    "Tan, Kang e Leyden 2017, J Drugs Dermatol (prevalência e fatores de risco de cicatriz) — PMID 28300850 (conferido)"
+   ]
+  },
+  "cicatriz_acne": {
+   "regiao": "Marcas",
+   "recorte": "bochecha",
+   "tema": "acne",
+   "nome": "Marcas de acne",
+   "titulos": [
+    "Sem marcas de espinhas antigas",
+    "Poucas marcas de espinhas antigas",
+    "Várias marcas de espinhas antigas",
+    "Muitas marcas de espinhas antigas"
+   ],
+   "mecanismo": "Na maioria das vezes o colágeno da derme é destruído e a pele afunda (cicatriz atrófica).",
+   "mais": [
+    "Foto de frente costuma esconder o relevo, então pela tela não dá para saber a profundidade nem o tipo.",
+    "Essa marca parece ser de cor, e não de relevo. Esse tipo costuma clarear com os meses."
+   ],
+   "fontes": [
+    "Connolly 2017, revisão sobre cicatriz de acne — PMID 29344322 (conferido (texto, PMC))"
+   ]
   }
  },
  "classes": {
@@ -149,6 +190,11 @@
    "medida": "Poro",
    "evidencia": "Fraca: tratamento depende da causa; sem padrão estabelecido.",
    "fonte": "Lee 2016, Dermatol Surg (revisão poros) — https://doi.org/10.1097/DSS.0000000000000657 (conferido (resumo))"
+  },
+  "acne_topicos": {
+   "medida": "Tópicos combinados",
+   "evidencia": "na revisão, tópicos usados em combinação (peróxido de benzoíla, retinoide e antibiótico) costumam controlar a acne leve a moderada",
+   "fonte": "Williams 2012, Lancet (revisão Acne vulgaris) — https://doi.org/10.1016/S0140-6736(11)60321-8 (conferido (resumo))"
   },
   "sono_olheira": {
    "medida": "Dormir",

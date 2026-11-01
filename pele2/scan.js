@@ -1,56 +1,79 @@
-// SCAN da pele2: a pessoa olha reto e depois vira o rosto devagar para um lado e para o outro.
-// Anel de risquinhos em volta do oval: em cima e embaixo acendem quando sai a foto de frente; cada lado acende
-// conforme o rosto vira para ele e trava (verde) quando sai a foto boa daquele lado. Medidor de luz "☀ OK" no topo,
-// malha do rosto desenhada por cima. Uma foto por ângulo, tirada sozinha só com o rosto parado, nítido e com luz boa.
-import { criarFace, FaceLandmarker, medir, pose, geometria, caixa, OVAL, NITIDEZ_MIN } from './rosto.js';
+// SCAN da pele2 (v2, 01/11): primeiro de frente; depois UM LADO POR VEZ, com seta grande e voz curta:
+// "Vire para a sua esquerda ←" até a foto daquele lado sair, depois "Agora para a direita →".
+// Anel de risquinhos em volta do oval: em cima e embaixo acendem com a foto de frente; o lado pedido acende conforme o
+// rosto vira e trava (verde) quando a foto sai. Medidor de luz "☀ OK" no topo, malha e contorno do rosto por cima.
+// Alinhamento da malha (v2): tudo é medido no PRÓPRIO elemento de vídeo (clientWidth/Height), não em innerWidth/Height:
+// no Safari do iPhone a janela e o elemento fixo têm alturas diferentes (barras), e o "cover" mudava de escala.
+// O vídeo e o canvas são espelhados pelo CSS (scaleX(-1)); o desenho é feito em coordenadas da imagem crua.
+import { criarFace, FaceLandmarker, medir, pose, geometria, caixa, OVAL, NITIDEZ_MIN, subirTesta, olhoMedioY } from './rosto.js?v=2';
 
 const $ = id => document.getElementById(id);
 const N_TK = 72;                    // risquinhos do anel
 const FRENTE_TOL = .08;             // |yaw - 0,5| para contar como "de frente"
-const LADO_ALVO = .15;              // |yaw - 0,5| para a foto de lado (~25 a 30 graus)
-const LADO_MAX = .36;               // além disso a malha piora
-const SEGURA_FRENTE = 700, SEGURA_LADO = 450;   // ms parado antes de tirar a foto
+const LADO_ALVO = .12;              // |yaw - 0,5| para a foto de lado (v2: mais fácil que 0,15)
+const LADO_MAX = .38;
+const SEGURA_FRENTE = 650, SEGURA_LADO = 400;   // ms parado antes de tirar a foto
 const LUZ_MIN = 70, LUZ_MAX = 220;
+const ORDEM = ['frente', 'esquerda', 'direita'];
+// yaw > 0,5 = a pessoa virou para a ESQUERDA dela (ver pose() em rosto.js). Na tela espelhada isso aparece à esquerda.
+const SINAL = { esquerda:1, direita:-1 };
 
 let face = null, stream = null, rodando = false, raf = null, ts = 0, quadro = 0;
-let fotos = {}, segDesde = 0, narizAnt = null, ultM = null, lados0 = 0, cb = null, geo = null, ticks = [];
+let fotos = {}, segDesde = 0, narizAnt = null, ultM = null, ladoDesde = 0, cb = null, geo = null, ticks = [];
 
-const estagio = () => !fotos.frente ? 'frente' : (!fotos.esquerda || !fotos.direita) ? 'lados' : 'fim';
-function dica(txt, ok){ const d = $('scan-dica'); if (d.textContent !== txt) d.textContent = txt; d.classList.toggle('ok', !!ok); }
+const estagio = () => ORDEM.find(a => !fotos[a]) || 'fim';
+function dica(html, ok){ const d = $('scan-dica'); if (d.innerHTML !== html) d.innerHTML = html; d.classList.toggle('ok', !!ok); }
 
-// ---------- anel e oval (em px da tela) ----------
+// ---------- voz curta (só quando o passo muda; o botão 🔊 desliga) ----------
+let voz = true, ultFala = '', ultT = -1e9;
+export function liberarVoz(){ try { if ('speechSynthesis' in window){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(' ')); } } catch {} }   // iOS: dentro do toque
+function falar(txt, forcar){
+  if (!voz || !('speechSynthesis' in window) || !txt) return;
+  const t = performance.now();
+  if (!forcar && (txt === ultFala && t - ultT < 6000 || t - ultT < 2500)) return;
+  ultFala = txt; ultT = t;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'pt-BR'; u.rate = 1.05; speechSynthesis.speak(u); } catch {}
+}
+$('scan-voz').addEventListener('click', () => {
+  voz = !voz; const b = $('scan-voz'); b.textContent = voz ? '🔊' : '🔇'; b.setAttribute('aria-pressed', String(voz)); b.setAttribute('aria-label', voz ? 'Voz ligada' : 'Voz desligada');
+  if (!voz) try { speechSynthesis.cancel(); } catch {}
+});
+
+// ---------- anel e oval, no tamanho real do elemento de vídeo ----------
 function medirPalco(){
-  const W = innerWidth, H = innerHeight;
-  const rx = Math.min(W*.42, (H*.62)/2/1.32), ry = rx*1.32, cx = W/2, cy = Math.max(H*.45, 110 + ry);
+  const v = $('v-fg'), W = v.clientWidth || innerWidth, H = v.clientHeight || innerHeight;
+  const rx = Math.min(W*.40, (H*.58)/2/1.32), ry = rx*1.32, cx = W/2, cy = Math.max(H*.44, 104 + ry);
   geo = { W, H, rx, ry, cx, cy };
-  const fg = $('v-fg'); fg.style.setProperty('--rx', rx + 'px'); fg.style.setProperty('--ry', ry + 'px'); fg.style.setProperty('--cx', cx + 'px'); fg.style.setProperty('--cy', cy + 'px');
+  v.style.setProperty('--rx', rx + 'px'); v.style.setProperty('--ry', ry + 'px'); v.style.setProperty('--cx', cx + 'px'); v.style.setProperty('--cy', cy + 'px');
   const svg = $('anel'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   let h = ''; ticks = [];
   for (let k = 0; k < N_TK; k++){
     const a = k * 360 / N_TK, r = a*Math.PI/180, c = Math.cos(r), s = Math.sin(r);
-    const x1 = cx + (rx + 10)*c, y1 = cy - (ry + 10)*s, x2 = cx + (rx + 24)*c, y2 = cy - (ry + 24)*s;
-    h += `<line class="tk" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+    h += `<line class="tk" x1="${(cx + (rx + 10)*c).toFixed(1)}" y1="${(cy - (ry + 10)*s).toFixed(1)}" x2="${(cx + (rx + 24)*c).toFixed(1)}" y2="${(cy - (ry + 24)*s).toFixed(1)}"/>`;
     ticks.push(a);
   }
   svg.innerHTML = h;
-  const cv = $('malha'), dpr = Math.min(2, devicePixelRatio || 1); cv.width = W*dpr; cv.height = H*dpr;
+  const cv = $('malha'), dpr = Math.min(3, devicePixelRatio || 1); cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+  $('seta').style.top = Math.min(H - 150, cy + ry + 34) + 'px';   // embaixo do oval: não cobre o anel que está acendendo
 }
-// arco de cada parte do anel: a = ângulo do risquinho (0 = direita da tela, 90 = topo)
-const ARCO = { direita:a => Math.min(Math.abs(a), Math.abs(a - 360)) , esquerda:a => Math.abs(a - 180) };
-// esquerda/direita = da PESSOA. A tela é espelhada: o lado esquerdo dela aparece à esquerda da tela.
+// a = ângulo do risquinho (0 = direita da tela, 90 = topo). Lado esquerdo da PESSOA = esquerda da tela (espelho).
 function pintarAnel(prog){
   const els = $('anel').children, fr = fotos.frente, holdF = prog.frente || 0;
   for (let k = 0; k < els.length; k++){
     const a = ticks[k]; let cls = 'tk';
-    const topoBase = (a > 60 && a < 120) || (a > 240 && a < 300);
-    if (topoBase){ const d = Math.min(Math.abs(a - 90), Math.abs(a - 270)); if (fr) cls += ' ok'; else if (d <= 30*holdF) cls += ' on'; }
+    if ((a > 60 && a < 120) || (a > 240 && a < 300)){ const d = Math.min(Math.abs(a - 90), Math.abs(a - 270)); if (fr) cls += ' ok'; else if (d <= 30*holdF) cls += ' on'; }
     else {
-      const lado = (a <= 60 || a >= 300) ? 'direita' : 'esquerda', d = ARCO[lado](a);
+      const lado = (a <= 60 || a >= 300) ? 'direita' : 'esquerda', d = lado === 'direita' ? Math.min(Math.abs(a), Math.abs(a - 360)) : Math.abs(a - 180);
       if (fotos[lado]) cls += ' ok'; else if (d <= 60*(prog[lado] || 0)) cls += ' on';
     }
     if (els[k].getAttribute('class') !== cls) els[k].setAttribute('class', cls);
   }
   document.querySelectorAll('#angulos li').forEach(li => li.classList.toggle('feito', !!fotos[li.dataset.a]));
+}
+function seta(lado){
+  const s = $('seta');
+  if (!lado){ s.hidden = true; return; }
+  s.hidden = false; s.className = 'seta ' + (lado === 'esquerda' ? 'esq' : 'dir'); s.firstElementChild.textContent = lado === 'esquerda' ? '←' : '→';
 }
 function medidorLuz(lum){
   const el = $('luz'), t = $('luz-txt');
@@ -61,22 +84,31 @@ function medidorLuz(lum){
   $('luz-barra').style.width = Math.round(Math.max(8, Math.min(100, lum/170*100))) + '%';
 }
 
-// ---------- vídeo → tela (object-fit: cover; desenho sem espelhar, o canvas é espelhado no CSS) ----------
+// ---------- imagem crua → px do elemento (igual ao object-fit: cover centrado) ----------
 function mapa(v){
   const { W, H } = geo, vw = v.videoWidth, vh = v.videoHeight, k = Math.max(W/vw, H/vh);
-  return { X: p => p.x*vw*k + (W - vw*k)/2, Y: p => p.y*vh*k + (H - vh*k)/2 };
+  const ox = (W - vw*k)/2, oy = (H - vh*k)/2;
+  return { X: p => p.x*vw*k + ox, Y: p => p.y*vh*k + oy };
 }
+// teste: onde um ponto da imagem crua (0-1) aparece na TELA (já espelhado), para conferir a malha contra o vídeo
+window.__mapaTela = p => { const v = $('v-fg'), m = mapa(v), r = v.getBoundingClientRect(); return { x:r.left + geo.W - m.X(p), y:r.top + m.Y(p) }; };
 function desenharMalha(v, lm, bom){
   const cv = $('malha'), ctx = cv.getContext('2d'), dpr = cv.width / geo.W;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
   if (!lm) return;
   const { X, Y } = mapa(v);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.save(); ctx.beginPath(); ctx.ellipse(geo.cx, geo.cy, geo.rx, geo.ry, 0, 0, Math.PI*2); ctx.clip();
-  ctx.lineWidth = .7; ctx.strokeStyle = bom ? 'rgba(160,240,205,.55)' : 'rgba(255,255,255,.38)';
+  ctx.save(); ctx.beginPath(); ctx.ellipse(geo.cx, geo.cy, geo.rx + 2, geo.ry + 2, 0, 0, Math.PI*2); ctx.clip();
+  ctx.lineWidth = .6; ctx.strokeStyle = bom ? 'rgba(160,240,205,.5)' : 'rgba(255,255,255,.34)';
   ctx.beginPath();
   for (const { start, end } of FaceLandmarker.FACE_LANDMARKS_TESSELATION){ const a = lm[start], b = lm[end]; if (!a || !b) continue; ctx.moveTo(X(a), Y(a)); ctx.lineTo(X(b), Y(b)); }
-  ctx.stroke(); ctx.restore();
+  ctx.stroke();
+  // contorno do rosto (com a testa até perto do cabelo, como no recorte que vai para a análise)
+  const tela = OVAL.map(i => ({ x:X(lm[i]), y:Y(lm[i]) })), Q = lm.map(p => ({ y:Y(p) }));
+  ctx.lineWidth = 2; ctx.strokeStyle = bom ? 'rgba(82,201,156,.95)' : 'rgba(255,255,255,.7)';
+  ctx.beginPath(); subirTesta(tela, olhoMedioY(Q), Y(lm[10])).forEach((p, j) => j ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.stroke();
+  ctx.restore();
+  window.__malhaDiag = { nariz:{ x:+X(lm[1]).toFixed(1), y:+Y(lm[1]).toFixed(1) }, W:geo.W, H:geo.H, vw:v.videoWidth, vh:v.videoHeight };
 }
 
 // ---------- avaliação de cada quadro ----------
@@ -91,51 +123,57 @@ function avaliar(v, faces){
   if (quadro % 2 === 0 || !ultM) ultM = medir(v, lm, v.videoWidth, v.videoHeight);
   Object.assign(diag, { lum:Math.round(ultM.lum), nitidez:Math.round(ultM.nitidez), lado:+ultM.lado.toFixed(2) });
   const nz = lm[1], mexeu = narizAnt && Math.hypot(nz.x - narizAnt.x, nz.y - narizAnt.y) > .012; narizAnt = { x:nz.x, y:nz.y };
-  const base = { lm, p, mexeu };
-  const est = estagio();
-  if (larg < (est === 'frente' ? .58 : .45)) return { ...base, msg:'Chegue o celular mais perto' };
-  if (larg > 1.18) return { ...base, msg:'Afaste um pouco o celular' };
+  const base = { lm, p, mexeu }, est = estagio();
+  if (larg < (est === 'frente' ? .58 : .42)) return { ...base, msg:'Chegue o celular mais perto' };
+  if (larg > 1.2) return { ...base, msg:'Afaste um pouco o celular' };
   if (est === 'frente'){
     if (Math.abs(dx) > .28 || Math.abs(dy) > .26) return { ...base, msg:'Rosto no meio do oval' };
     if (Math.abs(p.yaw - .5) > FRENTE_TOL) return { ...base, msg:'Olhe reto para a câmera' };
     if (Math.abs(p.roll) > 15) return { ...base, msg:'Endireite a cabeça' };
     if (p.pitch < .25 || p.pitch > .62) return { ...base, msg:'Celular na altura do rosto' };
-  } else if (Math.abs(dy) > .32) return { ...base, msg:'Rosto no meio do oval' };
+  } else if (Math.abs(dy) > .34) return { ...base, msg:'Rosto no meio do oval' };
   if (ultM.lum < LUZ_MIN) return { ...base, msg:'Procure mais luz: de frente para uma janela ou lâmpada' };
   if (ultM.lum > LUZ_MAX) return { ...base, msg:'Luz forte demais: saia um pouco dela' };
   if (est === 'frente' && ultM.lado > .3) return { ...base, msg:'A luz está de lado: vire de frente para ela' };
   return { ...base, msg:null };
 }
-const nitido = (est) => ultM && ultM.nitidez >= (est === 'frente' ? NITIDEZ_MIN : NITIDEZ_MIN*.8);
+const nitido = est => ultM && ultM.nitidez >= (est === 'frente' ? NITIDEZ_MIN : NITIDEZ_MIN*.8);
+const PEDE = { esquerda:'Vire para a sua <b>esquerda ←</b>', direita:'Agora para a sua <b>direita →</b>' };
+const OUTRO = { esquerda:'Para o outro lado: a sua <b>esquerda ←</b>', direita:'Para o outro lado: a sua <b>direita →</b>' };
+const FALA = { frente:'Olhe reto para a câmera', esquerda:'Vire devagar para a sua esquerda', direita:'Agora para a sua direita', fim:'Pronto' };
 
 function loop(){
   if (!rodando) return;
   const v = $('v-fg');
   if (v.readyState >= 2 && v.videoWidth){
+    if (v.clientWidth !== geo.W || v.clientHeight !== geo.H) medirPalco();   // barra do Safari abriu/fechou
     ts = Math.max(ts + 1, performance.now()); quadro++;
     const faces = face.detectForVideo(v, ts).faceLandmarks || [];
     const r = avaliar(v, faces), est = estagio(), agora = performance.now(), prog = {};
     desenharMalha(v, faces.length === 1 ? faces[0] : null, !r.msg);
     medidorLuz(r.lm ? ultM?.lum : null);
     if (est === 'frente'){
+      seta(null);
       if (!r.msg && !r.mexeu && nitido(est)){
         segDesde ||= agora; prog.frente = Math.min(1, (agora - segDesde)/SEGURA_FRENTE);
         dica('Isso! Segure assim…', true);
         if (prog.frente >= 1){ capturar(v, 'frente', r.p); return; }
       } else { segDesde = 0; dica(r.msg || 'Segure parado'); }
-    } else if (est === 'lados'){
-      const dev = r.p ? r.p.yaw - .5 : 0, lado = dev > 0 ? 'esquerda' : 'direita', falta = !fotos.esquerda && !fotos.direita ? 'um lado' : 'o outro lado';
-      if (r.p && !fotos[lado]) prog[lado] = Math.max(0, Math.min(1, (Math.abs(dev) - .03)/(LADO_ALVO - .03)));
-      if (!r.p || r.msg){ segDesde = 0; dica(r.msg || 'Coloque o rosto dentro do oval'); }
-      else if (fotos[lado] || Math.abs(dev) < .04){ segDesde = 0; dica(`Agora vire o rosto devagar para ${falta}`); }
-      else if (Math.abs(dev) > LADO_MAX){ segDesde = 0; dica('Não precisa virar tanto: volte um pouquinho'); }
-      else if (prog[lado] < 1){ segDesde = 0; dica('Continue virando devagar…'); }
-      else if (r.mexeu || !nitido(est) || Math.abs(r.p.roll) > 20){ segDesde = 0; dica('Segure um instante parado'); }
+    } else if (est === 'esquerda' || est === 'direita'){
+      seta(est);
+      const dev = r.p ? (r.p.yaw - .5) * SINAL[est] : 0;   // > 0 = virando para o lado pedido
+      prog[est] = Math.max(0, Math.min(1, (dev - .02)/(LADO_ALVO - .02)));
+      if (!r.p){ segDesde = 0; dica(r.msg || 'Coloque o rosto dentro do oval'); }
+      else if (r.msg){ segDesde = 0; dica(r.msg); }
+      else if (dev < -.05){ segDesde = 0; dica(OUTRO[est]); falar(FALA[est]); }
+      else if (dev > LADO_MAX){ segDesde = 0; dica('Não precisa virar tanto: volte um pouquinho'); }
+      else if (prog[est] < 1){ segDesde = 0; dica(`${PEDE[est]}<small>devagar, até o anel acender</small>`); }
+      else if (r.mexeu || !nitido(est) || Math.abs(r.p.roll) > 20){ segDesde = 0; dica('Isso! Segure um instante', true); }
       else {
         segDesde ||= agora; dica('Isso! Segure…', true);
-        if (agora - segDesde >= SEGURA_LADO){ capturar(v, lado, r.p); return; }
+        if (agora - segDesde >= SEGURA_LADO){ capturar(v, est, r.p); return; }
       }
-      if (agora - lados0 > 22000) $('scan-pular').hidden = false;   // não conseguiu os lados: deixa seguir com o que tem
+      if (agora - ladoDesde > 25000 && fotos.frente) $('scan-pular').hidden = false;   // não conseguiu os lados: segue com o que tem
     }
     pintarAnel(prog);
   }
@@ -150,16 +188,16 @@ function capturar(v, angulo, p){
   const m = medir(cv, lm, cv.width, cv.height);
   fotos[angulo] = { angulo, src:cv, lm, g:geometria(lm, cv.width, cv.height), pose:p, lum:Math.round(m.lum), nitidez:Math.round(m.nitidez), origem:'camera' };
   try { navigator.vibrate?.(40); } catch {}
-  segDesde = 0; narizAnt = null;
-  if (angulo === 'frente') lados0 = performance.now();
+  segDesde = 0; narizAnt = null; ladoDesde = performance.now();
   pintarAnel({});
-  if (estagio() === 'fim'){ terminar(); return; }
-  dica(angulo === 'frente' ? 'Agora vire o rosto devagar para um lado' : 'Agora para o outro lado', true);
+  const prox = estagio();
+  if (prox === 'fim'){ terminar(); return; }
+  seta(prox); dica(PEDE[prox], true); falar(FALA[prox], true);
   raf = requestAnimationFrame(loop);
 }
 function terminar(){
-  rodando = false; cancelAnimationFrame(raf);
-  dica('Pronto!', true); pintarAnel({});
+  rodando = false; cancelAnimationFrame(raf); seta(null);
+  dica('Pronto!', true); pintarAnel({}); falar(FALA.fim, true);
   const f = fotos; setTimeout(() => { parar(); cb?.onPronto?.(f); }, 650);
 }
 
@@ -170,13 +208,13 @@ export function parar(){
 }
 export function seguirComOQueTem(){ if (fotos.frente) terminar(); }
 export async function abrir(callbacks){
-  cb = callbacks; fotos = {}; segDesde = 0; narizAnt = null; ultM = null; quadro = 0; lados0 = performance.now();
-  $('scan-pular').hidden = true; medirPalco(); pintarAnel({}); medidorLuz(null); dica('Abrindo a câmera…');
+  cb = callbacks; fotos = {}; segDesde = 0; narizAnt = null; ultM = null; quadro = 0; ladoDesde = performance.now();
+  $('scan-pular').hidden = true; seta(null); medirPalco(); pintarAnel({}); medidorLuz(null); dica('Abrindo a câmera…');
   try {
     face ??= await criarFace('VIDEO');
     stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:1280 }, height:{ ideal:960 } }, audio:false });
     for (const id of ['v-bg','v-fg']){ const v = $(id); v.srcObject = stream; await v.play(); }
-    dica('Olhe reto para a câmera'); rodando = true; loop();
+    medirPalco(); dica('Olhe reto para a câmera'); falar(FALA.frente, true); rodando = true; loop();
   } catch (e) {
     console.error(e); parar();
     dica(e?.name === 'NotAllowedError' ? 'Libere a câmera nas configurações, ou escolha uma foto' : 'Não consegui abrir a câmera');
