@@ -1084,6 +1084,7 @@ $('pele-arquivo').addEventListener('change', async e => {
       const lm = faces[0], b = caixa(OVAL.map(i => ({ x:lm[i].x*cv.width, y:lm[i].y*cv.height }))), p = pose(lm), m = medir(cv, lm, cv.width, cv.height);
       if (b.x1 - b.x0 < 160) prob = 'O rosto ficou pequeno nessa foto. Escolha uma mais de perto.';
       else if (Math.abs(p.yaw - .5) > .14 || Math.abs(p.roll) > 15) prob = 'Nessa foto o rosto está de lado. Escolha uma olhando reto para a câmera.';
+      else if (p.pitch < .22 || p.pitch > .66) prob = 'Nessa foto o celular está abaixo ou acima do rosto, e isso muda o contorno. Escolha uma com a câmera na altura dos olhos.';   // 01/11: câmera abaixo do queixo cria papada
       else if (m.lum < 60) prob = 'Essa foto está escura. Escolha uma com mais luz no rosto.';
       else if (m.nitidez < NITIDEZ_MIN*.6) prob = 'Essa foto está tremida. Escolha uma mais nítida.';
       else { capturas = [{ src:cv, g:geometria(lm, cv.width, cv.height), origem:'galeria', tipo:'repouso' }]; show('pele-envio'); atualizarEnvio(); return; }
