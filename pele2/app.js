@@ -22,7 +22,7 @@ const PELE_PRODUCAO = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/ana
 const PELE_ENDPOINT = (LOCAL && Q.get('pele')) || PELE_PRODUCAO;
 // As fotos de lado só vão quando a edge souber o que são (proposta em paginas/isca-idade/edge-analisar-pele/proposta-pele2/).
 // A edge publicada hoje trata 3 fotos como parado/sorriso/sobrancelhas: mandar as laterais lá daria leitura errada.
-const LATERAIS_NA_EDGE = false;
+const LATERAIS_NA_EDGE = true;
 const WHATSAPP = '5562991774809';
 
 // ---------- dados ----------
