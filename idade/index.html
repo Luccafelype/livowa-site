@@ -397,6 +397,7 @@ let sexo = 'm';
 
 // ---------- seletores de rolagem ----------
 const dados = {};
+let dadosOk = false;   // 01/11: só vale a idade que a pessoa confirmou na tela de dados (a roda começa em 40)
 function wheel(id, from, to, start){
   const w = $(id), items = [], H = 44, key = id.slice(2);
   for (let v = from; v <= to; v++){ const d = document.createElement('div'); d.textContent = v; d.setAttribute('role','option'); w.appendChild(d); items.push(d); }
@@ -476,7 +477,7 @@ $('back').addEventListener('click', () => {
 $('cta').addEventListener('click', () => {
   if (cur === 'inicio') show('como');
   else if (cur === 'como') show('dados');
-  else if (cur === 'dados'){ falar(' ', true); show('camera'); abrirCamera(); }
+  else if (cur === 'dados'){ dadosOk = true; falar(' ', true); show('camera'); abrirCamera(); }
   else if (cur === 'pele-inicio'){ if (!$('pele-ok').checked) return apontarAceite(); falar(' ', true); show('pele-camera'); abrirCameraPele(); }
   else if (cur === 'pele-envio') enviarPele();
   else if (cur === 'pele-erro'){ if (peleErroRede && capturas.length) enviarPele(); else { show('pele-camera'); abrirCameraPele(); } }
@@ -1175,7 +1176,7 @@ async function enviarPele(){
 const esc = t => String(t).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 function resultadoPele(j){
   // decisão do Lucca (28/10): o resultado NÃO aparece; vai no 'complete' com o mesmo código das pernas e ele responde
-  const { min, max } = j.faixa, idade = dados.idade ?? null;
+  const { min, max } = j.faixa, idade = dadosOk ? (dados.idade ?? null) : null;
   peleRes = { min, max };
   $('pr-tit').innerHTML = (ultimoEnvio?.n || 1) > 1 ? 'Suas fotos estão <em>em análise</em>' : 'Sua foto está <em>em análise</em>';
   $('pr-cod').textContent = meuCodigo();
