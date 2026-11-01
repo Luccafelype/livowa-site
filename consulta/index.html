@@ -10,13 +10,14 @@
 <title>Caixa de leads</title>
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
-   Duas abas: Caixa (os leads que chegaram, com status em 1 toque) e Código (buscar um LV-XXXX). Desde 31/10. */
+   Três abas: Caixa (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX) e Portas (tema e % de
+   cada teste na bio e no Direct, desde 01/11). */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
 main{max-width:560px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 16px 48px}
 h1{font-size:1.4rem;margin:0 0 12px}
-.abas{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:4px;margin-bottom:14px}
+.abas{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:4px;margin-bottom:14px}
 .abas button{background:none;color:var(--m);border:0;border-radius:10px;padding:11px;font:600 1rem system-ui}
 .abas button[aria-selected="true"]{background:var(--a);color:#fff}
 form{display:flex;gap:8px;margin-bottom:18px}
@@ -73,6 +74,26 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .mais{width:100%;background:var(--s);color:var(--a);border:1.5px solid var(--l)}
 .ig{font-weight:700;font-size:1.15rem;color:var(--a);overflow-wrap:anywhere}
 .sub-ig{font-size:.8rem;color:var(--m);margin-top:-4px}
+/* Portas (01/11) */
+.porta{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;flex-direction:column;gap:12px}
+.porta h2{font-size:1.1rem;margin:0}
+.porta .sub{color:var(--m);font-size:.88rem;margin:0}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg);border-radius:12px;padding:4px}
+.seg button{background:none;color:var(--m);padding:9px;font-size:.95rem;border-radius:9px}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.peso{display:grid;grid-template-columns:minmax(0,1fr) 120px 52px;gap:10px;align-items:center}
+.peso label{font-weight:600;font-size:.95rem}
+.peso input[type=range]{width:100%;accent-color:var(--a)}
+.peso output{font:700 1rem ui-monospace,monospace;text-align:right;font-variant-numeric:tabular-nums}
+.soma{font:600 .9rem system-ui;padding:8px 10px;border-radius:10px;background:var(--a2);color:var(--a)}
+.soma.ruim{background:var(--w2);color:var(--w)}
+.linha-btn{display:flex;gap:8px;flex-wrap:wrap}
+.linha-btn .sec{background:var(--bg);color:var(--fg);border:1.5px solid var(--l)}
+.camp{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px;align-items:center;font-size:.95rem}
+.camp select{font:inherit;padding:8px;border:1.5px solid var(--l);border-radius:10px;background:var(--s);color:var(--fg)}
+.porta button:disabled{opacity:.4;cursor:not-allowed}
+.st-porta{font-size:.85rem;color:var(--m);min-height:1.2em}
+@media (max-width:420px){.peso{grid-template-columns:minmax(0,1fr) 90px 46px}.camp{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -81,6 +102,7 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
   <div class="abas" role="tablist">
     <button role="tab" id="t-caixa" aria-selected="true">Caixa</button>
     <button role="tab" id="t-cod" aria-selected="false">Buscar código</button>
+    <button role="tab" id="t-portas" aria-selected="false">Portas</button>
   </div>
 
   <section id="caixa">
@@ -91,6 +113,11 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
       <button type="button" data-f="testes" aria-pressed="false">Mostrar testes</button>
     </div>
     <div id="lista"><p class="aviso">Carregando…</p></div>
+  </section>
+
+  <section id="portas" hidden>
+    <p class="sub" style="color:var(--m);margin:0 0 12px">Para onde vai quem toca no link da bio e quem recebe o teste no Direct. Vale na hora para quem chegar depois; quem já entrou continua no teste que pegou.</p>
+    <div id="portas-corpo"><p class="aviso">Carregando…</p></div>
   </section>
 
   <section id="busca" hidden>
@@ -204,14 +231,78 @@ document.addEventListener('input', ev => {
 
 // ---------- Abas ----------
 function aba(qual){
-  $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod');
-  $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod';
-  $('tit').textContent = qual === 'caixa' ? 'Caixa de leads' : 'Consulta por código';
+  $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod'); $('t-portas').setAttribute('aria-selected', qual === 'portas');
+  $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod'; $('portas').hidden = qual !== 'portas';
+  $('tit').textContent = qual === 'caixa' ? 'Caixa de leads' : qual === 'portas' ? 'Portas' : 'Consulta por código';
+  if (qual === 'portas') carregaPortas();
   if (qual === 'caixa'){ $('voltar').hidden = true; desenhaCaixa(); }
   window.scrollTo(0, 0);
 }
 $('t-caixa').onclick = () => aba('caixa');
 $('t-cod').onclick = () => aba('cod');
+$('t-portas').onclick = () => aba('portas');
+
+// ---------- Portas (01/11) ----------
+const NOME_TESTE = { pele:'Pele do rosto', quiz:'Quiz da longevidade', teste:'Pernas', braco:'Idade muscular (braço)' };
+const NOME_CAMP = { PERNAS:'PERNAS', MUSCULO:'MÚSCULO', PELE:'PELE', IDADE:'IDADE' };
+const NOME_TEMA = { longevidade:'Longevidade', emagrecimento:'Emagrecimento' };
+let PORTAS = null;
+async function carregaPortas(){
+  const box = $('portas-corpo');
+  try {
+    const r = await post({ acao:'rotas' }); const j = await r.json();
+    if (!j.ok) throw new Error(j.erro || r.status);
+    PORTAS = j; desenhaPortas();
+  } catch (e) { box.innerHTML = `<p class="aviso">Não consegui carregar as portas (${esc(e.message)}). Se é a primeira vez, falta rodar o script de ligar as portas.</p>`; }
+}
+function desenhaPortas(){
+  const { rotas, destinos, campanhas } = PORTAS;
+  $('portas-corpo').innerHTML = ['bio', 'direct'].map(canal => {
+    const r = rotas[canal] || { tema:'longevidade', pesos:{}, campanhas:{} };
+    return `<div class="porta" data-canal="${canal}">
+      <h2>${canal === 'bio' ? 'Link da bio' : 'Envio no Direct'}</h2>
+      <p class="sub">${canal === 'bio' ? 'livowa.com/comece, para quem visita o perfil.' : 'O link que as campanhas mandam no Direct. Cada campanha pode ter o teste dela ou seguir estas %.'}</p>
+      <div class="seg" role="group" aria-label="Tema">${Object.keys(destinos).map(t => `<button type="button" data-tema="${t}" aria-pressed="${r.tema === t}">${NOME_TEMA[t] || t}</button>`).join('')}</div>
+      <div class="pesos"></div>
+      ${canal === 'direct' ? `<div style="display:flex;flex-direction:column;gap:8px"><b style="font-size:.95rem">Cada campanha manda</b>${campanhas.map(c => `<div class="camp"><span>Palavra ${NOME_CAMP[c] || c}</span><select data-camp="${c}"><option value="pct">Seguir as %</option>${destinos.longevidade.map(id => `<option value="${id}">${NOME_TESTE[id]}</option>`).join('')}</select></div>`).join('')}</div>` : ''}
+      <div class="linha-btn"><button type="button" class="salvar">Salvar</button><button type="button" class="sec igual">Dividir igual</button></div>
+      <div class="st-porta"></div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.porta').forEach(el => {
+    const canal = el.dataset.canal, r = rotas[canal] || { tema:'longevidade', pesos:{}, campanhas:{} };
+    el._tema = r.tema; el._pesos = JSON.parse(JSON.stringify(r.pesos || {}));
+    el.querySelectorAll('select[data-camp]').forEach(s => { s.value = (r.campanhas || {})[s.dataset.camp] || 'pct'; });
+    desenhaPesos(el);
+    el.querySelectorAll('.seg button').forEach(b => b.onclick = () => { el._tema = b.dataset.tema; el.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x === b)); desenhaPesos(el); });
+    el.querySelector('.igual').onclick = () => { const ids = PORTAS.destinos[el._tema]; if (!ids.length) return; const base = Math.floor(100 / ids.length); el._pesos[el._tema] = Object.fromEntries(ids.map((id, i) => [id, base + (i < 100 - base * ids.length ? 1 : 0)])); desenhaPesos(el); };
+    el.querySelector('.salvar').onclick = () => salvarPorta(el);
+  });
+}
+function desenhaPesos(el){
+  const ids = PORTAS.destinos[el._tema] || [], p = el._pesos[el._tema] = el._pesos[el._tema] || {};
+  const box = el.querySelector('.pesos');
+  if (!ids.length){ box.innerHTML = `<p class="soma ruim">Ainda não há teste de ${esc((NOME_TEMA[el._tema] || el._tema).toLowerCase())} no ar. Enquanto não houver, este tema não pode ser salvo e o link segue o que está salvo hoje.</p>`; el.querySelector('.salvar').disabled = true; return; }
+  box.innerHTML = ids.map(id => `<div class="peso"><label for="pz-${el.dataset.canal}-${id}">${NOME_TESTE[id] || id}</label><input type="range" id="pz-${el.dataset.canal}-${id}" min="0" max="100" step="5" value="${p[id] || 0}" data-id="${id}"><output>${p[id] || 0}%</output></div>`).join('') + `<p class="soma"></p>`;
+  box.querySelectorAll('input[type=range]').forEach(i => i.oninput = () => { p[i.dataset.id] = +i.value; i.nextElementSibling.textContent = i.value + '%'; somaPesos(el); });
+  somaPesos(el);
+}
+function somaPesos(el){
+  const p = el._pesos[el._tema] || {}, soma = Object.values(p).reduce((a, b) => a + (+b || 0), 0), s = el.querySelector('.soma');
+  s.textContent = soma === 100 ? 'Total 100%. Pronto para salvar.' : `Total ${soma}%: ajuste até dar 100%.`;
+  s.classList.toggle('ruim', soma !== 100); el.querySelector('.salvar').disabled = soma !== 100;
+}
+async function salvarPorta(el){
+  const st = el.querySelector('.st-porta'), canal = el.dataset.canal; st.textContent = 'Salvando…';
+  const corpo = { acao:'rota_salvar', canal, tema: el._tema, pesos: el._pesos };
+  if (canal === 'direct') corpo.campanhas = Object.fromEntries([...el.querySelectorAll('select[data-camp]')].map(s => [s.dataset.camp, s.value]));
+  try {
+    const r = await post(corpo), j = await r.json();
+    if (!j.ok) throw new Error(j.erro === 'soma' ? 'o total precisa dar 100%' : (j.erro || r.status));
+    PORTAS.rotas = j.rotas;
+    st.textContent = 'Salvo às ' + new Date().toLocaleTimeString('pt-BR', { timeZone:TZ, hour:'2-digit', minute:'2-digit' }) + '. Já vale para quem tocar no link.';
+  } catch (e) { st.textContent = 'Não salvou: ' + e.message + '. Tente de novo.'; }
+}
 $('voltar').onclick = () => aba('caixa');
 function abrirCodigo(c, daCaixa){ aba('cod'); $('voltar').hidden = !daCaixa; $('c').value = c; ver(c); }
 function desenhaGestao(c){

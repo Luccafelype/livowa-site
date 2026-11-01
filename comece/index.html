@@ -10,35 +10,60 @@
 <body>
 <noscript><a href="/idade/">Continuar</a></noscript>
 <script type="module">
-// Link da bio: um endereço, vários funis. Troque TEMA quando outro vídeo viralizar; o peso divide o tráfego.
-// ?f=<id> força um braço (ex.: link mandado na DM da palavra-chave).
-const TEMA = 'longevidade';
-const BRACOS = {
-  longevidade: [
-    { id:'pele',  url:'/idade/?pele=1', peso:50 },   // 31/10: face no lugar das pernas (pernas "chato", Lucca)
-    { id:'teste', url:'/idade/',        peso:0 },    // pernas: só por ?f=teste ou pela campanha PERNAS
-    { id:'quiz',  url:'/longevidade/',  peso:50 },
-  ],
-};
+// Link da bio e do Direct: um endereço, vários testes. Desde 01/11 o Lucca escolhe o tema e a % de cada teste na aba
+// Portas da consulta privada (tabela public.rotas, lida pela RPC pública rota_ler). Se o banco não responder em 1,5 s,
+// vale a RESERVA abaixo (o estado de 31/10).
+//   ?canal=direct   usa a rota do Direct (as campanhas do OpenReply mandam assim); sem canal = bio
+//   ?camp=PERNAS    a campanha pode ter um teste fixo (definido na aba Portas) ou seguir as % do Direct
+//   ?f=<id>         força um teste (link mandado à mão)
 import * as Analytics from './funnel-analytics.js';
-const q = new URLSearchParams(location.search), lista = BRACOS[TEMA], chave = 'livowa_braco_' + TEMA;
-let id = q.get('f');
-if (!lista.some(b => b.id === id)){
-  try { id = localStorage.getItem(chave); } catch {}
-  if (!lista.some(b => b.id === id && b.peso > 0)){   // braço com peso 0 guardado de antes não prende mais a pessoa (31/10: Lucca caía sempre nas pernas)
-    let r = Math.random() * lista.reduce((a,b) => a + b.peso, 0);
-    id = lista.find(b => (r -= b.peso) < 0).id;
-  }
+const SUPA = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', CHAVE = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';
+const DESTINOS = {
+  longevidade: { pele:'/idade/?pele=1', quiz:'/longevidade/', teste:'/idade/', braco:'/braco/' },
+  emagrecimento: {},   // nenhuma isca de emagrecimento no ar ainda
+};
+const RESERVA = {
+  bio:    { tema:'longevidade', pesos:{ pele:50, quiz:50, teste:0, braco:0 }, fixo:null },
+  direct: { tema:'longevidade', pesos:{ pele:25, quiz:25, teste:25, braco:25 }, fixo:null },
+};
+const CAMP_RESERVA = { PERNAS:'teste', MUSCULO:'braco', PELE:'pele', IDADE:'quiz' };
+const q = new URLSearchParams(location.search);
+const canal = q.get('canal') === 'direct' ? 'direct' : 'bio', camp = (q.get('camp') || '').toUpperCase() || null;
+
+async function lerRota(){
+  try {
+    const r = await fetch(SUPA + '/rest/v1/rpc/rota_ler', { method:'POST', signal: AbortSignal.timeout(1500),
+      headers:{ apikey: CHAVE, 'Content-Type':'application/json' }, body: JSON.stringify({ p_canal: canal, p_camp: camp }) });
+    if (!r.ok) throw 0;
+    const j = await r.json();
+    if (!j || !DESTINOS[j.tema]) throw 0;
+    return { tema: j.tema, pesos: j.pesos || {}, fixo: j.fixo || null, fonte:'banco' };
+  } catch { const x = RESERVA[canal]; return { ...x, fixo: camp ? (CAMP_RESERVA[camp] || null) : null, fonte:'reserva' }; }
 }
-try { localStorage.setItem(chave, id); } catch {}
-const braco = lista.find(b => b.id === id);
-Analytics.init({ enabled:true, funnelId:'link-bio', variant:id,
-  supabaseUrl:'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', supabaseKey:'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K' });
-Analytics.track('view', { stepId:'roteador', valueText:TEMA });
-q.delete('f'); q.set('v', id);   // sem ?sid: cada funil abre a própria sessão (a tabela de sessões é por sid)
-if (!q.has('utm_source')) q.set('utm_source', 'ig_bio');
+const rota = await lerRota();
+let tema = rota.tema, cat = DESTINOS[tema];
+let lista = Object.entries(rota.pesos).filter(([id, p]) => cat[id] && p > 0);
+if (!lista.length){ tema = 'longevidade'; cat = DESTINOS.longevidade; lista = Object.entries(RESERVA.bio.pesos).filter(([, p]) => p > 0); }   // tema sem isca: não deixa a pessoa sem destino
+const todos = { ...DESTINOS.longevidade, ...DESTINOS.emagrecimento };
+const chave = 'livowa_braco_' + canal + '_' + tema;
+let id = q.get('f');
+if (!todos[id]) id = rota.fixo && todos[rota.fixo] ? rota.fixo : null;
+if (!id){
+  try { id = localStorage.getItem(chave); } catch {}
+  if (!lista.some(([b]) => b === id)){   // teste que saiu da divisão não prende mais a pessoa
+    let r = Math.random() * lista.reduce((a, [, p]) => a + p, 0);
+    id = lista.find(([, p]) => (r -= p) < 0)[0];
+  }
+  try { localStorage.setItem(chave, id); } catch {}
+}
+const url = todos[id];
+Analytics.init({ enabled:true, funnelId:'link-bio', variant:id, supabaseUrl:SUPA, supabaseKey:CHAVE });
+Analytics.track('view', { stepId:'roteador', valueText:`${canal}:${tema}${camp ? ':' + camp : ''}:${rota.fonte}` });
+['f', 'canal', 'camp'].forEach(x => q.delete(x)); q.set('v', id);   // sem ?sid: cada funil abre a própria sessão
+if (!q.has('utm_source')) q.set('utm_source', canal === 'direct' ? 'ig_direct' : 'ig_bio');
+if (camp && !q.has('utm_campaign')) q.set('utm_campaign', camp.toLowerCase());
 // o sid da bio fica na aba; apagar para o funil abrir sessão nova e não cair na linha 'link-bio' do resumo
-setTimeout(() => { try { sessionStorage.removeItem('livowa_sid'); } catch {} location.replace(braco.url + (braco.url.includes('?') ? '&' : '?') + q); }, 150);   // dá tempo do evento sair (keepalive)
+setTimeout(() => { try { sessionStorage.removeItem('livowa_sid'); } catch {} location.replace(url + (url.includes('?') ? '&' : '?') + q); }, 150);   // dá tempo do evento sair (keepalive)
 </script>
 </body>
 </html>
