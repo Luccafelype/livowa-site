@@ -10,16 +10,16 @@
 <title>Caixa de leads</title>
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
-   Três abas: Caixa (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX) e Portas (tema e % de
-   cada teste na bio e no Direct, desde 01/11). Na tela do código, cada braço/pernas/pele traz o bloco "Responder"
+   Quatro abas: Caixa (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX), Portas (tema e % de
+   cada teste na bio e no Direct, desde 01/11) e Funil (onde as pessoas caem em cada teste, por etapa, desde 01/11). Na tela do código, cada braço/pernas/pele traz o bloco "Responder"
    (kits.js: faixa, mensagens prontas, atalhos e o modo react da pele), que roda só aqui e não manda nada a servidor. */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
 main{max-width:560px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 16px 48px}
 h1{font-size:1.4rem;margin:0 0 12px}
-.abas{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:4px;margin-bottom:14px}
-.abas button{background:none;color:var(--m);border:0;border-radius:10px;padding:11px;font:600 1rem system-ui}
+.abas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:4px;margin-bottom:14px}
+.abas button{background:none;color:var(--m);border:0;border-radius:10px;padding:11px 2px;font:600 1rem system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .abas button[aria-selected="true"]{background:var(--a);color:#fff}
 form{display:flex;gap:8px;margin-bottom:18px}
 input{flex:1;min-width:0;font:700 1.2rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;padding:12px;border:1.5px solid var(--l);border-radius:12px;background:var(--s);color:var(--fg)}
@@ -95,6 +95,37 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .porta button:disabled{opacity:.4;cursor:not-allowed}
 .st-porta{font-size:.85rem;color:var(--m);min-height:1.2em}
 @media (max-width:420px){.peso{grid-template-columns:minmax(0,1fr) 90px 46px}.camp{grid-template-columns:1fr}}
+/* Funil (01/11) */
+.fn-ctl{display:flex;flex-direction:column;gap:10px}
+.fn-funis{display:flex;flex-wrap:wrap;gap:6px}
+.fn-funis button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:8px 12px;font-weight:600;font-size:.9rem;border-radius:999px}
+.fn-funis button[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:#fff}
+.fn-funis button small{font-weight:500;opacity:.8}
+.fn-sel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.fn-sel label{display:flex;flex-direction:column;gap:3px;font-size:.8rem;color:var(--m);font-weight:600;min-width:0}
+.fn-sel select{font:16px system-ui;width:100%;min-width:0;padding:9px 8px;border:1.5px solid var(--l);border-radius:10px;background:var(--s);color:var(--fg)}
+.conta.tres{grid-template-columns:repeat(3,minmax(0,1fr))}
+.conta.tres b{font-size:1.4rem}
+.fn-queda{border-radius:12px;padding:10px 12px;background:var(--w2);color:var(--fg);font-size:.92rem;margin-bottom:12px}
+.fn-queda b{color:var(--w)}
+.fn-et{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.fn-et li{padding:9px 0 10px;border-top:1px solid var(--l)}
+.fn-et li:first-child{border-top:0;padding-top:2px}
+.et-top{display:flex;align-items:baseline;gap:8px}
+.et-top b{flex:1;min-width:0;font-size:.98rem;overflow-wrap:anywhere}
+.et-n{flex:none;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--a2);color:var(--a);font:700 .75rem system-ui}
+.et-p{font:700 1.05rem system-ui;font-variant-numeric:tabular-nums}
+.et-p small{font-weight:500;color:var(--m);font-size:.78rem}
+.bar{height:10px;border-radius:5px;background:var(--bg);margin:6px 0 5px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:0 4px 4px 0;background:var(--a);min-width:2px}
+.et-sub{font-size:.84rem;color:var(--m);font-variant-numeric:tabular-nums}
+.fn-et li.queda .bar i{background:var(--w)}
+.fn-et li.queda .et-n{background:var(--w);color:#fff}
+.selo{font-size:.72rem;font-weight:700;border-radius:999px;padding:1px 8px;background:var(--w2);color:var(--w);white-space:nowrap}
+.fn-et li.desvio b{color:var(--m);font-weight:600}
+.fn-nota{font-size:.8rem;color:var(--m);margin:4px 0 0}
+.fn-vazio{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.fn-vazio .sec{background:var(--s);color:var(--a);border:1.5px solid var(--l)}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--a);outline-offset:2px}
 /* Kit de resposta (01/11): faixa, mensagens prontas e modo react. Tudo na página; nada vai para o servidor. */
 .kit{margin-top:14px;padding-top:12px;border-top:2px solid var(--l);display:flex;flex-direction:column;gap:10px}
@@ -156,8 +187,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <h1 id="tit">Caixa de leads</h1>
   <div class="abas" role="tablist">
     <button role="tab" id="t-caixa" aria-selected="true">Caixa</button>
-    <button role="tab" id="t-cod" aria-selected="false">Buscar código</button>
+    <button role="tab" id="t-cod" aria-selected="false">Código</button>
     <button role="tab" id="t-portas" aria-selected="false">Portas</button>
+    <button role="tab" id="t-funil" aria-selected="false">Funil</button>
   </div>
 
   <section id="caixa">
@@ -173,6 +205,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <section id="portas" hidden>
     <p class="sub" style="color:var(--m);margin:0 0 12px">Para onde vai quem toca no link da bio e quem recebe o teste no Direct. Vale na hora para quem chegar depois; quem já entrou continua no teste que pegou.</p>
     <div id="portas-corpo"><p class="aviso">Carregando…</p></div>
+  </section>
+
+  <section id="funil" hidden>
+    <div class="card fn-ctl">
+      <div class="fn-funis" id="fn-funis" role="group" aria-label="Funil"></div>
+      <div class="seg" id="fn-dias" role="group" aria-label="Período"><button type="button" data-d="7" aria-pressed="true">7 dias</button><button type="button" data-d="30" aria-pressed="false">30 dias</button></div>
+      <div class="fn-sel"><label>Origem<select id="fn-origem"><option value="">Todas</option></select></label><label>Variante<select id="fn-var"><option value="">Todas</option></select></label></div>
+    </div>
+    <div id="fn-corpo"><p class="aviso">Carregando…</p></div>
   </section>
 
   <section id="busca" hidden>
@@ -293,16 +334,18 @@ document.addEventListener('input', ev => {
 
 // ---------- Abas ----------
 function aba(qual){
-  $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod'); $('t-portas').setAttribute('aria-selected', qual === 'portas');
-  $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod'; $('portas').hidden = qual !== 'portas';
-  $('tit').textContent = qual === 'caixa' ? 'Caixa de leads' : qual === 'portas' ? 'Portas' : 'Consulta por código';
+  $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod'); $('t-portas').setAttribute('aria-selected', qual === 'portas'); $('t-funil').setAttribute('aria-selected', qual === 'funil');
+  $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod'; $('portas').hidden = qual !== 'portas'; $('funil').hidden = qual !== 'funil';
+  $('tit').textContent = qual === 'caixa' ? 'Caixa de leads' : qual === 'portas' ? 'Portas' : qual === 'funil' ? 'Funil' : 'Consulta por código';
   if (qual === 'portas') carregaPortas();
+  if (qual === 'funil') carregaFunil();
   if (qual === 'caixa'){ $('voltar').hidden = true; desenhaCaixa(); }
   window.scrollTo(0, 0);
 }
 $('t-caixa').onclick = () => aba('caixa');
 $('t-cod').onclick = () => aba('cod');
 $('t-portas').onclick = () => aba('portas');
+$('t-funil').onclick = () => aba('funil');
 
 // ---------- Portas (01/11) ----------
 const NOME_TESTE = { pele:'Pele do rosto', quiz:'Quiz da longevidade', teste:'Pernas', braco:'Idade muscular (braço)' };
@@ -365,6 +408,114 @@ async function salvarPorta(el){
     st.textContent = 'Salvo às ' + new Date().toLocaleTimeString('pt-BR', { timeZone:TZ, hour:'2-digit', minute:'2-digit' }) + '. Já vale para quem tocar no link.';
   } catch (e) { st.textContent = 'Não salvou: ' + e.message + '. Tente de novo.'; }
 }
+
+// ---------- Funil (01/11): onde as pessoas caem, etapa por etapa (RPCs funil_opcoes e funil_etapas, pela edge) ----------
+const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['teste-braco','Idade muscular'],['quiz-longevidade','Quiz'],['link-bio','Link da bio']];
+const ETAPA = {
+  'teste-pernas': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, peso e altura', camera:'Câmera (5 levantadas)', resultado:'Tela final' },
+  'teste-pele': { 'pele-inicio':'Início da pele (aceite)', 'pele-camera':'Câmera da selfie', 'pele-envio':'Conferir e enviar a foto', 'pele-analise':'Analisando a foto', 'pele-resultado':'Tela final da pele', 'pele-erro':'Erro na pele' },
+  'teste-braco': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, sexo e peso', sensor:'Permissão do sensor', medir:'Medição (10 s)', analise:'Analisando', resultado:'Tela final', erro:'Erro no sensor' },
+  'quiz-longevidade': { capa:'Capa do quiz', autoridade:'Quem vai ler as respostas', objetivo:'O que quer continuar fazendo', idade:'Idade', 'lugar-certo':'Você está no lugar certo', rotina:'Rotina da semana', ciencia:'A ciência', incomoda:'O que incomoda', atrapalha:'O que trava', ajuda:'Sozinho ou com médico', contato:'Contato', loading:'Calculando', resultado:'Resultado' },
+  'link-bio': { roteador:'Tocou no link' },
+};
+const FIM = { complete:'Terminou o teste', lead_capture:'Deixou o contato', whatsapp:'Tocou em WhatsApp', direct:'Tocou em Direct', pele:'Foi para a pele', instagram:'Tocou em seguir no Instagram', teste:'Foi para o teste das pernas', whatsapp_ou_direct:'WhatsApp ou Direct (a conversa)' };
+const VAR_COMECE = { teste:'Pelo /comece', pele:'Pelo /comece', quiz:'Pelo /comece', braco:'Pelo /comece', direto:'Link direto', A:'Link direto', fotos1:'1 foto', fotos3:'3 fotos', 'fotos?':'sem a marca de fotos' };
+const nomeVar = (f, v) => f === 'link-bio' ? (NOME_TESTE[v] || v) : (VAR_COMECE[v] || v);
+function nomeOrigem(o){
+  if (o === 'bio') return 'Bio'; if (o === 'direct') return 'Direct (todas as campanhas)'; if (o === 'whatsapp') return 'Perfil do WhatsApp';
+  if (o === 'direto') return 'Direto (sem marca)'; if (o === 'teste') return 'Testes (Claude)';
+  if (o.startsWith('direct:')) return 'Direct · ' + (NOME_CAMP[o.slice(7).toUpperCase()] || o.slice(7).toUpperCase());
+  return o.replace(/^outro:/, '');
+}
+const pct = v => v == null ? '—' : v.toLocaleString('pt-BR', { maximumFractionDigits:1 }) + '%';
+const tempo = s => s == null ? 'sem tempo medido' : s < 60 ? Math.round(s) + ' s na tela' : `${Math.floor(s / 60)} min ${Math.round(s % 60)} s na tela`;
+let FN = { funil:'', dias:7, origem:'', variante:'', dados:null, pedido:0 };
+try { const g = JSON.parse(localStorage.getItem('livowa_funil') || '{}'); if (/^[a-z0-9-]{1,40}$/.test(g.funil || '')) FN.funil = g.funil; if (g.dias === 30) FN.dias = 30; } catch {}
+async function carregaFunil(){
+  const n = ++FN.pedido, box = $('fn-corpo');
+  if (!FN.dados) box.innerHTML = '<p class="aviso">Carregando…</p>'; else box.style.opacity = .55;
+  try { localStorage.setItem('livowa_funil', JSON.stringify({ funil:FN.funil, dias:FN.dias })); } catch {}
+  try {
+    const r = await post({ acao:'funil', dias:FN.dias, funil:FN.funil || 'teste-pernas', origem:FN.origem, variante:FN.variante });
+    if (r.status === 404){ box.innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
+    const j = await r.json(); if (!j.ok) throw new Error(j.erro || r.status);
+    if (n !== FN.pedido) return;   // chegou uma resposta mais nova
+    FN.dados = j; if (!FN.funil) FN.funil = 'teste-pernas'; desenhaFunil();
+  } catch (e) { if (n === FN.pedido) box.innerHTML = `<p class="aviso">Não consegui carregar o funil (${esc(e.message)}). Se é a primeira vez, falta rodar o script aplicar_painel_funil.sh.</p>`; }
+  finally { if (n === FN.pedido) box.style.opacity = ''; }
+}
+function opcoesSelect(sel, itens, atual){
+  sel.innerHTML = itens.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('');
+  sel.value = itens.some(([v]) => v === atual) ? atual : '';
+  return sel.value;
+}
+function desenhaFunil(){
+  const { opcoes, etapas } = FN.dados, f = FN.funil;
+  const qtd = Object.fromEntries((opcoes.funis || []).map(x => [x.id, x.pessoas]));
+  const lista = [...FUNIS, ...(opcoes.funis || []).filter(x => !FUNIS.some(([id]) => id === x.id)).map(x => [x.id, x.id])];
+  $('fn-funis').innerHTML = lista.map(([id, nome]) => `<button type="button" data-funil="${esc(id)}" aria-pressed="${id === f}">${esc(nome)} <small>${qtd[id] || 0}</small></button>`).join('');
+  document.querySelectorAll('#fn-dias button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.d === FN.dias));
+  // origens: Direct (todas) aparece quando há alguma campanha do Direct
+  const os = (opcoes.origens || {})[f] || [], soma = p => os.filter(o => o.id === p || o.id.startsWith(p + ':')).reduce((a, o) => a + o.pessoas, 0);
+  const itensO = [['', 'Todas']];
+  os.filter(o => o.id !== 'teste').forEach(o => {
+    if (o.id.startsWith('direct:') && !itensO.some(([v]) => v === 'direct')) itensO.push(['direct', `${nomeOrigem('direct')} · ${soma('direct')}`]);
+    itensO.push([o.id, `${nomeOrigem(o.id)} · ${o.pessoas}`]);
+  });
+  if (os.some(o => o.id === 'teste')) itensO.push(['teste', `${nomeOrigem('teste')} · ${os.find(o => o.id === 'teste').pessoas}`]);
+  const origemAgora = opcoesSelect($('fn-origem'), itensO, FN.origem);
+  const vs = (opcoes.variantes || {})[f] || [];
+  const variAgora = opcoesSelect($('fn-var'), [['', 'Todas'], ...vs.map(v => [v.id, `${nomeVar(f, v.id)} · ${v.pessoas}`])], FN.variante);
+  // filtro que sumiu do período (ex.: trocou para 7 dias): busca de novo sem ele
+  if (origemAgora !== FN.origem || variAgora !== FN.variante){ FN.origem = origemAgora; FN.variante = variAgora; return carregaFunil(); }
+  const box = $('fn-corpo'), nomeF = (lista.find(([id]) => id === f) || [f, f])[1];
+  if (!etapas){ box.innerHTML = '<p class="aviso">Funil desconhecido. Escolha um dos botões acima.</p>'; return; }
+  const cad = (etapas.etapas || []).filter(e => !e.desvio), desv = (etapas.etapas || []).filter(e => e.desvio);
+  const filtros = FN.origem || FN.variante;
+  if (!cad.length){
+    box.innerHTML = `<div class="card fn-vazio"><p class="aviso" style="margin:0">Ninguém passou por ${esc(nomeF)} nos últimos ${FN.dias} dias${filtros ? ' com esses filtros' : ''}.</p>
+      ${filtros ? '<button type="button" class="sec" id="fn-limpar">Tirar os filtros</button>' : FN.dias === 7 ? '<button type="button" class="sec" id="fn-30">Ver 30 dias</button>' : ''}</div>`;
+    return;
+  }
+  const rot = id => (ETAPA[f] || {})[id] || id;
+  const fim = etapas.fim || [], achar = (t, c) => fim.find(x => x.tipo === t && (!c || x.canal === c));
+  const ini = cad[0].pessoas, term = achar('complete'), conv = achar('contato');
+  // maior queda: a passagem em que mais gente saiu (empate: a de menor % que passou)
+  let qi = -1, qn = 0;
+  cad.forEach((e, i) => { if (!i) return; const saiu = cad[i - 1].pessoas - e.pessoas;
+    if (saiu > qn || (saiu === qn && saiu > 0 && (e.pct_anterior ?? 100) < (cad[qi]?.pct_anterior ?? 100))){ qn = saiu; qi = i; } });
+  let h = f === 'link-bio' ? '' : `<div class="conta tres"><div><b>${ini}</b><span>começaram</span></div><div><b>${term ? term.pessoas : 0}</b><span>terminaram${term ? ' · ' + pct(term.pct_inicio) : ''}</span></div><div><b>${conv ? conv.pessoas : 0}</b><span>chamaram no WhatsApp ou Direct${conv ? ' · ' + pct(conv.pct_inicio) : ''}</span></div></div>`;
+  if (qi > 0) h += `<div class="fn-queda"><b>Maior queda:</b> de “${esc(rot(cad[qi - 1].etapa))}” para “${esc(rot(cad[qi].etapa))}”. Saíram ${qn} de ${cad[qi - 1].pessoas} (${pct(Math.round(1000 * qn / cad[qi - 1].pessoas) / 10)}).</div>`;
+  h += `<div class="card"><h2 style="margin-bottom:8px">${esc(nomeF)} · etapa por etapa</h2><ol class="fn-et">${cad.map((e, i) => {
+    const saiu = i ? cad[i - 1].pessoas - e.pessoas : 0;
+    return `<li class="${i === qi ? 'queda' : ''}"><div class="et-top"><span class="et-n">${i + 1}</span><b>${esc(rot(e.etapa))}</b>${i === qi ? '<span class="selo">maior queda</span>' : ''}<span class="et-p">${e.pessoas} <small>${e.pessoas === 1 ? 'pessoa' : 'pessoas'}</small></span></div>
+      <div class="bar" aria-hidden="true"><i style="width:${Math.max(0, Math.min(100, e.pct_inicio ?? 0))}%"></i></div>
+      <div class="et-sub">${i ? `${pct(e.pct_anterior)} da anterior${saiu > 0 ? ` (saíram ${saiu})` : ''} · ${pct(e.pct_inicio)} do início` : 'início'} · ${esc(tempo(e.mediana_s))}</div></li>`; }).join('')}
+    ${desv.map(e => `<li class="desvio"><div class="et-top"><span class="et-n">!</span><b>${esc(rot(e.etapa))} (desvio, fora da conta)</b><span class="et-p">${e.pessoas} <small>${e.pessoas === 1 ? 'pessoa' : 'pessoas'}</small></span></div></li>`).join('')}</ol></div>`;
+  if (f === 'link-bio'){
+    const tot = vs.reduce((a, v) => a + v.pessoas, 0) || 1;
+    h += `<div class="card"><h2 style="margin-bottom:8px">Para onde o link mandou</h2><ol class="fn-et">${vs.map(v => `<li><div class="et-top"><b>${esc(nomeVar(f, v.id))}</b><span class="et-p">${v.pessoas}</span></div>
+      <div class="bar" aria-hidden="true"><i style="width:${Math.round(100 * v.pessoas / tot)}%"></i></div><div class="et-sub">${pct(Math.round(1000 * v.pessoas / tot) / 10)} dos toques</div></li>`).join('')}</ol>
+      <p class="fn-nota">O teste abre outra contagem: veja Pernas, Pele, Quiz ou Idade muscular com a origem Bio.</p></div>`;
+  }
+  const fimL = fim.filter(x => x.tipo !== 'contato'), ordem = ['complete', 'lead_capture', 'whatsapp', 'direct'];
+  fimL.sort((a, b) => ((ordem.indexOf(a.tipo === 'cta_click' ? a.canal : a.tipo) + 1) || 9) - ((ordem.indexOf(b.tipo === 'cta_click' ? b.canal : b.tipo) + 1) || 9));
+  if (fim.length) h += `<div class="card"><h2 style="margin-bottom:8px">No fim</h2>${[...fimL, ...(conv ? [conv] : [])].map(x => {
+      const nome = x.tipo === 'cta_click' ? (FIM[x.canal] || 'Tocou em ' + x.canal) : FIM[x.tipo === 'contato' ? x.canal : x.tipo] || x.tipo;
+      return `<div class="l"><span>${esc(nome)}</span><b>${x.pessoas} · ${pct(x.pct_inicio)}</b></div>`; }).join('')}
+    <p class="fn-nota">% sobre quem começou.</p></div>`;
+  h += `<p class="fn-nota">Pessoa = uma aba do navegador (quem abre o link de novo noutro dia conta outra vez). Tempo = mediana até a tela seguinte; parada de mais de 30 min não entra. Testes do Claude ficam de fora; para vê-los, Origem › Testes.${f === 'teste-pele' ? ' Pele: inclui quem veio direto do link e quem veio depois das pernas; Variante = o sorteio de 1 ou 3 fotos.' : ''}${f === 'teste-pernas' ? ' Pernas: só quem começou pelas pernas; a pele está no botão Pele.' : ''}</p>`;
+  box.innerHTML = h;
+}
+$('fn-funis').addEventListener('click', ev => { const b = ev.target.closest('button[data-funil]'); if (!b || b.dataset.funil === FN.funil) return; FN.funil = b.dataset.funil; FN.variante = ''; document.querySelectorAll('#fn-funis button').forEach(x => x.setAttribute('aria-pressed', x === b)); carregaFunil(); });
+$('fn-dias').addEventListener('click', ev => { const b = ev.target.closest('button[data-d]'); if (!b || +b.dataset.d === FN.dias) return; FN.dias = +b.dataset.d; document.querySelectorAll('#fn-dias button').forEach(x => x.setAttribute('aria-pressed', x === b)); carregaFunil(); });
+$('fn-origem').onchange = () => { FN.origem = $('fn-origem').value; carregaFunil(); };
+$('fn-var').onchange = () => { FN.variante = $('fn-var').value; carregaFunil(); };
+$('fn-corpo').addEventListener('click', ev => {
+  if (ev.target.id === 'fn-limpar'){ FN.origem = ''; FN.variante = ''; carregaFunil(); }
+  if (ev.target.id === 'fn-30'){ FN.dias = 30; carregaFunil(); }
+});
+
 $('voltar').onclick = () => aba('caixa');
 function abrirCodigo(c, daCaixa){ aba('cod'); $('voltar').hidden = !daCaixa; $('c').value = c; ver(c); }
 function desenhaGestao(c){
@@ -588,7 +739,7 @@ document.addEventListener('keydown', ev => {
 });
 $('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').value.trim().toUpperCase(); if (c){ $('voltar').hidden = true; ver(c); } });
 // volta ao app (iPhone): recarrega a caixa
-document.addEventListener('visibilitychange', () => { if (!document.hidden && !$('caixa').hidden) carregar(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) return; if (!$('caixa').hidden) carregar(); else if (!$('funil').hidden) carregaFunil(); });
 carregar();
 </script>
 </body>
