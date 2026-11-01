@@ -80,6 +80,11 @@ function collectContext() {
   });
   if (document.referrer) ctx.referrer = document.referrer;
   if (navigator.userAgent) ctx.user_agent = navigator.userAgent;
+  // 01/11: aparelho do Lucca marcado em livowa.com/eu (localStorage livowa_eu) entra como teste e fica fora da conta
+  try {
+    if (p.get('eu') === '1') localStorage.setItem('livowa_eu', '1'); else if (p.get('eu') === '0') localStorage.removeItem('livowa_eu');
+    if (localStorage.getItem('livowa_eu') === '1') { if (ctx.utm_source) ctx.utm_source_real = ctx.utm_source; ctx.utm_source = 'teste_lucca'; }
+  } catch (e) {}
   return ctx;
 }
 
