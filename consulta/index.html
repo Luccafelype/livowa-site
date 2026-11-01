@@ -11,7 +11,8 @@
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    Três abas: Caixa (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX) e Portas (tema e % de
-   cada teste na bio e no Direct, desde 01/11). */
+   cada teste na bio e no Direct, desde 01/11). Na tela do código, cada braço/pernas/pele traz o bloco "Responder"
+   (kits.js: faixa, mensagens prontas, atalhos e o modo react da pele), que roda só aqui e não manda nada a servidor. */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
@@ -94,6 +95,60 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .porta button:disabled{opacity:.4;cursor:not-allowed}
 .st-porta{font-size:.85rem;color:var(--m);min-height:1.2em}
 @media (max-width:420px){.peso{grid-template-columns:minmax(0,1fr) 90px 46px}.camp{grid-template-columns:1fr}}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+/* Kit de resposta (01/11): faixa, mensagens prontas e modo react. Tudo na página; nada vai para o servidor. */
+.kit{margin-top:14px;padding-top:12px;border-top:2px solid var(--l);display:flex;flex-direction:column;gap:10px}
+.kit-h{margin:0;font-size:1.05rem}
+.kit-faixa{border-radius:12px;padding:10px 12px;background:var(--a2);color:var(--fg)}
+.kit-faixa b{display:block;color:var(--a);font-size:1rem}
+.kit-faixa span{display:block;font-size:.88rem;color:var(--m);margin-top:2px}
+.kit-faixa.meh{background:var(--w2)} .kit-faixa.meh b{color:var(--w)}
+.kit-faixa.bad{background:#f6e3df} .kit-faixa.bad b{color:var(--r)}
+.kit-refazer{border:1.5px solid var(--w);background:var(--w2);border-radius:12px;padding:10px 12px}
+.kit-refazer>b{color:var(--w)} .kit-refazer>p{margin:4px 0 8px;font-size:.9rem}
+.kit-nome-l{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.95rem}
+.kit-nome-l input{font:400 1rem system-ui;letter-spacing:0;text-transform:none;padding:10px 12px}
+.kit-nome-l small{display:block;color:var(--m);font-weight:400;font-size:.78rem}
+.kit-m{background:var(--bg);border:1px solid var(--l);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.kit-m.audio{border-left:4px solid var(--a)}
+.kit-rot{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:.95rem}
+.kit-rot small{color:var(--m);font-size:.8rem;flex-basis:100%}
+.kit-n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--a);color:#fff;font:700 .78rem system-ui}
+.kit-txt{white-space:pre-line;font-size:.95rem;line-height:1.5;overflow-wrap:anywhere}
+.kit-txt mark{background:var(--w2);color:var(--w);border-radius:4px;padding:0 2px;font-weight:600}
+.kit-nota{margin:0;font-size:.82rem;color:var(--w)}
+.kit-copiar{align-self:flex-start;background:var(--s);color:var(--a);border:1.5px solid var(--l);padding:8px 16px;font-size:.9rem;min-width:110px}
+.kit-copiar.feito{background:var(--a);color:#fff;border-color:var(--a)}
+.kit details{border:1px solid var(--l);border-radius:12px;background:var(--s)}
+.kit summary{padding:11px 12px;font-weight:600;color:var(--a);cursor:pointer}
+.kit details>div{padding:0 10px 10px;display:flex;flex-direction:column;gap:8px}
+.kit-perfil{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.kit-perfil button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:9px 4px;font-size:.9rem}
+.kit-perfil button[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:#fff}
+.kit-sub{margin:0;font-size:.82rem;color:var(--m)}
+.kit-react{width:100%}
+.kit-react:disabled{opacity:.45;cursor:not-allowed}
+/* modo react: fotos em tela cheia com o roteiro por cima */
+.react{position:fixed;inset:0;z-index:50;background:#000;color:#fff;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.react[hidden]{display:none}
+.react-cab{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;font-size:.82rem;line-height:1.35;background:#111}
+.react-cab p{margin:0;flex:1;color:#e8e8e8}
+.react-cab button{background:#fff;color:#000;padding:8px 14px;font-size:.9rem}
+.react-foto{position:relative;min-height:0;display:flex;align-items:center;justify-content:center}
+.react-foto img{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;display:block}
+.react-reg{position:absolute;top:10px;left:10px;background:rgba(13,106,77,.92);color:#fff;font-weight:700;font-size:.9rem;border-radius:999px;padding:5px 12px}
+.react-card{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(10,14,12,.86);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px 14px;max-height:62%;overflow:auto}
+.react-card[hidden]{display:none}
+.react-topo{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:.85rem;color:#cfd8d3}
+.react-topo b{color:#fff;font-size:1rem}
+.react-fala{margin:8px 0 0;font-size:1.22rem;line-height:1.45;font-weight:600}
+.react-fala mark{background:#f7ecdc;color:#8a5200;border-radius:4px;padding:0 3px}
+.react-extra{margin:8px 0 0;font-size:.85rem;color:#cfd8d3;white-space:pre-line}
+.react-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:10px 12px;background:#111}
+.react-nav button{padding:13px 10px}
+.react-nav .sec{background:#2a2f2c;color:#fff}
+.react-nav button:disabled{opacity:.35}
+.react :focus-visible{outline:3px solid #fff;outline-offset:2px}
 </style>
 </head>
 <body>
@@ -127,6 +182,13 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
     <div id="out"></div>
   </section>
 </main>
+<div id="react" class="react" role="dialog" aria-modal="true" aria-labelledby="react-tit" hidden>
+  <div class="react-cab"><p>Grave a tela do iPhone com o microfone ligado. Depois de mandar, apague o vídeo do celular (e de Apagados recentemente).</p><button type="button" id="react-fechar">Fechar</button></div>
+  <div class="react-foto"><img id="react-img" alt=""><span class="react-reg" id="react-reg"></span>
+    <div class="react-card" id="react-card"><div class="react-topo"><b id="react-tit"></b><span id="react-pos"></span></div><p class="react-fala" id="react-fala"></p><p class="react-extra" id="react-extra"></p></div></div>
+  <div class="react-nav"><button type="button" id="react-ant">Anterior</button><button type="button" class="sec" id="react-texto" aria-pressed="false">Só a foto</button><button type="button" id="react-prox">Próximo</button></div>
+</div>
+<script src="kits.js?v=20261101"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -377,14 +439,14 @@ async function ver(c){
     if (r.status === 404) return $('out').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>';
     const j = await r.json();
     if (!j.ok) return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`;
-    FOTOS = j.fotos || [];
+    FOTOS = j.fotos || []; KB = []; KM = [];
     const usados = new Set();
     if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return $('out').innerHTML = `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`; }
     $('out').innerHTML = j.lista.map(e => {
       const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:TZ, dateStyle:'short', timeStyle:'short' });
       const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil;
       const g = e.etapa === 'pele-resultado' && e.dados?.foto; if (g) usados.add(g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}</div>`;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : '');
@@ -412,6 +474,117 @@ $('out').addEventListener('click', async ev => {
     pe.previousElementSibling?.classList.contains('fotos') && pe.previousElementSibling.remove();
     pe.innerHTML = '<span>Foto apagada.</span>';
   } catch { b.disabled = false; b.classList.remove('conf'); b.textContent = 'Não apagou. Tente de novo'; b.dataset.t = b.textContent; }
+});
+// ---------- Kit de resposta (01/11): faixa, mensagens prontas e modo react; tudo local, nada vai para o servidor ----------
+let KB = [], KM = [], KIT_NOME = '', R = null;   // KB = blocos da tela; KM = mensagens desenhadas; KIT_NOME só nesta tela
+const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas' : null;
+function kitBloco(e){
+  const t = window.KITS && kitTeste(e); if (!t) return '';
+  try {
+    const i = KB.push({ t, d:e.dados || {}, g:e.dados?.foto || null, forcar:null }) - 1;
+    return `<section class="kit" data-kb="${i}" aria-label="Responder">${kitCorpo(i)}</section>`;
+  } catch (err) { console.error(err); return ''; }
+}
+const kitVars = m => ({ ...(m.raw ? {} : KB[m.b].c.vars), nome:m.raw ? null : KIT_NOME.trim() });
+const kitTexto = k => KITS.preencher(KM[k].tpl, kitVars(KM[k]));
+const kitHtml = k => KM[k].raw ? esc(KM[k].tpl) : KITS.pedacos(KM[k].tpl, kitVars(KM[k])).map(p => p.falta ? `<mark>${esc(p.s)}</mark>` : esc(p.s)).join('');
+function kitMsg(tpl, b, o = {}){
+  const k = KM.push({ tpl, b, raw:!!o.raw }) - 1;
+  return `<div class="kit-m${o.audio ? ' audio' : ''}">
+    ${o.rotulo ? `<div class="kit-rot">${o.n ? `<span class="kit-n" aria-hidden="true">${o.n}</span>` : ''}<b>${esc(o.rotulo)}</b>${o.quando ? `<small>${esc(o.quando)}</small>` : ''}</div>` : ''}
+    ${o.nota ? `<p class="kit-nota">${esc(o.nota)}</p>` : ''}
+    <div class="kit-txt" id="km-${k}">${kitHtml(k)}</div>
+    <button type="button" class="kit-copiar" data-k="${k}">Copiar</button></div>`;
+}
+const COR_FAIXA = { 1:'ok', 2:'meh', 3:'meh', 4:'bad' };
+function kitCorpo(i){
+  const b = KB[i], K = KITS[b.t], c = b.c = K.classifica(b.d, b.forcar), pele = b.t === 'pele';
+  const atalho = id => K.atalhos.find(a => a.id === id)?.texto || '';
+  let h = '<h3 class="kit-h">Responder</h3>';
+  h += `<div class="kit-faixa ${pele ? (c.perfil === 'A' ? 'ok' : 'meh') : COR_FAIXA[c.faixa] || 'meh'}"><b>${pele ? 'Perfil ' + esc(c.titulo) : c.faixa ? `Faixa ${c.faixa} de 4 · ${esc(c.titulo)}` : 'Faixa não calculada'}</b><span>${esc(c.simples || '')}</span></div>`;
+  if (c.refazer) h += `<div class="kit-refazer"><b>${pele ? 'Foto duvidosa' : 'Medição duvidosa'}: peça para refazer</b><p>${esc(c.motivo)}</p>
+    ${kitMsg(atalho(c.atalhoRefazer), i, { rotulo:'Atalho /' + c.atalhoRefazer, quando:'Mandar este e parar aí' })}</div>`;
+  h += `<label class="kit-nome-l"><span>Nome<small>só nesta tela</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
+  if (pele){
+    const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
+    h += `<div><div class="kit-perfil" role="group" aria-label="Perfil">${Object.keys(K.perfis).map(p => `<button type="button" data-perfil="${p}" data-kb="${i}" aria-pressed="${c.perfil === p}">${p}</button>`).join('')}</div>
+      <p class="kit-sub">Calculado pela ficha: ${esc(c.calculado)}. O D (um sinal para medir) só quando você vir o sinal na foto ou ela disser sim à pergunta do pescoço.</p></div>
+      <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>${fotos.length ? 'Modo react' : 'Modo react (sem fotos: apagadas ou não carregaram)'}</button>
+      <p class="kit-sub">Faixa de idade no vídeo: ${esc(c.idadeFaixa.txt)}</p>`;
+  }
+  const ms = K.mensagens(c);
+  if (pele && c.perfil !== 'D') ms.splice(ms.findIndex(m => m.ordem === 3), 0, { ordem:0, rotulo:'Pergunta do pescoço (opcional)', quando:'No fim da mensagem 2, só se fizer sentido na conversa', texto:KITS.T.pele.pescoco });
+  const corpo = ms.map(m => kitMsg(m.texto, i, { n:m.ordem || '', rotulo:m.rotulo, quando:m.quando, nota:m.nota, audio:m.audio })).join('');
+  h += !ms.length ? '<p class="kit-sub">Sem mensagens para este resultado.</p>'
+    : c.refazer ? `<details><summary>Ver as mensagens da ${pele ? 'ficha' : 'faixa'} mesmo assim</summary><div>${corpo}</div></details>` : corpo;
+  h += `<details><summary>Ver atalhos do WhatsApp (${K.atalhos.length})</summary><div>
+    <p class="kit-sub">Para cadastrar em WhatsApp Business › Configurações › Ferramentas comerciais › Respostas rápidas. O app não preenche {nome}.</p>
+    ${K.atalhos.map(a => kitMsg(a.texto, i, { raw:true, rotulo:'/' + a.id, quando:[a.quando, a.nota].filter(Boolean).join(' · ') })).join('')}</div></details>`;
+  return h;
+}
+function kitCopiar(btn){
+  const k = +btn.dataset.k, txt = kitTexto(k), el = $('km-' + k);
+  const feito = msg => { btn.textContent = msg; btn.classList.add('feito'); clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('feito'); }, 1500); };
+  const selecionar = () => {   // reserva: deixa o texto selecionado (e tenta o copiar antigo)
+    try { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); feito(document.execCommand('copy') ? 'Copiado' : 'Selecionado'); }
+    catch { feito('Selecione e copie'); }
+  };
+  try { if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(() => feito('Copiado'), selecionar); else selecionar(); }
+  catch { selecionar(); }
+}
+$('out').addEventListener('click', ev => {
+  const cp = ev.target.closest('.kit-copiar'); if (cp){ kitCopiar(cp); return; }
+  const pf = ev.target.closest('.kit-perfil button');
+  if (pf){ const i = +pf.dataset.kb; KB[i].forcar = pf.dataset.perfil; const sec = pf.closest('.kit'); sec.innerHTML = kitCorpo(i); sec.querySelector(`.kit-perfil [data-perfil="${pf.dataset.perfil}"]`)?.focus(); return; }
+  const rc = ev.target.closest('.kit-react'); if (rc) reactAbrir(+rc.dataset.react, rc);
+});
+$('out').addEventListener('input', ev => {
+  if (!ev.target.classList.contains('kit-nome')) return;
+  KIT_NOME = ev.target.value;
+  document.querySelectorAll('.kit-nome').forEach(x => { if (x !== ev.target) x.value = KIT_NOME; });
+  document.querySelectorAll('.kit-txt[id^="km-"]').forEach(el => { const k = +el.id.slice(3); if (KM[k] && !KM[k].raw) el.innerHTML = kitHtml(k); });
+});
+// modo react (versão 1: sem marca posicionada; a análise ainda não devolve região)
+function reactAbrir(i, volta){
+  const b = KB[i], fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
+  if (!fotos.length) return;
+  R = { i, passos:KITS.pele.react(b.d, b.c.perfil), fotos, pos:0, volta };
+  $('react').hidden = false; document.body.style.overflow = 'hidden';
+  $('react-card').hidden = false; $('react-texto').setAttribute('aria-pressed', 'false'); $('react-texto').textContent = 'Só a foto';
+  reactDesenha(); $('react-prox').focus();
+}
+function reactDesenha(){
+  const p = R.passos[R.pos], n = R.passos.length;
+  const foto = R.fotos.find(f => f.tipo === p.foto) || R.fotos.find(f => f.tipo === 'repouso') || R.fotos[0];
+  $('react-img').src = foto.url; $('react-img').alt = 'Foto: ' + (TIPO[foto.tipo] || foto.tipo);
+  $('react-reg').textContent = p.bloco.replace(/ \(opcional\)$/, '');
+  $('react-tit').textContent = p.bloco; $('react-pos').textContent = `${R.pos + 1} de ${n} · ${p.tempo}`;
+  const vars = { ...KB[R.i].c.vars, nome:KIT_NOME.trim() };
+  $('react-fala').innerHTML = KITS.pedacos(p.fala, vars).map(x => x.falta ? `<mark>${esc(x.s)}</mark>` : esc(x.s)).join('');
+  $('react-extra').textContent = [
+    p.tela + (foto.tipo !== p.foto ? ` (essa foto não veio; mostrando ${(TIPO[foto.tipo] || foto.tipo).toLowerCase()})` : '') + (p.nivel != null ? ` · nível ${p.nivel}/3` : ''),
+    p.nota, p.extra, p.seguranca ? `Frase de segurança (não cortar): "${p.seguranca}"` : ''].filter(Boolean).join('\n');
+  $('react-ant').disabled = R.pos === 0; $('react-prox').disabled = R.pos === n - 1;
+}
+function reactPasso(d){ if (!R) return; const p = Math.max(0, Math.min(R.passos.length - 1, R.pos + d)); if (p !== R.pos){ R.pos = p; reactDesenha(); } }
+function reactFechar(){
+  if (!R) return; const volta = R.volta; R = null;
+  $('react').hidden = true; $('react-img').removeAttribute('src'); document.body.style.overflow = '';
+  if (volta?.isConnected) volta.focus();
+}
+$('react-ant').onclick = () => reactPasso(-1);
+$('react-prox').onclick = () => reactPasso(1);
+$('react-fechar').onclick = reactFechar;
+$('react-texto').onclick = () => { const so = $('react-card').hidden = !$('react-card').hidden; $('react-texto').setAttribute('aria-pressed', so); $('react-texto').textContent = so ? 'Mostrar texto' : 'Só a foto'; };
+document.addEventListener('keydown', ev => {
+  if (!R) return;
+  if (ev.key === 'Escape'){ ev.preventDefault(); reactFechar(); }
+  else if (ev.key === 'ArrowRight') reactPasso(1);
+  else if (ev.key === 'ArrowLeft') reactPasso(-1);
+  else if (ev.key === 'Tab'){   // foco preso na tela cheia
+    const bs = [...$('react').querySelectorAll('button:not([disabled])')], a = bs.indexOf(document.activeElement);
+    if (ev.shiftKey ? a <= 0 : a === bs.length - 1){ ev.preventDefault(); bs[ev.shiftKey ? bs.length - 1 : 0].focus(); }
+  }
 });
 $('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').value.trim().toUpperCase(); if (c){ $('voltar').hidden = true; ver(c); } });
 // volta ao app (iPhone): recarrega a caixa
