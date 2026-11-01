@@ -1,0 +1,208 @@
+{
+ "gerado": "gerar_biblioteca.py a partir de paginas/consulta-codigo/web/sinais.json (2026-10-28)",
+ "sinais": {
+  "linhas_testa": {
+   "regiao": "Testa",
+   "recorte": "testa",
+   "tema": "linhas",
+   "mecanismo": "Essa linha nasce do movimento: o músculo dobra a pele milhares de vezes.",
+   "mais": [
+    "Com os anos o colágeno cede, e a linha que só aparecia quando você levantava a sobrancelha passa a ficar marcada parada."
+   ],
+   "nome": "Linhas da testa",
+   "titulos": [
+    "Testa lisa",
+    "Linhas leves na testa",
+    "Linhas visíveis na testa",
+    "Linhas bem marcadas na testa"
+   ],
+   "fontes": [
+    "Luebberding 2014, Dermatol Surg (rugas por idade e sexo, 200 pessoas) — https://doi.org/10.1111/dsu.12377 (conferido (resumo))",
+    "Hamer 2017, J Invest Dermatol (Roterdã, 3.831 pessoas, determinantes de rugas) — https://doi.org/10.1016/j.jid.2017.04.002 (conferido (resumo))"
+   ]
+  },
+  "olhos": {
+   "regiao": "Olhos",
+   "recorte": "olhos",
+   "tema": "linhas",
+   "mecanismo": "As linhas se formam como as da testa (movimento, colágeno, sol).",
+   "mais": [
+    "Olheira não é uma coisa só: pode ser pigmento, vaso aparecendo pela pele fina, ou sombra. Num estudo com brasileiros, o que mais pesou foi a família, e ela começa em média aos 24 anos.",
+    "Uma noite em claro escurece a olheira no dia seguinte, isso foi medido. Mas a olheira de sempre costuma ser herança, e não falta de sono."
+   ],
+   "nome": "Ao redor dos olhos",
+   "titulos": [
+    "Cantos dos olhos lisos",
+    "Linhas leves no canto dos olhos",
+    "Linhas visíveis no canto dos olhos",
+    "Linhas bem marcadas no canto dos olhos"
+   ],
+   "fontes": [
+    "Matsui 2015, An Bras Dermatol (olheira em brasileiros",
+    "financiado por Estée Lauder) — https://doi.org/10.1590/abd1806-4841.20153520 (conferido (resumo))"
+   ]
+  },
+  "sulco_nasolabial": {
+   "regiao": "Nariz à boca",
+   "recorte": "sulco",
+   "tema": "linhas",
+   "mecanismo": "O que muda com a idade é a profundidade: o osso por baixo diminui e a gordura da bochecha muda de lugar.",
+   "mais": [
+    "Todo mundo tem esse sulco, ele faz parte do desenho do rosto."
+   ],
+   "nome": "Sulco do nariz à boca",
+   "titulos": [
+    "Sulco quase imperceptível",
+    "Sulco leve",
+    "Sulco visível",
+    "Sulco bem marcado"
+   ],
+   "fontes": [
+    "Mendelson 2012, Aesthetic Plast Surg (esqueleto facial) — https://doi.org/10.1007/s00266-012-9904-3 (conferido (resumo))",
+    "Okada 2013, Plast Reconstr Surg (gêmeos, fumo) — https://doi.org/10.1097/PRS.0b013e3182a4c20a (conferido (resumo))"
+   ]
+  },
+  "manchas": {
+   "regiao": "Bochechas",
+   "recorte": "bochecha",
+   "tema": "manchas",
+   "mecanismo": "Mancha no rosto é, em boa parte, memória de sol.",
+   "mais": [
+    "E em pele morena e negra até a luz visível escurece a pele, e não só o ultravioleta; isso foi medido em laboratório."
+   ],
+   "seguranca": "Mancha nova, que cresce, muda de cor, coça ou sangra, não é para aplicativo avaliar: é para mostrar a um médico.",
+   "nome": "Manchas",
+   "titulos": [
+    "Tom uniforme",
+    "Poucas manchas, discretas",
+    "Algumas manchas visíveis",
+    "Manchas bem visíveis"
+   ],
+   "fontes": [
+    "Flament 2013, Clin Cosmet Investig Dermatol (efeito do sol, 298 caucasianas) — https://doi.org/10.2147/CCID.S44686 (conferido (texto PMC))",
+    "Guyuron 2009, Plast Reconstr Surg (gêmeos idênticos, fatores ambientais) — https://doi.org/10.1097/PRS.0b013e31819c4d42 (conferido (resumo))"
+   ]
+  },
+  "textura_poros": {
+   "regiao": "Zona T",
+   "recorte": "zonaT",
+   "tema": "textura",
+   "mecanismo": "Poro aparente tem muito de óleo e de hormônio: homem e pele oleosa tendem a ter poro maior.",
+   "mais": [
+    "Textura é onde o sol acumulado mais aparece. No estudo australiano, quem usou protetor todo dia por quatro anos e meio não teve piora detectável na textura da pele."
+   ],
+   "nome": "Textura da pele",
+   "titulos": [
+    "Textura lisa",
+    "Poros discretos",
+    "Poros e textura visíveis",
+    "Textura bem marcada"
+   ],
+   "fontes": [
+    "Roh 2006, Br J Dermatol (sebo e poro) — https://doi.org/10.1111/j.1365-2133.2006.07465.x (conferido (resumo))",
+    "Lee 2016, Dermatol Surg (revisão poros) — https://doi.org/10.1097/DSS.0000000000000657 (conferido (resumo))"
+   ]
+  },
+  "flacidez": {
+   "regiao": "Contorno",
+   "recorte": "contorno",
+   "tema": "contorno",
+   "mecanismo": "Com a idade, o osso da mandíbula e do rosto diminui, e o que estava apoiado nele desce um pouco.",
+   "mais": [
+    "Esse sinal é muito mais idade do que sol."
+   ],
+   "nome": "Firmeza do contorno",
+   "titulos": [
+    "Contorno firme",
+    "Contorno levemente menos firme",
+    "Contorno menos firme",
+    "Contorno bem menos firme"
+   ],
+   "fontes": [
+    "Flament 2013, Clin Cosmet Investig Dermatol (efeito do sol, 298 caucasianas) — https://doi.org/10.2147/CCID.S44686 (conferido (texto PMC))",
+    "Mendelson 2012, Aesthetic Plast Surg (esqueleto facial) — https://doi.org/10.1007/s00266-012-9904-3 (conferido (resumo))"
+   ]
+  }
+ },
+ "classes": {
+  "protetor": {
+   "medida": "Protetor solar diário",
+   "evidencia": "Forte para textura: no ensaio australiano, o grupo do uso diário não teve aumento detectável do envelhecimento em 4,5 anos.",
+   "fonte": "Hughes 2013, Ann Intern Med (ensaio randomizado de protetor solar, 903 adultos) — https://doi.org/10.7326/0003-4819-158-11-201306040-00002 (conferido (resumo))"
+  },
+  "protetor_cor": {
+   "medida": "Protetor com cor (óxido de ferro, barra luz visível)",
+   "evidencia": "Moderada, para quem já tem melasma: com hidroquinona, 15% mais melhora no MASI que protetor só UV (68 pacientes).",
+   "fonte": "Castanedo-Cazares 2014, Photodermatol Photoimmunol Photomed (protetor com cor, melasma) — https://doi.org/10.1111/phpp.12086 (conferido (resumo))"
+  },
+  "retinoide_linhas": {
+   "medida": "Retinoide tópico",
+   "evidencia": "Forte para fotodano leve a moderado (linhas finas), curto prazo; irrita.",
+   "fonte": "Samuel 2005, Cochrane (intervenções para fotodano; versão 2015 retirada) — https://doi.org/10.1002/14651858.CD001782.pub2 (conferido (resumo)); Kafi 2007, Arch Dermatol (retinol 0,4%) — https://doi.org/10.1001/archderm.143.5.606 (conferido (resumo))"
+  },
+  "retinoide_manchas": {
+   "medida": "Retinoide tópico",
+   "evidencia": "Forte para fotodano (que inclui pigmentação), curto prazo.",
+   "fonte": "Samuel 2005, Cochrane (intervenções para fotodano; versão 2015 retirada) — https://doi.org/10.1002/14651858.CD001782.pub2 (conferido (resumo))"
+  },
+  "poro": {
+   "medida": "Poro",
+   "evidencia": "Fraca: tratamento depende da causa; sem padrão estabelecido.",
+   "fonte": "Lee 2016, Dermatol Surg (revisão poros) — https://doi.org/10.1097/DSS.0000000000000657 (conferido (resumo))"
+  },
+  "sono_olheira": {
+   "medida": "Dormir",
+   "evidencia": "Efeito de curto prazo e de percepção (privação aguda piora a aparência no dia seguinte).",
+   "fonte": "Sundelin 2013, Sleep (privação de sono e rosto) — https://doi.org/10.5665/sleep.2964 (conferido (resumo))"
+  },
+  "flacidez_topico": {
+   "medida": "Tópico",
+   "evidencia": "Não achei tópico com evidência de melhorar a flacidez (lacuna).",
+   "fonte": "—"
+  }
+ },
+ "frases": {
+  "sono": "Uma noite em claro escurece a olheira no dia seguinte, isso foi medido.",
+  "sol": "Mancha no rosto é, em boa parte, memória de sol.",
+  "poro_oleo": "Poro aparente tem muito de óleo e de hormônio: homem e pele oleosa tendem a ter poro maior."
+ },
+ "perguntaFototipo": "Se você pega uns 30 minutos a 1 hora de sol forte, sem protetor, depois de um tempo sem se expor, o que costuma acontecer com a sua pele?",
+ "fototipos": [
+  {
+   "id": "I",
+   "opcao": "Fica vermelha e queima sempre, nunca bronzeia",
+   "descricao": "Sempre queima, nunca bronzeia.",
+   "leitura": "Rugas e manchas de sol tendem a aparecer antes; vasinhos visíveis. Cautela: na coorte de Roterdã, pele clara se associou a MENOS área de rugas."
+  },
+  {
+   "id": "II",
+   "opcao": "Queima fácil e bronzeia pouco",
+   "descricao": "Queima fácil, bronzeia com dificuldade.",
+   "leitura": "Igual ao I: ruga e mancha de sol dominam. A luz visível não escureceu a pele do tipo II em laboratório."
+  },
+  {
+   "id": "III",
+   "opcao": "Às vezes queima um pouco e depois bronzeia",
+   "descricao": "Queima moderadamente, bronzeia gradualmente.",
+   "leitura": "Mistura de ruga e mancha. Melasma mais comum nos tipos III a V."
+  },
+  {
+   "id": "IV",
+   "opcao": "Quase nunca queima e bronzeia fácil",
+   "descricao": "Queima pouco, bronzeia fácil.",
+   "leitura": "Mancha e tom irregular pesam mais que ruga; luz visível também escurece a pele (IV-VI). O autorrelato não separa bem o IV do V."
+  },
+  {
+   "id": "V",
+   "opcao": "Não queima, só escurece",
+   "descricao": "Raramente queima, escurece bastante.",
+   "leitura": "Rugas mais tardias (pele mais espessa); pigmentação irregular domina. A IA gradua pigmentação pior na pele escura (r = 0,40 contra dermatologistas)."
+  },
+  {
+   "id": "VI",
+   "opcao": "Nunca queimou; a pele já é bem escura (negra)",
+   "descricao": "Nunca queima, pele profundamente pigmentada.",
+   "leitura": "Como o V. Em sul-africanas, a metade de baixo do rosto (contorno) foi a que mais pesou na idade percebida, e elas foram julgadas ~7 anos mais velhas que a idade real."
+  }
+ ]
+}

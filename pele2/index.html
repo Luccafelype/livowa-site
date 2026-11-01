@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f4f1">
+<title>Análise da pele · Dr. Lucca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="pele2.css?v=1">
+</head>
+<body>
+<div class="app">
+  <div class="top" id="top" hidden><button class="back" id="back" type="button" aria-label="Voltar">←</button></div>
+
+  <!-- 0 · nome -->
+  <section class="screen" data-s="nome">
+    <div class="who"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="36" height="36"><span><b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990</span></div>
+    <span class="pill sm">Análise da pele pela câmera</span>
+    <h1>Vamos ver o que a sua <em>pele</em> está mostrando</h1>
+    <p class="sub">Umas perguntas rápidas e um vídeo curto do seu rosto. No fim, você vê o resultado por área do rosto.</p>
+    <label class="campo"><span>Como você se chama?</span>
+      <input id="nome" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" maxlength="40" placeholder="Seu primeiro nome"></label>
+  </section>
+
+  <!-- 1 · segurança -->
+  <section class="screen" data-s="seguranca" hidden>
+    <h2><b class="tag-imp">Importante:</b> alguns cuidados de pele precisam ser evitados em certas fases.</h2>
+    <p class="sub">Selecione o que vale para você.</p>
+    <div class="opts" data-q="seguranca" data-tipo="um">
+      <button type="button" class="opt" data-v="nenhuma"><span class="txt">Nenhuma destas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="gravida"><span class="txt">Estou grávida</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="amamentando"><span class="txt">Estou amamentando</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="tentando"><span class="txt">Estou tentando engravidar</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 2 · alergia -->
+  <section class="screen" data-s="alergia" hidden>
+    <h2><span class="nm"></span>você tem alguma alergia ou sensibilidade a produtos de pele?</h2>
+    <div class="opts" data-q="alergia" data-tipo="um">
+      <button type="button" class="opt" data-v="nao"><span class="txt">Não tenho</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="sensivel"><span class="txt">Minha pele é muito sensível<small>arde, avermelha ou reage fácil</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="reacao"><span class="txt">Já tive reação a algum produto</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nao_sei"><span class="txt">Não sei dizer</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 3 · o que mais incomoda (grade com fotos reais) -->
+  <section class="screen" data-s="incomoda" hidden>
+    <h2><span class="nm"></span>o que mais te incomoda na sua pele hoje?</h2>
+    <p class="sub">Escolha até 3. A análise começa por elas.</p>
+    <div class="grade" data-q="incomoda" data-tipo="ate3" id="grade"></div>
+    <p class="creditos" id="creditos"></p>
+  </section>
+
+  <!-- 4 · tipo de pele -->
+  <section class="screen" data-s="tipo" hidden>
+    <h2>Como você descreveria a sua pele?</h2>
+    <div class="opts" data-q="tipo" data-tipo="um">
+      <button type="button" class="opt" data-v="oleosa"><span class="txt">Oleosa<small>brilha durante o dia</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="seca"><span class="txt">Seca<small>repuxa e descama</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="mista"><span class="txt">Mista<small>oleosa na testa, nariz e queixo</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="normal"><span class="txt">Normal<small>equilibrada</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nao_sei"><span class="txt">Não sei<small>a foto ajuda a ver</small></span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 5 · sol por dia -->
+  <section class="screen" data-s="sol" hidden>
+    <h2><span class="nm"></span>quanto tempo você fica no sol por dia?</h2>
+    <div class="opts" data-q="sol" data-tipo="um">
+      <button type="button" class="opt" data-v="quase_nada"><span class="txt">Quase nada<small>fico mais em lugar fechado</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="menos_1h"><span class="txt">Menos de 1 hora</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="1a3h"><span class="txt">De 1 a 3 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="mais_3h"><span class="txt">Mais de 3 horas</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 6 · fototipo (pergunta de sol da biblioteca: reação da pele) -->
+  <section class="screen" data-s="fototipo" hidden>
+    <h2 id="fototipo-h">E quando pega sol forte sem protetor?</h2>
+    <p class="sub" id="fototipo-sub"></p>
+    <div class="opts" data-q="fototipo" data-tipo="um" id="fototipo-opts"></div>
+  </section>
+
+  <!-- 7 · água -->
+  <section class="screen" data-s="agua" hidden>
+    <h2><span class="nm"></span>quanta água você bebe por dia?</h2>
+    <div class="opts" data-q="agua" data-tipo="um">
+      <button type="button" class="opt" data-v="menos_1l"><span class="txt">Menos de 1 litro</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="1a2l"><span class="txt">De 1 a 2 litros</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="2a3l"><span class="txt">De 2 a 3 litros</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="mais_3l"><span class="txt">Mais de 3 litros</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 8 · sono -->
+  <section class="screen" data-s="sono" hidden>
+    <h2><span class="nm"></span>quantas horas você dorme por noite?</h2>
+    <div class="opts cols" data-q="sono" data-tipo="um">
+      <button type="button" class="opt" data-v="4a5"><span class="txt">4 a 5 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="6"><span class="txt">6 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="7"><span class="txt">7 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="8"><span class="txt">8 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="9mais"><span class="txt">9 ou mais</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 9 · rotina -->
+  <section class="screen" data-s="rotina" hidden>
+    <h2>Como está a sua rotina de cuidados com a pele hoje?</h2>
+    <div class="opts" data-q="rotina" data-tipo="um">
+      <button type="button" class="opt" data-v="nenhuma"><span class="txt">Não tenho rotina</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="funciona"><span class="txt">Tenho uma rotina que funciona<small>quero completar o que falta</small></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="receitada"><span class="txt">Uso produtos receitados por médico</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nao_sei"><span class="txt">Não sei se a minha rotina funciona</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 10 · objetivo -->
+  <section class="screen" data-s="objetivo" hidden>
+    <h2>Qual é o seu <em>verdadeiro</em> objetivo?</h2>
+    <p class="sub">Pode falar a verdade: é só para entender você melhor.</p>
+    <div class="opts" data-q="objetivo" data-tipo="um">
+      <button type="button" class="opt" data-v="confianca"><span class="txt">Me sentir bem e confiante com a minha pele</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="sem_maquiagem"><span class="txt">Sair sem maquiagem nem filtro, sem me preocupar</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="fotos"><span class="txt">Gostar de me ver em foto de perto</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="prevenir"><span class="txt">Cuidar agora, antes que piore</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="parar_gastar"><span class="txt">Parar de gastar com o que não funciona</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="outro"><span class="txt">Outro</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 11 · explicação curta -->
+  <section class="screen c" data-s="explica" hidden>
+    <span class="pill">Falta a parte mais importante</span>
+    <h2 id="explica-h">Agora a foto</h2>
+    <div class="cruza" aria-hidden="true">
+      <div class="cz"><b>O que você contou</b><ul id="explica-contou"></ul></div>
+      <span class="cz-mais">+</span>
+      <div class="cz"><b>O que a câmera mostra</b><ul><li>testa</li><li>olhos</li><li>bochechas</li><li>zona T</li><li>contorno</li></ul></div>
+    </div>
+    <p class="sub" id="explica-sub">Suas respostas dizem como você cuida da pele. A foto mostra como ela está hoje. O resultado cruza as duas coisas e diz por onde começar.</p>
+  </section>
+
+  <!-- 12 · instrução da câmera + aceite -->
+  <section class="screen" data-s="instrucao" hidden>
+    <h2>Agora vamos analisar a sua pele</h2>
+    <svg class="rosto-ill" viewBox="0 0 200 220" aria-hidden="true" id="rosto-ill"></svg>
+    <ol class="passos">
+      <li><em>1</em><span><b>Encaixe o rosto no oval</b>Celular na altura do rosto, olhando para a câmera.</span></li>
+      <li><em>2</em><span><b>Vire o rosto devagar</b>Para um lado, depois para o outro. A câmera tira uma foto de frente e uma de cada lado.</span></li>
+      <li><em>3</em><span><b>Continue até o anel acender inteiro</b>Cada parte acende quando a foto daquele lado sai boa.</span></li>
+    </ol>
+    <p class="check-t">Para a análise sair certa:</p>
+    <ul class="check">
+      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>Luz de frente</li>
+      <li><svg viewBox="0 0 24 24"><path d="M12 3c3.9 0 7 3.1 7 7.4 0 4.6-3.4 9.6-7 9.6s-7-5-7-9.6C5 6.1 8.1 3 12 3z"/><path d="M4 4l16 16"/></svg>Sem maquiagem</li>
+      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="6"/><path d="M8 7.5C8 4.5 16 4.5 16 7.5"/><circle cx="12" cy="4" r="1.6"/></svg>Cabelo preso</li>
+      <li><svg viewBox="0 0 24 24"><circle cx="7" cy="13" r="3.6"/><circle cx="17" cy="13" r="3.6"/><path d="M10.6 13h2.8M2 4l20 18"/></svg>Sem óculos</li>
+    </ul>
+    <label class="consent"><input type="checkbox" id="aceite"><span>Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minha foto só para analisá-la conforme os meus interesses, e depois ela será apagada definitivamente.</span></label>
+    <input type="file" id="arquivo" accept="image/*" hidden>
+  </section>
+
+  <!-- 13 · scan -->
+  <section class="screen scan" data-s="scan" hidden>
+    <div class="stage" id="stage">
+      <video id="v-bg" playsinline muted></video>
+      <video id="v-fg" playsinline muted></video>
+      <canvas id="malha"></canvas>
+      <svg id="anel" aria-hidden="true"></svg>
+      <div class="scan-top">
+        <button type="button" class="rd" id="scan-ajuda" aria-label="Ajuda">?</button>
+        <div class="luz" id="luz" role="status"><i id="luz-barra"></i><span id="luz-txt">☀ Luz</span></div>
+        <button type="button" class="rd" id="scan-fechar" aria-label="Fechar a câmera">✕</button>
+      </div>
+      <ol class="angulos" id="angulos" aria-label="Fotos"><li data-a="esquerda">Lado</li><li data-a="frente">Frente</li><li data-a="direita">Lado</li></ol>
+      <p class="scan-dica" id="scan-dica" aria-live="polite">Abrindo a câmera…</p>
+      <button type="button" class="btn pular" id="scan-pular" hidden>Seguir com as fotos que já tenho</button>
+      <div class="scan-help" id="scan-help" hidden>
+        <b>Como fazer</b>
+        <p>Celular na altura do rosto, de frente para uma janela ou lâmpada. Primeiro olhe reto; depois vire o rosto devagar para um lado e para o outro, parando um instante em cada lado.</p>
+        <p>A foto sai sozinha: não precisa tocar em nada.</p>
+        <button type="button" class="btn" id="scan-help-ok">Entendi</button>
+        <button type="button" class="btn ghost" id="scan-galeria">Prefiro escolher uma foto</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 · carregamento -->
+  <section class="screen c" data-s="carregando" hidden>
+    <p class="kicker">Análise da pele</p>
+    <div class="prog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="tr"/><circle cx="60" cy="60" r="52" class="pr" id="prog-c"/></svg><b id="prog-pct">0<small>%</small></b></div>
+    <h2 id="prog-etapa">Lendo suas fotos</h2>
+    <p class="sub">Isso leva alguns segundos. Não feche a página.</p>
+    <div class="dots" id="prog-dots"><i class="on"></i><i></i><i></i><i></i></div>
+  </section>
+
+  <!-- 15 · erro -->
+  <section class="screen c" data-s="erro" hidden>
+    <h2 id="erro-tit">Essa foto não deu para ler</h2>
+    <p class="sub" id="erro-txt"></p>
+  </section>
+
+  <!-- 16 · resultado -->
+  <section class="screen res" data-s="resultado" hidden>
+    <div class="topo-foto"><img id="r-foto" alt="Sua foto de frente, com tarja nos olhos"><span class="data" id="r-data"></span>
+      <div class="lat" id="r-lat"></div></div>
+    <div class="folha">
+      <div class="abas" id="r-abas" role="tablist"></div>
+      <div class="sec-h"><h3>Análise da pele</h3><span id="r-n"></span></div>
+      <div id="r-achados"></div>
+      <p class="aviso">Estimativa pela foto, não é diagnóstico.</p>
+    </div>
+    <div class="bloco" id="r-fortes"></div>
+    <div class="bloco" id="r-valida"></div>
+    <div class="bloco" id="r-recs"></div>
+    <div class="bloco" id="r-cond"></div>
+    <div class="bloco" id="r-comeco"></div>
+    <div class="bloco" id="r-evitar"></div>
+    <div class="bloco" id="r-plano"></div>
+    <p class="aviso fim">Estimativa pela foto, não é diagnóstico. A foto é usada só para a análise e apagada depois.</p>
+  </section>
+
+  <!-- 17 · fechamento com o médico -->
+  <section class="screen" data-s="fechar" hidden>
+    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="72" height="72">
+      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
+    <h2 id="f-tit">Quer que eu te explique esse resultado?</h2>
+    <p class="sub" id="f-sub">Eu olho a sua análise e te explico o que ela mostra e por onde começar. Antes, duas perguntas rápidas:</p>
+    <div class="q" id="q1"><p class="q-t">Se um médico te acompanhasse por 90 dias, quando você começaria?</p>
+      <div class="opts" data-q="quando" data-tipo="um" data-fica="1">
+        <button type="button" class="opt" data-v="agora"><span class="txt">Agora</span><span class="box"></span></button>
+        <button type="button" class="opt" data-v="proximos_meses"><span class="txt">Nos próximos meses</span><span class="box"></span></button>
+        <button type="button" class="opt" data-v="ainda_nao"><span class="txt">Ainda não</span><span class="box"></span></button>
+      </div></div>
+    <div class="q" id="q2"><p class="q-t">Quanto você já gasta por mês cuidando da saúde?</p>
+      <div class="opts" data-q="gasto" data-tipo="um" data-fica="1">
+        <button type="button" class="opt" data-v="nada"><span class="txt">Nada</span><span class="box"></span></button>
+        <button type="button" class="opt" data-v="ate_300"><span class="txt">Até R$ 300</span><span class="box"></span></button>
+        <button type="button" class="opt" data-v="300_1000"><span class="txt">R$ 300 a 1.000</span><span class="box"></span></button>
+        <button type="button" class="opt" data-v="mais_1000"><span class="txt">Mais de R$ 1.000</span><span class="box"></span></button>
+      </div></div>
+    <p class="cod-ref" id="f-cod">A mensagem já vai pronta, com o seu código <b id="cod">LV-0000</b>. No Direct, ela vai copiada: é só colar.</p>
+  </section>
+
+  <div class="cta" id="cta-bar"><div>
+    <a class="btn ico" id="cta-wa" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg>WhatsApp</a>
+    <a class="btn ico" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>Direct do Instagram</a>
+    <button class="btn" id="cta" type="button">Continuar</button>
+    <button class="btn ghost" id="cta-2" type="button" hidden></button>
+  </div></div>
+  <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
+  <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
+    <b id="aviso-tit">Mande esta mensagem no Direct</b>
+    <q id="aviso-msg">Oi, Dr. Lucca! Meu código é LV-0000</q>
+    <span id="aviso-txt">Toque e segure na mensagem, escolha Copiar e cole no Direct.</span>
+    <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
+  </div></div>
+</div>
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
