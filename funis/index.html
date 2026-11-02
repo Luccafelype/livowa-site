@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Funis para testar</title>
+<style>
+:root{--bg:#f2f4f1;--card:#fff;--ink:#141c17;--muted:#5f6d65;--accent:#0d6a4d;--soft:#dcefe6;--warn:#8a6a00;--warn-soft:#f6ebc6;--line:#d6ddd8}
+@media (prefers-color-scheme:dark){:root{--bg:#121614;--card:#1a201d;--ink:#e6ece8;--muted:#9fb0a8;--accent:#52c99c;--soft:#183a2e;--warn:#e2c25a;--warn-soft:#3a3115;--line:#2c3631}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;padding:0 max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left))}
+main{max-width:540px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 0 48px;display:flex;flex-direction:column;gap:12px}
+h1{font-size:1.45rem;margin:0}
+h2{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 0}
+p{margin:0;color:var(--muted);font-size:.93rem}
+a.f{display:flex;flex-direction:column;gap:3px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;color:var(--ink);text-decoration:none}
+a.f:active{border-color:var(--accent)}
+a.f b{font-size:1.02rem;color:var(--accent);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+a.f span{font-size:.88rem;color:var(--muted)}
+a.f small{font:500 .72rem ui-monospace,Menlo,monospace;color:var(--muted);word-break:break-all}
+i{font-style:normal;font:700 .62rem ui-monospace,Menlo,monospace;letter-spacing:.04em;text-transform:uppercase;padding:3px 6px;border-radius:5px;background:var(--soft);color:var(--accent)}
+i.w{background:var(--warn-soft);color:var(--warn)}
+.par{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.marca{background:var(--warn-soft);border-radius:14px;padding:12px 15px;display:flex;flex-direction:column;gap:6px}
+.marca a{color:var(--ink);font-weight:700}
+</style>
+</head>
+<body>
+<main>
+  <h1>Funis para testar</h1>
+  <p>Cada botão abre um caminho exato, sem sorteio. Teste de dentro do Instagram quando o item disser.</p>
+
+  <div class="marca">
+    <p style="color:var(--ink)"><b>Antes, uma vez por aparelho:</b> marque este celular para os seus testes não entrarem nos números.</p>
+    <a href="/eu/">Marcar este aparelho (livowa.com/eu) →</a>
+  </div>
+
+  <h2>O link da bio, como o público recebe</h2>
+  <a class="f" href="/comece/"><b>livowa.com/comece</b><span>Sorteia o teste conforme a aba Portas. O sorteio fica guardado no aparelho: para ver outro, use os de baixo.</span><small>/comece/</small></a>
+
+  <h2>Cada teste</h2>
+  <a class="f" href="/pele2/"><b>Pele 2 <i>novo hoje</i></b><span>Capa, seta sobre o rosto, resultado e o fim de um passo. Faça como mulher e como homem.</span><small>/pele2/</small></a>
+  <div class="par">
+    <a class="f" href="/pele2/?fim=A"><b>Fim A</b><span>Diz que a resposta é em vídeo.</span><small>?fim=A</small></a>
+    <a class="f" href="/pele2/?fim=B"><b>Fim B</b><span>Não fala em vídeo (surpresa).</span><small>?fim=B</small></a>
+  </div>
+  <p>O A/B do fim entra no ar quando o agente da pele terminar; até lá, A e B mostram a mesma tela.</p>
+  <a class="f" href="/idade/"><b>Pernas na cadeira</b><span>Sexo, idade e peso, depois 5 levantadas com a câmera. Padrão novo a caminho.</span><small>/idade/</small></a>
+  <a class="f" href="/braco/"><b>Braço com o celular</b><span>10 s de movimento com o celular na mão. Padrão novo a caminho.</span><small>/braco/</small></a>
+  <a class="f" href="/idade/?pele=1"><b>Pele antiga (selfie) <i class="w">comparação</i></b><span>A versão que divide a pele com a Pele 2 no sorteio.</span><small>/idade/?pele=1</small></a>
+  <a class="f" href="/longevidade/"><b>Quiz da longevidade <i class="w">sem VSL</i></b><span>6 perguntas. O resultado mostra o título e a frase do seu perfil; o vídeo aparece ali quando cada VSL for gravada.</span><small>/longevidade/</small></a>
+  <a class="f" href="/emagrecimento/"><b>Emagrecimento <i class="w">em construção</i></b><span>Abre quando o agente terminar; antes disso, dá página não encontrada.</span><small>/emagrecimento/</small></a>
+
+  <h2>Como chega pelo Direct</h2>
+  <p>Abra estes de dentro do Instagram (mande o link para você no Direct). É o caminho de quem comenta a palavra.</p>
+  <a class="f" href="/comece/?canal=direct&amp;camp=PERNAS"><b>Comentou PERNAS</b><small>/comece/?canal=direct&amp;camp=PERNAS</small></a>
+  <a class="f" href="/comece/?canal=direct&amp;camp=PELE"><b>Comentou PELE</b><small>/comece/?canal=direct&amp;camp=PELE</small></a>
+  <a class="f" href="/comece/?canal=direct&amp;camp=MUSCULO"><b>Comentou MÚSCULO</b><small>/comece/?canal=direct&amp;camp=MUSCULO</small></a>
+  <a class="f" href="/comece/?canal=direct&amp;camp=IDADE"><b>Comentou IDADE</b><small>/comece/?canal=direct&amp;camp=IDADE</small></a>
+</main>
+</body>
+</html>
