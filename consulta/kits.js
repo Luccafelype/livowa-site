@@ -20,10 +20,10 @@ const T = /* gerado dos .md em 01/11 */ {
    "audio": [
     {
      "quando": "",
-     "texto": "Oi, {nome}, aqui é o Lucca. Abri o seu teste do braço agora.\nVocê fez {roscas} roscas em 10 segundos. E a velocidade do seu braço ficou dentro do que a gente espera para quem tem {idade} anos. A idade muscular estimada deu {faixa}.\nDeixa eu te explicar o que esse teste olha. Ele mede a velocidade do cotovelo dobrando e esticando o mais rápido que dá. Isso é potência, força com velocidade. E a potência costuma ser das primeiras coisas que o músculo perde com os anos, antes até da força.\nEntão o seu resultado é uma notícia boa.\nSó uma ressalva honesta: é uma estimativa. O sensor do celular compara o seu movimento com estudos de população. Não substitui uma avaliação.\nVou te mandar agora um vídeo de como fica esse movimento numa pessoa de 20 e poucos anos, pra você comparar. E logo depois um estudo curto sobre por que isso importa lá na frente."
+     "texto": "Oi, {nome}, aqui é o Lucca. Abri o seu teste do braço agora.\nVocê fez {roscas} movimentos em 10 segundos. E a velocidade do seu braço ficou dentro do que a gente espera para quem tem {idade} anos. A idade muscular estimada deu {faixa}.\nDeixa eu te explicar o que esse teste olha. Ele mede a velocidade do cotovelo dobrando e esticando o mais rápido que dá. Isso é potência, força com velocidade. E a potência costuma ser das primeiras coisas que o músculo perde com os anos, antes até da força.\nEntão o seu resultado é uma notícia boa.\nSó uma ressalva honesta: é uma estimativa. O sensor do celular compara o seu movimento com estudos de população. Não substitui uma avaliação.\nVou te mandar agora um vídeo de como fica esse movimento numa pessoa de 20 e poucos anos, pra você comparar. E logo depois um estudo curto sobre por que isso importa lá na frente."
     }
    ],
-   "ref": "[vídeo] Esse é o mesmo teste, feito por {ref_nome}, {ref_idade} anos, medido pelo próprio site: {ref_roscas} roscas em 10 segundos. Repara no cotovelo parado junto do corpo e no braço indo até o fim, nos dois sentidos. Você fez {roscas}. Ficou perto.",
+   "ref": "[vídeo] Esse é o mesmo teste, feito por {ref_nome}, {ref_idade} anos, medido pelo próprio site: {ref_roscas} movimentos em 10 segundos. Repara no cotovelo parado junto do corpo e no braço indo até o fim, nos dois sentidos. Você fez {roscas}. Ficou perto.",
    "estudo": "Por que isso importa: no Rio, 3.889 pessoas de 46 a 75 anos foram acompanhadas por quase 11 anos. Quem tinha mais potência nos braços morreu menos nesse período, e a força pura pesou menos que a potência (Araújo, Mayo Clinic Proceedings, 2025; lá a medida foi num aparelho de remada, não no celular). Estudo de população, que mostra associação. Pra você, serve como ponto de partida pra manter.",
    "convite": "Se você quiser cuidar disso de perto, eu tenho o Programa 90 dias. É uma consulta comigo, os exames de sangue (você paga direto no laboratório), 3 retornos e o meu WhatsApp durante os 90 dias. No fim a gente refaz este mesmo teste e compara com o de hoje. Quer que eu te explique como funciona e o valor?"
   },
@@ -32,10 +32,10 @@ const T = /* gerado dos .md em 01/11 */ {
    "audio": [
     {
      "quando": "",
-     "texto": "Oi, {nome}, aqui é o Lucca. Vi o seu teste do braço.\nVocê fez {roscas} roscas em 10 segundos. A velocidade ficou um pouco abaixo do que a gente espera para {idade} anos, e a idade muscular estimada deu {faixa}.\nAntes de qualquer coisa: isso é bem comum. Até uns 50 anos a velocidade do braço quase não muda com a idade. O que derruba esse número, na maioria das vezes, é rotina. Muito tempo sentado, pouco treino de força, sono curto. E a velocidade é justamente a parte que some primeiro quando o músculo fica parado.\nTem também o lado do teste. Ele é novo, feito com o celular na mão, e pequenos detalhes mudam o número: segurar o celular frouxo, soltar o cotovelo do corpo, começar devagar. Se quiser, refaz com calma e me manda o código novo.\nVou te mandar um vídeo de como fica esse movimento numa pessoa de 20 e poucos anos. E um estudo curto sobre por que vale cuidar disso agora."
+     "texto": "Oi, {nome}, aqui é o Lucca. Vi o seu teste do braço.\nVocê fez {roscas} movimentos em 10 segundos. A velocidade ficou um pouco abaixo do que a gente espera para {idade} anos, e a idade muscular estimada deu {faixa}.\nAntes de qualquer coisa: isso é bem comum. Até uns 50 anos a velocidade do braço quase não muda com a idade. O que derruba esse número, na maioria das vezes, é rotina. Muito tempo sentado, pouco treino de força, sono curto. E a velocidade é justamente a parte que some primeiro quando o músculo fica parado.\nTem também o lado do teste. Ele é novo, feito com o celular na mão, e pequenos detalhes mudam o número: segurar o celular frouxo, soltar o cotovelo do corpo, começar devagar. Se quiser, refaz com calma e me manda o código novo.\nVou te mandar um vídeo de como fica esse movimento numa pessoa de 20 e poucos anos. E um estudo curto sobre por que vale cuidar disso agora."
     }
    ],
-   "ref": "[vídeo] Esse é o mesmo teste, feito por {ref_nome}, {ref_idade} anos, medido pelo próprio site: {ref_roscas} roscas em 10 segundos. Você fez {roscas}. Repara no ritmo: a diferença costuma estar mais na velocidade de virar o movimento do que na força.",
+   "ref": "[vídeo] Esse é o mesmo teste, feito por {ref_nome}, {ref_idade} anos, medido pelo próprio site: {ref_roscas} movimentos em 10 segundos. Você fez {roscas}. Repara no ritmo: a diferença costuma estar mais na velocidade de virar o movimento do que na força.",
    "estudo": "No Rio, 3.889 pessoas de 46 a 75 anos foram acompanhadas por quase 11 anos. Quem tinha mais potência nos braços morreu menos nesse período (Araújo, Mayo Clinic Proceedings, 2025; medido em aparelho de remada). E numa revisão de 16 estudos, fazer força de 30 a 60 minutos por semana apareceu ligado a 10 a 20% menos morte por qualquer causa (Momma, British Journal of Sports Medicine, 2022). São associações de população, e mostram que o assunto tem jeito de ser trabalhado.",
    "convite": "Se fizer sentido olhar isso junto comigo, eu tenho o Programa 90 dias. É uma consulta, os exames de sangue (você paga direto no laboratório), 3 retornos e o meu WhatsApp durante os 90 dias. No fim a gente refaz este teste e vê como ficou. Quer que eu te explique como funciona e o valor?"
   },
@@ -44,10 +44,10 @@ const T = /* gerado dos .md em 01/11 */ {
    "audio": [
     {
      "quando": "",
-     "texto": "Oi, {nome}, aqui é o Lucca. Abri o seu teste do braço.\nVocê fez {roscas} roscas em 10 segundos, e a velocidade ficou bem abaixo do que a gente espera para {idade} anos.\nCalma, que isso é um ponto de partida e tem várias explicações possíveis.\nA primeira é o próprio teste. Com o celular na mão, se o punho gira ou o cotovelo sai do lugar, o número cai. Então vale refazer uma vez, com calma: celular firme, cotovelo colado no corpo, braço indo até o fim.\nA segunda é o dia a dia. Dor no ombro ou no punho, cansaço, noite mal dormida, muito tempo parado. Tudo isso pesa.\nSe o número vier parecido de novo, eu gostaria de olhar com calma: força, exames e rotina. Sem susto. É uma estimativa comparada com estudos de população, e serve pra gente saber de onde você parte.\nVou te mandar o vídeo de referência e um estudo curto."
+     "texto": "Oi, {nome}, aqui é o Lucca. Abri o seu teste do braço.\nVocê fez {roscas} movimentos em 10 segundos, e a velocidade ficou bem abaixo do que a gente espera para {idade} anos.\nCalma, que isso é um ponto de partida e tem várias explicações possíveis.\nA primeira é o próprio teste. Com o celular na mão, se o punho gira ou o cotovelo sai do lugar, o número cai. Então vale refazer uma vez, com calma: celular firme, cotovelo colado no corpo, braço indo até o fim.\nA segunda é o dia a dia. Dor no ombro ou no punho, cansaço, noite mal dormida, muito tempo parado. Tudo isso pesa.\nSe o número vier parecido de novo, eu gostaria de olhar com calma: força, exames e rotina. Sem susto. É uma estimativa comparada com estudos de população, e serve pra gente saber de onde você parte.\nVou te mandar o vídeo de referência e um estudo curto."
     }
    ],
-   "ref": "[vídeo] O mesmo teste, feito por {ref_nome}, {ref_idade} anos, medido pelo próprio site: {ref_roscas} roscas em 10 segundos. Você fez {roscas}. Se for refazer, copia o jeito: cotovelo parado, celular firme, ida e volta completas.",
+   "ref": "[vídeo] O mesmo teste, feito por {ref_nome}, {ref_idade} anos, medido pelo próprio site: {ref_roscas} movimentos em 10 segundos. Você fez {roscas}. Se for refazer, copia o jeito: cotovelo parado, celular firme, ida e volta completas.",
    "estudo": "Um estudo no Havaí mediu a força da mão de 6.089 homens de 45 a 68 anos e esperou 25 anos. Quem estava no terço mais fraco teve quase 3 vezes mais chance de andar muito devagar na velhice do que o terço mais forte (Rantanen, JAMA, 1999; força da mão, outro teste do braço). É associação. O que esse estudo mostra é que o braço na meia-idade conversa com a independência lá na frente, e a meia-idade é quando dá pra agir.",
    "convite": "Eu gostaria de entender o que está por trás desse número. É pra isso que serve o Programa 90 dias: uma consulta comigo, os exames de sangue (você paga direto no laboratório), 3 retornos e o meu WhatsApp durante os 90 dias. No fim a gente refaz o teste e compara. Quer que eu te explique como funciona e o valor?"
   },
@@ -60,11 +60,11 @@ const T = /* gerado dos .md em 01/11 */ {
     },
     {
      "quando": "60 anos ou mais",
-     "texto": "Oi, {nome}, aqui é o Lucca. Abri o seu teste do braço.\nVocê fez {roscas} roscas em 10 segundos, e a velocidade ficou numa faixa que os estudos com pessoas acima de 65 anos ligam a mais fragilidade. Calma: isso descreve o movimento de hoje, e ninguém vai tirar conclusão de um teste de celular.\nO que eu proponho é olhar com calma. Força, equilíbrio, exames de sangue e os remédios que você toma. Muita coisa pesa nesse número: dor no ombro, sono, cansaço, um período mais parado.\nSe quiser, refaz o teste uma vez, celular firme e cotovelo colado no corpo, e me manda o código novo.\nE se no teste você sentiu dor no peito, falta de ar ou tontura, me avisa por aqui.\nVou te mandar um vídeo de referência e um estudo curto."
+     "texto": "Oi, {nome}, aqui é o Lucca. Abri o seu teste do braço.\nVocê fez {roscas} movimentos em 10 segundos, e a velocidade ficou numa faixa que os estudos com pessoas acima de 65 anos ligam a mais fragilidade. Calma: isso descreve o movimento de hoje, e ninguém vai tirar conclusão de um teste de celular.\nO que eu proponho é olhar com calma. Força, equilíbrio, exames de sangue e os remédios que você toma. Muita coisa pesa nesse número: dor no ombro, sono, cansaço, um período mais parado.\nSe quiser, refaz o teste uma vez, celular firme e cotovelo colado no corpo, e me manda o código novo.\nE se no teste você sentiu dor no peito, falta de ar ou tontura, me avisa por aqui.\nVou te mandar um vídeo de referência e um estudo curto."
     }
    ],
    "ref": "[vídeo] Esse é o mesmo teste feito por {ref_nome}, {ref_idade} anos. Mando só pra você ver o jeito do movimento: cotovelo parado, celular firme, ida e volta completas. A comparação que vale pra você é com você mesmo, no próximo teste.",
-   "estudo": "Esse mesmo movimento, com sensor no punho, é usado em hospitais dos Estados Unidos para identificar fragilidade em idosos (Toosizadeh, BMC Geriatrics, 2017). E em Taiwan, entre 13.423 pessoas acima de 65 anos, quem fazia mais roscas em 30 segundos morreu menos em 7 anos (Wu, JAMA Network Open, 2026). Por isso eu prefiro olhar com calma, sem pressa.",
+   "estudo": "Esse mesmo movimento, com sensor no punho, é usado em hospitais dos Estados Unidos para identificar fragilidade em idosos (Toosizadeh, BMC Geriatrics, 2017). E em Taiwan, entre 13.423 pessoas acima de 65 anos, quem fazia mais flexões do cotovelo em 30 segundos morreu menos em 7 anos (Wu, JAMA Network Open, 2026). Por isso eu prefiro olhar com calma, sem pressa.",
    "convite": "Antes de pensar em qualquer treino, eu queria te ver numa consulta. É assim que começa o Programa 90 dias: a consulta, os exames de sangue (você paga direto no laboratório), 3 retornos e o meu WhatsApp durante os 90 dias. No fim a gente refaz o teste. Quer que eu te explique como funciona e o valor?"
   }
  },
@@ -138,7 +138,7 @@ const T = /* gerado dos .md em 01/11 */ {
    },
    {
     "id": "bsemvideo",
-    "texto": "Ainda não existe número publicado de gente jovem nesse teste do celular. O que os estudos têm é de pessoas de 65 a 76 anos com boa saúde: perto de 12 roscas em 10 segundos, com sensor no punho. Estou gravando pessoas de 20 a 30 anos fazendo o mesmo teste e te mando quando ficar pronto."
+    "texto": "Ainda não existe número publicado de gente jovem nesse teste do celular. O que os estudos têm é de pessoas de 65 a 76 anos com boa saúde: perto de 12 movimentos em 10 segundos, com sensor no punho. Estou gravando pessoas de 20 a 30 anos fazendo o mesmo teste e te mando quando ficar pronto."
    },
    {
     "id": "bestudo1",
@@ -154,7 +154,7 @@ const T = /* gerado dos .md em 01/11 */ {
    },
    {
     "id": "bestudo4",
-    "texto": "Esse mesmo movimento, com sensor no punho, é usado em hospitais dos Estados Unidos para identificar fragilidade em idosos (Toosizadeh, BMC Geriatrics, 2017). Em Taiwan, entre 13.423 pessoas acima de 65, quem fazia mais roscas em 30 segundos morreu menos em 7 anos (Wu, JAMA Network Open, 2026). Por isso eu prefiro olhar com calma."
+    "texto": "Esse mesmo movimento, com sensor no punho, é usado em hospitais dos Estados Unidos para identificar fragilidade em idosos (Toosizadeh, BMC Geriatrics, 2017). Em Taiwan, entre 13.423 pessoas acima de 65, quem fazia mais flexões do cotovelo em 30 segundos morreu menos em 7 anos (Wu, JAMA Network Open, 2026). Por isso eu prefiro olhar com calma."
    },
    {
     "id": "convite",
@@ -470,8 +470,8 @@ function classificaBraco(d){
   else if (m.v >= m.FRA) faixa = idade != null && idade < 60 ? 3 : m.v >= m.PRE ? 2 : 3;   // sem idade: régua de 60+
   else faixa = 4;
   if (d.dur != null && d.dur < (m.curto10 ? 7 : 15)) motivos.push(`Medição curta: ${n1(d.dur)} s de ${m.curto10 ? 10 : 20}.`);
-  if (m.roscas != null && m.roscas < 5) motivos.push(`Só ${m.roscas} roscas em 10 s (menos de 5).`);
-  if (faixa === 4 && m.roscas != null && m.roscas >= 12) motivos.push(`Velocidade muito baixa com ${m.roscas} roscas em 10 s: ritmo bom e velocidade baixa não combinam (celular frouxo ou punho girando?).`);
+  if (m.roscas != null && m.roscas < 5) motivos.push(`Só ${m.roscas} movimentos em 10 s (menos de 5).`);
+  if (faixa === 4 && m.roscas != null && m.roscas >= 12) motivos.push(`Velocidade muito baixa com ${m.roscas} movimentos em 10 s: ritmo bom e velocidade baixa não combinam (celular frouxo ou punho girando?).`);
   if (faixa === 4 && idade != null && idade < 60) motivos.push(`Faixa 4 com ${idade} anos é rara nessa idade: primeiro descartar erro de medição.`);
   const titulo = T.braco[faixa].titulo;
   let simples = `Idade muscular estimada: ${m.faixaTxt}`;

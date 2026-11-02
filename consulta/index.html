@@ -716,11 +716,11 @@ function interpretaBraco(d){
     <div class="l"><span>Idade muscular estimada</span><b>${esc(faixa)}</b></div>
     ${comp ? `<div class="l"><span>Comparação</span><b>${esc(comp)}</b></div>` : ''}
     <div class="l"><span>Velocidade (flexão + extensão)</span><b>${esc(num(v))} °/s · ref. 50 anos ${Math.round(VREF)}</b></div>
-    ${reps != null ? `<div class="l"><span>Roscas (em 20 s)</span><b>${reps} · robusto 25 · frágil 15</b></div>` : ''}
+    ${reps != null ? `<div class="l"><span>Movimentos (em 20 s)</span><b>${reps} · robusto 25 · frágil 15</b></div>` : ''}
     ${curto10 ? '' : `<div class="l"><span>Queda do começo para o fim</span><b>${esc(qtxt)}</b></div>`}
     ${curto ? `<p class="alerta">Medição curta (${esc(num(d.dur))} s de ${curto10 ? 10 : 20}): repetir o teste antes de concluir.</p>` : ''}
     <p class="rot"><b>Para o áudio (sugestão):</b> ${esc(roteiro)}</p>
-    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado (sexo não informado × 0,95).${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e roscas dobradas para comparar com os 20 s.' : ''}</p></div>`;
+    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado (sexo não informado × 0,95).${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e movimentos dobrados para comparar com os 20 s.' : ''}</p></div>`;
 }
 async function ver(c){
   codigoAtual = c; desenhaGestao(c);
@@ -894,16 +894,16 @@ function quadrosMov(b){
     const m = c.medida, r = REF.braco;
     return [
       { chave:'resultado', rot:'Resultado', url:quadro('Idade muscular · teste do braço', [
-        { rot:'Roscas em 10 segundos', val:n0(m.roscas), grande:true },
+        { rot:'Movimentos em 10 segundos', val:n0(m.roscas), grande:true },
         { rot:'Velocidade média do cotovelo', val:m.v ? `${n0(m.v)} °/s` : '—' },
         { rot:'Idade muscular estimada', val:m.faixaTxt || '—', cor:COR_Q[c.faixa] },
         { rot:'Idade de verdade', val:d.idade ? `${d.idade} anos` : 'não informou' },
       ], c.faixa ? `Faixa ${c.faixa} de 4 · ${c.titulo}. Estimativa comparada com estudos de população; não é diagnóstico.` : '') },
       { chave:'referencia', rot:'Referência', url:quadro('Referência · teste do braço', [
         { rot:'Velocidade de referência aos 50 anos', val:`${n0(Math.round(m.VREF))} °/s` },
-        { rot:'65 a 76 anos com boa saúde (sensor no punho)', val:'perto de 12 roscas em 10 s' },
-        ...(r ? [{ rot:`${r.nome}, ${r.idade} anos (medido no site)`, val:`${n0(r.roscas)} roscas em 10 s` }] : []),
-        { rot:'Você', val:`${n0(m.roscas)} roscas · ${m.v ? n0(m.v) + ' °/s' : '—'}`, cor:'#4fd1a1' },
+        { rot:'65 a 76 anos com boa saúde (sensor no punho)', val:'perto de 12 movimentos em 10 s' },
+        ...(r ? [{ rot:`${r.nome}, ${r.idade} anos (medido no site)`, val:`${n0(r.roscas)} movimentos em 10 s` }] : []),
+        { rot:'Você', val:`${n0(m.roscas)} movimentos · ${m.v ? n0(m.v) + ' °/s' : '—'}`, cor:'#4fd1a1' },
       ], 'Régua: Toosizadeh 2017 (20 s, 60 anos ou mais) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação.' + (d.sexo === 'f' ? ' Mulher: × 0,9 (estimativa).' : '')) },
     ];
   }
