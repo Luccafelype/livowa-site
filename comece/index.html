@@ -5,13 +5,17 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Livowa</title>
-<style>body{margin:0;background:#0e1311;color:#e7ede9;font:16px system-ui,sans-serif;display:grid;place-items:center;min-height:100vh}a{color:#52c99c}</style>
+<link rel="preconnect" href="https://vfzbtnrqbdkfjzhqkiiu.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<style>body{margin:0;background:#0e1311;color:#e7ede9;font:16px system-ui,sans-serif;display:grid;place-items:center;min-height:100vh}a{color:#52c99c}
+.abrindo{display:flex;flex-direction:column;align-items:center;gap:14px;font-size:.95rem;color:#9fb0a8}.abrindo i{width:28px;height:28px;border-radius:50%;border:3px solid #24302b;border-top-color:#52c99c;animation:g .8s linear infinite}@keyframes g{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.abrindo i{animation:none}}</style>
 </head>
 <body>
+<div class="abrindo" role="status"><i aria-hidden="true"></i><span>Abrindo o seu teste…</span></div>
 <noscript><a href="/idade/">Continuar</a></noscript>
 <script type="module">
 // Link da bio e do Direct: um endereço, vários testes. Desde 01/11 o Lucca escolhe o tema e a % de cada teste na aba
-// Portas da consulta privada (tabela public.rotas, lida pela RPC pública rota_ler). Se o banco não responder em 1,5 s,
+// Portas da consulta privada (tabela public.rotas, lida pela RPC pública rota_ler). Se o banco não responder em 0,9 s,
 // vale a RESERVA abaixo (o estado de 31/10).
 //   ?canal=direct   usa a rota do Direct (as campanhas do OpenReply mandam assim); sem canal = bio
 //   ?camp=PERNAS    a campanha pode ter um teste fixo (definido na aba Portas) ou seguir as % do Direct
@@ -19,7 +23,7 @@
 // Pele A/B (01/11, pedido do Lucca): a fatia "pele" das Portas se divide entre a selfie de /idade (pele) e o funil novo
 // /pele2 (pele2), PELE2_PCT % para o pele2, sorteado uma vez por aparelho. Sem mexer no banco: a aba Portas continua
 // com um só número para a pele. Desligar = PELE2_PCT = 0. Comparar na aba Funil: botão Pele (teste-pele) × Pele 2.
-import * as Analytics from './funnel-analytics.js';
+const analyticsPronto = import('./funnel-analytics.js');   // 02/11: em paralelo com o banco (antes o banco esperava o arquivo)
 const SUPA = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', CHAVE = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';
 const DESTINOS = {
   longevidade: { pele:'/idade/?pele=1', quiz:'/longevidade/', teste:'/idade/', braco:'/braco/', pele2:'/pele2/' },
@@ -36,7 +40,7 @@ const canal = q.get('canal') === 'direct' ? 'direct' : 'bio', camp = (q.get('cam
 
 async function lerRota(){
   try {
-    const r = await fetch(SUPA + '/rest/v1/rpc/rota_ler', { method:'POST', signal: AbortSignal.timeout(1500),
+    const r = await fetch(SUPA + '/rest/v1/rpc/rota_ler', { method:'POST', signal: AbortSignal.timeout(900),
       headers:{ apikey: CHAVE, 'Content-Type':'application/json' }, body: JSON.stringify({ p_canal: canal, p_camp: camp }) });
     if (!r.ok) throw 0;
     const j = await r.json();
@@ -68,13 +72,14 @@ if (id === 'pele' && q.get('f') !== 'pele' && PELE2_PCT > 0){
   id = lado;
 }
 const url = todos[id];
-Analytics.init({ enabled:true, funnelId:'link-bio', variant:id, supabaseUrl:SUPA, supabaseKey:CHAVE });
-Analytics.track('view', { stepId:'roteador', valueText:`${canal}:${tema}${camp ? ':' + camp : ''}:${rota.fonte}` });
+try { const Analytics = await Promise.race([analyticsPronto, new Promise((_, n) => setTimeout(n, 300))]);
+  Analytics.init({ enabled:true, funnelId:'link-bio', variant:id, supabaseUrl:SUPA, supabaseKey:CHAVE });
+  Analytics.track('view', { stepId:'roteador', valueText:`${canal}:${tema}${camp ? ':' + camp : ''}:${rota.fonte}` }); } catch {}
 ['f', 'canal', 'camp'].forEach(x => q.delete(x)); q.set('v', id);   // sem ?sid: cada funil abre a própria sessão
 if (!q.has('utm_source')) q.set('utm_source', canal === 'direct' ? 'ig_direct' : 'ig_bio');
 if (camp && !q.has('utm_campaign')) q.set('utm_campaign', camp.toLowerCase());
 // o sid da bio fica na aba; apagar para o funil abrir sessão nova e não cair na linha 'link-bio' do resumo
-setTimeout(() => { try { sessionStorage.removeItem('livowa_sid'); } catch {} location.replace(url + (url.includes('?') ? '&' : '?') + q); }, 150);   // dá tempo do evento sair (keepalive)
+setTimeout(() => { try { sessionStorage.removeItem('livowa_sid'); } catch {} location.replace(url + (url.includes('?') ? '&' : '?') + q); }, 60);   // dá tempo do evento sair (keepalive)
 </script>
 </body>
 </html>
