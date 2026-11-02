@@ -3,7 +3,7 @@
 // biblioteca (biblioteca.json, gerado de paginas/consulta-codigo/web/sinais.json); nada de texto livre da IA na tela.
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
-import * as Scan from './scan.js?v=2';
+import * as Scan from './scan.js?v=3';
 import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=2';
 
 const $ = id => document.getElementById(id);
@@ -64,6 +64,7 @@ function show(s){
   cur = s;
   Analytics.track('step_view', { stepId:s, stepIndex:ORDEM.indexOf(s) });
   document.body.classList.toggle('scan-on', s === 'scan');
+  document.body.classList.toggle('fim', s === 'fechar');   // a linha do código fica na barra, logo acima dos botões
   $('top').hidden = ['nome','scan','carregando','resultado'].includes(s);
   const cta = $('cta'), c2 = $('cta-2');
   $('cta-bar').hidden = ['scan','carregando'].includes(s);
@@ -82,6 +83,8 @@ function show(s){
 }
 function medirBarra(){ const b = $('cta-bar'); document.documentElement.style.setProperty('--cta-h', (b.hidden ? 0 : b.offsetHeight) + 'px'); }
 addEventListener('resize', medirBarra);
+// a barra muda de altura sem trocar de tela (fonte que chega, texto que quebra, barra do Safari): o espaço no fim acompanha
+if ('ResizeObserver' in window) new ResizeObserver(medirBarra).observe($('cta-bar'));
 // homem não vê a pergunta de gestação: segurança fica "nenhuma" sozinha; se voltar e trocar para mulher, a pergunta volta
 const pula = s => s === 'seguranca' && R.sexo === 'm';
 function ajustarSeguranca(){
