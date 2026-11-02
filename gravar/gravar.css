@@ -3,9 +3,10 @@
 :root{
   --bg:#000; --surface:#17191c; --surface-2:#22252a; --line:#30343a;
   --fg:#f4f5f3; --muted:#a3aaa6; --rec:#ff3b30; --accent:#4fd1a5; --on-accent:#03140e;
-  --eye:#ffd60a; --fs:30px;
+  --eye:#ffd60a; --fs:30px; --fsf:30px;
   --sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -18,7 +19,7 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 .app{position:fixed;left:0;right:0;top:0;height:100%;height:100dvh;display:flex;flex-direction:column;
-  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+  padding:var(--sat) env(safe-area-inset-right,0px) var(--sab) env(safe-area-inset-left,0px)}
 .area{position:relative;flex:1;min-height:0;overflow:hidden}
 /* Posição e tamanho do quadro, da faixa do texto e dos botões de frase: layout() em app.js. */
 .stage{position:absolute;z-index:1;overflow:hidden;background:#0b0c0d;border-radius:14px}
@@ -42,17 +43,21 @@ button{cursor:pointer}
 .eye-h{position:absolute;left:8px;top:-17px;pointer-events:auto;touch-action:none;
   background:var(--eye);color:#1d1600;font:600 12px/1 var(--sys);padding:9px 10px;border-radius:999px;cursor:ns-resize}
 
-/* Teleprompter: faixa no alto da tela, onde fica a lente. */
+/* Teleprompter: faixa no alto da tela, onde fica a lente.
+   Sem mask-image e sem camada composta no texto (will-change/translate3d): no WebKit do iPhone, texto em
+   camada própria dentro de elemento com máscara pode não ser pintado (provável causa da faixa vazia de 02/11).
+   Fonte em propriedades separadas (nada de var() dentro do atalho font). */
 .prompter{position:absolute;left:0;width:100%;top:0;height:31%;overflow:hidden;z-index:3;touch-action:none;cursor:pointer;
-  background:linear-gradient(rgba(0,0,0,.78),rgba(0,0,0,.6) 80%,rgba(0,0,0,0));
-  -webkit-mask-image:linear-gradient(#000 82%,transparent);mask-image:linear-gradient(#000 82%,transparent)}
-.ptext{padding:10px 16px 40px;font:650 var(--fs)/1.25 var(--sys);text-align:center;white-space:pre-wrap;word-break:break-word;
-  text-shadow:0 1px 3px rgba(0,0,0,.6);will-change:transform}
+  background:linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.62) 85%,rgba(0,0,0,.35))}
+.ptext{padding:10px 16px 40px;font-family:var(--sys);font-weight:650;font-size:var(--fs);line-height:1.25;color:#fff;
+  text-align:center;white-space:pre-wrap;word-break:break-word;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .ptext.empty{color:var(--muted);font-size:18px;font-weight:500}
 .band .prompter{background:#000}
 .ptext.frase{padding-bottom:12px}
-.fcur{font:700 var(--fsf,var(--fs))/1.22 var(--sys)}
-.fnext{margin-top:8px;font:600 calc(var(--fsf,var(--fs)) * .6)/1.25 var(--sys);opacity:.42}
+.fcur{display:block;font-weight:700;font-size:var(--fsf);line-height:1.22;color:#fff}
+.fnext{display:block;margin-top:8px;font-weight:600;font-size:calc(var(--fsf) * .6);line-height:1.25;color:#fff;opacity:.42}
+/* Frase a frase: se a frase não couber nem com 18 px, a faixa rola com o dedo (a frase nunca some). */
+.modo-frase .prompter{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain}
 .modo-frase .prompter{cursor:default}
 /* Frase a frase: duas áreas grandes na borda direita do quadro, para o polegar. */
 .fbtn{position:absolute;right:6px;z-index:4;width:clamp(56px,19%,86px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
@@ -112,7 +117,7 @@ button{cursor:pointer}
 .scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5)}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;max-height:86dvh;overflow:auto;-webkit-overflow-scrolling:touch;
   background:#121416;border-top:1px solid var(--line);border-radius:20px 20px 0 0;
-  padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));animation:up .2s ease-out;will-change:transform}
+  padding:8px 16px calc(18px + var(--sab));animation:up .2s ease-out;will-change:transform}
 @media (min-width:600px){.sheet{left:50%;width:520px;transform:translateX(-50%);animation:none}}
 @keyframes up{from{transform:translateY(30px);opacity:.4}}
 .sheet header{position:sticky;top:-8px;z-index:1;display:flex;justify-content:space-between;align-items:center;
@@ -159,7 +164,7 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent);margin:0}
 
 /* Revisão */
 .review{position:fixed;inset:0;z-index:60;background:#000;display:flex;flex-direction:column;gap:10px;
-  padding:calc(env(safe-area-inset-top,0px) + 8px) 16px calc(env(safe-area-inset-bottom,0px) + 14px);will-change:transform}
+  padding:calc(var(--sat) + 8px) 16px calc(var(--sab) + 14px);will-change:transform}
 .review video{flex:1;min-height:0;width:100%;object-fit:contain;background:#0b0c0d;border-radius:14px}
 .rv-info{text-align:center}
 .rv-info p{margin:0}
@@ -171,7 +176,7 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent);margin:0}
 .link{background:none;border:0;color:var(--accent);font-size:15px;text-decoration:none;padding:8px 2px}
 .rv-tip{margin:0;text-align:center;color:var(--muted);font-size:13px}
 
-.toast{position:fixed;left:50%;bottom:calc(170px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;
+.toast{position:fixed;left:50%;bottom:calc(170px + var(--sab));transform:translateX(-50%);z-index:80;
   max-width:min(92vw,420px);background:#2a2d31;color:var(--fg);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;
   box-shadow:0 8px 30px rgba(0,0,0,.5)}
 

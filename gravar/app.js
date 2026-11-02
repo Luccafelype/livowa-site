@@ -417,25 +417,31 @@
     }
     el.fPrev.disabled = !r; el.fNext.disabled = !r;
     el.prompter.dataset.frase = String(fIdx);
+    el.prompter.scrollTop = 0;
     fitFrase();
     prompterClamp(); paintPrompter();
   }
   // Frase a frase: a frase atual tem de caber inteira na faixa; se não couber, a letra diminui só nela.
+  // Nunca esconde a frase atual: no máximo some a próxima; abaixo de 18 px não encolhe, a faixa rola (CSS).
   function fitFrase() {
     let f = S.fs;
     el.app.style.setProperty('--fsf', f + 'px');
+    el.prompter.dataset.fsf = String(f);
     if (!frase() || !atual()) return;
     const n = el.ptext.querySelector('.fnext');
     if (n) n.hidden = false;
-    const cabe = () => el.ptext.scrollHeight <= el.prompter.clientHeight;
-    while (!cabe() && f > 16) { f -= 2; el.app.style.setProperty('--fsf', f + 'px'); }
-    if (!cabe() && n) n.hidden = true; // sem espaço: some a próxima, fica a atual
+    const ph = el.prompter.clientHeight;
+    if (ph < 40) return; // medição no meio de um redimensionamento: o próximo layout() refaz
+    const cabe = () => el.ptext.scrollHeight <= ph;
+    while (!cabe() && f > 18) { f = Math.max(18, f - 2); el.app.style.setProperty('--fsf', f + 'px'); }
+    if (!cabe() && n) n.hidden = true;
     el.prompter.dataset.fsf = String(f);
   }
   function pMax() { return frase() ? 0 : Math.max(0, el.ptext.scrollHeight - el.prompter.clientHeight * 0.45); }
   function prompterClamp() { pOff = Math.min(Math.max(0, pOff), pMax()); }
   function paintPrompter() {
-    el.ptext.style.transform = 'translate3d(0,' + (-pOff).toFixed(1) + 'px,0)';
+    // Frase a frase não usa deslocamento; na rolagem, translateY simples (sem camada 3D, ver gravar.css).
+    el.ptext.style.transform = (frase() || pOff <= 0) ? 'none' : 'translateY(' + (-pOff).toFixed(1) + 'px)';
     let tag = '';
     if (atual()) {
       if (frase()) { const n = frases().length; tag = n ? 'frase ' + (fIdx + 1) + '/' + n : ''; }
