@@ -206,7 +206,7 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .meter{display:flex;gap:3px}
 .meter i{width:14px;height:8px;border-radius:3px;background:var(--line)}
 .meter i.on{background:var(--accent)}
-/* ---- 02/11: o mesmo fim da pele2 (capa com o médico, resultado com os dois caminhos, tela final de um passo) ---- */
+/* ---- 02/11: o mesmo fim da pele2 (capa com o médico, resultado com um botão só, tela final de um passo) ---- */
 .medico{display:flex;gap:14px;align-items:center}
 .medico img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--surface);box-shadow:0 2px 12px rgba(0,0,0,.12);flex:none}
 .medico b{display:block;font:700 1.1rem var(--display)}
@@ -220,7 +220,6 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .medida b{font:800 1.7rem/1.15 var(--display);color:var(--accent)}
 .res-txt{font-size:1.02rem}
 .res-txt b{font-weight:600}
-.btn.ghost.link{min-height:40px;padding:4px 8px;font:500 .88rem/1.3 var(--body);text-decoration:underline;text-underline-offset:3px}
 .pele-card .btn.sec{background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);padding:13px}
 .screen.fim{gap:14px}
 .f-acao{display:flex;flex-direction:column;gap:8px;margin-top:6px}
@@ -291,7 +290,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
   </section>
 
   <!-- resultado (02/11, molde da pele2): o número continua só na conversa (decisão de 28/10); a tela repete o que foi
-       medido e cita as respostas. Botão = caminho 1 (o Dr. Lucca explica em vídeo); link discreto = caminho 2 (lembrete). -->
+       medido e cita as respostas. Um botão só: o Dr. Lucca explica em vídeo (02/11: o link do lembrete de 4 semanas saiu). -->
   <section class="screen final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Teste concluído</span>
     <h2 id="res-tit">Seu teste está <em>pronto</em></h2>
@@ -308,7 +307,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
     </div>
   </section>
 
-  <!-- tela final (02/11, molde da pele2): UM passo só, em 3ª pessoa. O caminho vem da escolha no resultado. -->
+  <!-- tela final (02/11, molde da pele2): UM passo só, em 3ª pessoa. -->
   <section class="screen fim" data-s="fechar" data-p="100" hidden>
     <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
       <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
@@ -318,7 +317,6 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
       <a class="btn ico" id="f-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="f-wa-txt">Enviar meu código pelo WhatsApp</span></a>
       <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
       <a class="link-alt" id="f-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
-      <button type="button" class="link-alt" id="f-troca" hidden>Quero a explicação em vídeo</button>
     </div>
     <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b> · </span>Estimativa, não é diagnóstico.</p>
   </section>
@@ -539,13 +537,12 @@ function show(s){
   $('progress').style.width = (el.dataset.p || 0) + '%';
   const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true; $('cta-dm').hidden = true;
   $('cta-bar').hidden = s === 'fechar';   // tela final: o botão mora na própria tela
-  c2.classList.toggle('link', s === 'resultado');
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
-  // resultado: botão = caminho 1 (o Dr. Lucca explica); link discreto, sem opção negativa = caminho 2 (lembrete)
-  if (s === 'resultado'){ cta.textContent = 'Quero que o Dr. Lucca me explique'; c2.hidden = false; c2.textContent = c2.dataset.txt || 'Prefiro seguir sozinho e receber um lembrete em 4 semanas'; }
+  // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
+  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';
   if (s === 'fechar') prepararFechamento();
   cta.disabled = false;
   cta.classList.remove('off');
@@ -575,7 +572,7 @@ $('cta').addEventListener('click', () => {
     dadosOk = true; falar(' ', true);
     Analytics.track('answer', { stepId:'dados', valueText:'confirmado', props:{ idade:dados.idade, peso:dados.peso, altura:dados.altura, como:Object.fromEntries(CHAVES.map(k => [k, confirmado[k] || 'padrao'])) } });
     show('camera'); abrirCamera(); }
-  else if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; show('fechar'); }
+  else if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); show('fechar'); }
   else if (cur === 'pele-inicio'){ if (!$('pele-ok').checked) return apontarAceite(); falar(' ', true); show('pele-camera'); abrirCameraPele(); }
   else if (cur === 'pele-envio') enviarPele();
   else if (cur === 'pele-erro'){ if (peleErroRede && capturas.length) enviarPele(); else { show('pele-camera'); abrirCameraPele(); } }
@@ -584,7 +581,6 @@ $('cta-2').addEventListener('click', () => {
   pararCamera(); pararCameraPele();
   if (cur === 'pele-inicio' || cur === 'pele-camera' || cur === 'pele-erro'){ if ($('pele-ok').checked) $('pele-arquivo').click(); return; }
   if (cur === 'pele-envio' || cur === 'pele-resultado'){ descartarCaptura(); show('pele-camera'); abrirCameraPele(); return; }
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'lembrete' }); caminho = 2; show('fechar'); return; }
   show('dados');
 });
 
@@ -858,13 +854,11 @@ function fimDirect(sec){
   if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);   // Direct primeiro, WhatsApp pequeno embaixo
 }
 // =====================================================================
-// FIM DAS PERNAS (02/11, molde da pele2): a escolha é feita UMA vez, no resultado (botão = caminho 1, link = caminho 2).
+// FIM DAS PERNAS (02/11, molde da pele2): o resultado tem um botão só (o Dr. Lucca explica); o lembrete de 4 semanas saiu.
 // Tela final de um passo, em 3ª pessoa. Medição igual à pele2: cta_click com props.canal whatsapp/direct (é o que a
-// Caixa e o Funil contam como conversa) + props.escolha (explicar/lembrete) + props.codigo.
+// Caixa e o Funil contam como conversa) + props.escolha ('explicar') + props.codigo.
 // =====================================================================
-let caminho = 1;
-const escolha = () => caminho === 2 ? 'lembrete' : 'explicar';
-const sozinho = () => sexo === 'f' ? 'sozinha' : 'sozinho';
+const escolha = () => 'explicar';
 const homemMulher = () => sexo === 'f' ? 'uma mulher' : 'um homem';
 const homensMulheres = () => sexo === 'f' ? 'mulheres' : 'homens';
 const metros = cm => (cm / 100).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 }) + '&nbsp;m';
@@ -873,26 +867,19 @@ function personalizar(){
   const i = dados.idade;
   $('res-txt1').innerHTML = `Para ${homemMulher()} de <b>${i}&nbsp;anos</b>, com <b>${dados.peso}&nbsp;kg</b> e <b>${metros(dados.altura)}</b>, esse tempo mostra a potência das pernas.`;
   $('res-txt2').innerHTML = `O Dr. Lucca compara a sua potência com a de <b>${homensMulheres()} de ${i}&nbsp;anos</b> e explica a idade que as suas pernas mostram.`;
-  $('cta-2').dataset.txt = `Prefiro seguir ${sozinho()} e receber um lembrete em 4 semanas`;
 }
 function mensagemFim(){
-  return caminho === 2
-    ? `Oi, Dr. Lucca! Fiz o teste das pernas, código ${meuCodigo()}. Vou seguir ${sozinho()} e quero o lembrete para refazer o teste em 4 semanas.`
-    : `Oi, Dr. Lucca! Fiz o teste das pernas, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
+  return `Oi, Dr. Lucca! Fiz o teste das pernas, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
 }
 function prepararFechamento(){
-  const c1 = caminho !== 2;
   $('res-cod').textContent = meuCodigo();
-  $('f-tit').textContent = c1 ? 'O Dr. Lucca vai explicar o seu resultado em vídeo' : 'Combinado: em 4 semanas, um lembrete para refazer o teste';
-  $('f-sub').textContent = c1 ? `Um vídeo de 1 minuto sobre o seu teste, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`
-                              : 'O Dr. Lucca te responde com o seu resultado por escrito. Na 4ª semana, ele te manda um lembrete para refazer o teste e comparar.';
+  $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado em vídeo';
+  $('f-sub').textContent = `Um vídeo de 1 minuto sobre o seu teste, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`;
   $('f-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagemFim())}`;
-  $('f-troca').hidden = c1;
   if (LV) return fimDirectFechar();
-  $('f-wa-txt').textContent = c1 ? 'Enviar meu código pelo WhatsApp' : 'Receber o lembrete no WhatsApp';
-  $('f-dm').hidden = !c1;   // o Direct só no caminho 1 (o lembrete é pelo WhatsApp), como na pele2
+  $('f-wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
+  $('f-dm').hidden = false;
 }
-$('f-troca').addEventListener('click', () => { caminho = 1; prepararFechamento(); });
 const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
 $('f-wa').addEventListener('click', () => Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } }));
 $('f-dm').addEventListener('click', e => {

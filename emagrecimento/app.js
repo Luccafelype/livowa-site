@@ -53,9 +53,9 @@ function show(s){
   cur = s;
   Analytics.track('step_view', { stepId:s, stepIndex:ORDEM.indexOf(s) });
   $('top').hidden = ['capa','carregando','resultado'].includes(s);
-  const cta = $('cta'), c2 = $('cta-2');
+  const cta = $('cta');
   $('cta-bar').hidden = ['carregando','fechar'].includes(s);
-  cta.hidden = false; c2.hidden = true; cta.classList.remove('off');
+  cta.hidden = false; cta.classList.remove('off');
   cta.textContent = 'Continuar';
   if (s === 'capa') cta.textContent = 'Começar o teste';
   if (s === 'nome') cta.classList.toggle('off', nome1().length < 2);
@@ -63,8 +63,7 @@ function show(s){
   if (s === 'cintura') cta.classList.toggle('off', !cinturaPronta());
   if (s === 'tentou') cta.classList.toggle('off', !R.tentou.length);
   if (QUIZ.includes(s)) cta.classList.toggle('off', R[s] == null);
-  if (s === 'resultado'){ cta.textContent = 'Quero que o Dr. Lucca me explique'; c2.hidden = false; c2.textContent = 'Prefiro seguir o plano sozinho e receber um lembrete em 4 semanas'; }
-  c2.classList.toggle('link', s === 'resultado');
+  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
   if (s === 'fechar') prepararFechamento();
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nomeBonito() + ', ' : ''; });
   $('txt-constancia').textContent = `Começo ${g('animada', 'animado')} e paro em poucas semanas`;
@@ -161,10 +160,7 @@ $('cta').addEventListener('click', () => {
   if (cur === 'cintura'){ Analytics.track('answer', { stepId:'cintura', valueText:R.cintura === 'sei' ? 'mediu' : 'sem_fita' }); return proxima(); }
   if (cur === 'tentou'){ Analytics.track('answer', { stepId:'tentou', valueText:R.tentou.join('+') }); return proxima(); }
   if (QUIZ.includes(cur)) return proxima();
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; return show('fechar'); }
-});
-$('cta-2').addEventListener('click', () => {
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'lembrete' }); caminho = 2; show('fechar'); }
+  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
 });
 
 // =====================================================================
@@ -361,28 +357,22 @@ function montarResultado(){
 function respostasLimpa(){ const { nome, faseAuto, ...r } = R; return { ...r, tentou:R.tentou.join('+') }; }
 
 // =====================================================================
-// FECHAMENTO (mesmo molde da pele2, 02/11 v2): a escolha é feita UMA vez, no resultado (botão = caminho 1, link = 2).
-// Tela final de um passo só, em 3ª pessoa. Medição igual: cta_click com props.canal whatsapp/direct + props.escolha.
+// FECHAMENTO (mesmo molde da pele2, 02/11 v2): o resultado tem um botão só (o Dr. Lucca explica); o lembrete de 4 semanas saiu.
+// Tela final de um passo só, em 3ª pessoa. Medição igual: cta_click com props.canal whatsapp/direct + props.escolha ('explicar').
 // =====================================================================
-let caminho = 1;
 const sou = () => nomeBonito() ? `Sou ${g('a', 'o')} ${nomeBonito()}` : '';
 function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste do emagrecimento, código ${meuCodigo()}. Quero que você me explique o meu resultado.`; }
-function mensagemLembrete(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + ', código ' : 'Meu código é '}${meuCodigo()}. Vou começar pelo plano do teste do emagrecimento e quero o lembrete em 4 semanas.`; }
-const escolha = () => caminho === 2 ? 'lembrete' : 'explicar';
+const escolha = () => 'explicar';
 function prepararFechamento(){
-  const c1 = caminho !== 2, nome = nomeBonito();
+  const nome = nomeBonito();
   $('cod').textContent = meuCodigo();
-  $('f-tit').textContent = c1 ? (nome ? `${nome}, o Dr. Lucca vai explicar o seu resultado em vídeo` : 'O Dr. Lucca vai explicar o seu resultado em vídeo')
-                              : 'Combinado: em 4 semanas, um lembrete para refazer o teste';
-  $('f-sub').textContent = c1 ? `Um vídeo de 1 minuto sobre as suas respostas, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`
-                              : 'Siga o plano deste resultado. Na 4ª semana o Dr. Lucca te manda um lembrete para refazer o teste e comparar com hoje.';
-  $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(c1 ? mensagem() : mensagemLembrete())}`;
-  $('f-troca').hidden = c1;
+  $('f-tit').textContent = nome ? `${nome}, o Dr. Lucca vai explicar o seu resultado em vídeo` : 'O Dr. Lucca vai explicar o seu resultado em vídeo';
+  $('f-sub').textContent = `Um vídeo de 1 minuto sobre as suas respostas, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`;
+  $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   if (LV) return fimDirect();
-  $('wa-txt').textContent = c1 ? 'Enviar meu código pelo WhatsApp' : 'Receber o lembrete no WhatsApp';
-  $('cta-dm').hidden = !c1;
+  $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
+  $('cta-dm').hidden = false;
 }
-$('f-troca').addEventListener('click', () => { caminho = 1; prepararFechamento(); });
 const fimProps = e => ({ escolha:e, codigo:meuCodigo() });
 $('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
 $('cta-dm').addEventListener('click', e => { if (LV) return direto_lv(e, escolha()); abrirDirect(e); });

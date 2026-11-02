@@ -85,8 +85,7 @@ function show(s){
   if (QUIZ.includes(s)) cta.classList.toggle('off', !respondida(s));
   if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); animarIlustracao(); }
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
-  if (s === 'resultado'){ cta.textContent = 'Quero que o Dr. Lucca me explique'; c2.hidden = false; c2.textContent = 'Prefiro seguir o plano sozinho e receber um lembrete em 4 semanas'; }
-  c2.classList.toggle('link', s === 'resultado');   // no resultado, o caminho 2 é um link discreto (não botão, sem "não")
+  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
   if (s === 'fechar') prepararFechamento();
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nome1() + ', ' : ''; });
   window.scrollTo(0, 0);
@@ -186,11 +185,10 @@ $('cta').addEventListener('click', () => {
   if (QUIZ.includes(cur)) return proxima();
   if (cur === 'instrucao') return abrirScan();
   if (cur === 'erro') return erroRede && fotos ? enviar(fotos) : abrirScan();
-  if (cur === 'resultado'){ track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; return show('fechar'); }
+  if (cur === 'resultado'){ track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
 });
 $('cta-2').addEventListener('click', () => {
   if (cur === 'erro') $('arquivo').click();
-  if (cur === 'resultado'){ track('cta_click', { stepId:'resultado', valueText:'lembrete' }); caminho = 2; show('fechar'); }
 });
 $('galeria').addEventListener('click', () => { if (!$('aceite').checked) return apontarAceite(); $('arquivo').click(); });
 $('aceite').addEventListener('change', () => { $('aceite').closest('.consent').classList.remove('alerta'); if (cur === 'instrucao') $('cta').classList.toggle('off', !$('aceite').checked); });
@@ -544,36 +542,29 @@ function montarResultado(j, f){
 function respostasLimpa(){ const { nome, ...r } = R; return { ...r, incomoda:R.incomoda.join('+') }; }
 
 // =====================================================================
-// FECHAMENTO (02/11, v2): a escolha é feita UMA vez, no resultado (botão = caminho 1, link discreto = caminho 2).
+// FECHAMENTO (02/11, v2): o resultado tem um botão só (o Dr. Lucca explica); o link do lembrete de 4 semanas saiu (02/11).
 // A tela final tem um passo só, em 3ª pessoa: título, 1 frase, botão, "abre o WhatsApp com a mensagem pronta", rodapé.
-// 1 = o Dr. Lucca explica em vídeo (WhatsApp ou Direct); 2 = lembrete em 4 semanas (link troca para o 1).
-// Medição igual: cta_click com props.canal whatsapp/direct (conta como conversa no Funil e na Caixa) + props.escolha.
+// O Dr. Lucca explica (WhatsApp ou Direct); o texto muda com o A/B do fim (A = vídeo, B = ele olha e responde).
+// Medição igual: cta_click com props.canal whatsapp/direct (conta como conversa no Funil e na Caixa) + props.escolha ('explicar').
 // =====================================================================
-let caminho = 1;
 const souA = () => R.sexo === 'm' ? 'o' : 'a';
 const sou = () => nomeBonito() ? `Sou ${souA()} ${nomeBonito()}` : '';
 function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz a análise da pele, código ${meuCodigo()}. Quero que você me explique o meu resultado.`; }
-function mensagemLembrete(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + ', código ' : 'Meu código é '}${meuCodigo()}. Vou começar pelo plano e quero o lembrete da nova foto.`; }
-const escolha = () => caminho === 2 ? 'lembrete' : 'explicar';
+const escolha = () => 'explicar';
 function prepararFechamento(){
-  const c1 = caminho !== 2, nome = nomeBonito();
+  const nome = nomeBonito();
   $('cod').textContent = meuCodigo();
   const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado em vídeo';
-  $('f-tit').textContent = c1 ? (nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1))
-                              : 'Combinado: em 4 semanas, um lembrete para refazer a foto';
+  $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
   const canal = LV ? 'Direct' : 'WhatsApp';
-  $('f-sub').textContent = c1 ? (FIM === 'B' ? `Ele responde pessoalmente no seu ${canal}, em até 24 horas.` : `Um vídeo de 1 minuto sobre a sua foto, no seu ${canal}, em até 24 horas. Ele grava um por um.`)
-                              : 'Siga o plano desta análise. Na 4ª semana o Dr. Lucca te manda um lembrete para comparar com a foto de hoje.';
-  $('f-troca').textContent = FIM === 'B' ? 'Quero que o Dr. Lucca olhe o meu resultado' : 'Quero a explicação em vídeo';
-  $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(c1 ? mensagem() : mensagemLembrete())}`;
-  $('f-troca').hidden = c1;
+  $('f-sub').textContent = FIM === 'B' ? `Ele responde pessoalmente no seu ${canal}, em até 24 horas.` : `Um vídeo de 1 minuto sobre a sua foto, no seu ${canal}, em até 24 horas. Ele grava um por um.`;
+  $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   if (LV) return fimDirect();
-  $('wa-txt').textContent = c1 ? 'Enviar meu código pelo WhatsApp' : 'Receber o lembrete no WhatsApp';
-  $('cta-dm').hidden = !c1;   // o Direct só no caminho 1 (o lembrete é pelo WhatsApp)
+  $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
+  $('cta-dm').hidden = false;
 }
-$('f-troca').addEventListener('click', () => { caminho = 1; prepararFechamento(); });
 const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo() });
-const fimValor = (esc_ = escolha()) => `${esc_}|fim${FIM}`;   // valueText do cta_click final: 'explicar|fimA', 'lembrete|fimB'…
+const fimValor = (esc_ = escolha()) => `${esc_}|fim${FIM}`;   // valueText do cta_click final: 'explicar|fimA' ou 'explicar|fimB'
 $('cta-wa').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
 $('cta-dm').addEventListener('click', e => { if (LV) return direto_lv(e, escolha()); abrirDirect(e); });
 
@@ -599,7 +590,7 @@ function abrirDirect(e){
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
 $('aviso-link').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor('explicar') + '|abrir', props:{ canal:'direct', ...fimProps('explicar') } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 // link marcado (?lv=): quem veio do Direct pelo link do Dr. Lucca não precisa de código. Mesmo molde: "Voltar ao
-// Instagram" (ele já recebeu a análise) e "ou pelo WhatsApp"; a escolha (explicar/lembrete) vai no evento.
+// Instagram" (ele já recebeu a análise) e "ou pelo WhatsApp"; a escolha ('explicar') vai no evento.
 const LV = Analytics.getLv();
 const IG_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>';
 function fimDirect(){

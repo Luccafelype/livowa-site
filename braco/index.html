@@ -108,7 +108,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .loadbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s ease}
 .cod-ref b{font:600 .88rem var(--mono);color:var(--fg);letter-spacing:.04em;white-space:nowrap}
 
-/* 02/11: o mesmo fim da pele2 (capa com o médico, resultado com os dois caminhos, tela final de um passo) */
+/* 02/11: o mesmo fim da pele2 (capa com o médico, resultado com um botão só, tela final de um passo) */
 .medico{display:flex;gap:14px;align-items:center}
 .medico img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--surface);box-shadow:0 2px 12px rgba(0,0,0,.12);flex:none}
 .medico b{display:block;font:700 1.1rem var(--display)}
@@ -122,7 +122,6 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .medida b{font:800 1.7rem/1.15 var(--display);color:var(--accent)}
 .res-txt{font-size:1.02rem;text-align:left}
 .res-txt b{font-weight:600}
-.btn.ghost.link{min-height:40px;padding:4px 8px;font:500 .88rem/1.3 var(--body);text-decoration:underline;text-underline-offset:3px}
 .screen.fim{gap:14px}
 .f-acao{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .f-nota{text-align:center;font-size:.88rem;color:var(--muted)}
@@ -219,17 +218,17 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
       <source src="/idade/img/logo/logo-caligrafia-pagina.mp4" type="video/mp4">
     </video>
     <h2>Analisando o seu <em>movimento</em>…</h2>
-    <p class="sub" id="an-etapa">Contando as roscas</p>
+    <p class="sub" id="an-etapa">Contando os movimentos</p>
     <div class="loadrow"><span>ANALISANDO</span><span id="an-pct">0%</span></div>
     <div class="loadbar"><i id="an-bar"></i></div>
   </section>
 
   <!-- resultado (02/11, molde da pele2): o número continua só na conversa (decisão de 28/10); a tela repete o que foi
-       medido e cita as respostas. Botão = caminho 1 (o Dr. Lucca explica em vídeo); link discreto = caminho 2 (lembrete). -->
+       medido e cita as respostas. Um botão só: o Dr. Lucca explica em vídeo (02/11: o link do lembrete de 4 semanas saiu). -->
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Teste concluído</span>
     <h2>Seu teste está <em>pronto</em></h2>
-    <div class="medida"><span class="rot">O que o sensor mediu</span><b id="res-medida">0 roscas em 10 s</b></div>
+    <div class="medida"><span class="rot">O que o sensor mediu</span><b id="res-medida">0 movimentos em 10 s</b></div>
     <div class="trava" aria-label="Resultado bloqueado: o Dr. Lucca explica">
       <span class="rot" id="res-rot">A sua idade muscular × a sua idade</span>
       <div class="regua" aria-hidden="true"><div class="trilho"></div><i class="a"></i><i class="b"></i><span style="left:38%">00 anos</span><span style="left:66%">00 anos</span></div>
@@ -239,7 +238,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
     <p class="res-txt" id="res-txt2"></p>
   </section>
 
-  <!-- tela final (02/11, molde da pele2): UM passo só, em 3ª pessoa. O caminho vem da escolha no resultado. -->
+  <!-- tela final (02/11, molde da pele2): UM passo só, em 3ª pessoa. -->
   <section class="screen fim" data-s="fechar" data-p="100" hidden>
     <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
       <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
@@ -249,7 +248,6 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
       <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="f-wa-txt">Enviar meu código pelo WhatsApp</span></a>
       <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
       <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
-      <button type="button" class="link-alt" id="f-troca" hidden>Quero a explicação em vídeo</button>
     </div>
     <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b> · </span>Estimativa, não é diagnóstico.</p>
   </section>
@@ -261,7 +259,6 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 
   <div class="cta" id="cta-bar"><div>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
-    <button class="btn ghost" id="cta-2" type="button" hidden></button>
   </div></div>
   <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
   <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
@@ -345,23 +342,19 @@ function show(s){
   Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s) });
   $('top').hidden = s === 'inicio' || s === 'medir' || s === 'analise' || s === 'resultado';
   $('progress').style.width = (el.dataset.p || 0) + '%';
-  const cta = $('cta'), c2 = $('cta-2'); cta.hidden = false; cta.disabled = false; cta.classList.remove('off'); c2.hidden = true;
+  const cta = $('cta'); cta.hidden = false; cta.disabled = false; cta.classList.remove('off');
   $('cta-bar').hidden = s === 'fechar';   // tela final: o botão mora na própria tela
-  c2.classList.toggle('link', s === 'resultado');
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Continuar'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); atualizarDados(); }   // sexo e os 2 números
   if (s === 'sensor') cta.textContent = sensorOk ? 'Começar' : 'Liberar o sensor';
   if (s === 'medir' || s === 'analise') cta.hidden = true;
-  // resultado: botão = caminho 1 (o Dr. Lucca explica); link discreto, sem opção negativa = caminho 2 (lembrete)
-  if (s === 'resultado'){ cta.textContent = 'Quero que o Dr. Lucca me explique'; c2.hidden = false; c2.textContent = `Prefiro seguir ${sozinho()} e receber um lembrete em 4 semanas`; }
+  // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
+  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';
   if (s === 'fechar') prepararFechamento();
   if (s === 'erro') cta.textContent = 'Tentar de novo';
   scrollTo(0, 0);
 }
-$('cta-2').addEventListener('click', () => {
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'lembrete' }); caminho = 2; show('fechar'); }
-});
 // iPhone: puxar a página para baixo recarrega o Safari e apagaria o teste; durante a medição o arraste fica desligado
 document.addEventListener('touchmove', e => { if (cur === 'medir') e.preventDefault(); }, { passive:false });
 $('back').addEventListener('click', () => { const i = order.indexOf(cur); show(cur === 'erro' ? 'sensor' : cur === 'fechar' ? 'resultado' : order[Math.max(0, i - 1)]); });
@@ -372,7 +365,7 @@ $('cta').addEventListener('click', async () => {
     if (faltam().length) return apontarDados();
     Analytics.track('answer', { stepId:'dados', valueText:'confirmado', props:{ idade:dados.idade, peso:dados.peso, como:Object.fromEntries(CHAVES.map(k => [k, confirmado[k] || 'padrao'])) } });
     return show('sensor'); }
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; return show('fechar'); }
+  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
   if (cur === 'sensor' && !sensorOk) return liberar();
   if (cur === 'sensor' || cur === 'erro') return sensorOk ? medir() : (show('sensor'));
 });
@@ -381,7 +374,7 @@ $('cta').addEventListener('click', async () => {
 let amostras = [], picos = [], gravando = false, t0 = 0, hz = [], ouvindo = false, fim = null;
 let ini = null, relogioT = null;
 // Contagem pela DIREÇÃO do giro (31/10): projeta a rotação no eixo principal do movimento (o do cotovelo) e conta cada
-// troca de sentido como meia rosca, com histerese. Não depende de intervalo entre picos: funciona rápido ou devagar.
+// troca de sentido como meio movimento (meia flexão ou meia extensão), com histerese. Não depende de intervalo entre picos: funciona rápido ou devagar.
 const LIMIAR = 90;                       // °/s: abaixo disso não conta troca de sentido (tremor, ajuste da mão)
 let eixo = [1, 0, 0], estado = 0, picoAtual = 0, tPico = 0, meias = [];
 function atualizaEixo(){
@@ -456,8 +449,8 @@ function encerrar(){
   const reps = Math.floor(picos.length / 2);
   const wmaxAll = amostras.length ? Math.round(Math.max(...amostras.map(s => s.w))) : 0;
   if (!reps){
-    Analytics.track('answer', { stepId:'medir', valueText:'sem-rosca', props:{ nav:NAV, leituras:amostras.length, wmax:wmaxAll, hz:hz.length } });
-    return erro('Não contei nenhuma rosca', `Segure o celular firme na mão, toque em Começar e já faça roscas rápidas. (${amostras.length} leituras, giro máximo ${wmaxAll} °/s)`);
+    Analytics.track('answer', { stepId:'medir', valueText:'sem-movimento', props:{ nav:NAV, leituras:amostras.length, wmax:wmaxAll, hz:hz.length } });
+    return erro('Não contei nenhum movimento', `Segure o celular firme na mão, toque em Começar e já dobre e estique o cotovelo, rápido. (${amostras.length} leituras, giro máximo ${wmaxAll} °/s)`);
   }
   // medidas no formato dos estudos (Toosizadeh 2015/2017): velocidade, nº de flexões, queda (1ºs × últimos 5 s), variabilidade
   const z = ini ?? 0, dur = Math.min(DURACAO, (picos[picos.length - 1].t - z)) / 1000;
@@ -471,10 +464,10 @@ function encerrar(){
   analisar(() => {
     $('res-cod').textContent = meuCodigo();
     // 02/11: a tela repete o que o sensor mediu (a pessoa viu o número subir) e cita as respostas dela em cada frase
-    $('res-medida').textContent = `${reps} ${reps === 1 ? 'rosca' : 'roscas'} em ${Math.round(DURACAO / 1000)}\u00a0s`;
+    $('res-medida').textContent = `${reps} ${reps === 1 ? 'movimento' : 'movimentos'} em ${Math.round(DURACAO / 1000)}\u00a0s`;
     personalizar();
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
-      valueText:`${reps} roscas em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em 10 s ela mistura a aceleração do começo
+      valueText:`${reps} movimentos em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em 10 s ela mistura a aceleração do começo
       props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
         queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'10s',
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
@@ -486,7 +479,7 @@ function encerrar(){
   });
 }
 function analisar(fim){
-  show('analise'); const etapas = ['Contando as roscas', 'Medindo a velocidade de cada uma', 'Comparando com os estudos de envelhecimento', 'Preparando o seu resultado'];
+  show('analise'); const etapas = ['Contando os movimentos', 'Medindo a velocidade de cada uma', 'Comparando com os estudos de envelhecimento', 'Preparando o seu resultado'];
   let k = 0; const T = 4200, t1 = performance.now();
   const iv = setInterval(() => {
     const f = Math.min(1, (performance.now() - t1) / T); $('an-bar').style.width = Math.round(f * 100) + '%'; $('an-pct').textContent = Math.round(f * 100) + '%';
@@ -495,42 +488,34 @@ function analisar(fim){
   }, 100);
 }
 // =====================================================================
-// FIM (02/11, molde da pele2): a escolha é feita UMA vez, no resultado (botão = caminho 1, link = caminho 2).
+// FIM (02/11, molde da pele2): o resultado tem um botão só (o Dr. Lucca explica); o lembrete de 4 semanas saiu.
 // Tela final de um passo, em 3ª pessoa. Medição igual à pele2: cta_click com props.canal whatsapp/direct (é o que a
-// Caixa e o Funil contam como conversa) + props.escolha (explicar/lembrete) + props.codigo.
+// Caixa e o Funil contam como conversa) + props.escolha ('explicar') + props.codigo.
 // =====================================================================
-let caminho = 1;
-const escolha = () => caminho === 2 ? 'lembrete' : 'explicar';
-const sozinho = () => sexo === 'f' ? 'sozinha' : sexo === 'm' ? 'sozinho' : 'por conta própria';
+const escolha = () => 'explicar';
 const quem = () => sexo === 'f' ? 'uma mulher de' : sexo === 'm' ? 'um homem de' : 'quem tem';
 const pares = () => sexo === 'f' ? 'mulheres' : sexo === 'm' ? 'homens' : 'pessoas';
 // toda frase que depende de uma resposta cita a resposta (o peso vai para a ficha, mas não entra na régua do braço)
 function personalizar(){
   const i = dados.idade;
   $('res-rot').textContent = `A sua idade muscular × os seus ${i} anos`;
-  $('res-txt1').innerHTML = `Para ${quem()} <b>${i}&nbsp;anos</b>, a velocidade dessas roscas mostra a potência dos braços.`;
+  $('res-txt1').innerHTML = `Para ${quem()} <b>${i}&nbsp;anos</b>, a velocidade desses movimentos mostra a potência dos braços.`;
   $('res-txt2').innerHTML = `O Dr. Lucca compara a sua velocidade com a de <b>${pares()} de ${i}&nbsp;anos</b> e explica a idade que os seus músculos mostram.`;
 }
 function mensagem(){
-  return caminho === 2
-    ? `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}. Vou seguir ${sozinho()} e quero o lembrete para refazer o teste em 4 semanas.`
-    : `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
+  return `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
 }
 // ---------- link marcado (?lv=, 31/10/2026): quem veio do Direct pelo link do Dr. Lucca não precisa de código ----------
 const LV = Analytics.getLv();
 function prepararFechamento(){
-  const c1 = caminho !== 2;
   $('res-cod').textContent = meuCodigo();
-  $('f-tit').textContent = c1 ? 'O Dr. Lucca vai explicar o seu resultado em vídeo' : 'Combinado: em 4 semanas, um lembrete para refazer o teste';
-  $('f-sub').textContent = c1 ? `Um vídeo de 1 minuto sobre o seu teste, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`
-                              : 'O Dr. Lucca te responde com o seu resultado por escrito. Na 4ª semana, ele te manda um lembrete para refazer o teste e comparar.';
+  $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado em vídeo';
+  $('f-sub').textContent = `Um vídeo de 1 minuto sobre o seu teste, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`;
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  $('f-troca').hidden = c1;
   if (LV) return fimDirect();
-  $('f-wa-txt').textContent = c1 ? 'Enviar meu código pelo WhatsApp' : 'Receber o lembrete no WhatsApp';
-  $('cta-dm').hidden = !c1;   // o Direct só no caminho 1 (o lembrete é pelo WhatsApp), como na pele2
+  $('f-wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
+  $('cta-dm').hidden = false;
 }
-$('f-troca').addEventListener('click', () => { caminho = 1; prepararFechamento(); });
 const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
 $('cta-link').addEventListener('click', () => Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } }));
 $('cta-dm').addEventListener('click', e => {
@@ -572,7 +557,7 @@ $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', {
 
 show('inicio');
 window.__braco = { show, dados, DURACAO,   // só para teste automatizado
-  // resultado sem sensor: n roscas fingidas (meia rosca a cada 0,4 s), passa pela análise e chega ao resultado
+  // resultado sem sensor: n movimentos fingidos (meio movimento a cada 0,4 s), passa pela análise e chega ao resultado
   testarResultado:n => { amostras = [{ t:0, v:[0,0,0], w:300, acc:0 }]; meias = Array.from({ length:2*n }, (_, k) => ({ t:k*400, w:300 + k, sentido:k % 2 ? -1 : 1 })); estado = 0; ini = 0; gravando = true; encerrar(); } };
 </script>
 </body>
