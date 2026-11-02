@@ -116,12 +116,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .screen.capa{gap:14px}
 .capa .medico{margin-top:14px}
 .capa .anim{height:min(40vh,400px)}
-.conf{align-self:stretch;min-height:40px;border-radius:12px;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);font:600 .9rem var(--body);cursor:pointer}
-.conf[aria-pressed="true"]{background:var(--accent-2);border-color:var(--accent-2)}
-.wheelbox.alerta .wheel-wrap,.wheelbox.alerta .conf{border-color:var(--warn);background:var(--warn-bg)}
-.wheelbox.alerta label{color:var(--warn);font-weight:600}
 .falta{font-size:.88rem;text-align:center;color:var(--muted)}
-.falta.alerta{color:var(--warn);font-weight:600}
 .medida{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;text-align:left}
 .medida .rot{font:600 .78rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .medida b{font:800 1.7rem/1.15 var(--display);color:var(--accent)}
@@ -190,12 +185,10 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
       <button type="button" data-sexo="n" aria-pressed="false">Prefiro não informar</button>
     </div>
     <div class="wheels">
-      <div class="wheelbox"><label id="l-idade">Idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade"></div></div><button type="button" class="conf" data-conf="idade" aria-pressed="false">Confirmo</button></div>
-      <div class="wheelbox"><label id="l-peso">Peso (kg)</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso"></div></div><button type="button" class="conf" data-conf="peso" aria-pressed="false">Confirmo</button></div>
+      <div class="wheelbox"><label id="l-idade">Idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade"></div></div></div>
+      <div class="wheelbox"><label id="l-peso">Peso (kg)</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso"></div></div></div>
     </div>
-    <!-- 02/11: as rodas começam em 40/80; quem não mexia mandava esses números como se fossem seus. Cada número
-         precisa ser rolado ou confirmado ("Confirmo") antes de seguir. -->
-    <p class="falta" id="falta">Role cada número até o seu, ou toque em Confirmo.</p>
+    <p class="falta" id="falta">Role para escolher.</p>
   </section>
 
   <section class="screen c" data-s="sensor" data-p="60" hidden>
@@ -280,8 +273,24 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 </div>
 
 <script type="module">
-import * as Analytics from '/idade/funnel-analytics.js';
-import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js?v=3';
+// 02/11: nenhum import estático antes do 1º toque. No 3G o módulo esperava funnel-analytics.js e dica-direct.js
+// chegarem (e disputarem banda com o vídeo da capa) e o botão só respondia 2 a 5 s depois de aparecer.
+// A medição entra numa fila com a hora do toque e sai quando o módulo chega; a dica do Direct carrega por trás.
+function filaAnalytics(mod){
+  let A = null; const fila = [];
+  mod.then(m => { A = m; fila.splice(0).forEach(f => f()); }).catch(() => {});
+  const lvOk = v => typeof v === 'string' && /^[A-Za-z0-9_-]{22}$/.test(v);
+  return {
+    init: c => { if (A) A.init(c); else fila.push(() => A.init(c)); },
+    track: (t, o = {}) => { const oo = { ...o, ts:new Date().toISOString() }; if (A) A.track(t, oo); else fila.push(() => A.track(t, oo)); },
+    getLv: () => { try { const q = new URLSearchParams(location.search).get('lv'); if (lvOk(q)){ try { sessionStorage.setItem('livowa_lv', q); } catch {} return q; }
+                         const s = sessionStorage.getItem('livowa_lv'); return lvOk(s) ? s : null; } catch { return null; } }   // igual ao getLv do módulo
+  };
+}
+let _dica = null; const dicaP = import('/assets/js/dica-direct.js?v=3').then(m => (_dica = m)).catch(() => {});
+function dicaDirect(o){ if (_dica) return _dica.dicaDirect(o); dicaP.then(m => m && m.dicaDirect(o)); }
+const Analytics = filaAnalytics(import('/idade/funnel-analytics.js?v=2'));
+const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // o mesmo teste de dica-direct.js
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 Analytics.init({ enabled:true, funnelId:'teste-braco', variant:new URLSearchParams(location.search).get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
 Analytics.track('view');
@@ -316,31 +325,12 @@ function wheel(id, from, to, start){
   return w;
 }
 const wheels = [wheel('w-idade', 18, 90, 40), wheel('w-peso', 40, 180, 80)], starts = [40, 80], CHAVES = ['idade','peso'];
-const NOME_DADO = { idade:'a idade', peso:'o peso' };
-function confirmar(key, como){
-  if (!confirmado[key]) confirmado[key] = como;
-  const b = document.querySelector(`[data-conf="${key}"]`); b.setAttribute('aria-pressed', 'true'); b.textContent = '✓ Confirmado';
-  b.closest('.wheelbox').classList.remove('alerta');
-  atualizarDados();
-}
-document.querySelectorAll('[data-conf]').forEach(b => b.addEventListener('click', () => confirmar(b.dataset.conf, 'confirmou')));
-const faltam = () => [...(sexo ? [] : ['sexo']), ...CHAVES.filter(k => !confirmado[k])];
-function atualizarDados(){
-  if (cur !== 'dados') return;
-  const f = faltam(), n = f.filter(k => k !== 'sexo');
-  $('cta').classList.toggle('off', f.length > 0);
-  const el = $('falta');
-  if (!f.length){ el.textContent = 'Tudo certo. Pode seguir.'; el.classList.remove('alerta'); return; }
-  if (!el.classList.contains('alerta')) { el.textContent = 'Role cada número até o seu, ou toque em Confirmo.'; return; }
-  el.textContent = 'Falta ' + [...(f.includes('sexo') ? ['escolher uma opção de sexo'] : []), ...(n.length ? ['confirmar ' + n.map(k => NOME_DADO[k]).join(' e ')] : [])].join(' e ') + '.';
-}
-function apontarDados(){
-  $('falta').classList.add('alerta');
-  if (!sexo) document.querySelector('.seg').classList.add('alerta');
-  CHAVES.forEach(k => { if (!confirmado[k]) document.querySelector(`[data-conf="${k}"]`).closest('.wheelbox').classList.add('alerta'); });
-  atualizarDados();
-  (sexo ? document.querySelector('.wheels') : document.querySelector('.seg')).scrollIntoView({ block:'center', behavior:'smooth' });
-}
+function confirmar(key, como){ if (!confirmado[key]) confirmado[key] = como; }   // só registra (vai no answer dados/confirmado)
+// 02/11 (Lucca: "deixar como está"): os números não travam mais; só o sexo é obrigatório. O evento continua dizendo
+// se a pessoa mexeu em cada número ('rolou') ou deixou como veio ('padrao').
+const faltam = () => sexo ? [] : ['sexo'];
+function atualizarDados(){ if (cur === 'dados') $('cta').classList.toggle('off', !sexo); }   // a régua muda com o sexo
+function apontarDados(){ const g = document.querySelector('.seg'); g.classList.add('alerta'); g.scrollIntoView({ block:'center', behavior:'smooth' }); }
 document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click', () => {
   sexo = b.dataset.sexo; document.querySelectorAll('[data-sexo]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   b.parentNode.classList.remove('alerta'); atualizarDados();
@@ -380,7 +370,7 @@ $('cta').addEventListener('click', async () => {
   if (cur === 'como') return show('dados');
   if (cur === 'dados'){
     if (faltam().length) return apontarDados();
-    Analytics.track('answer', { stepId:'dados', valueText:'confirmado', props:{ idade:dados.idade, peso:dados.peso, como:{ ...confirmado } } });
+    Analytics.track('answer', { stepId:'dados', valueText:'confirmado', props:{ idade:dados.idade, peso:dados.peso, como:Object.fromEntries(CHAVES.map(k => [k, confirmado[k] || 'padrao'])) } });
     return show('sensor'); }
   if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; return show('fechar'); }
   if (cur === 'sensor' && !sensorOk) return liberar();

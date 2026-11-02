@@ -105,7 +105,7 @@ export function track(eventType, opts = {}) {
       p_step_index: (opts.stepIndex === undefined ? null : opts.stepIndex),
       p_value_text: opts.valueText ?? null,
       p_props: props,
-      p_client_ts: new Date().toISOString()
+      p_client_ts: opts.ts || new Date().toISOString()   // 02/11: a página pode carimbar a hora do toque (fila antes do módulo)
     });
   } catch (e) { /* nunca quebra o funil */ }
 }
