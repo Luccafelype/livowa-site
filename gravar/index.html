@@ -27,6 +27,7 @@
       <img id="ghostImg" class="ghost" alt="" hidden>
       <video id="ghostVid" class="ghost" muted playsinline preload="auto" hidden></video>
 
+      <div class="g916" id="g916" hidden></div>
       <div class="grid" id="grid" hidden><i class="v1"></i><i class="v2"></i><i class="h1"></i><i class="h2"></i></div>
       <div class="eye" id="eye" hidden><span class="eye-h" id="eyeHandle">olhos ↕</span></div>
 
@@ -130,7 +131,13 @@
       <label class="sw"><input type="checkbox" id="optGrid"><span>Grade de terços</span></label>
       <label class="sw"><input type="checkbox" id="optEye"><span>Marca da altura dos olhos <small>arraste a linha amarela</small></span></label>
       <label class="sw"><input type="checkbox" id="optMirror" checked><span>Espelhar a câmera frontal na tela <small>o arquivo nunca sai espelhado</small></span></label>
-      <label class="sw"><input type="checkbox" id="optCrop"><span>Gravar pelo recorte 9:16 <small>use se o vídeo sair deitado ou com outra proporção</small></span></label>
+      <label class="sw"><input type="checkbox" id="optGuide" checked><span>Linhas do 9:16 <small>mostram o que fica num corte para o Reels</small></span></label>
+      <label class="sw"><input type="checkbox" id="optCrop"><span>Recortar o arquivo em 9:16 <small>desligado: grava o quadro inteiro da câmera</small></span></label>
+    </div>
+    <div class="row" id="zoomRow" hidden>
+      <label for="zoom">Zoom</label>
+      <input type="range" id="zoom" min="1" max="2" step="0.1" value="1">
+      <output id="zoomOut">1×</output>
     </div>
     <dl class="info" id="info"></dl>
     <p class="priv">Esta página não tem análise de uso e não envia nada pela internet. Depois de aberta uma vez, funciona sem conexão.</p>

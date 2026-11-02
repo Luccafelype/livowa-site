@@ -1,8 +1,9 @@
 /* livowa.com/gravar — gravador com teleprompter e fantasma de enquadramento.
    Nada sai do aparelho: sem análise de uso, sem rede (o CSP bloqueia connect-src).
    Duas rotas de gravação:
-   - direta: a faixa da câmera já é 9:16 (iPhone em pé) → MediaRecorder grava a própria câmera;
-   - recorte: a câmera entrega outra proporção (Mac, 16:9) → desenha o centro 9:16 num canvas e grava o canvas.
+   - quadro inteiro (padrão, 02/11 16h50): grava o quadro que a câmera entrega, sem cortar (o recorte automático
+     de antes deu "muito zoom" no iPhone: 608×1080 de um quadro mais largo); linhas finas mostram o 9:16;
+   - recorte 9:16 (opção em Ajustes): desenha o centro 9:16 num canvas e grava o canvas.
    Nas duas, o arquivo sai sem espelho e sem fantasma/grade/texto (tudo isso é só DOM por cima). */
 (() => {
   'use strict';
@@ -12,7 +13,7 @@
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte: false,
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true,
   };
   const S = Object.assign({}, DEF);
   try {
@@ -37,6 +38,7 @@
     frameRow: $('#frameRow'), ghostFrame: $('#ghostFrame'), ghostFrameOut: $('#ghostFrameOut'),
     ghostOnChk: $('#ghostOn'), ghostFlipChk: $('#ghostFlip'), ghostClear: $('#ghostClear'),
     optGrid: $('#optGrid'), optEye: $('#optEye'), optMirror: $('#optMirror'), optCrop: $('#optCrop'), info: $('#info'),
+    optGuide: $('#optGuide'), g916: $('#g916'), zoomRow: $('#zoomRow'), zoom: $('#zoom'), zoomOut: $('#zoomOut'),
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
     toast: $('#toast'),
@@ -51,17 +53,37 @@
     clearTimeout(toastT); toastT = setTimeout(() => { el.toast.hidden = true; }, ms);
   }
 
-  /* ---------- Quadro 9:16 sempre inteiro na tela ---------- */
+  /* ---------- Quadro inteiro na tela, na proporção do que vai para o arquivo ---------- */
+  function stageAspect() {
+    const [w, h] = camDims();
+    return (S.recorte916 || !w || !h) ? 9 / 16 : w / h;
+  }
   function layout() {
     const r = el.area.getBoundingClientRect();
-    let w = r.width, h = w * 16 / 9;
-    if (h > r.height) { h = r.height; w = h * 9 / 16; }
+    const a = stageAspect();
+    let w = r.width, h = w / a;
+    if (h > r.height) { h = r.height; w = h * a; }
     el.stage.style.width = Math.floor(w) + 'px';
     el.stage.style.height = Math.floor(h) + 'px';
+    el.cam.classList.toggle('crop916', !!S.recorte916);
+    // Guia 9:16: linhas finas mostrando o que sobra num corte 9:16 (o vídeo do Instagram).
+    const g = el.g916, t = 9 / 16;
+    const show = S.guia916 && !S.recorte916 && Math.abs(a - t) > 0.01;
+    g.hidden = !show;
+    if (show) {
+      g.classList.toggle('wide', a > t);
+      if (a > t) { const p = t / a * 100; g.style.left = ((100 - p) / 2) + '%'; g.style.width = p + '%'; g.style.top = '0'; g.style.height = '100%'; }
+      else { const p = a / t * 100; g.style.top = ((100 - p) / 2) + '%'; g.style.height = p + '%'; g.style.left = '0'; g.style.width = '100%'; }
+    }
     prompterClamp();
   }
+  // Barra do Safari some/aparece, giro, teclado: recalcula. O enquadramento não muda com o tamanho:
+  // o quadro tem sempre a proporção do arquivo e a câmera usa contain (cover só no modo recorte,
+  // onde o quadro já é 9:16 e cover mostra exatamente o centro 9:16 que vai para o arquivo).
   window.addEventListener('resize', layout);
-  window.addEventListener('orientationchange', () => setTimeout(layout, 300));
+  window.addEventListener('orientationchange', () => { layout(); setTimeout(layout, 300); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
+  if (window.ResizeObserver) new ResizeObserver(() => layout()).observe(el.area);
 
   /* ---------- Estado geral ---------- */
   let state = 'idle'; // idle | count | rec | review
@@ -105,8 +127,11 @@
     showCamMsg('Abrindo a câmera…', false);
     const audio = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
     const tries = [
-      { video: { facingMode: { ideal: S.facing }, width: { ideal: 1080 }, height: { ideal: 1920 }, aspectRatio: { ideal: 9 / 16 }, frameRate: { ideal: 30 } }, audio },
-      { video: { facingMode: { ideal: S.facing } }, audio: true },
+      // 4:3 em pé costuma ser o campo cheio do sensor da frontal; depois 9:16; depois o que vier.
+      { video: { facingMode: { ideal: S.facing }, width: { ideal: 1440 }, height: { ideal: 1920 } }, audio },
+      { video: { facingMode: { ideal: S.facing }, width: { ideal: 1080 }, height: { ideal: 1920 } }, audio },
+      { video: { facingMode: { ideal: S.facing } }, audio },
+      { video: true, audio: true },
     ];
     let lastErr = null;
     for (const c of tries) {
@@ -123,8 +148,10 @@
     try { const p = el.cam.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* autoplay cuida */ }
     applyMirror();
     await waitDims(el.cam);
+    await setupZoom(vt);
     camReady = true;
     showCamMsg(null);
+    layout();
     updateInfo();
     try {
       const devs = await navigator.mediaDevices.enumerateDevices();
@@ -140,7 +167,28 @@
       setTimeout(res, 4000);
     });
   }
-  el.cam.addEventListener('resize', updateInfo);
+  el.cam.addEventListener('resize', () => { layout(); updateInfo(); });
+  /* Zoom: se a câmera expõe zoom, começa no mínimo (campo mais aberto) e vira controle em Ajustes. */
+  let zoomCap = null;
+  async function setupZoom(vt) {
+    zoomCap = null; el.zoomRow.hidden = true;
+    try {
+      const c = vt && vt.getCapabilities && vt.getCapabilities();
+      const z = c && c.zoom;
+      if (!z || !isFinite(z.min) || !isFinite(z.max) || z.max <= z.min) return;
+      zoomCap = z;
+      el.zoom.min = z.min; el.zoom.max = z.max; el.zoom.step = z.step || 0.1; el.zoom.value = z.min;
+      el.zoomOut.textContent = (+z.min).toFixed(1).replace('.', ',') + '×';
+      el.zoomRow.hidden = false;
+      await vt.applyConstraints({ advanced: [{ zoom: z.min }] });
+    } catch (e) { /* sem zoom controlável */ }
+  }
+  el.zoom.addEventListener('input', () => {
+    const vt = stream && stream.getVideoTracks()[0];
+    const v = +el.zoom.value;
+    el.zoomOut.textContent = v.toFixed(1).replace('.', ',') + '×';
+    if (vt && vt.applyConstraints) vt.applyConstraints({ advanced: [{ zoom: v }] }).catch(() => {});
+  });
   el.camRetry.addEventListener('click', startCam);
   el.flipBtn.addEventListener('click', () => {
     S.facing = S.facing === 'user' ? 'environment' : 'user'; save(); startCam();
@@ -152,9 +200,14 @@
   }
   function camDims() { return [el.cam.videoWidth || 0, el.cam.videoHeight || 0]; }
   function direct() {
-    if (S.recorte) return false;
+    if (!S.recorte916) return true;
     const [w, h] = camDims();
     return !!(w && h && Math.abs(w / h - 9 / 16) < 0.02);
+  }
+  function ratioTxt(w, h) {
+    const r = w / h;
+    for (const [a, b] of [[9, 16], [3, 4], [1, 1], [4, 3], [16, 9]]) if (Math.abs(r - a / b) < 0.015) return a + ':' + b;
+    return r.toFixed(2).replace('.', ',');
   }
   function outDims() {
     const [w, h] = camDims();
@@ -169,11 +222,24 @@
     const [w, h] = camDims();
     const [ow, oh] = outDims();
     const mime = pickMime();
-    el.resTag.textContent = ow ? ow + '×' + oh + ' · ' + extOf(mime) : '';
+    // Selo de diagnóstico: o que o track entrega (getSettings), proporção, zoom e formato.
+    const vt = stream && stream.getVideoTracks()[0];
+    const st = (vt && vt.getSettings && vt.getSettings()) || {};
+    const tw = st.width || w, th = st.height || h;
+    let selo = '';
+    if (tw && th) {
+      selo = tw + '×' + th + ' · ' + ratioTxt(tw, th);
+      if (st.aspectRatio && Math.abs(st.aspectRatio - tw / th) > 0.01) selo += ' (ar ' + (+st.aspectRatio).toFixed(2) + ')';
+      if (w && h && (w !== tw || h !== th)) selo += ' · tela ' + w + '×' + h;
+      selo += zoomCap ? ' · zoom ' + (+zoomCap.min).toFixed(1).replace('.0', '') + '–' + (+zoomCap.max).toFixed(1).replace('.0', '') : ' · sem zoom';
+      if (!direct()) selo += ' · recorte ' + ow + '×' + oh;
+      selo += ' · ' + extOf(mime);
+    }
+    el.resTag.textContent = selo;
     const rows = [
       ['Câmera', w ? w + '×' + h + (facingNow === 'environment' ? ' (traseira)' : ' (frontal)') : '—'],
       ['Arquivo', ow ? ow + '×' + oh : '—'],
-      ['Rota', w ? (direct() ? 'direta (a câmera já é 9:16)' : 'recorte 9:16 do centro') : '—'],
+      ['Rota', w ? (direct() ? 'quadro inteiro da câmera' : 'recorte 9:16 do centro') : '—'],
       ['Formato', mime || (window.MediaRecorder ? 'padrão do navegador' : 'este navegador não grava')],
     ];
     el.info.textContent = '';
@@ -401,12 +467,13 @@
   function applyGuides() {
     el.grid.hidden = !S.grid; el.eye.hidden = !S.eye;
     el.eye.style.top = S.eyePos + '%';
-    el.optGrid.checked = S.grid; el.optEye.checked = S.eye; el.optMirror.checked = S.mirrorFront; el.optCrop.checked = S.recorte;
+    el.optGrid.checked = S.grid; el.optEye.checked = S.eye; el.optMirror.checked = S.mirrorFront; el.optCrop.checked = S.recorte916; el.optGuide.checked = S.guia916;
   }
   el.optGrid.addEventListener('change', () => { S.grid = el.optGrid.checked; save(); applyGuides(); });
   el.optEye.addEventListener('change', () => { S.eye = el.optEye.checked; save(); applyGuides(); });
   el.optMirror.addEventListener('change', () => { S.mirrorFront = el.optMirror.checked; save(); applyMirror(); });
-  el.optCrop.addEventListener('change', () => { S.recorte = el.optCrop.checked; save(); updateInfo(); });
+  el.optCrop.addEventListener('change', () => { S.recorte916 = el.optCrop.checked; save(); layout(); updateInfo(); });
+  el.optGuide.addEventListener('change', () => { S.guia916 = el.optGuide.checked; save(); layout(); });
   let eyeDrag = false;
   el.eyeHandle.addEventListener('pointerdown', (e) => { eyeDrag = true; try { el.eyeHandle.setPointerCapture(e.pointerId); } catch (err) { /* ok */ } e.stopPropagation(); });
   el.eyeHandle.addEventListener('pointermove', (e) => {
@@ -474,9 +541,9 @@
   }
   function beginRecording() {
     if (!window.MediaRecorder) { toast('Este navegador não grava vídeo. Atualize o iOS ou use o Chrome.'); return false; }
-    route = direct() ? 'direta' : 'recorte';
+    route = direct() ? 'quadro inteiro' : 'recorte 9:16';
     let src;
-    try { src = route === 'direta' ? stream : canvasStream(); } catch (e) { route = 'direta'; src = stream; }
+    try { src = route === 'quadro inteiro' ? stream : canvasStream(); } catch (e) { route = 'quadro inteiro'; src = stream; }
     const mime = pickMime();
     const opts = { videoBitsPerSecond: 8000000, audioBitsPerSecond: 128000 };
     if (mime) opts.mimeType = mime;
