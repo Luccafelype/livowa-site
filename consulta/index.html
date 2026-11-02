@@ -321,7 +321,7 @@ const TZ = 'America/Sao_Paulo';
 
 // ---------- Caixa ----------
 const STATUS = [['novo','Novo'],['respondi','Respondi'],['consulta','Consulta marcada'],['nao_quis','Não quis']];
-const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil;
+const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
 let LEADS = [], filtro = 'abertos';
 const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '');
 function origem(o){
@@ -340,6 +340,8 @@ function resumo(l){
     if (n === 'Pele 2'){ const ach = (p.resumo || '').split('+').filter(x => SIN2[x]).map(x => SIN2[x][0].toLowerCase()), q = String(d.respostas?.incomoda || '').split('+').filter(Boolean).map(x => (ROT2.incomoda[1][x] || x).toLowerCase());
       return `Pele 2: ${ach.length ? ach.join(', ') : p.resumo === 'nenhum' ? 'nada marcado' : '?'}${q.length ? ` · queixa: ${q.join(', ')}` : ''}`; }
     if (n === 'Quiz') return `Quiz: ${d.ajuda === 'medico' || p.resumo === 'medico' ? 'quer com médico' : d.ajuda || p.resumo ? 'por conta própria' : 'respondido'}`;
+    if (n === 'Emagrecimento'){ const P = { volta:'o peso volta', vontade:'vontade de comer', balanca:'balança parada', constancia:'começa e para', comeco:'não sabe por onde começar' };
+      return `Emagrecimento: ${P[d.perfil || p.resumo] || p.resumo || '?'}${d.imc ? ` · IMC ${String(d.imc).replace('.', ',')}` : ''}${d.rc ? ` · cintura/altura ${String(d.rc).replace('.', ',')}` : ''}`; }
     if (n === 'Idade muscular') return `Idade muscular: ${(p.resumo || '?').replace(/ · queda -?\d+%/, '')}${d.idade ? ` (tem ${d.idade})` : ''}`;
     return `${n}: ${p.resumo || ''}`;
   }).join(' · ');
@@ -431,7 +433,7 @@ $('t-portas').onclick = () => aba('portas');
 $('t-funil').onclick = () => aba('funil');
 
 // ---------- Portas (01/11) ----------
-const NOME_TESTE = { pele:'Pele do rosto (metade selfie /idade, metade /pele2)', quiz:'Quiz da longevidade', teste:'Pernas', braco:'Idade muscular (braço)' };
+const NOME_TESTE = { pele:'Pele do rosto (metade selfie /idade, metade /pele2)', quiz:'Quiz da longevidade', teste:'Pernas', braco:'Idade muscular (braço)', emag:'Teste do emagrecimento' };
 const NOME_CAMP = { PERNAS:'PERNAS', MUSCULO:'MÚSCULO', PELE:'PELE', IDADE:'IDADE' };
 const NOME_TEMA = { longevidade:'Longevidade', emagrecimento:'Emagrecimento' };
 let PORTAS = null;
@@ -493,17 +495,18 @@ async function salvarPorta(el){
 }
 
 // ---------- Funil (01/11): onde as pessoas caem, etapa por etapa (RPCs funil_opcoes e funil_etapas, pela edge) ----------
-const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['pele2','Pele 2'],['teste-braco','Idade muscular'],['quiz-longevidade','Quiz'],['link-bio','Link da bio'],['quiz-metabolico','Quiz do app']];
+const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['pele2','Pele 2'],['teste-braco','Idade muscular'],['teste-emagrecimento','Emagrecimento'],['quiz-longevidade','Quiz'],['link-bio','Link da bio'],['quiz-metabolico','Quiz do app']];
 const ETAPA = {
   'teste-pernas': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, peso e altura', camera:'Câmera (5 levantadas)', resultado:'Resultado (dois caminhos)', fechar:'Médico (tela final)' },
   'pele2': { capa:'Capa (promessa)', nome:'Nome', sexo:'Sexo', seguranca:'Gestação/amamentação', alergia:'Alergia', incomoda:'O que incomoda (fotos)', tipo:'Tipo de pele', sol:'Sol por dia', agua:'Água', sono:'Sono', rotina:'Rotina', objetivo:'Objetivo', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (frente e lados)', carregando:'Analisando', resultado:'Resultado', fechar:'Médico + dois caminhos', erro:'Erro' },
+  'teste-emagrecimento': { capa:'Capa (promessa)', sexo:'Sexo', fase:'Gestação/amamentação', idade:'Idade', nome:'Nome', medidas:'Peso e altura', cintura:'Cintura (opcional)', acontece:'O que mais acontece (decide o perfil)', tentou:'O que já tentou', vontade:'Vontade de comer', sono:'Sono', forca:'Força', proteina:'Proteína', objetivo:'Objetivo', carregando:'Calculando', resultado:'Resultado', fechar:'Médico (um passo)' },
   'teste-pele': { 'pele-inicio':'Início da pele (aceite)', 'pele-camera':'Câmera da selfie', 'pele-envio':'Conferir e enviar a foto', 'pele-analise':'Analisando a foto', 'pele-resultado':'Tela final da pele', 'pele-erro':'Erro na pele' },
   'teste-braco': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, sexo e peso', sensor:'Permissão do sensor', medir:'Medição (10 s)', analise:'Analisando', resultado:'Resultado (dois caminhos)', erro:'Erro no sensor', fechar:'Médico (tela final)' },
   'quiz-longevidade': { capa:'Capa do quiz', autoridade:'Quem vai ler as respostas', objetivo:'O que quer continuar fazendo', idade:'Idade', 'lugar-certo':'Você está no lugar certo', rotina:'Rotina da semana', ciencia:'A ciência', incomoda:'O que incomoda', atrapalha:'O que trava', ajuda:'Sozinho ou com médico', contato:'Contato', loading:'Calculando', resultado:'Resultado' },
   'link-bio': { roteador:'Tocou no link' },
 };
 const FIM = { complete:'Terminou o teste', explicar:'Tocou em "me explique"', lembrete:'Escolheu o lembrete de 4 semanas', lead_capture:'Deixou o contato', whatsapp:'Tocou em WhatsApp', direct:'Tocou em Direct', pele:'Foi para a pele', instagram:'Tocou em seguir no Instagram', teste:'Foi para o teste das pernas', whatsapp_ou_direct:'WhatsApp ou Direct (a conversa)' };
-const VAR_COMECE = { teste:'Pelo /comece', pele:'Pelo /comece', pele2:'Pelo /comece', quiz:'Pelo /comece', braco:'Pelo /comece', direto:'Link direto', A:'Link direto', fotos1:'1 foto', fotos3:'3 fotos', 'fotos?':'sem a marca de fotos' };
+const VAR_COMECE = { teste:'Pelo /comece', pele:'Pelo /comece', pele2:'Pelo /comece', quiz:'Pelo /comece', braco:'Pelo /comece', emag:'Pelo /comece', direto:'Link direto', A:'Link direto', fotos1:'1 foto', fotos3:'3 fotos', 'fotos?':'sem a marca de fotos' };
 const nomeVar = (f, v) => f === 'link-bio' ? (NOME_TESTE[v] || v) : (VAR_COMECE[v] || v);
 function nomeOrigem(o){
   if (o === 'bio') return 'Bio'; if (o === 'direct') return 'Direct (todas as campanhas)'; if (o === 'whatsapp') return 'Perfil do WhatsApp';
@@ -732,7 +735,7 @@ async function ver(c){
     if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return $('out').innerHTML = `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`; }
     $('out').innerHTML = j.lista.map(e => {
       const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:TZ, dateStyle:'short', timeStyle:'short' });
-      const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil;
+      const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil === 'teste-emagrecimento' ? 'Emagrecimento' : e.funil;
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
       return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}${kitBloco(e)}</div>`;

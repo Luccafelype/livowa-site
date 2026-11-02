@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f4f1">
+<title>Teste do emagrecimento · Dr. Lucca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="emag.css?v=1">
+</head>
+<body>
+<!-- livowa.com/emagrecimento · teste do emagrecimento no padrão da pele2 (02/11/2026).
+     Pesquisa e fontes: livowa-empresa/tarefas/emagrecimento-teste/pesquisa.md. Uma pergunta decide o perfil: "acontece". -->
+<div class="app">
+  <div class="top" id="top" hidden><button class="back" id="back" type="button" aria-label="Voltar">←</button></div>
+
+  <!-- 0 · capa: promessa e botão (VT p.91: etapa 1 é o 80/20; nome fica para depois) -->
+  <section class="screen capa" data-s="capa">
+    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="72" height="72">
+      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
+    <p class="kick-capa">Teste do emagrecimento</p>
+    <h1>Já tentou de tudo para emagrecer? Veja <em>o que mais pesa</em> no seu caso</h1>
+    <p class="sub">Responda algumas perguntas de toque e veja seu IMC, sua cintura e o que as suas respostas mostram, com a leitura de um médico. Leva poucos minutos.</p>
+  </section>
+
+  <!-- 1 · sexo (sem padrão; só a mulher vê a fase) -->
+  <section class="screen" data-s="sexo" hidden>
+    <h2>Para ajustar as contas ao seu corpo, você é:</h2>
+    <div class="opts" data-q="sexo" data-tipo="um">
+      <button type="button" class="opt" data-v="f"><span class="txt">Mulher</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="m"><span class="txt">Homem</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 2 · fase (só mulher): na gestação o teste não calcula IMC nem cintura -->
+  <section class="screen" data-s="fase" hidden>
+    <h2><b class="tag-imp">Importante:</b> o peso muda muito em algumas fases.</h2>
+    <p class="sub">Selecione o que vale para você.</p>
+    <div class="opts" data-q="fase" data-tipo="um">
+      <button type="button" class="opt" data-v="nenhuma"><span class="txt">Nenhuma destas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="gravida"><span class="txt">Estou grávida</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="amamentando"><span class="txt">Estou amamentando</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="pos_parto"><span class="txt">Tive bebê há menos de 1 ano</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 3 · idade -->
+  <section class="screen" data-s="idade" hidden>
+    <h2>Qual é a sua idade?</h2>
+    <div class="opts" data-q="idade" data-tipo="um">
+      <button type="button" class="opt" data-v="18a29"><span class="txt">18 a 29 anos</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="30a39"><span class="txt">30 a 39 anos</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="40a49"><span class="txt">40 a 49 anos</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="50a59"><span class="txt">50 a 59 anos</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="60mais"><span class="txt">60 anos ou mais</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 4 · nome: depois dos primeiros toques -->
+  <section class="screen" data-s="nome" hidden>
+    <h2>Como posso te chamar no seu relatório?</h2>
+    <label class="campo"><span class="sr">Seu primeiro nome</span>
+      <input id="nome" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" maxlength="40" placeholder="Seu primeiro nome"></label>
+  </section>
+
+  <!-- 5 · peso e altura -->
+  <section class="screen" data-s="medidas" hidden>
+    <h2><span class="nm"></span>qual é o seu peso e a sua altura?</h2>
+    <p class="sub">Pode ser aproximado. É com eles que sai o seu IMC.</p>
+    <div class="medidas">
+      <label class="medida" id="m-peso">Peso<span class="cx"><input id="peso" type="text" inputmode="decimal" enterkeyhint="next" placeholder="70" maxlength="5" autocomplete="off"><span class="un">kg</span></span></label>
+      <label class="medida" id="m-altura">Altura<span class="cx"><input id="altura" type="text" inputmode="numeric" enterkeyhint="done" placeholder="165" maxlength="4" autocomplete="off"><span class="un">cm</span></span></label>
+    </div>
+    <p class="dica-campo" id="dica-medidas">Altura em centímetros: 1,65 m = 165.</p>
+  </section>
+
+  <!-- 6 · cintura (opcional): razão cintura/altura, NICE NG246 -->
+  <section class="screen" data-s="cintura" hidden>
+    <h2>Você sabe a medida da sua cintura?</h2>
+    <p class="sub">Com ela, o resultado mostra também a sua cintura em relação à altura, que diz mais que o peso sozinho.</p>
+    <div class="opts" data-q="cintura" data-tipo="um">
+      <button type="button" class="opt" data-v="sei"><span class="txt">Sei a medida (ou vou medir agora)</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="sem_fita"><span class="txt">Estou sem fita agora<small>o resultado usa só o IMC</small></span><span class="box"></span></button>
+    </div>
+    <div id="cintura-campo" hidden>
+      <div class="como-medir"><svg viewBox="0 0 64 80" aria-hidden="true"><path d="M20 6c-6 10-8 22-6 34s6 22 4 34M44 6c6 10 8 22 6 34s-6 22-4 34" fill="none" stroke="#5f6d65" stroke-width="2.4" stroke-linecap="round"/><path d="M14 38q18 8 36 0" fill="none" stroke="#0d6a4d" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="4 3"/><circle cx="32" cy="45" r="1.8" fill="#5f6d65"/></svg>
+        <span>Fita no meio, entre a última costela e o alto do quadril (logo acima do umbigo). Solte o ar e meça.<span class="fonte">Modo de medir da NICE (diretriz NG246)</span></span></div>
+      <label class="medida uma" id="m-cintura" style="margin-top:12px">Cintura<span class="cx"><input id="cintura" type="text" inputmode="numeric" enterkeyhint="done" placeholder="85" maxlength="3" autocomplete="off"><span class="un">cm</span></span></label>
+    </div>
+  </section>
+
+  <!-- 7 · A PERGUNTA QUE DECIDE O PERFIL (VT p.92); opções com a fala do público (VOZ-DO-PUBLICO.md) -->
+  <section class="screen" data-s="acontece" hidden>
+    <h2><span class="nm"></span>o que mais acontece quando você tenta emagrecer?</h2>
+    <p class="sub">Escolha a que mais parece com você.</p>
+    <div class="opts" data-q="acontece" data-tipo="um">
+      <button type="button" class="opt" data-v="volta"><span class="txt">Eu emagreço, mas depois engordo tudo de novo</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="vontade"><span class="txt">A vontade de comer vence, principalmente de doce</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="balanca"><span class="txt">Faço tudo certo e a balança não desce</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="constancia"><span class="txt" id="txt-constancia">Começo animada e paro em poucas semanas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="comeco"><span class="txt">Ainda não sei por onde começar</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 8 · o que já tentou (várias) -->
+  <section class="screen" data-s="tentou" hidden>
+    <h2>O que você já tentou para emagrecer?</h2>
+    <p class="sub">Marque tudo o que já tentou.</p>
+    <div class="opts" data-q="tentou" data-tipo="varias">
+      <button type="button" class="opt" data-v="dieta"><span class="txt">Dieta da internet ou de revista</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="low_carb"><span class="txt">Cortar carboidrato</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="jejum"><span class="txt">Jejum intermitente</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="academia"><span class="txt">Academia ou corrida</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nutri"><span class="txt">Nutricionista</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="cha"><span class="txt">Chá, shake ou suplemento</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="remedio"><span class="txt">Remédio para emagrecer</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nenhum"><span class="txt">Ainda nenhum destes</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 9 · vontade de comer (a palavra do público; nunca "fome") -->
+  <section class="screen" data-s="vontade" hidden>
+    <h2><span class="nm"></span>quando a vontade de comer aparece mais forte?</h2>
+    <div class="opts" data-q="vontade" data-tipo="um">
+      <button type="button" class="opt" data-v="noite"><span class="txt">À noite</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="tarde"><span class="txt">À tarde</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="ansiedade"><span class="txt" id="txt-ansiosa">Quando fico ansiosa ou preocupada</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="fim_semana"><span class="txt">No fim de semana</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="dia_todo"><span class="txt">O dia todo</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="pouco"><span class="txt">Ela quase não me atrapalha</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 10 · sono -->
+  <section class="screen" data-s="sono" hidden>
+    <h2><span class="nm"></span>quantas horas você dorme por noite?</h2>
+    <div class="opts cols" data-q="sono" data-tipo="um">
+      <button type="button" class="opt" data-v="5menos"><span class="txt">5 h ou menos</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="6"><span class="txt">6 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="7"><span class="txt">7 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="8"><span class="txt">8 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="9mais"><span class="txt">9 ou mais</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 11 · força -->
+  <section class="screen" data-s="forca" hidden>
+    <h2>Quantas vezes por semana você faz exercício de força?</h2>
+    <p class="sub">Musculação, peso, elástico ou funcional.</p>
+    <div class="opts" data-q="forca" data-tipo="um">
+      <button type="button" class="opt" data-v="0"><span class="txt">Ainda não faço</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="1"><span class="txt">1 vez por semana</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="2mais"><span class="txt">2 vezes ou mais</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 12 · proteína -->
+  <section class="screen" data-s="proteina" hidden>
+    <h2>Em quantas refeições do seu dia entra carne, frango, peixe, ovo, queijo ou iogurte?</h2>
+    <div class="opts" data-q="proteina" data-tipo="um">
+      <button type="button" class="opt" data-v="1menos"><span class="txt">Em 1 ou menos</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="2"><span class="txt">Em 2</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="3mais"><span class="txt">Em 3 ou mais</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 13 · objetivo -->
+  <section class="screen" data-s="objetivo" hidden>
+    <h2>Qual é o seu <em>verdadeiro</em> objetivo?</h2>
+    <p class="sub">Pode falar a verdade: é só para entender você melhor.</p>
+    <div class="opts" data-q="objetivo" data-tipo="um">
+      <button type="button" class="opt" data-v="roupas"><span class="txt">Voltar a usar as roupas que eu gosto</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nao_voltar"><span class="txt">Parar de engordar tudo de novo</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="disposicao"><span class="txt">Ter mais disposição no dia a dia</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="saude"><span class="txt">Cuidar da saúde e dos exames</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="corpo"><span class="txt">Me sentir bem com o meu corpo</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="outro"><span class="txt">Outro</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <!-- 14 · carregamento em etapas que citam as respostas -->
+  <section class="screen c" data-s="carregando" hidden>
+    <p class="kicker">Teste do emagrecimento</p>
+    <div class="prog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="tr"/><circle cx="60" cy="60" r="52" class="pr" id="prog-c"/></svg><b id="prog-pct">0<small>%</small></b></div>
+    <h2 id="prog-etapa">Calculando seu IMC</h2>
+    <p class="sub">Isso leva alguns segundos. Não feche a página.</p>
+    <div class="dots" id="prog-dots"><i class="on"></i><i></i><i></i><i></i></div>
+  </section>
+
+  <!-- 15 · resultado -->
+  <section class="screen res" data-s="resultado" hidden>
+    <div class="res-topo"><span class="data" id="r-data"></span><h2 id="r-tit"></h2></div>
+    <div id="r-fase"></div>
+    <div class="metricas" id="r-metricas"></div>
+    <div class="perfil" id="r-perfil"></div>
+    <div class="bloco" id="r-respostas"></div>
+    <div class="bloco" id="r-fazer"></div>
+    <details class="completo" id="r-completo"><summary>Ver relatório completo</summary>
+      <div class="bloco" id="r-cond"></div>
+      <div class="bloco" id="r-fortes"></div>
+      <div class="bloco" id="r-plano"></div>
+      <div class="bloco" id="r-evitar"></div>
+      <div class="bloco" id="r-fontes"></div>
+    </details>
+    <p class="aviso">Estimativa pelas suas respostas, não é diagnóstico.</p>
+  </section>
+
+  <!-- 16 · fechamento: UM passo, em 3ª pessoa (mesmo molde da pele2, 02/11 v2) -->
+  <section class="screen fim" data-s="fechar" hidden>
+    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="72" height="72">
+      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
+    <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado em vídeo</h2>
+    <p class="sub" id="f-sub">Um vídeo de 1 minuto sobre as suas respostas, no seu WhatsApp, em até 24 horas. Ele grava um por um.</p>
+    <div class="f-acao">
+      <a class="btn ico" id="cta-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="wa-txt">Enviar meu código pelo WhatsApp</span></a>
+      <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
+      <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
+      <button type="button" class="link-alt" id="f-troca" hidden>Quero a explicação em vídeo</button>
+    </div>
+    <p class="cod-ref"><span id="f-cod">Seu código: <b id="cod">LV-0000</b> · </span>Estimativa, não é diagnóstico.</p>
+  </section>
+
+  <div class="cta" id="cta-bar"><div>
+    <button class="btn" id="cta" type="button">Continuar</button>
+    <button class="btn ghost" id="cta-2" type="button" hidden></button>
+  </div></div>
+  <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
+  <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
+    <b id="aviso-tit">Mande esta mensagem no Direct</b>
+    <q id="aviso-msg">Oi, Dr. Lucca! Meu código é LV-0000</q>
+    <span id="aviso-txt">Toque e segure na mensagem, escolha Copiar e cole no Direct.</span>
+    <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
+  </div></div>
+</div>
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>

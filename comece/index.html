@@ -19,7 +19,7 @@
 // vale a RESERVA abaixo (o estado de 31/10).
 //   ?canal=direct   usa a rota do Direct (as campanhas do OpenReply mandam assim); sem canal = bio
 //   ?camp=PERNAS    a campanha pode ter um teste fixo (definido na aba Portas) ou seguir as % do Direct
-//   ?f=<id>         força um teste (link mandado à mão; ?f=pele2 abre a pele nova)
+//   ?f=<id>         força um teste (link mandado à mão; ?f=pele2 abre a pele nova; ?f=emag abre o emagrecimento)
 // Pele A/B (01/11, pedido do Lucca): a fatia "pele" das Portas se divide entre a selfie de /idade (pele) e o funil novo
 // /pele2 (pele2), PELE2_PCT % para o pele2, sorteado uma vez por aparelho. Sem mexer no banco: a aba Portas continua
 // com um só número para a pele. Desligar = PELE2_PCT = 0. Comparar na aba Funil: botão Pele (teste-pele) × Pele 2.
@@ -27,7 +27,7 @@ const analyticsPronto = import('./funnel-analytics.js');   // 02/11: em paralelo
 const SUPA = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', CHAVE = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';
 const DESTINOS = {
   longevidade: { pele:'/idade/?pele=1', quiz:'/longevidade/', teste:'/idade/', braco:'/braco/', pele2:'/pele2/' },
-  emagrecimento: {},   // nenhuma isca de emagrecimento no ar ainda
+  emagrecimento: { emag:'/emagrecimento/' },   // 02/11: teste do emagrecimento (funnelId teste-emagrecimento). Salvar o tema na aba Portas pede a edge com emagrecimento:['emag'] (OPERACOES/funis.md)
 };
 const RESERVA = {
   bio:    { tema:'longevidade', pesos:{ pele:50, quiz:50, teste:0, braco:0 }, fixo:null },
