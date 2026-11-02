@@ -53,8 +53,9 @@ const ROT = {   // rótulos curtos das respostas (tela e analytics)
 const nome1 = () => (R.nome || '').trim().split(/\s+/)[0] || '';
 
 // ---------- telas ----------
-// ordem do NIKS (teardown v1), sem as telas que ele não tem: nome → 2 de segurança → grade → tipo → sol → água → sono → rotina → objetivo → câmera
-const ORDEM = ['nome','sexo','seguranca','alergia','incomoda','tipo','sol','agua','sono','rotina','objetivo','instrucao','scan','carregando','resultado','fechar','erro'];
+// ordem do NIKS (teardown v1), sem as telas que ele não tem. 02/11: a 1ª tela é a capa (promessa + botão) e o nome vem
+// depois das primeiras perguntas de toque (pesquisa-fim-do-teste.md, C); as telas antes do nome não usam o nome.
+const ORDEM = ['capa','sexo','seguranca','alergia','nome','incomoda','tipo','sol','agua','sono','rotina','objetivo','instrucao','scan','carregando','resultado','fechar','erro'];
 const QUIZ = ['sexo','seguranca','alergia','incomoda','tipo','sol','agua','sono','rotina','objetivo'];
 const VOLTA = { scan:'instrucao', erro:'instrucao', fechar:'resultado' };
 let cur = 'nome';
@@ -64,19 +65,19 @@ function show(s){
   cur = s;
   Analytics.track('step_view', { stepId:s, stepIndex:ORDEM.indexOf(s) });
   document.body.classList.toggle('scan-on', s === 'scan');
-  document.body.classList.toggle('fim', s === 'fechar');   // a linha do código fica na barra, logo acima dos botões
-  $('top').hidden = ['nome','scan','carregando','resultado'].includes(s);
+  $('top').hidden = ['capa','scan','carregando','resultado'].includes(s);
   const cta = $('cta'), c2 = $('cta-2');
-  $('cta-bar').hidden = ['scan','carregando'].includes(s);
-  cta.hidden = false; c2.hidden = true; $('cta-wa').hidden = true; $('cta-dm').hidden = true; cta.classList.remove('off');
+  $('cta-bar').hidden = ['scan','carregando','fechar'].includes(s);   // tela final: cada cartão tem o próprio botão
+  cta.hidden = false; c2.hidden = true; cta.classList.remove('off');
   cta.textContent = 'Continuar';
+  if (s === 'capa') cta.textContent = 'Começar a análise';
   if (s === 'nome'){ cta.classList.toggle('off', nome1().length < 2); }
   if (s === 'objetivo') objetivoPorSexo();
   if (QUIZ.includes(s)) cta.classList.toggle('off', !respondida(s));
   if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); animarIlustracao(); }
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
   if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';
-  if (s === 'fechar'){ cta.hidden = true; $('cta-wa').hidden = false; $('cta-dm').hidden = false; prepararFechamento(); }
+  if (s === 'fechar') prepararFechamento();
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nome1() + ', ' : ''; });
   window.scrollTo(0, 0);
   requestAnimationFrame(medirBarra);
@@ -124,7 +125,6 @@ function ligarOpcoes(box){
     R[q] = v; if (q === 'seguranca') delete R.segAuto;
     box.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     Analytics.track('answer', { stepId:q, valueText:v });
-    if (box.dataset.fica){ atualizarFechamento(); return; }
     $('cta').classList.remove('off');
     setTimeout(() => { if (cur === q) proxima(); }, 260);
   });
@@ -167,6 +167,7 @@ $('cta').addEventListener('click', () => {
     if (cur === 'nome') return $('nome').focus();
     return;
   }
+  if (cur === 'capa') return proxima();
   if (cur === 'nome'){ R.nome = nomeBonito(); Analytics.track('answer', { stepId:'nome', valueText:'ok' }); return proxima(); }
   if (cur === 'incomoda'){ Analytics.track('answer', { stepId:'incomoda', valueText:R.incomoda.join('+') }); return proxima(); }
   if (QUIZ.includes(cur)) return proxima();
@@ -461,30 +462,28 @@ function montarResultado(j, f){
 function respostasLimpa(){ const { nome, ...r } = R; return { ...r, incomoda:R.incomoda.join('+') }; }
 
 // =====================================================================
-// FECHAMENTO: o médico oferece explicar; 2 perguntas de qualificação; WhatsApp e Direct (cópia em 1 toque, igual /idade)
+// FECHAMENTO (V0, pesquisa-fim-do-teste.md D.2/D.3): dois caminhos escolhidos pela pessoa, os dois pelo WhatsApp.
+// 1 = "me explique" (vídeo dele; WhatsApp ou Direct); 2 = "começo pelo plano e quero o lembrete da nova foto".
+// Medição igual: cta_click com props.canal whatsapp/direct (conta como conversa no Funil e na Caixa) + props.escolha.
 // =====================================================================
-function mensagem(){ return `Oi, Dr. Lucca! Fiz a análise da pele. Meu código é ${meuCodigo()}. Quero entender meu resultado.`; }
+const souA = () => R.sexo === 'm' ? 'o' : 'a';
+const sou = () => nomeBonito() ? `Sou ${souA()} ${nomeBonito()}` : '';
+function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz a análise da pele, código ${meuCodigo()}. Quero que você me explique o meu resultado.`; }
+function mensagemLembrete(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + ', código ' : 'Meu código é '}${meuCodigo()}. Vou começar pelo plano e quero o lembrete da nova foto.`; }
 function prepararFechamento(){
   $('cod').textContent = meuCodigo();
-  $('f-tit').innerHTML = `${esc(nomeBonito())}, quer que eu te <em>explique</em> esse resultado?`;
+  $('f-tit').textContent = nomeBonito() ? `${nomeBonito()}, o que você quer fazer com esse resultado?` : 'O que você quer fazer com esse resultado?';
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  atualizarFechamento(); fimDirect();
+  $('cta-lembrete').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagemLembrete())}`;
+  fimDirect();
 }
-const qualOk = () => R.quando != null && R.gasto != null;
-function atualizarFechamento(){
-  ['cta-wa','cta-dm'].forEach(id => $(id).classList.toggle('off', !qualOk()));
-  ['q1','q2'].forEach((id, i) => { if ([R.quando, R.gasto][i] != null) $(id).classList.remove('alerta'); });
-}
-function cobrarQualificacao(e){
-  if (qualOk()) return false;
-  e.preventDefault();
-  const falta = R.quando == null ? $('q1') : $('q2'); falta.classList.add('alerta'); falta.scrollIntoView({ block:'center', behavior:'smooth' });
-  Analytics.track('answer', { stepId:'fechar-sem-resposta', valueText:e.currentTarget?.id === 'cta-wa' ? 'whatsapp' : 'direct' });   // tocou no canal antes das 2 perguntas (não conta como conversa)
-  return true;
-}
-const qualProps = () => ({ quando:R.quando, gasto:R.gasto, codigo:meuCodigo() });
-$('cta-wa').addEventListener('click', e => { if (cobrarQualificacao(e)) return; Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...qualProps() } }); });
-$('cta-dm').addEventListener('click', e => { if (cobrarQualificacao(e)) return; if (LV) return direto_lv(e); abrirDirect(e); });
+const fimProps = escolha => ({ escolha, codigo:meuCodigo() });
+$('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps('explicar') } }); });
+$('cta-dm').addEventListener('click', e => { if (LV) return direto_lv(e, 'explicar'); abrirDirect(e); });
+$('cta-lembrete').addEventListener('click', e => {
+  if (LV) return direto_lv(e, 'lembrete');
+  Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps('lembrete') } });
+});
 
 // Direct: o Instagram não aceita texto pronto. Um toque só: copia DENTRO do toque (exigência do iOS), avisa e deixa o
 // link abrir o app. Se o navegador não deixou copiar, mostra a mensagem para copiar à mão (mesma lógica de /idade).
@@ -499,7 +498,7 @@ let toastT = null;
 const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // navegador de dentro do app: ig.me abre como página e pede login
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...qualProps() } });
+  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps('explicar') } });
   if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem:txt, copiou, voz:true }); return; }   // animação X → Mensagem → colar
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }   // o link segue e abre o app
   e.preventDefault();
@@ -507,19 +506,22 @@ function abrirDirect(e){
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
 $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
-// link marcado (?lv=): quem veio do Direct pelo link do Dr. Lucca não precisa de código
+// link marcado (?lv=): quem veio do Direct pelo link do Dr. Lucca não precisa de código. Caminho 1 = "Voltar ao
+// Instagram" (ele já recebeu a análise; o vídeo vai no Direct); caminho 2 = registra a escolha e volta ao Instagram.
 const LV = Analytics.getLv();
+const IG_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>';
 function fimDirect(){
   if (!LV) return;
-  $('f-sub').textContent = 'O Dr. Lucca já recebeu a sua análise e te responde no Direct. Antes, duas perguntas rápidas:';
-  $('f-cod').hidden = true;
-  const dm = $('cta-dm'), wa = $('cta-wa');
-  if (dm.lastChild?.nodeType === 3) dm.lastChild.textContent = 'Voltar ao Instagram';
-  wa.classList.add('ghost'); if (wa.lastChild?.nodeType === 3) wa.lastChild.textContent = 'Prefere WhatsApp?';
+  $('f-cod').hidden = true; $('c1-canal').textContent = 'Direct';
+  $('dep-1').textContent = 'Você volta ao Direct: a sua análise já chegou para mim, sem precisar de código.';
+  const dm = $('cta-dm'), wa = $('cta-wa'), lb = $('cta-lembrete');
+  dm.className = 'btn ico'; dm.innerHTML = IG_SVG + '<span>Voltar ao Instagram</span>';
+  wa.className = 'link-alt'; wa.innerHTML = '<span>ou pelo WhatsApp</span>';
   if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);
+  lb.href = dm.href; lb.removeAttribute('target'); lb.innerHTML = IG_SVG + '<span>Quero o lembrete · voltar ao Instagram</span>';
 }
-function direto_lv(e){
-  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...qualProps() } });
+function direto_lv(e, escolha){
+  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps(escolha) } });
   if (!NO_INSTAGRAM) return;
   e.preventDefault(); dicaDirect({ lv:true, voz:true });
 }
@@ -527,6 +529,6 @@ function direto_lv(e){
 // ---------- início ----------
 document.querySelectorAll('.opts[data-q], .grade[data-q]').forEach(ligarOpcoes);
 montarGrade();
-show('nome');
+show('capa');
 // ganchos do teste automático (headless): estado e resultado sem câmera
 window.__pele2 = { R, estado:() => ({ cur, codigo, envio:window.__ultimoEnvio || null }), show, montarResultado:(j, f) => { montarResultado(j, f); show('resultado'); } };
