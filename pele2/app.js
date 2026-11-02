@@ -76,7 +76,8 @@ function show(s){
   if (QUIZ.includes(s)) cta.classList.toggle('off', !respondida(s));
   if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); animarIlustracao(); }
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
-  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';
+  if (s === 'resultado'){ cta.textContent = 'Quero que o Dr. Lucca me explique'; c2.hidden = false; c2.textContent = 'Prefiro seguir o plano sozinho e receber um lembrete em 4 semanas'; }
+  c2.classList.toggle('link', s === 'resultado');   // no resultado, o caminho 2 é um link discreto (não botão, sem "não")
   if (s === 'fechar') prepararFechamento();
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nome1() + ', ' : ''; });
   window.scrollTo(0, 0);
@@ -173,9 +174,12 @@ $('cta').addEventListener('click', () => {
   if (QUIZ.includes(cur)) return proxima();
   if (cur === 'instrucao') return abrirScan();
   if (cur === 'erro') return erroRede && fotos ? enviar(fotos) : abrirScan();
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
+  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; return show('fechar'); }
 });
-$('cta-2').addEventListener('click', () => { if (cur === 'erro') $('arquivo').click(); });
+$('cta-2').addEventListener('click', () => {
+  if (cur === 'erro') $('arquivo').click();
+  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'lembrete' }); caminho = 2; show('fechar'); }
+});
 $('galeria').addEventListener('click', () => { if (!$('aceite').checked) return apontarAceite(); $('arquivo').click(); });
 $('aceite').addEventListener('change', () => { $('aceite').closest('.consent').classList.remove('alerta'); if (cur === 'instrucao') $('cta').classList.toggle('off', !$('aceite').checked); });
 function apontarAceite(){ const l = $('aceite').closest('.consent'); l.classList.add('alerta'); l.scrollIntoView({ block:'center', behavior:'smooth' }); }
@@ -462,28 +466,34 @@ function montarResultado(j, f){
 function respostasLimpa(){ const { nome, ...r } = R; return { ...r, incomoda:R.incomoda.join('+') }; }
 
 // =====================================================================
-// FECHAMENTO (V0, pesquisa-fim-do-teste.md D.2/D.3): dois caminhos escolhidos pela pessoa, os dois pelo WhatsApp.
-// 1 = "me explique" (vídeo dele; WhatsApp ou Direct); 2 = "começo pelo plano e quero o lembrete da nova foto".
+// FECHAMENTO (02/11, v2): a escolha é feita UMA vez, no resultado (botão = caminho 1, link discreto = caminho 2).
+// A tela final tem um passo só, em 3ª pessoa: título, 1 frase, botão, "abre o WhatsApp com a mensagem pronta", rodapé.
+// 1 = o Dr. Lucca explica em vídeo (WhatsApp ou Direct); 2 = lembrete em 4 semanas (link troca para o 1).
 // Medição igual: cta_click com props.canal whatsapp/direct (conta como conversa no Funil e na Caixa) + props.escolha.
 // =====================================================================
+let caminho = 1;
 const souA = () => R.sexo === 'm' ? 'o' : 'a';
 const sou = () => nomeBonito() ? `Sou ${souA()} ${nomeBonito()}` : '';
 function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz a análise da pele, código ${meuCodigo()}. Quero que você me explique o meu resultado.`; }
 function mensagemLembrete(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + ', código ' : 'Meu código é '}${meuCodigo()}. Vou começar pelo plano e quero o lembrete da nova foto.`; }
+const escolha = () => caminho === 2 ? 'lembrete' : 'explicar';
 function prepararFechamento(){
+  const c1 = caminho !== 2, nome = nomeBonito();
   $('cod').textContent = meuCodigo();
-  $('f-tit').textContent = nomeBonito() ? `${nomeBonito()}, o que você quer fazer com esse resultado?` : 'O que você quer fazer com esse resultado?';
-  $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  $('cta-lembrete').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagemLembrete())}`;
-  fimDirect();
+  $('f-tit').textContent = c1 ? (nome ? `${nome}, o Dr. Lucca vai explicar o seu resultado em vídeo` : 'O Dr. Lucca vai explicar o seu resultado em vídeo')
+                              : 'Combinado: em 4 semanas, um lembrete para refazer a foto';
+  $('f-sub').textContent = c1 ? `Um vídeo de 1 minuto sobre a sua foto, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`
+                              : 'Siga o plano desta análise. Na 4ª semana o Dr. Lucca te manda um lembrete para comparar com a foto de hoje.';
+  $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(c1 ? mensagem() : mensagemLembrete())}`;
+  $('f-troca').hidden = c1;
+  if (LV) return fimDirect();
+  $('wa-txt').textContent = c1 ? 'Enviar meu código pelo WhatsApp' : 'Receber o lembrete no WhatsApp';
+  $('cta-dm').hidden = !c1;   // o Direct só no caminho 1 (o lembrete é pelo WhatsApp)
 }
-const fimProps = escolha => ({ escolha, codigo:meuCodigo() });
-$('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps('explicar') } }); });
-$('cta-dm').addEventListener('click', e => { if (LV) return direto_lv(e, 'explicar'); abrirDirect(e); });
-$('cta-lembrete').addEventListener('click', e => {
-  if (LV) return direto_lv(e, 'lembrete');
-  Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps('lembrete') } });
-});
+$('f-troca').addEventListener('click', () => { caminho = 1; prepararFechamento(); });
+const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo() });
+$('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
+$('cta-dm').addEventListener('click', e => { if (LV) return direto_lv(e, escolha()); abrirDirect(e); });
 
 // Direct: o Instagram não aceita texto pronto. Um toque só: copia DENTRO do toque (exigência do iOS), avisa e deixa o
 // link abrir o app. Se o navegador não deixou copiar, mostra a mensagem para copiar à mão (mesma lógica de /idade).
@@ -506,22 +516,21 @@ function abrirDirect(e){
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
 $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
-// link marcado (?lv=): quem veio do Direct pelo link do Dr. Lucca não precisa de código. Caminho 1 = "Voltar ao
-// Instagram" (ele já recebeu a análise; o vídeo vai no Direct); caminho 2 = registra a escolha e volta ao Instagram.
+// link marcado (?lv=): quem veio do Direct pelo link do Dr. Lucca não precisa de código. Mesmo molde: "Voltar ao
+// Instagram" (ele já recebeu a análise) e "ou pelo WhatsApp"; a escolha (explicar/lembrete) vai no evento.
 const LV = Analytics.getLv();
 const IG_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>';
 function fimDirect(){
-  if (!LV) return;
-  $('f-cod').hidden = true; $('c1-canal').textContent = 'Direct';
-  $('dep-1').textContent = 'Você volta ao Direct: a sua análise já chegou para mim, sem precisar de código.';
-  const dm = $('cta-dm'), wa = $('cta-wa'), lb = $('cta-lembrete');
+  const dm = $('cta-dm'), wa = $('cta-wa'), nota = $('f-nota');
+  $('f-cod').hidden = true; dm.hidden = false;
+  nota.textContent = 'O Dr. Lucca já recebeu a sua análise. É só voltar ao Direct.';
   dm.className = 'btn ico'; dm.innerHTML = IG_SVG + '<span>Voltar ao Instagram</span>';
   wa.className = 'link-alt'; wa.innerHTML = '<span>ou pelo WhatsApp</span>';
-  if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);
-  lb.href = dm.href; lb.removeAttribute('target'); lb.innerHTML = IG_SVG + '<span>Quero o lembrete · voltar ao Instagram</span>';
+  if (nota.previousElementSibling !== dm) nota.before(dm);
+  if (nota.nextElementSibling !== wa) nota.after(wa);
 }
-function direto_lv(e, escolha){
-  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps(escolha) } });
+function direto_lv(e, esc_){
+  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps(esc_) } });
   if (!NO_INSTAGRAM) return;
   e.preventDefault(); dicaDirect({ lv:true, voz:true });
 }
