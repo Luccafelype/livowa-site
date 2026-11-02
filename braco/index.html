@@ -58,6 +58,7 @@ p{margin:0}
 .seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .wheels{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .seg3{grid-template-columns:1fr 1fr}
+.seg.alerta button{border-color:var(--warn);background:var(--warn-bg)}
 .seg3 button:last-child{grid-column:1/-1;font-size:.95rem;padding:11px}
 .mini-anim{height:min(30vh,280px)}
 .wheelbox{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
@@ -114,7 +115,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .btn.ico{display:flex;align-items:center;justify-content:center;gap:10px}
 .btn.ico svg{width:22px;height:22px;flex:none}
 .btn.ghost{background:transparent;color:var(--muted);padding:6px;font-weight:600;font-size:.95rem}
-.btn:disabled{opacity:.45}
+.btn:disabled,.btn.off{opacity:.45}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .toast{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;width:min(440px,calc(100% - 32px));background:var(--fg);color:#fff;border-radius:16px;padding:12px 16px;font-size:.95rem;text-align:center}
 .toast b{display:block;font-size:1.05rem}
@@ -156,7 +157,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
     <h2>Sobre você</h2>
     <p class="sub">Antes do teste, informe seu sexo, sua idade e seu peso. O resultado é comparado com pessoas parecidas com você.</p>
     <div class="seg seg3" role="group" aria-label="Sexo">
-      <button type="button" data-sexo="m" aria-pressed="true">Homem</button>
+      <button type="button" data-sexo="m" aria-pressed="false">Homem</button>
       <button type="button" data-sexo="f" aria-pressed="false">Mulher</button>
       <button type="button" data-sexo="n" aria-pressed="false">Prefiro não informar</button>
     </div>
@@ -245,7 +246,7 @@ const DURACAO = 10000, ESPERA_MAX = 8000;   // 10 s (decisão do Lucca, 31/10); 
 const ua = navigator.userAgent;
 const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
 const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro'];
-let cur = 'inicio', sexo = 'm', sensorOk = false;
+let cur = 'inicio', sexo = null, sensorOk = false;   // 02/11: sexo sem padrão (antes vinha Homem marcado)
 
 // ---------- rodinhas (iguais às do teste das pernas) ----------
 const dados = {};
@@ -263,7 +264,10 @@ function wheel(id, from, to, start){
 const wheels = [wheel('w-idade', 18, 90, 40), wheel('w-peso', 40, 180, 80)], starts = [40, 80];
 document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click', () => {
   sexo = b.dataset.sexo; document.querySelectorAll('[data-sexo]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  b.parentNode.classList.remove('alerta'); if (cur === 'dados') $('cta').classList.remove('off');
+  Analytics.track('answer', { stepId:'dados', valueText:'sexo-' + sexo, props:{ sexo } });
 }));
+function apontarSexo(){ const g = document.querySelector('.seg'); g.classList.add('alerta'); g.scrollIntoView({ block:'center', behavior:'smooth' }); }
 
 // ---------- telas ----------
 function show(s){
@@ -273,7 +277,7 @@ function show(s){
   Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s) });
   $('top').hidden = s === 'inicio' || s === 'medir' || s === 'analise' || s === 'resultado';
   $('progress').style.width = (el.dataset.p || 0) + '%';
-  const cta = $('cta'); cta.hidden = false; cta.disabled = false; $('cta-link').hidden = true; $('cta-dm').hidden = true;
+  const cta = $('cta'); cta.hidden = false; cta.disabled = false; cta.classList.toggle('off', s === 'dados' && !sexo);   // a régua muda com o sexo $('cta-link').hidden = true; $('cta-dm').hidden = true;
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Continuar'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
@@ -289,7 +293,7 @@ $('back').addEventListener('click', () => { const i = order.indexOf(cur); show(c
 $('cta').addEventListener('click', async () => {
   if (cur === 'inicio') return show('como');
   if (cur === 'como') return show('dados');
-  if (cur === 'dados') return show('sensor');
+  if (cur === 'dados') return sexo ? show('sensor') : apontarSexo();
   if (cur === 'sensor' && !sensorOk) return liberar();
   if (cur === 'sensor' || cur === 'erro') return sensorOk ? medir() : (show('sensor'));
 });

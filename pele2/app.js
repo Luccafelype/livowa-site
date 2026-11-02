@@ -70,6 +70,7 @@ function show(s){
   cta.hidden = false; c2.hidden = true; $('cta-wa').hidden = true; $('cta-dm').hidden = true; cta.classList.remove('off');
   cta.textContent = 'Continuar';
   if (s === 'nome'){ cta.classList.toggle('off', nome1().length < 2); }
+  if (s === 'objetivo') objetivoPorSexo();
   if (QUIZ.includes(s)) cta.classList.toggle('off', !respondida(s));
   if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); animarIlustracao(); }
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
@@ -86,6 +87,11 @@ const pula = s => s === 'seguranca' && R.sexo === 'm';
 function ajustarSeguranca(){
   if (R.sexo === 'm'){ if (R.seguranca == null){ R.seguranca = 'nenhuma'; R.segAuto = true; Analytics.track('answer', { stepId:'seguranca', valueText:'nenhuma' }); } }
   else if (R.segAuto){ delete R.seguranca; delete R.segAuto; document.querySelectorAll('[data-q="seguranca"] [data-v]').forEach(x => x.setAttribute('aria-pressed', 'false')); }
+}
+// "Sair sem maquiagem" não cabe para homem: a opção some; se ele tinha marcado (e voltou para trocar o sexo), a resposta cai
+function objetivoPorSexo(){
+  const mq = document.querySelector('[data-q="objetivo"] [data-v="sem_maquiagem"]'); mq.hidden = R.sexo === 'm';
+  if (mq.hidden && R.objetivo === 'sem_maquiagem'){ delete R.objetivo; mq.setAttribute('aria-pressed', 'false'); }
 }
 function proxima(){ ajustarSeguranca(); let i = ORDEM.indexOf(cur) + 1; while (pula(ORDEM[i])) i++; show(ORDEM[i]); }
 function respondida(q){ return q === 'incomoda' ? R.incomoda.length > 0 : R[q] != null; }

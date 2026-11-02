@@ -56,6 +56,7 @@ p{margin:0}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .seg button{font:600 1.05rem var(--body);padding:15px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.seg.alerta button{border-color:var(--warn);background:var(--warn-bg)}
 .wheels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .wheelbox{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .wheelbox label{font-size:.82rem;color:var(--muted)}
@@ -245,7 +246,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
   <section class="screen" data-s="dados" data-p="50" hidden>
     <h2>Sobre você</h2>
     <div class="seg" role="group" aria-label="Sexo">
-      <button type="button" data-sexo="m" aria-pressed="true">Homem</button>
+      <button type="button" data-sexo="m" aria-pressed="false">Homem</button>
       <button type="button" data-sexo="f" aria-pressed="false">Mulher</button>
     </div>
     <div class="wheels">
@@ -393,7 +394,7 @@ const CHAIR = 0.45;                 // cadeira comum (os protocolos usam 43 a 46
 const $ = id => document.getElementById(id);
 const fmt = (v, d=1) => v.toLocaleString('pt-BR', {minimumFractionDigits:d, maximumFractionDigits:d});
 const log = (...a) => { if (location.hash === '#teste') console.log('[sts]', ...a); };
-let sexo = 'm';
+let sexo = null;   // 02/11: sem padrão (antes vinha Homem marcado e a mulher que não via caía na régua do homem)
 
 // ---------- seletores de rolagem ----------
 const dados = {};
@@ -413,7 +414,10 @@ const wheels = [wheel('w-idade', 18, 90, 40), wheel('w-peso', 40, 180, 80), whee
 const starts = [40, 80, 172];
 document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click', () => {
   sexo = b.dataset.sexo; document.querySelectorAll('[data-sexo]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  b.parentNode.classList.remove('alerta'); if (cur === 'dados') $('cta').classList.remove('off');
+  Analytics.track('answer', { stepId:'dados', valueText:'sexo-' + sexo, props:{ sexo } });
 }));
+function apontarSexo(){ const g = document.querySelector('.seg'); g.classList.add('alerta'); g.scrollIntoView({ block:'center', behavior:'smooth' }); }
 
 // ---------- voz ----------
 // Regras da voz (28/10, teste no iPhone): fala de orientação só quando a instrução MUDA e fica estável ~1 s
@@ -457,6 +461,7 @@ function show(s){
   if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; ctaPernas(); fimDirect(s); }
   cta.disabled = false;
   cta.classList.remove('off');
+  if (s === 'dados') cta.classList.toggle('off', !sexo);   // a régua muda com o sexo: sem escolher, não segue
   if (s === 'pele-inicio'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('pele-ok').checked); c2.hidden = false; c2.textContent = 'Prefiro escolher uma foto'; }
   if (s === 'pele-camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
   if (s === 'pele-envio'){ cta.textContent = 'Analisar minha pele'; c2.hidden = false; c2.textContent = capturas.length > 1 ? 'Tirar de novo' : 'Tirar outra foto'; }
@@ -477,7 +482,7 @@ $('back').addEventListener('click', () => {
 $('cta').addEventListener('click', () => {
   if (cur === 'inicio') show('como');
   else if (cur === 'como') show('dados');
-  else if (cur === 'dados'){ dadosOk = true; falar(' ', true); show('camera'); abrirCamera(); }
+  else if (cur === 'dados'){ if (!sexo) return apontarSexo(); dadosOk = true; falar(' ', true); show('camera'); abrirCamera(); }
   else if (cur === 'pele-inicio'){ if (!$('pele-ok').checked) return apontarAceite(); falar(' ', true); show('pele-camera'); abrirCameraPele(); }
   else if (cur === 'pele-envio') enviarPele();
   else if (cur === 'pele-erro'){ if (peleErroRede && capturas.length) enviarPele(); else { show('pele-camera'); abrirCameraPele(); } }
@@ -695,7 +700,7 @@ function loop(){
       $('reps').innerHTML = `${counter.reps}<small>/5</small>`;
       if (counter.tStart != null) $('time').textContent = fmt(((counter.tEnd ?? ts) - counter.tStart)/1000,1) + ' s';
       if (st === 'em-pe'){ guia('Sente na cadeira'); falarEstavel('Sente na cadeira para começar'); }
-      else if (st === 'calib' || st === 'parado') guia('Sentado, fique parado…');
+      else if (st === 'calib' || st === 'parado') guia('Na cadeira, sem se mexer…');
       else if (st === 'andando'){ guia('Volte para a cadeira'); falarEstavel('Volte para a cadeira'); }
       else if (st === 'espera'){ guia('Pode começar!', true); falarEstavel('Pode começar. Levante e sente cinco vezes, rápido.'); }
       else if (st === 'run'){
@@ -1199,7 +1204,7 @@ if (FOTOS === 3){
   $('pele-card-pill').textContent = '3 selfies';
   $('pele-card-h').innerHTML = 'Agora a <em>pele</em>: 40 segundos';
   $('pele-ini-pill').textContent = '40 segundos · 3 selfies';
-  $('pele-ini-sub').textContent = 'São 3 selfies de frente para a luz: parado, sorrindo e com as sobrancelhas levantadas. A câmera tira cada uma sozinha: não precisa tocar em nada.';
+  $('pele-ini-sub').textContent = 'São 3 selfies de frente para a luz: com o rosto parado, sorrindo e com as sobrancelhas levantadas. A câmera tira cada uma sozinha: não precisa tocar em nada.';
   $('pele-aceite').textContent = 'Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minhas fotos só para analisá-las conforme os meus interesses, e depois elas serão apagadas definitivamente.';
 }
 
@@ -1208,10 +1213,10 @@ if (FOTOS === 3){
 if ((PELE_Q === 'teste' || PELE_Q === '1') && PELE_ENDPOINT) show('pele-inicio');
 document.documentElement.classList.remove('vai-pele');
 // teste da tela de resultado sem câmera (desenvolvimento)
-window.__testarResultado = (c, d, s) => { Object.assign(dados, d); if (s) sexo = s; voz = false; resultado(c); };
+window.__testarResultado = (c, d, s) => { Object.assign(dados, d); sexo = s || sexo || 'm'; voz = false; resultado(c); };
 // teste automático com vídeo (usado só no desenvolvimento)
 window.__testarVideo = async (url, d, s) => {
-  Object.assign(dados, d); if (s) sexo = s; voz = false; show('camera'); await getLandmarker();
+  Object.assign(dados, d); sexo = s || sexo || 'm'; voz = false; show('camera'); await getLandmarker();
   const v = $('video'); v.srcObject = null; v.src = url; await v.play(); lastTs = -1; alvo = null; counter = novo(); running = true; loop();
 };
 </script>
