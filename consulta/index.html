@@ -12,7 +12,9 @@
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    Quatro abas: Caixa (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX), Portas (tema e % de
    cada teste na bio e no Direct, desde 01/11) e Funil (onde as pessoas caem em cada teste, por etapa, desde 01/11). Na tela do código, cada braço/pernas/pele traz o bloco "Responder"
-   (kits.js: faixa, mensagens prontas, atalhos e o modo react da pele), que roda só aqui e não manda nada a servidor. */
+   (kits.js: faixa, mensagens prontas, atalhos e o modo revisão), que roda só aqui e não manda nada a servidor.
+   02/11: Pele 2 (3 ângulos + acne) com fotos, achados por região, respostas do quiz e kit; modo revisão para o iPad
+   (caneta da Apple Pencil, zoom, troca de foto, destaque aproximado da região; braço e pernas em números grandes). */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
@@ -159,27 +161,86 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .kit-sub{margin:0;font-size:.82rem;color:var(--m)}
 .kit-react{width:100%}
 .kit-react:disabled{opacity:.45;cursor:not-allowed}
-/* modo react: fotos em tela cheia com o roteiro por cima */
-.react{position:fixed;inset:0;z-index:50;background:#000;color:#fff;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+/* Pele 2 (02/11): achados por região e respostas do quiz */
+.p2{margin:10px 0;display:flex;flex-direction:column;gap:6px}
+.p2 h3{margin:4px 0 2px;font-size:.98rem}
+.p2-reg{border-top:1px solid var(--l);padding:7px 0 4px}
+.p2-reg>b{display:block;font-size:.85rem;color:var(--m);text-transform:uppercase;letter-spacing:.04em}
+.p2-reg ul{list-style:none;margin:3px 0 0;padding:0;display:flex;flex-direction:column;gap:3px}
+.p2-reg li{display:flex;justify-content:space-between;gap:10px;font-size:.95rem}
+.p2-reg li small{display:block;color:var(--m);font-size:.8rem}
+.g{flex:none;font-style:normal;font-weight:700;font-size:.8rem;border-radius:999px;padding:1px 9px;align-self:flex-start;background:var(--a2);color:var(--a)}
+.g.g2{background:var(--w2);color:var(--w)} .g.g3{background:#f6e3df;color:var(--r)}
+.p2-nada{margin:2px 0 0;font-size:.85rem;color:var(--m)}
+.l.alerta span,.l.alerta b{color:var(--r)}
+.fotos img[data-chave]{cursor:zoom-in}
+/* modo revisão (02/11, iPad + Apple Pencil): foto em tela cheia, caneta, zoom, troca de foto, roteiro por região.
+   O desenho fica só na memória desta aba (some ao recarregar); nada vai para servidor. */
+.react{position:fixed;inset:0;z-index:50;background:#000;color:#fff;display:grid;touch-action:manipulation;grid-template-rows:auto auto minmax(0,1fr) auto;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overscroll-behavior:contain}
 .react[hidden]{display:none}
-.react-cab{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;font-size:.82rem;line-height:1.35;background:#111}
+.react button{min-height:48px}
+.react-cab{display:flex;gap:14px;align-items:center;padding:12px 18px;font-size:.85rem;line-height:1.35;background:#111}
 .react-cab p{margin:0;flex:1;color:#e8e8e8}
-.react-cab button{background:#fff;color:#000;padding:8px 14px;font-size:.9rem}
-.react-foto{position:relative;min-height:0;display:flex;align-items:center;justify-content:center}
-.react-foto img{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain;display:block}
-.react-reg{position:absolute;top:10px;left:10px;background:rgba(13,106,77,.92);color:#fff;font-weight:700;font-size:.9rem;border-radius:999px;padding:5px 12px}
-.react-card{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(10,14,12,.86);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:12px 14px;max-height:62%;overflow:auto}
+.rv-curto{display:none}
+@media (max-width:560px){.rv-curto{display:inline}}
+.react-cab button{background:#fff;color:#000;padding:10px 20px;font-size:1rem}
+.rv-ferr{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:10px 18px;background:#111;border-top:1px solid #222}
+.rv-fotos{display:flex;gap:8px;flex-wrap:wrap}
+.rv-fotos button{display:flex;align-items:center;gap:8px;background:#222;color:#fff;border:2px solid #333;padding:4px 12px 4px 4px;font-size:.95rem}
+.rv-fotos button img{width:38px;height:38px;object-fit:cover;border-radius:8px;background:#444;display:block}
+.rv-fotos button[aria-pressed="true"]{border-color:#fff;background:#2f3a35}
+.rv-cores{display:flex;gap:10px}
+.rv-cores button{width:48px;height:48px;padding:0;border-radius:50%;border:3px solid #333;background:var(--c)}
+.rv-cores button[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 0 3px #000 inset}
+.rv-acoes{display:flex;gap:8px;flex-wrap:wrap}
+.rv-acoes button{background:#2a2f2c;color:#fff;padding:10px 16px;font-size:.95rem}
+.rv-acoes button[aria-pressed="true"]{background:#fff;color:#000}
+.rv-acoes button:disabled{opacity:.35}
+.rv-corpo{position:relative;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);padding:12px 18px}
+.react-foto{position:relative;min-height:0;overflow:hidden;border-radius:14px;background:#0b0b0b;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.rv-cont{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.rv-cont img,.rv-cont canvas,.rv-cont svg{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none}
+.rv-cont img{object-fit:fill}
+.react-reg{position:absolute;top:12px;left:12px;background:rgba(13,106,77,.92);color:#fff;font-weight:700;font-size:1rem;border-radius:999px;padding:6px 14px;pointer-events:none}
+.react-reg:empty{display:none}
+.rv-zoom{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.72);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px;font-size:.95rem}
+.rv-zoom[hidden]{display:none}
+.rv-dica{margin:10px 0 0;padding-top:8px;border-top:1px solid rgba(255,255,255,.14);font-size:.8rem;color:#9fb0a8}
+.react-card{position:absolute;left:28px;right:28px;bottom:24px;background:rgba(10,14,12,.88);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:14px 16px;max-height:40%;overflow:auto;z-index:2}
 .react-card[hidden]{display:none}
-.react-topo{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:.85rem;color:#cfd8d3}
-.react-topo b{color:#fff;font-size:1rem}
+.react-topo{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:.88rem;color:#cfd8d3}
+.react-topo b{color:#fff;font-size:1.05rem}
 .react-fala{margin:8px 0 0;font-size:1.22rem;line-height:1.45;font-weight:600}
 .react-fala mark{background:#f7ecdc;color:#8a5200;border-radius:4px;padding:0 3px}
-.react-extra{margin:8px 0 0;font-size:.85rem;color:#cfd8d3;white-space:pre-line}
-.react-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:10px 12px;background:#111}
-.react-nav button{padding:13px 10px}
+.react-extra{margin:8px 0 0;font-size:.88rem;color:#cfd8d3;white-space:pre-line}
+.react-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;padding:10px 18px 14px;background:#111}
+.react-nav button{padding:13px 16px;font-size:1.05rem}
 .react-nav .sec{background:#2a2f2c;color:#fff}
 .react-nav button:disabled{opacity:.35}
 .react :focus-visible{outline:3px solid #fff;outline-offset:2px}
+/* iPad deitado (e telas largas): roteiro numa coluna ao lado da foto, sem cobrir o rosto */
+@media (orientation:landscape) and (min-width:900px){
+  .rv-corpo{grid-template-columns:minmax(0,1fr) minmax(300px,32%);gap:16px}
+  .rv-corpo.so-foto{grid-template-columns:minmax(0,1fr)}
+  .react-card{position:static;max-height:none;align-self:stretch}
+  .react-fala{font-size:1.3rem}
+}
+/* telefone: ferramentas mais justas */
+@media (max-width:560px){
+  .react-cab{padding:10px 14px;font-size:.78rem}
+  .rv-ferr{padding:8px 14px;gap:8px}
+  .rv-fotos button{padding:4px 10px;font-size:.88rem}
+  .rv-fotos button img{display:none}
+  .rv-cores button{width:44px;height:44px}
+  .rv-acoes{display:contents}
+  .rv-longo{display:none}
+  .rv-acoes button{padding:8px 12px;font-size:.88rem}
+  .rv-corpo{padding:8px 14px}
+  .react-card{left:22px;right:22px;bottom:16px;max-height:46%}
+  .react-fala{font-size:1.08rem}
+  .react-nav{padding:8px 14px 12px}
+}
 </style>
 </head>
 <body>
@@ -224,12 +285,32 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   </section>
 </main>
 <div id="react" class="react" role="dialog" aria-modal="true" aria-labelledby="react-tit" hidden>
-  <div class="react-cab"><p>Grave a tela do iPhone com o microfone ligado. Depois de mandar, apague o vídeo do celular (e de Apagados recentemente).</p><button type="button" id="react-fechar">Fechar</button></div>
-  <div class="react-foto"><img id="react-img" alt=""><span class="react-reg" id="react-reg"></span>
-    <div class="react-card" id="react-card"><div class="react-topo"><b id="react-tit"></b><span id="react-pos"></span></div><p class="react-fala" id="react-fala"></p><p class="react-extra" id="react-extra"></p></div></div>
+  <div class="react-cab"><p><span class="rv-longo">Grave a tela do iPad ou do iPhone com o microfone ligado (Central de Controle › toque e segure em Gravar tela › Microfone). Depois de mandar, apague o vídeo do celular (e de Apagados recentemente).</span><span class="rv-curto">Grave a tela com o microfone ligado. Depois de mandar, apague o vídeo (e de Apagados recentemente).</span></p><button type="button" id="react-fechar">Fechar</button></div>
+  <div class="rv-ferr" role="toolbar" aria-label="Ferramentas da revisão">
+    <div class="rv-fotos" id="rv-fotos" role="group" aria-label="Foto"></div>
+    <div class="rv-cores" role="group" aria-label="Cor da caneta">
+      <button type="button" data-cor="#ff3b30" style="--c:#ff3b30" aria-label="Vermelho" aria-pressed="true"></button>
+      <button type="button" data-cor="#ffd60a" style="--c:#ffd60a" aria-label="Amarelo" aria-pressed="false"></button>
+      <button type="button" data-cor="#ffffff" style="--c:#ffffff" aria-label="Branco" aria-pressed="false"></button>
+    </div>
+    <div class="rv-acoes">
+      <button type="button" id="rv-desfazer" disabled>Desfazer</button>
+      <button type="button" id="rv-limpar" disabled>Limpar</button>
+      <button type="button" id="rv-dedo" aria-pressed="false">Dedo desenha</button>
+      <button type="button" id="rv-destaque" aria-pressed="false">Destacar região</button>
+    </div>
+  </div>
+  <div class="rv-corpo" id="rv-corpo">
+    <div class="react-foto" id="rv-palco">
+      <div class="rv-cont" id="rv-cont"><img id="react-img" alt="" draggable="false"><svg id="rv-dest" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true"></svg><canvas id="rv-tela" aria-hidden="true"></canvas></div>
+      <span class="react-reg" id="react-reg"></span>
+      <button type="button" class="rv-zoom" id="rv-zoom" hidden>Voltar ao tamanho</button>
+    </div>
+    <div class="react-card" id="react-card"><div class="react-topo"><b id="react-tit"></b><span id="react-pos"></span></div><p class="react-fala" id="react-fala"></p><p class="react-extra" id="react-extra"></p><p class="rv-dica" id="rv-dica"></p></div>
+  </div>
   <div class="react-nav"><button type="button" id="react-ant">Anterior</button><button type="button" class="sec" id="react-texto" aria-pressed="false">Só a foto</button><button type="button" id="react-prox">Próximo</button></div>
 </div>
-<script src="kits.js?v=20261101"></script>
+<script src="kits.js?v=20261102"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -256,6 +337,8 @@ function resumo(l){
     const n = NOME_FUNIL(p), d = p.dados || {};
     if (n === 'Pernas') return `Pernas: ${p.resumo || d.faixa || '?'}${d.idade ? ` (tem ${d.idade})` : ''}`;
     if (n === 'Pele') return `Pele: ${d.faixa || p.resumo || '?'}`;
+    if (n === 'Pele 2'){ const ach = (p.resumo || '').split('+').filter(x => SIN2[x]).map(x => SIN2[x][0].toLowerCase()), q = String(d.respostas?.incomoda || '').split('+').filter(Boolean).map(x => (ROT2.incomoda[1][x] || x).toLowerCase());
+      return `Pele 2: ${ach.length ? ach.join(', ') : p.resumo === 'nenhum' ? 'nada marcado' : '?'}${q.length ? ` · queixa: ${q.join(', ')}` : ''}`; }
     if (n === 'Quiz') return `Quiz: ${d.ajuda === 'medico' || p.resumo === 'medico' ? 'quer com médico' : d.ajuda || p.resumo ? 'por conta própria' : 'respondido'}`;
     if (n === 'Idade muscular') return `Idade muscular: ${(p.resumo || '?').replace(/ · queda -?\d+%/, '')}${d.idade ? ` (tem ${d.idade})` : ''}`;
     return `${n}: ${p.resumo || ''}`;
@@ -531,7 +614,59 @@ const ROT = { velMedia:'Velocidade média (°/s)', dur:'Duração medida (s)', q
   pc:'Percentil na idade', vel:'Subida média (m/s)', reps:'Repetições', faixa:'Faixa', modo:'Modo da foto', ocultas:'Áreas cobertas',
   qualidade:'Qualidade da foto', confianca:'Confiança', fotos:'Variante (fotos pedidas)', enviadas:'Fotos enviadas', qualidade_motivo:'Sobre a foto', origem:'Origem da foto' };
 const SINAL = { linhas_testa:'Linhas da testa', olhos:'Ao redor dos olhos', sulco_nasolabial:'Sulco do nariz à boca', manchas:'Manchas', textura_poros:'Textura da pele', flacidez:'Firmeza do contorno' };
-const TIPO = { repouso:'Parado', sorriso:'Sorriso', sobrancelhas:'Sobrancelhas' };
+const TIPO = { repouso:'Parado', sorriso:'Sorriso', sobrancelhas:'Sobrancelhas', frente:'Frente', esquerda:'Esquerda', direita:'Direita', resultado:'Resultado', referencia:'Referência' };
+// ---------- Pele 2 (02/11): nomes da biblioteca (pele2/biblioteca.json), regiões e respostas (rótulos de pele2/app.js) ----------
+const SIN2 = { linhas_testa:['Linhas da testa', 'Testa'], olhos:['Ao redor dos olhos', 'Olhos'], textura_poros:['Textura e poros', 'Zona T e nariz'], manchas:['Manchas', 'Bochechas'],
+  sulco_nasolabial:['Sulco do nariz à boca', 'Nariz à boca'], flacidez:['Firmeza do contorno', 'Mandíbula e contorno'], acne_ativa:['Espinhas', null], comedoes:['Cravos', null], cicatriz_acne:['Marcas de acne', null] };
+const REG2 = ['Testa', 'Olhos', 'Zona T e nariz', 'Bochechas', 'Nariz à boca', 'Queixo', 'Mandíbula e contorno', 'Rosto (sem região marcada)'];
+const REG_ACNE2 = { testa:'Testa', nariz:'Zona T e nariz', bochechas:'Bochechas', queixo:'Queixo', mandibula:'Mandíbula e contorno' };
+const GRAU2 = ['sem achado', 'leve', 'moderado', 'marcado'];
+const ROT2 = {
+  seguranca:['Gestação/amamentação', { nenhuma:'nenhuma', gravida:'grávida', amamentando:'amamentando', tentando:'tentando engravidar' }],
+  alergia:['Alergia', { nao:'sem alergia', sensivel:'pele sensível', reacao:'já teve reação', nao_sei:'não sabe' }],
+  incomoda:['Queixas', { acne:'Acne / espinhas', manchas:'Manchas', cravos:'Cravos', oleosidade:'Oleosidade', rugas:'Rugas e linhas', poros:'Poros dilatados', olheiras:'Olheiras', ressecamento:'Ressecamento', textura:'Textura irregular', outro:'Outro' }],
+  tipo:['Tipo de pele', { oleosa:'oleosa', seca:'seca', mista:'mista', normal:'normal', nao_sei:'não sabe' }],
+  sol:['Sol por dia', { quase_nada:'quase nada', menos_1h:'menos de 1 h', '1a3h':'1 a 3 h', mais_3h:'mais de 3 h' }],
+  agua:['Água por dia', { menos_1l:'menos de 1 L', '1a2l':'1 a 2 L', '2a3l':'2 a 3 L', mais_3l:'mais de 3 L' }],
+  sono:['Sono', { '4a5':'4 a 5 h', '6':'6 h', '7':'7 h', '8':'8 h', '9mais':'9 h ou mais' }],
+  rotina:['Rotina de cuidados', { nenhuma:'sem rotina', funciona:'rotina que funciona', receitada:'produtos receitados', nao_sei:'não sabe se funciona' }],
+  objetivo:['Objetivo', { confianca:'Me sentir bem e confiante com a minha pele', sem_maquiagem:'Sair sem maquiagem nem filtro, sem me preocupar', fotos:'Gostar de me ver em foto de perto', prevenir:'Cuidar agora, antes que piore', parar_gastar:'Parar de gastar com o que não funciona', outro:'O que você me contar' }],
+};
+const ALERTA2 = { seguranca:['gravida', 'amamentando', 'tentando'], alergia:['sensivel', 'reacao'] };
+function cartaoPele2(e, quando, g){
+  const d = e.dados || {}, sin = window.KITS ? KITS.pele2.norm(d).sinais : (d.sinais || []), S = Object.fromEntries(sin.map(s => [s.id, s]));
+  // itens com grau, um por sinal (espinhas e cravos separados); acne vai para cada região que a análise marcou
+  const itens = [];
+  for (const s of sin){
+    if (!SIN2[s.id]) continue;
+    const ver = s.visivel !== false && s.nivel != null;
+    const regs = SIN2[s.id][1] ? [SIN2[s.id][1]] : (s.regioes || []).map(r => REG_ACNE2[r]).filter(Boolean);
+    const base = { regs:regs.length ? regs : [REG2[REG2.length - 1]], ver };
+    if (s.id === 'acne_ativa'){
+      itens.push({ ...base, id:'acne_ativa', nome:'Espinhas', n:ver ? +s.nivel || 0 : null });
+      if (s.comedoes != null || !ver) itens.push({ ...base, id:'comedoes', nome:'Cravos', n:ver ? +s.comedoes || 0 : null });
+    } else itens.push({ ...base, id:s.id, nome:SIN2[s.id][0], n:ver ? +s.nivel || 0 : null, obs:s.id === 'cicatriz_acne' && s.tipo ? (s.tipo === 'cor' ? 'marca de cor' : 'marca com relevo') : '' });
+  }
+  const com = itens.filter(x => x.n >= 1), zero = itens.filter(x => x.n === 0), nao = itens.filter(x => x.n == null);
+  const porReg = REG2.map(r => [r, com.filter(x => x.regs.includes(r)).sort((a, b) => b.n - a.n)]).filter(([, xs]) => xs.length);
+  const resumoAch = [...com].sort((a, b) => b.n - a.n).map(x => `${x.nome} (${GRAU2[x.n]})`).join(' · ') || 'Nada marcado nas fotos';
+  const achados = `<div class="p2"><h3>Achados por região</h3>${porReg.map(([r, xs]) => `<div class="p2-reg"><b>${esc(r)}</b><ul>${xs.map(x =>
+      `<li><span>${esc(x.nome)}${x.obs ? `<small>${esc(x.obs)}</small>` : ''}</span><em class="g g${x.n}">${esc(GRAU2[x.n])}</em></li>`).join('')}</ul></div>`).join('') || '<p class="p2-nada">Nenhum sinal com grau 1 ou mais.</p>'}
+    ${zero.length ? `<p class="p2-nada">Sem achado (grau 0): ${esc(zero.map(x => x.nome.toLowerCase()).join(', '))}.</p>` : ''}
+    ${nao.length ? `<p class="p2-nada">Não deu para ver: ${esc(nao.map(x => x.nome.toLowerCase()).join(', '))}.</p>` : ''}
+    ${!S.acne_ativa && !S.cicatriz_acne ? '<p class="p2-nada">Esta análise veio sem os sinais de acne (edge antiga).</p>' : ''}</div>`;
+  const r = d.respostas || {};
+  const val = (k, v) => k === 'incomoda' ? String(v || '').split('+').filter(Boolean).map(x => ROT2.incomoda[1][x] || x).join(', ') : (ROT2[k][1][v] ?? v);
+  const resp = `<div class="p2"><h3>Respostas do quiz</h3>
+    <div class="l"><span>Nome</span><b>não vai para o servidor (fica só no celular dela); veja no Direct ou no WhatsApp</b></div>
+    ${Object.keys(ROT2).map(k => `<div class="l${(ALERTA2[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROT2[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(val(k, r[k])) : '—'}</b></div>`).join('')}</div>`;
+  const ORIG = { camera:'câmera', galeria:'galeria' };
+  const sobre = [['Faixa de idade da pele', d.faixa], ['Confiança', d.confianca], ['Qualidade da foto', d.qualidade], ['Fotos enviadas', d.enviadas],
+    ['Ângulos', Array.isArray(d.angulos) ? d.angulos.join(', ') : d.angulos], ['Origem da foto', ORIG[d.origem] || d.origem], ['Marca do Direct', d.lv]]
+    .filter(([, v]) => v != null && v !== '').map(([k, v]) => `<div class="l"><span>${esc(k)}</span><b>${esc(num(v))}</b></div>`).join('');
+  return `<div class="card"><h2>Pele 2</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
+    <div class="res">${esc(resumoAch)}</div>${achados}${resp}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>${kitBloco(e)}</div>`;
+}
 const EXPR = { olhos:'sorriso', linhas_testa:'sobrancelhas' };
 let FOTOS = [], codigoAtual = '';
 const num = v => typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits:2 }) : v;
@@ -597,18 +732,29 @@ async function ver(c){
     $('out').innerHTML = j.lista.map(e => {
       const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:TZ, dateStyle:'short', timeStyle:'short' });
       const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil;
-      const g = e.etapa === 'pele-resultado' && e.dados?.foto; if (g) usados.add(g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}${kitBloco(e)}</div>`;
+      const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2') && e.dados?.foto; if (g) usados.add(g);
+      if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : '');
   } catch { $('out').innerHTML = '<p class="aviso">Sem conexão.</p>'; }
 }
-function blocoFotos(g){
-  const fs = FOTOS.filter(f => f.grupo === g);
+// Fotos de um grupo, com a chave certa: pele antiga = repouso/sorriso/sobrancelhas; pele2 = frente/esquerda/direita.
+// A edge só nomeia por ângulo quando chegam as 3 fotos; com 1 ou 2 ela usa os nomes antigos, aí vale a ordem dos ângulos.
+const ANG = ['frente', 'esquerda', 'direita'], EXP = ['repouso', 'sorriso', 'sobrancelhas'];
+function fotosDoGrupo(g, e){
+  const p2 = e?.funil === 'pele2', ang = ANG.filter(a => (e?.dados?.angulos || ANG).includes(a));
+  return FOTOS.filter(f => f.grupo === g).map(f => {
+    const chave = p2 && !ANG.includes(f.tipo) ? ang[EXP.indexOf(f.tipo)] || f.tipo : f.tipo;
+    return { ...f, chave, rot:TIPO[chave] || chave };
+  }).sort((a, b) => ((p2 ? ANG : EXP).indexOf(a.chave) + 1 || 9) - ((p2 ? ANG : EXP).indexOf(b.chave) + 1 || 9));
+}
+function blocoFotos(g, e){
+  const fs = fotosDoGrupo(g, e);
   if (!fs.length) return '<div class="fotos-pe"><span>Foto apagada.</span></div>';
   const dia = new Date(fs[0].apagaEm).toLocaleDateString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit' });
-  return `<div class="fotos n${fs.length}" style="--n:${fs.length}">${fs.map(f => `<figure>${f.url ? `<img src="${esc(f.url)}" alt="${esc(TIPO[f.tipo] || f.tipo)}">` : ''}${fs.length > 1 ? `<figcaption>${esc(TIPO[f.tipo] || f.tipo)}</figcaption>` : ''}</figure>`).join('')}</div>
+  return `<div class="fotos n${fs.length}" style="--n:${fs.length}">${fs.map(f => `<figure>${f.url ? `<img src="${esc(f.url)}" alt="${esc(f.rot)}" data-chave="${esc(f.chave)}">` : ''}${fs.length > 1 ? `<figcaption>${esc(f.rot)}</figcaption>` : ''}</figure>`).join('')}</div>
     <div class="fotos-pe" data-g="${esc(g)}"><span>Apaga sozinha em ${esc(dia)}.</span><button type="button" class="apagar">${fs.length > 1 ? 'Apagar fotos' : 'Apagar foto'}</button></div>`;
 }
 // apagar: o 1º toque pede confirmação no próprio botão; o 2º apaga do bucket
@@ -629,11 +775,11 @@ $('out').addEventListener('click', async ev => {
 });
 // ---------- Kit de resposta (01/11): faixa, mensagens prontas e modo react; tudo local, nada vai para o servidor ----------
 let KB = [], KM = [], KIT_NOME = '', R = null;   // KB = blocos da tela; KM = mensagens desenhadas; KIT_NOME só nesta tela
-const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas' : null;
+const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas' : null;
 function kitBloco(e){
   const t = window.KITS && kitTeste(e); if (!t) return '';
   try {
-    const i = KB.push({ t, d:e.dados || {}, g:e.dados?.foto || null, forcar:null }) - 1;
+    const i = KB.push({ t, e, d:e.dados || {}, g:e.dados?.foto || null, forcar:null, desenhos:{} }) - 1;
     return `<section class="kit" data-kb="${i}" aria-label="Responder">${kitCorpo(i)}</section>`;
   } catch (err) { console.error(err); return ''; }
 }
@@ -650,7 +796,7 @@ function kitMsg(tpl, b, o = {}){
 }
 const COR_FAIXA = { 1:'ok', 2:'meh', 3:'meh', 4:'bad' };
 function kitCorpo(i){
-  const b = KB[i], K = KITS[b.t], c = b.c = K.classifica(b.d, b.forcar), pele = b.t === 'pele';
+  const b = KB[i], K = KITS[b.t], c = b.c = K.classifica(b.d, b.forcar), pele = b.t === 'pele' || b.t === 'pele2';
   const atalho = id => K.atalhos.find(a => a.id === id)?.texto || '';
   let h = '<h3 class="kit-h">Responder</h3>';
   h += `<div class="kit-faixa ${pele ? (c.perfil === 'A' ? 'ok' : 'meh') : COR_FAIXA[c.faixa] || 'meh'}"><b>${pele ? 'Perfil ' + esc(c.titulo) : c.faixa ? `Faixa ${c.faixa} de 4 · ${esc(c.titulo)}` : 'Faixa não calculada'}</b><span>${esc(c.simples || '')}</span></div>`;
@@ -661,9 +807,10 @@ function kitCorpo(i){
     const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
     h += `<div><div class="kit-perfil" role="group" aria-label="Perfil">${Object.keys(K.perfis).map(p => `<button type="button" data-perfil="${p}" data-kb="${i}" aria-pressed="${c.perfil === p}">${p}</button>`).join('')}</div>
       <p class="kit-sub">Calculado pela ficha: ${esc(c.calculado)}. O D (um sinal para medir) só quando você vir o sinal na foto ou ela disser sim à pergunta do pescoço.</p></div>
-      <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>${fotos.length ? 'Modo react' : 'Modo react (sem fotos: apagadas ou não carregaram)'}</button>
+      ${c.notaAcne ? `<p class="kit-nota">${esc(c.notaAcne)}</p>` : ''}
+      <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>${fotos.length ? 'Modo revisão (iPad: caneta e zoom)' : 'Modo revisão (sem fotos: apagadas ou não carregaram)'}</button>
       <p class="kit-sub">Faixa de idade no vídeo: ${esc(c.idadeFaixa.txt)}</p>`;
-  }
+  } else if (c.faixa) h += `<button type="button" class="kit-react" data-react="${i}">Modo revisão (iPad: números grandes e caneta)</button>`;
   const ms = K.mensagens(c);
   if (pele && c.perfil !== 'D') ms.splice(ms.findIndex(m => m.ordem === 3), 0, { ordem:0, rotulo:'Pergunta do pescoço (opcional)', quando:'No fim da mensagem 2, só se fizer sentido na conversa', texto:KITS.T.pele.pescoco });
   const corpo = ms.map(m => kitMsg(m.texto, i, { n:m.ordem || '', rotulo:m.rotulo, quando:m.quando, nota:m.nota, audio:m.audio })).join('');
@@ -696,45 +843,331 @@ $('out').addEventListener('input', ev => {
   document.querySelectorAll('.kit-nome').forEach(x => { if (x !== ev.target) x.value = KIT_NOME; });
   document.querySelectorAll('.kit-txt[id^="km-"]').forEach(el => { const k = +el.id.slice(3); if (KM[k] && !KM[k].raw) el.innerHTML = kitHtml(k); });
 });
-// modo react (versão 1: sem marca posicionada; a análise ainda não devolve região)
-function reactAbrir(i, volta){
-  const b = KB[i], fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
-  if (!fotos.length) return;
-  R = { i, passos:KITS.pele.react(b.d, b.c.perfil), fotos, pos:0, volta };
+// ---------- Modo revisão (02/11; era o "modo react" v1 de 01/11) ----------
+// Foto (ou quadro de números, no braço e nas pernas) em tela cheia, com o roteiro, caneta presa à imagem, zoom de pinça e
+// troca de foto. Apple Pencil (pointerType 'pen') desenha e o dedo arrasta/dá zoom; sem caneta, "Dedo desenha".
+// O mouse desenha (para testar no computador). Cada foto guarda o próprio desenho em KB[i].desenhos, só na memória
+// desta aba: some ao recarregar e nada vai para servidor. Gravação = gravar a tela do aparelho (instrução no topo).
+const RV = { cor:'#ff3b30', dedo:false, destaque:false, caneta:false };
+// Destaque APROXIMADO da região (a análise não devolve coordenada): elipses [cx, cy, rx, ry] na foto de frente,
+// que a página do teste recorta pelo oval do rosto (testa no alto, queixo embaixo). Só aparece nas fotos de frente.
+const ZONA = {
+  testa:[[.5, .17, .30, .11]], glabela:[[.5, .31, .08, .06]],
+  olhos_canto:[[.16, .40, .09, .07], [.84, .40, .09, .07]], olheira:[[.32, .47, .11, .05], [.68, .47, .11, .05]],
+  bochecha:[[.24, .58, .14, .10], [.76, .58, .14, .10]], bochechas:[[.24, .58, .14, .10], [.76, .58, .14, .10]],
+  nariz:[[.5, .50, .08, .14]], sulco:[[.37, .67, .07, .08], [.63, .67, .07, .08]],
+  queixo:[[.5, .90, .14, .07]], mandibula:[[.5, .89, .40, .09]],
+};
+const FRONTAL = new Set(['frente', 'repouso', 'sorriso', 'sobrancelhas']);
+const palco = $('rv-palco'), cont = $('rv-cont'), tela = $('rv-tela'), rvImg = $('react-img'), dest = $('rv-dest');
+
+// ----- braço e pernas: dois quadros (resultado e referência) desenhados num canvas, e o áudio do kit em partes -----
+function escreve(x, s, px, y, larg, lh){
+  const ps = String(s).split(' '); let linha = '';
+  for (const p of ps){ const t = linha ? linha + ' ' + p : p; if (x.measureText(t).width > larg && linha){ x.fillText(linha, px, y); y += lh; linha = p; } else linha = t; }
+  if (linha) x.fillText(linha, px, y);
+  return y;
+}
+function quadro(titulo, linhas, rodape){
+  const W = 1080, H = 1350, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d'), F = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+  x.fillStyle = '#0e1411'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#4fd1a1'; x.font = `700 46px ${F}`; let y = escreve(x, titulo, 80, 130, W - 160, 56) + 110;
+  for (const l of linhas){
+    x.fillStyle = '#b9c6bf'; x.font = `500 38px ${F}`; y = escreve(x, l.rot, 80, y, W - 160, 48);
+    const g = l.grande ? 150 : 74;
+    x.fillStyle = l.cor || '#fff'; x.font = `800 ${g}px ${F}`; y = escreve(x, l.val, 80, y + g * .95, W - 160, g * 1.08) + (l.grande ? 100 : 86);
+  }
+  if (rodape){ x.fillStyle = '#7f8f87'; x.font = `400 30px ${F}`; escreve(x, rodape, 80, H - 120, W - 160, 40); }
+  const url = cv.toDataURL('image/png'); cv.width = cv.height = 0;
+  return url;
+}
+const n0 = v => v == null || v === '' ? '—' : typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits:1 }) : String(v);
+const COR_Q = { 1:'#4fd1a1', 2:'#ffd27a', 3:'#ffd27a', 4:'#ff8a7a' };
+function quadrosMov(b){
+  const c = b.c, d = b.d;
+  if (b.t === 'braco'){
+    const m = c.medida, r = REF.braco;
+    return [
+      { chave:'resultado', rot:'Resultado', url:quadro('Idade muscular · teste do braço', [
+        { rot:'Roscas em 10 segundos', val:n0(m.roscas), grande:true },
+        { rot:'Velocidade média do cotovelo', val:m.v ? `${n0(m.v)} °/s` : '—' },
+        { rot:'Idade muscular estimada', val:m.faixaTxt || '—', cor:COR_Q[c.faixa] },
+        { rot:'Idade de verdade', val:d.idade ? `${d.idade} anos` : 'não informou' },
+      ], c.faixa ? `Faixa ${c.faixa} de 4 · ${c.titulo}. Estimativa comparada com estudos de população; não é diagnóstico.` : '') },
+      { chave:'referencia', rot:'Referência', url:quadro('Referência · teste do braço', [
+        { rot:'Velocidade de referência aos 50 anos', val:`${n0(Math.round(m.VREF))} °/s` },
+        { rot:'65 a 76 anos com boa saúde (sensor no punho)', val:'perto de 12 roscas em 10 s' },
+        ...(r ? [{ rot:`${r.nome}, ${r.idade} anos (medido no site)`, val:`${n0(r.roscas)} roscas em 10 s` }] : []),
+        { rot:'Você', val:`${n0(m.roscas)} roscas · ${m.v ? n0(m.v) + ' °/s' : '—'}`, cor:'#4fd1a1' },
+      ], 'Régua: Toosizadeh 2017 (20 s, 60 anos ou mais) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação.' + (d.sexo === 'f' ? ' Mulher: × 0,9 (estimativa).' : '')) },
+    ];
+  }
+  const v = c.vars, r = REF.pernas;
+  return [
+    { chave:'resultado', rot:'Resultado', url:quadro('Pernas · 5 levantadas da cadeira', [
+      { rot:'Tempo das 5 levantadas', val:v.tempo ? `${v.tempo} s` : '—', grande:true },
+      { rot:'Potência', val:v.potencia ? `${v.potencia} W/kg` : '—' },
+      { rot:'Percentil na idade e no sexo', val:n0(v.percentil) },
+      { rot:'Potência parecida com quem tem', val:v.faixa || '—', cor:COR_Q[c.faixa] },
+    ], c.faixa ? `Faixa ${c.faixa} de 4 · ${c.titulo}. Estimativa comparada com estudo de população; não é diagnóstico.` : '') },
+    { chave:'referencia', rot:'Referência', url:quadro('Referência · pernas', [
+      { rot:'20 a 29 anos (mais de 55 mil pessoas)', val:'cerca de 5 s (homens) e 6 s (mulheres)' },
+      { rot:'Potência que pede atenção', val:'abaixo de 2,5 W/kg (homem) ou 1,9 W/kg (mulher)' },
+      ...(r ? [{ rot:`${r.nome}, ${r.idade} anos (medido no site)`, val:`${n0(r.tempo)} s` }] : []),
+      { rot:'Você', val:`${v.tempo ? v.tempo + ' s' : '—'} · ${v.potencia ? v.potencia + ' W/kg' : '—'}`, cor:'#4fd1a1' },
+    ], 'Feito em casa, o teste costuma sair mais lento que no laboratório.') },
+  ];
+}
+function passosMov(b){
+  const au = KITS[b.t].mensagens(b.c).find(m => m.audio);
+  if (!au) return [{ bloco:'Resultado', foto:'resultado', tempo:'', tela:'Quadro com os números', fala:'' }];
+  const ps = au.texto.split('\n').map(x => x.trim()).filter(Boolean);
+  return ps.map((t, k) => ({ bloco:`Áudio · parte ${k + 1} de ${ps.length}`, foto:/vídeo|estudo|20 e poucos|referência/i.test(t) ? 'referencia' : 'resultado', tempo:'',
+    tela:k ? '' : au.quando || 'Texto para ler', fala:t }));
+}
+
+// ----- abrir, passos e fotos -----
+function reactAbrir(i, volta, chave){
+  const b = KB[i]; if (!b) return;
+  const foto = b.t === 'pele' || b.t === 'pele2';
+  const telas = foto ? fotosDoGrupo(b.g, b.e).filter(f => f.url) : (b.quadros ||= quadrosMov(b));
+  if (!telas.length) return;
+  R = { i, foto, passos:foto ? KITS[b.t].react(b.d, b.c.perfil) : passosMov(b), telas, pos:0, tela:-1, volta, z:{ s:1, tx:0, ty:0 }, fit:null };
   $('react').hidden = false; document.body.style.overflow = 'hidden';
-  $('react-card').hidden = false; $('react-texto').setAttribute('aria-pressed', 'false'); $('react-texto').textContent = 'Só a foto';
-  reactDesenha(); $('react-prox').focus();
+  $('react-card').hidden = false; $('rv-corpo').classList.remove('so-foto'); $('rv-dica').hidden = false;
+  $('react-texto').setAttribute('aria-pressed', 'false'); $('react-texto').textContent = 'Só a foto';
+  $('rv-destaque').hidden = !foto;
+  $('rv-fotos').innerHTML = telas.map((t, k) => `<button type="button" data-tela="${k}" aria-pressed="false"><img src="${esc(t.url)}" alt="">${esc(t.rot)}</button>`).join('');
+  atualizaDica();
+  reactDesenha();
+  if (chave){ const k = telas.findIndex(t => t.chave === chave); if (k >= 0) mostrarTela(k); }
+  $('react-prox').focus();
 }
 function reactDesenha(){
   const p = R.passos[R.pos], n = R.passos.length;
-  const foto = R.fotos.find(f => f.tipo === p.foto) || R.fotos.find(f => f.tipo === 'repouso') || R.fotos[0];
-  $('react-img').src = foto.url; $('react-img').alt = 'Foto: ' + (TIPO[foto.tipo] || foto.tipo);
-  $('react-reg').textContent = p.bloco.replace(/ \(opcional\)$/, '');
-  $('react-tit').textContent = p.bloco; $('react-pos').textContent = `${R.pos + 1} de ${n} · ${p.tempo}`;
-  const vars = { ...KB[R.i].c.vars, nome:KIT_NOME.trim() };
+  let k = R.telas.findIndex(t => t.chave === p.foto);
+  const veio = k >= 0;
+  if (!veio) k = Math.max(0, R.telas.findIndex(t => t.chave === 'repouso' || t.chave === 'frente'));
+  mostrarTela(k);
+  const t = R.telas[k];
+  $('react-reg').textContent = R.foto ? p.bloco.replace(/ \(opcional\)$/, '') : '';
+  $('react-tit').textContent = p.bloco; $('react-pos').textContent = `${R.pos + 1} de ${n}${p.tempo ? ' · ' + p.tempo : ''}`;
+  const vars = { ...KB[R.i].c.vars, ...(p.vars || {}), nome:KIT_NOME.trim() };
   $('react-fala').innerHTML = KITS.pedacos(p.fala, vars).map(x => x.falta ? `<mark>${esc(x.s)}</mark>` : esc(x.s)).join('');
   $('react-extra').textContent = [
-    p.tela + (foto.tipo !== p.foto ? ` (essa foto não veio; mostrando ${(TIPO[foto.tipo] || foto.tipo).toLowerCase()})` : '') + (p.nivel != null ? ` · nível ${p.nivel}/3` : ''),
-    p.nota, p.extra, p.seguranca ? `Frase de segurança (não cortar): "${p.seguranca}"` : ''].filter(Boolean).join('\n');
+    (p.tela || '') + (!veio ? ` (essa foto não veio; mostrando ${t.rot.toLowerCase()})` : '') + (p.nivel != null ? ` · nível ${p.nivel}/3` : ''),
+    p.nota, p.extra, p.seguranca ? `Frase de segurança (não cortar): "${p.seguranca}"` : ''].filter(x => x && x.trim()).join('\n');
   $('react-ant').disabled = R.pos === 0; $('react-prox').disabled = R.pos === n - 1;
+  desenhaDestaque();
 }
 function reactPasso(d){ if (!R) return; const p = Math.max(0, Math.min(R.passos.length - 1, R.pos + d)); if (p !== R.pos){ R.pos = p; reactDesenha(); } }
+function mostrarTela(k){
+  if (!R) return;
+  k = (k + R.telas.length) % R.telas.length;
+  const t = R.telas[k], mudou = k !== R.tela;
+  R.tela = k;
+  document.querySelectorAll('#rv-fotos button').forEach((bt, j) => bt.setAttribute('aria-pressed', String(j === k)));
+  if (mudou){
+    cancelaTraco(); R.z = { s:1, tx:0, ty:0 }; R.fit = null;
+    rvImg.alt = 'Foto: ' + t.rot;
+    const tela0 = R;
+    rvImg.onload = () => { if (R === tela0 && R.tela === k) encaixar(); };
+    rvImg.onerror = () => { if (R === tela0) $('rv-dica').textContent = 'A foto não carregou. O link das fotos vale 10 minutos: feche, toque em Ver de novo e abra a revisão.'; };
+    rvImg.src = t.url;
+    if (rvImg.complete && rvImg.naturalWidth) encaixar();
+  }
+  desenhaDestaque(); botoesDesenho();
+}
 function reactFechar(){
-  if (!R) return; const volta = R.volta; R = null;
-  $('react').hidden = true; $('react-img').removeAttribute('src'); document.body.style.overflow = '';
+  if (!R) return; const volta = R.volta; cancelaTraco(); ptrs.clear(); gesto = null; R = null;
+  $('react').hidden = true; rvImg.removeAttribute('src'); document.body.style.overflow = '';
+  tela.width = tela.height = 0; dest.innerHTML = '';
   if (volta?.isConnected) volta.focus();
 }
+
+// ----- encaixe, zoom e o canvas do desenho -----
+function encaixar(){
+  if (!R) return;
+  const W = palco.clientWidth, H = palco.clientHeight, iw = rvImg.naturalWidth, ih = rvImg.naturalHeight;
+  if (!W || !H || !iw || !ih) return;
+  const k = Math.min(W / iw, H / ih), w = Math.round(iw * k), h = Math.round(ih * k);
+  R.fit = { W, H, w, h, L:Math.round((W - w) / 2), T:Math.round((H - h) / 2) };
+  Object.assign(cont.style, { left:R.fit.L + 'px', top:R.fit.T + 'px', width:w + 'px', height:h + 'px' });
+  aplicaZoom(); ajustaTela();
+}
+function aplicaZoom(){
+  if (!R?.fit) return;
+  const { W, H, w, h, L, T } = R.fit, z = R.z;
+  z.s = Math.min(6, Math.max(1, z.s));
+  if (z.s < 1.01){ z.s = 1; z.tx = 0; z.ty = 0; }
+  const lim = (t, tam, cx, base) => tam * z.s <= cx ? (cx - tam * z.s) / 2 - base : Math.min(-base, Math.max(cx - tam * z.s - base, t));
+  z.tx = lim(z.tx, w, W, L); z.ty = lim(z.ty, h, H, T);
+  cont.style.transform = `translate(${z.tx}px, ${z.ty}px) scale(${z.s})`;
+  $('rv-zoom').hidden = z.s <= 1; $('rv-zoom').textContent = `${z.s.toFixed(1).replace('.', ',')}× · voltar ao tamanho`;
+}
+function ajustaTela(){
+  if (!R?.fit) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 3), k = Math.min(Math.max(R.z.s, 1), 3);
+  let cw = R.fit.w * dpr * k, ch = R.fit.h * dpr * k;
+  const lim = Math.min(1, 4096 / Math.max(cw, ch), Math.sqrt(8e6 / (cw * ch)));   // teto de memória do Safari no iPad
+  cw = Math.round(cw * lim); ch = Math.round(ch * lim);
+  if (tela.width !== cw || tela.height !== ch){ tela.width = cw; tela.height = ch; }
+  redesenha();
+}
+let tAjuste = null;
+const ajustaTelaDepois = () => { clearTimeout(tAjuste); tAjuste = setTimeout(ajustaTela, 140); };
+const desenhoAtual = () => { const D = KB[R.i].desenhos ||= {}, c = R.telas[R.tela].chave; return D[c] ||= { tracos:[], hist:[] }; };
+// ponto = [x, y, largura]; x e y de 0 a 1 na imagem, largura em fração da largura da imagem (o traço acompanha o zoom)
+function tracoDesenha(ctx, t, de = 1){
+  const W = tela.width, H = tela.height, P = t.pts;
+  ctx.strokeStyle = ctx.fillStyle = t.cor; ctx.lineCap = ctx.lineJoin = 'round';
+  if (P.length === 1 || de === 0){ ctx.beginPath(); ctx.arc(P[0][0] * W, P[0][1] * H, Math.max(P[0][2] * W / 2, .5), 0, 2 * Math.PI); ctx.fill(); if (P.length === 1) return; }
+  for (let j = Math.max(1, de); j < P.length; j++){
+    ctx.lineWidth = Math.max((P[j - 1][2] + P[j][2]) / 2 * W, 1);
+    ctx.beginPath(); ctx.moveTo(P[j - 1][0] * W, P[j - 1][1] * H); ctx.lineTo(P[j][0] * W, P[j][1] * H); ctx.stroke();
+  }
+}
+function redesenha(){
+  if (!R || !tela.width) return;
+  const ctx = tela.getContext('2d'); ctx.clearRect(0, 0, tela.width, tela.height);
+  for (const t of desenhoAtual().tracos) tracoDesenha(ctx, t, 0);
+  if (traco) tracoDesenha(ctx, traco.t, 0);
+}
+function desenhaDestaque(){
+  const p = R && R.passos[R.pos], t = R && R.telas[R.tela];
+  const zs = RV.destaque && p?.regiao && t && FRONTAL.has(t.chave) ? p.regiao.flatMap(r => ZONA[r] || []) : [];
+  const elip = ([cx, cy, rx, ry]) => `M${cx - rx} ${cy}a${rx} ${ry} 0 1 0 ${2 * rx} 0a${rx} ${ry} 0 1 0 ${-2 * rx} 0Z`;
+  dest.innerHTML = zs.length ? `<path fill="rgba(0,0,0,.5)" fill-rule="evenodd" d="M0 0H1V1H0Z${zs.map(elip).join('')}"/>`
+    + zs.map(([cx, cy, rx, ry]) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="#ffd60a" stroke-width="3" stroke-dasharray="8 6" vector-effect="non-scaling-stroke"/>`).join('') : '';
+}
+function botoesDesenho(){ if (!R || R.tela < 0) return; const D = desenhoAtual(); $('rv-desfazer').disabled = !D.hist.length; $('rv-limpar').disabled = !D.tracos.length; }
+function atualizaDica(){
+  $('rv-dica').textContent = RV.dedo ? 'Dedo desenha · dois dedos dão zoom e arrastam · Desfazer apaga o último traço'
+    : RV.caneta ? 'Caneta desenha · dedo arrasta, dá zoom e desliza para trocar de foto · duplo toque volta'
+    : 'A caneta (ou o mouse) desenha · o dedo arrasta, dá zoom e desliza para trocar de foto · duplo toque volta · sem caneta, use "Dedo desenha"';
+}
+
+// ----- caneta, dedo, pinça, deslizar e duplo toque (Pointer Events) -----
+const ptrs = new Map(); let traco = null, gesto = null, ultimoToque = null;
+const local = ev => { const r = palco.getBoundingClientRect(); return { x:ev.clientX - r.left, y:ev.clientY - r.top }; };
+const largura = ev => .0065 * (ev.pointerType === 'pen' && ev.pressure > 0 ? .35 + 1.3 * ev.pressure : 1) / R.z.s;
+function comecaTraco(ev){
+  const r = cont.getBoundingClientRect();
+  traco = { id:ev.pointerId, tipo:ev.pointerType, t:{ cor:RV.cor, pts:[[(ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height, largura(ev)]] } };
+  tracoDesenha(tela.getContext('2d'), traco.t);
+}
+function continuaTraco(ev){
+  const r = cont.getBoundingClientRect(), evs = ev.getCoalescedEvents?.() || [], P = traco.t.pts, de = P.length;
+  for (const e of evs.length ? evs : [ev]){
+    const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height, u = P[P.length - 1];
+    if (Math.abs(x - u[0]) + Math.abs(y - u[1]) < .0006) continue;
+    P.push([x, y, largura(e)]);
+  }
+  if (P.length > de) tracoDesenha(tela.getContext('2d'), traco.t, de);
+}
+function terminaTraco(){ const D = desenhoAtual(); D.tracos.push(traco.t); D.hist.push({ tipo:'traco' }); traco = null; botoesDesenho(); }
+function cancelaTraco(){ if (!traco) return; traco = null; redesenha(); }
+function duploToque(p){
+  const F = R.fit;
+  if (R.z.s > 1) R.z = { s:1, tx:0, ty:0 };
+  else { const s = 2.5, px = p.x - F.L, py = p.y - F.T; R.z = { s, tx:px * (1 - s), ty:py * (1 - s) }; }
+  aplicaZoom(); ajustaTelaDepois();
+}
+palco.addEventListener('pointerdown', ev => {
+  if (!R?.fit || ev.target.closest('button')) return;
+  if (ev.pointerType === 'pen' && !RV.caneta){ RV.caneta = true; if (RV.dedo){ RV.dedo = false; $('rv-dedo').setAttribute('aria-pressed', 'false'); } atualizaDica(); }
+  if (ev.pointerType === 'touch' && traco?.tipo === 'pen') return;          // palma da mão enquanto a caneta desenha
+  if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+  ev.preventDefault();
+  try { palco.setPointerCapture(ev.pointerId); } catch {}
+  if (ev.pointerType !== 'touch'){ cancelaTraco(); comecaTraco(ev); return; }
+  ptrs.set(ev.pointerId, local(ev));
+  if (ptrs.size === 1){
+    gesto = { tipo:'um', ini:local(ev), t0:performance.now(), z0:{ ...R.z }, moveu:false };
+    if (RV.dedo && !traco) comecaTraco(ev);
+  } else {
+    if (traco?.tipo === 'touch') cancelaTraco();                            // segundo dedo: era pinça, não traço
+    const [a, b] = [...ptrs.values()];
+    gesto = { tipo:'pinca', d0:Math.hypot(a.x - b.x, a.y - b.y) || 1, m0:{ x:(a.x + b.x) / 2, y:(a.y + b.y) / 2 }, z0:{ ...R.z }, moveu:true };
+  }
+});
+palco.addEventListener('pointermove', ev => {
+  if (!R?.fit) return;
+  if (traco && ev.pointerId === traco.id){ continuaTraco(ev); if (ptrs.has(ev.pointerId)) ptrs.set(ev.pointerId, local(ev)); return; }
+  if (!ptrs.has(ev.pointerId)) return;
+  ptrs.set(ev.pointerId, local(ev));
+  if (gesto?.tipo === 'pinca' && ptrs.size >= 2){
+    const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y), m = { x:(a.x + b.x) / 2, y:(a.y + b.y) / 2 }, z0 = gesto.z0, F = R.fit;
+    const s = Math.min(6, Math.max(1, z0.s * d / gesto.d0)), px = (gesto.m0.x - F.L - z0.tx) / z0.s, py = (gesto.m0.y - F.T - z0.ty) / z0.s;
+    R.z = { s, tx:m.x - F.L - px * s, ty:m.y - F.T - py * s }; aplicaZoom();
+  } else if (gesto?.tipo === 'um'){
+    const p = ptrs.get(ev.pointerId), dx = p.x - gesto.ini.x, dy = p.y - gesto.ini.y;
+    if (Math.hypot(dx, dy) > 10) gesto.moveu = true;
+    if (R.z.s > 1){ R.z.tx = gesto.z0.tx + dx; R.z.ty = gesto.z0.ty + dy; aplicaZoom(); }
+  }
+});
+function soltou(ev){
+  if (!R) return;
+  if (traco && ev.pointerId === traco.id){ if (ev.type === 'pointercancel') cancelaTraco(); else terminaTraco(); }
+  if (!ptrs.has(ev.pointerId)) return;
+  const p = ptrs.get(ev.pointerId); ptrs.delete(ev.pointerId);
+  if (gesto?.tipo === 'um' && !RV.dedo && ev.type === 'pointerup'){
+    const dx = p.x - gesto.ini.x, dy = p.y - gesto.ini.y, dt = performance.now() - gesto.t0;
+    if (gesto.z0.s <= 1 && Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy) && dt < 900) mostrarTela(R.tela + (dx < 0 ? 1 : -1));
+    else if (!gesto.moveu && dt < 320){
+      const ag = performance.now();
+      if (ultimoToque && ag - ultimoToque.t < 330 && Math.hypot(p.x - ultimoToque.x, p.y - ultimoToque.y) < 40){ duploToque(p); ultimoToque = null; }
+      else ultimoToque = { t:ag, x:p.x, y:p.y };
+    }
+  }
+  if (ptrs.size === 1){ const [q] = [...ptrs.values()]; gesto = { tipo:'um', ini:q, t0:performance.now(), z0:{ ...R.z }, moveu:true }; }   // sobrou um dedo da pinça: segue arrastando
+  else if (!ptrs.size){ gesto = null; ajustaTelaDepois(); }
+}
+palco.addEventListener('pointerup', soltou);
+palco.addEventListener('pointercancel', soltou);
+palco.addEventListener('wheel', ev => {
+  if (!R?.fit) return; ev.preventDefault();
+  const p = local(ev), z0 = { ...R.z }, F = R.fit, s = Math.min(6, Math.max(1, z0.s * Math.exp(-ev.deltaY * .0022)));
+  const px = (p.x - F.L - z0.tx) / z0.s, py = (p.y - F.T - z0.ty) / z0.s;
+  R.z = { s, tx:p.x - F.L - px * s, ty:p.y - F.T - py * s }; aplicaZoom(); ajustaTelaDepois();
+}, { passive:false });
+palco.addEventListener('touchmove', ev => { if (R) ev.preventDefault(); }, { passive:false });   // Safari: a página não rola nem dá zoom por baixo
+document.addEventListener('gesturestart', ev => { if (R) ev.preventDefault(); });
+palco.addEventListener('contextmenu', ev => { if (R) ev.preventDefault(); });
+if (window.ResizeObserver) new ResizeObserver(() => { if (R && !$('react').hidden){ R.z = { s:1, tx:0, ty:0 }; encaixar(); } }).observe(palco);
+
+// ----- botões -----
 $('react-ant').onclick = () => reactPasso(-1);
 $('react-prox').onclick = () => reactPasso(1);
 $('react-fechar').onclick = reactFechar;
-$('react-texto').onclick = () => { const so = $('react-card').hidden = !$('react-card').hidden; $('react-texto').setAttribute('aria-pressed', so); $('react-texto').textContent = so ? 'Mostrar texto' : 'Só a foto'; };
+$('react-texto').onclick = () => {
+  const so = $('react-card').hidden = !$('react-card').hidden;
+  $('rv-corpo').classList.toggle('so-foto', so); $('rv-dica').hidden = so;
+  $('react-texto').setAttribute('aria-pressed', so); $('react-texto').textContent = so ? 'Mostrar texto' : 'Só a foto';
+};
+$('rv-fotos').addEventListener('click', ev => { const b = ev.target.closest('button[data-tela]'); if (b) mostrarTela(+b.dataset.tela); });
+document.querySelectorAll('.rv-cores button').forEach(b => b.onclick = () => {
+  RV.cor = b.dataset.cor; document.querySelectorAll('.rv-cores button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+});
+$('rv-desfazer').onclick = () => { if (!R) return; const D = desenhoAtual(), h = D.hist.pop(); if (!h) return; if (h.tipo === 'traco') D.tracos.pop(); else D.tracos = h.antes; redesenha(); botoesDesenho(); };
+$('rv-limpar').onclick = () => { if (!R) return; const D = desenhoAtual(); if (!D.tracos.length) return; D.hist.push({ tipo:'limpar', antes:D.tracos }); D.tracos = []; redesenha(); botoesDesenho(); };
+$('rv-dedo').onclick = () => { RV.dedo = !RV.dedo; $('rv-dedo').setAttribute('aria-pressed', String(RV.dedo)); atualizaDica(); };
+$('rv-destaque').onclick = () => { RV.destaque = !RV.destaque; $('rv-destaque').setAttribute('aria-pressed', String(RV.destaque)); desenhaDestaque(); };
+$('rv-zoom').onclick = () => { if (!R) return; R.z = { s:1, tx:0, ty:0 }; aplicaZoom(); ajustaTelaDepois(); };
+// tocar numa foto do cartão abre a revisão já nela
+$('out').addEventListener('click', ev => {
+  const im = ev.target.closest('.fotos img[data-chave]'); if (!im) return;
+  const bt = im.closest('.card')?.querySelector('.kit-react:not([disabled])'); if (bt) reactAbrir(+bt.dataset.react, bt, im.dataset.chave);
+});
 document.addEventListener('keydown', ev => {
   if (!R) return;
   if (ev.key === 'Escape'){ ev.preventDefault(); reactFechar(); }
   else if (ev.key === 'ArrowRight') reactPasso(1);
   else if (ev.key === 'ArrowLeft') reactPasso(-1);
+  else if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === 'z'){ ev.preventDefault(); $('rv-desfazer').click(); }
   else if (ev.key === 'Tab'){   // foco preso na tela cheia
-    const bs = [...$('react').querySelectorAll('button:not([disabled])')], a = bs.indexOf(document.activeElement);
+    const bs = [...$('react').querySelectorAll('button:not([disabled])')].filter(b => b.offsetParent !== null), a = bs.indexOf(document.activeElement);
     if (ev.shiftKey ? a <= 0 : a === bs.length - 1){ ev.preventDefault(); bs[ev.shiftKey ? bs.length - 1 : 0].focus(); }
   }
 });

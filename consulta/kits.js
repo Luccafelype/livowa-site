@@ -622,11 +622,90 @@ function reactPele(d, perfil){
   return passos;
 }
 
-const NOME_TESTE = { braco:'Idade muscular (braço)', pernas:'Pernas', pele:'Pele' };
+// ---------- PELE 2 (02/11): 3 fotos de ângulo (frente, esquerda, direita) e os sinais de acne ----------
+// Mesmo kit da pele (perfis, mensagens, atalhos). Muda: as fotos do roteiro (não há sorriso nem sobrancelha levantada,
+// há os dois lados), duas falas que citavam essas expressões, e os cartões de espinhas/cravos e marcas de acne.
+// Falas novas: kit-resposta-pele.md §2.5 (texto da biblioteca da pele2, pele2/biblioteca.json, com fonte conferida).
+const T2 = {
+  testaLeve:'Na testa aparecem linhas leves. Isso é o esperado.',
+  olhoCanto:'No canto do olho aparecem as linhas, que são as primeiras que a gente ganha.',
+  espinhas:'Aqui aparecem {acne_o_que}, mais {acne_onde}. A espinha nasce dentro do poro: o hormônio aumenta o óleo, a pele do poro descama errado e entope, e aí vêm a bactéria da pele e a inflamação.',
+  cravo:'Cravo é o poro entupido; quando inflama, vira a bolinha vermelha ou com ponta branca.',
+  marcas:'Aqui aparecem marcas de espinhas antigas, mais {marca_onde}. Foto de frente costuma esconder o relevo, então pela tela não dá para saber a profundidade nem o tipo.',
+  marcaCor:'Essa marca parece ser de cor, e não de relevo. Esse tipo costuma clarear com os meses.',
+  notaD:'Espinha com mais de 25 anos, pelo no queixo e ciclo irregular: use o perfil D (a mensagem da acne). Se ela não contou, pergunte na conversa.',
+};
+const REG_ACNE_TXT = { testa:'na testa', nariz:'no nariz', bochechas:'nas bochechas', queixo:'no queixo', mandibula:'na mandíbula' };
+const listaE = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1] : (a[0] || '');
+const regioesDe = s => !s ? [] : Array.isArray(s.regioes) ? s.regioes : typeof s.regioes === 'string' && s.regioes ? s.regioes.split('+') : [];
+/** O que a pele2 grava (props.sinais) → o formato que classificaPele entende; acne fica ao lado. */
+function normPele2(d){
+  d = d || {};
+  const sinais = (d.sinais || []).map(s => ({ ...s, visivel:s.visivel !== false && s.nivel != null, regioes:regioesDe(s) }));
+  return { ...d, sinais };
+}
+function acnePele2(d){
+  const S = sinalPor(d), a = S.acne_ativa, m = S.cicatriz_acne;
+  const esp = visivel(a) ? +a.nivel || 0 : null, cra = visivel(a) && a.comedoes != null ? +a.comedoes || 0 : null, mar = visivel(m) ? +m.nivel || 0 : null;
+  return { esp, cra, mar, tipoMarca:m && m.tipo || null, regAcne:regioesDe(a), regMarca:regioesDe(m), tem:!!(a || m) };
+}
+function classificaPele2(d, forcar){
+  d = normPele2(d);
+  const c = classificaPele(d, forcar), A = acnePele2(d), S = sinalPor(d);
+  // achados: os 6 de sempre + espinhas, cravos e marcas, pelo grau; o grupo do perfil vem primeiro (igual à pele)
+  const pri = GRUPO[c.perfil] || [];
+  const itens = ORDEM_PELE.filter(id => (intens(S[id]) || 0) >= 1).map(id => ({ id, p:peso(S[id]), txt:ACHADO[id] }));
+  if (A.esp >= 1) itens.push({ id:'acne_ativa', p:A.esp, txt:'as espinhas' });
+  if (A.cra >= 1) itens.push({ id:'comedoes', p:A.cra - 0.1, txt:'os cravos' });
+  if (A.mar >= 1) itens.push({ id:'cicatriz_acne', p:A.mar - 0.05, txt:'as marcas de espinhas antigas' });
+  itens.sort((a, b) => (pri.includes(b.id) - pri.includes(a.id)) || (b.p - a.p));
+  if (c.perfil !== 'D'){ c.vars.achado1 = itens[0] ? itens[0].txt : null; c.vars.achado2 = itens[1] ? itens[1].txt : null; }
+  const nv = v => v == null ? 'sem dado' : v;
+  if (A.tem) c.simples += ` Espinhas ${nv(A.esp)} · cravos ${nv(A.cra)} · marcas ${nv(A.mar)}${A.regAcne.length ? ` (espinhas ${listaE(A.regAcne.map(r => REG_ACNE_TXT[r] || r))})` : ''}.`;
+  c.notaAcne = (A.esp || 0) >= 2 || (A.cra || 0) >= 2 ? T2.notaD : '';
+  c.teste = 'pele2';
+  return c;
+}
+/** Atalhos da pele, com o link da pele2 no lugar do /idade. */
+const atalhosPele2 = T.atalhos.pele.map(a => ({ ...a, texto:a.texto.replace('livowa.com/idade', 'livowa.com/pele2') }));
+/** Roteiro da pele trocado para os 3 ângulos; foto = frente | esquerda | direita. regiao = áreas para o destaque aproximado. */
+function reactPele2(d, perfil){
+  d = normPele2(d);
+  const A = acnePele2(d), FOTO = { 'Olhos · canto':'esquerda', 'Bochecha: manchas e textura':'esquerda', 'Sulco e contorno':'direita' };
+  const TELA = { Testa:'Foto de frente, testa', 'Olhos · canto':'Foto de lado, canto do olho', 'Bochecha: manchas e textura':'Foto de lado, bochecha', 'Sulco e contorno':'Foto de lado, sulco e borda da mandíbula' };
+  const passos = reactPele(d, perfil).map(p => {
+    const q = { ...p, foto:FOTO[p.bloco] || 'frente', tela:TELA[p.bloco] || p.tela.replace('Foto parada', 'Foto de frente'), regiao:REGIAO_PASSO[p.bloco] || null };
+    if (p.bloco === 'Testa' && !/mesmo parada/.test(p.fala)) q.fala = T2.testaLeve;
+    if (p.bloco === 'Olhos · canto') q.fala = T2.olhoCanto;
+    return q;
+  });
+  const extra = [];
+  if ((A.esp || 0) >= 1 || (A.cra || 0) >= 1){
+    const oque = (A.esp || 0) >= 1 && (A.cra || 0) >= 1 ? 'espinhas e cravos' : (A.esp || 0) >= 1 ? 'espinhas' : 'cravos';
+    extra.push({ bloco:'Espinhas e cravos', foto:'frente', tempo:'12-15 s', tela:'Foto de frente, onde a análise viu as espinhas', nivel:Math.max(A.esp || 0, A.cra || 0),
+      fala:T2.espinhas, vars:{ acne_o_que:oque, acne_onde:A.regAcne.length ? listaE(A.regAcne.map(r => REG_ACNE_TXT[r] || r)) : null },
+      regiao:A.regAcne.length ? A.regAcne : ['bochecha'], extra:[(A.esp || 0) === 0 ? T2.cravo : '', (A.esp || 0) >= 2 || (A.cra || 0) >= 2 ? T2.notaD : ''].filter(Boolean).join('\n') });
+  }
+  if ((A.mar || 0) >= 1) extra.push({ bloco:'Marcas de acne', foto:'frente', tempo:'8-10 s', tela:'Foto de frente (o lado ajuda a ver relevo)', nivel:A.mar,
+    fala:T2.marcas, vars:{ marca_onde:A.regMarca.length ? listaE(A.regMarca.map(r => REG_ACNE_TXT[r] || r)) : null }, regiao:A.regMarca.length ? A.regMarca : ['bochecha'],
+    extra:A.tipoMarca === 'cor' ? T2.marcaCor : '' });
+  // espinhas e marcas entram antes do sulco/contorno (ou antes da faixa de idade / do fecho)
+  let i = passos.findIndex(p => /^(Sulco|Faixa|Fecho)/.test(p.bloco)); if (i < 0) i = passos.length;
+  passos.splice(i, 0, ...extra);
+  return passos;
+}
+// destaque aproximado por cartão (a análise não devolve coordenada; as caixas são da foto de frente recortada no oval)
+const REGIAO_PASSO = { Testa:['testa'], Glabela:['glabela'], 'Olhos · canto':['olhos_canto'], 'Olhos · olheira':['olheira'],
+  'Bochecha: manchas e textura':['bochecha'], 'Sulco e contorno':['sulco', 'mandibula'] };
+// reaproveita o roteiro da pele antiga também com regiao (para o destaque nas fotos de frente)
+const reactPeleComRegiao = (d, perfil) => reactPele(d, perfil).map(p => ({ ...p, regiao:REGIAO_PASSO[p.bloco] || null }));
+
+const NOME_TESTE = { braco:'Idade muscular (braço)', pernas:'Pernas', pele:'Pele', pele2:'Pele 2' };
 return {
-  T, REF, preencher, pedacos, NOME_TESTE,
+  T, T2, REF, preencher, pedacos, NOME_TESTE,
   braco:{ medida:medidaBraco, classifica:classificaBraco, mensagens:(c) => mensagensMov('braco', c.faixa, c.vars.idade), atalhos:T.atalhos.braco },
   pernas:{ classifica:classificaPernas, mensagens:(c) => mensagensMov('pernas', c.faixa, c.vars.idade), atalhos:T.atalhos.pernas },
-  pele:{ classifica:classificaPele, mensagens:(c) => mensagensPele(c.perfil), react:reactPele, atalhos:T.atalhos.pele, perfis:PERFIL_TXT },
+  pele:{ classifica:classificaPele, mensagens:(c) => mensagensPele(c.perfil), react:reactPeleComRegiao, atalhos:T.atalhos.pele, perfis:PERFIL_TXT },
+  pele2:{ classifica:classificaPele2, mensagens:(c) => mensagensPele(c.perfil), react:reactPele2, atalhos:atalhosPele2, perfis:PERFIL_TXT, norm:normPele2, acne:d => acnePele2(normPele2(d)) },
 };
 })();
