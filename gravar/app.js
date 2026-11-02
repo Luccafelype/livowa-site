@@ -13,7 +13,7 @@
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte916: false, guia916: true,
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase',
   };
   const S = Object.assign({}, DEF);
   try {
@@ -42,6 +42,7 @@
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
     toast: $('#toast'),
+    fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
   };
 
   const fmtS = (ms) => (ms / 1000).toFixed(1).replace('.', ',') + ' s';
@@ -58,13 +59,32 @@
     const [w, h] = camDims();
     return (S.recorte916 || !w || !h) ? 9 / 16 : w / h;
   }
+  // Coluna: [faixa do texto, no alto] → [quadro inteiro] → [controles]. A altura que sobra depois do quadro
+  // vai para a faixa do texto; sem sobra (menos de ~2 linhas), o texto volta por cima do quadro, com fundo escuro.
   function layout() {
     const r = el.area.getBoundingClientRect();
+    if (!r.width || !r.height) return;
     const a = stageAspect();
     let w = r.width, h = w / a;
     if (h > r.height) { h = r.height; w = h * a; }
-    el.stage.style.width = Math.floor(w) + 'px';
-    el.stage.style.height = Math.floor(h) + 'px';
+    // Sem arredondar: no modo recorte (cover) um pixel a menos já tiraria uma lasca do 9:16.
+    const minBand = Math.round(S.fs * 1.22 * 1.5 + 24);
+    const sobra = Math.floor(r.height - h);
+    const band = sobra >= minBand;
+    const top = band ? sobra : 0;
+    const left = Math.floor((r.width - w) / 2);
+    Object.assign(el.stage.style, { left: left + 'px', top: top + 'px', width: w + 'px', height: h + 'px' });
+    el.app.classList.toggle('band', band);
+    const ph = band ? sobra : Math.min(h, Math.max(Math.round(h * 0.31), minBand));
+    el.prompter.style.height = ph + 'px';
+    el.ptag.style.top = (ph + 6) + 'px';
+    el.ptag.style.left = (left + 10) + 'px';
+    el.app.dataset.layout = band ? 'faixa' : 'sobre';
+    // Botões de frase: borda direita do quadro, abaixo do texto quando ele está por cima.
+    const fTop = band ? 10 : Math.min(h - 120, ph + 8);
+    const each = Math.max(48, Math.floor((h - fTop - 12) / 2) - 4);
+    Object.assign(el.fPrev.style, { top: fTop + 'px', height: each + 'px' });
+    Object.assign(el.fNext.style, { top: (fTop + each + 8) + 'px', height: each + 'px' });
     el.cam.classList.toggle('crop916', !!S.recorte916);
     // Guia 9:16: linhas finas mostrando o que sobra num corte 9:16 (o vídeo do Instagram).
     const g = el.g916, t = 9 / 16;
@@ -75,15 +95,17 @@
       if (a > t) { const p = t / a * 100; g.style.left = ((100 - p) / 2) + '%'; g.style.width = p + '%'; g.style.top = '0'; g.style.height = '100%'; }
       else { const p = a / t * 100; g.style.top = ((100 - p) / 2) + '%'; g.style.height = p + '%'; g.style.left = '0'; g.style.width = '100%'; }
     }
-    prompterClamp();
+    fitFrase(); prompterClamp(); paintPrompter();
   }
-  // Barra do Safari some/aparece, giro, teclado: recalcula. O enquadramento não muda com o tamanho:
-  // o quadro tem sempre a proporção do arquivo e a câmera usa contain (cover só no modo recorte,
-  // onde o quadro já é 9:16 e cover mostra exatamente o centro 9:16 que vai para o arquivo).
-  window.addEventListener('resize', layout);
-  window.addEventListener('orientationchange', () => { layout(); setTimeout(layout, 300); });
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
-  if (window.ResizeObserver) new ResizeObserver(() => layout()).observe(el.area);
+  // Barra do Safari some/aparece, giro, teclado: recalcula num quadro de animação (sem pulo intermediário).
+  // O enquadramento não muda com o tamanho: o quadro tem a proporção do arquivo e a câmera usa contain
+  // (cover só no modo recorte, onde o quadro já é 9:16 e cover mostra exatamente o centro que vai para o arquivo).
+  let layRaf = 0;
+  function relayout() { if (!layRaf) layRaf = requestAnimationFrame(() => { layRaf = 0; layout(); }); }
+  window.addEventListener('resize', relayout);
+  window.addEventListener('orientationchange', () => { relayout(); setTimeout(relayout, 300); });
+  if (window.visualViewport) { window.visualViewport.addEventListener('resize', relayout); window.visualViewport.addEventListener('scroll', relayout); }
+  if (window.ResizeObserver) new ResizeObserver(relayout).observe(el.area);
 
   /* ---------- Estado geral ---------- */
   let state = 'idle'; // idle | count | rec | review
@@ -270,6 +292,7 @@
       ['Arquivo', ow ? ow + '×' + oh : '—'],
       ['Rota', w ? (direct() ? 'quadro inteiro, direto da câmera' : S.recorte916 ? 'recorte 9:16 do centro (canvas)' : 'quadro inteiro pelo canvas (track girado)') : '—'],
       ['Formato', mime || (window.MediaRecorder ? 'padrão do navegador' : 'este navegador não grava')],
+      ['Selo', selo || '—'],
     ];
     el.info.textContent = '';
     rows.forEach(([k, v]) => {
@@ -335,7 +358,7 @@
   }
   el.lista.addEventListener('click', (e) => {
     const b = e.target.closest('.item'); if (!b) return;
-    S.idx = +b.dataset.i; save(); renderLista(); renderPrompter();
+    S.idx = +b.dataset.i; fIdx = 0; save(); renderLista(); renderPrompter();
   });
   el.txt.value = S.texto;
   el.txt.addEventListener('input', () => {
@@ -350,26 +373,78 @@
   }
 
   /* ---------- Teleprompter ---------- */
-  let pOff = 0, pPlay = false, pLast = 0, pRaf = 0;
+  // Dois modos (Ajustes): 'frase' (padrão: frase atual grande, a próxima menor embaixo; ▲/▼ na borda direita)
+  // e 'rolagem' (rolagem automática; ▲/▼ pulam para o começo da frase anterior/seguinte).
+  let pOff = 0, pPlay = false, pLast = 0, pRaf = 0, fIdx = 0;
   const pps = () => S.speed * 3.5 * (S.fs / 30); // px por segundo
+  const frase = () => S.modo !== 'rolagem';
+  function frases() {
+    const r = atual(); if (!r) return [];
+    const out = [];
+    r.body.split(/\n+/).forEach((l) => {
+      (l.match(/[^.!?…]+(?:[.!?…]+["'”»)\]]*|$)/g) || []).forEach((x) => { x = x.trim(); if (x) out.push(x); });
+    });
+    return out;
+  }
   function renderPrompter() {
     const r = atual();
-    el.ptext.classList.toggle('empty', !r);
-    el.ptext.textContent = r ? r.body : 'Toque em Texto e cole o roteiro.';
+    const f = frases();
+    el.app.classList.toggle('modo-frase', frase());
     el.app.style.setProperty('--fs', S.fs + 'px');
     el.spdOut.textContent = S.speed; el.fsOut.textContent = S.fs;
+    el.spdStep.hidden = frase();
+    el.ptext.classList.toggle('empty', !r);
+    el.ptext.classList.toggle('frase', frase() && !!r);
+    el.ptext.textContent = '';
+    fIdx = Math.min(Math.max(0, fIdx), Math.max(0, f.length - 1));
+    if (!r) el.ptext.textContent = 'Toque em Texto e cole o roteiro.';
+    else if (frase()) {
+      pPause(); pOff = 0;
+      const c = document.createElement('div'); c.className = 'fcur'; c.textContent = f[fIdx] || '';
+      el.ptext.append(c);
+      if (f[fIdx + 1]) { const n = document.createElement('div'); n.className = 'fnext'; n.textContent = f[fIdx + 1]; el.ptext.append(n); }
+    } else {
+      // Rolagem: o texto inteiro, cada frase num <span> para ▲/▼ acharem o começo dela.
+      let k = 0;
+      r.body.split('\n').forEach((l, li) => {
+        if (li) el.ptext.append('\n');
+        (l.match(/[^.!?…]+(?:[.!?…]+["'”»)\]]*|$)/g) || []).forEach((x, xi) => {
+          if (!x.trim()) { el.ptext.append(x); return; }
+          const sp = document.createElement('span'); sp.className = 's'; sp.dataset.i = k++; sp.textContent = (xi ? ' ' : '') + x.trim();
+          el.ptext.append(sp);
+        });
+      });
+    }
+    el.fPrev.disabled = !r; el.fNext.disabled = !r;
+    el.prompter.dataset.frase = String(fIdx);
+    fitFrase();
     prompterClamp(); paintPrompter();
   }
-  function pMax() { return Math.max(0, el.ptext.scrollHeight - el.prompter.clientHeight * 0.45); }
+  // Frase a frase: a frase atual tem de caber inteira na faixa; se não couber, a letra diminui só nela.
+  function fitFrase() {
+    let f = S.fs;
+    el.app.style.setProperty('--fsf', f + 'px');
+    if (!frase() || !atual()) return;
+    const n = el.ptext.querySelector('.fnext');
+    if (n) n.hidden = false;
+    const cabe = () => el.ptext.scrollHeight <= el.prompter.clientHeight;
+    while (!cabe() && f > 16) { f -= 2; el.app.style.setProperty('--fsf', f + 'px'); }
+    if (!cabe() && n) n.hidden = true; // sem espaço: some a próxima, fica a atual
+    el.prompter.dataset.fsf = String(f);
+  }
+  function pMax() { return frase() ? 0 : Math.max(0, el.ptext.scrollHeight - el.prompter.clientHeight * 0.45); }
   function prompterClamp() { pOff = Math.min(Math.max(0, pOff), pMax()); }
   function paintPrompter() {
     el.ptext.style.transform = 'translate3d(0,' + (-pOff).toFixed(1) + 'px,0)';
     let tag = '';
-    if (!pPlay && atual()) {
-      if (state === 'rec') tag = 'pausado · toque para seguir';
-      else if (pOff === 0) tag = 'toque para testar a rolagem';
-      else if (pOff >= pMax() - 0.5) tag = 'fim do texto';
-      else tag = 'pausado';
+    if (atual()) {
+      if (frase()) { const n = frases().length; tag = n ? 'frase ' + (fIdx + 1) + '/' + n : ''; }
+      else if (!pPlay) {
+        if (state === 'rec') tag = 'pausado · toque para seguir';
+        else if (pOff === 0) tag = 'toque para testar a rolagem';
+        else if (pOff >= pMax() - 0.5) tag = 'fim do texto';
+        else tag = 'pausado';
+      }
     }
     el.ptag.textContent = tag;
     el.prompter.dataset.off = pOff.toFixed(1);
@@ -384,12 +459,35 @@
     paintPrompter();
     if (pPlay) pRaf = requestAnimationFrame(tick);
   }
-  function pStart() { if (!atual()) return; if (pOff >= pMax() - 0.5) pOff = 0; pPlay = true; pLast = 0; cancelAnimationFrame(pRaf); pRaf = requestAnimationFrame(tick); paintPrompter(); }
+  function pStart() { if (!atual() || frase()) return; if (pOff >= pMax() - 0.5) pOff = 0; pPlay = true; pLast = 0; cancelAnimationFrame(pRaf); pRaf = requestAnimationFrame(tick); paintPrompter(); }
   function pPause() { pPlay = false; cancelAnimationFrame(pRaf); paintPrompter(); }
-  function pTop() { pPause(); pOff = 0; paintPrompter(); }
-  // Toque = pausa/continua; arrastar = mover o texto à mão.
+  function pTop() { pPause(); pOff = 0; fIdx = 0; if (frase()) renderPrompter(); else paintPrompter(); }
+  // ▲/▼: frase anterior/seguinte. Não mexe em pausa nem em gravação.
+  function passo(d) {
+    if (!atual()) return;
+    if (frase()) {
+      const n = frases().length;
+      fIdx = Math.min(Math.max(0, fIdx + d), Math.max(0, n - 1));
+      renderPrompter();
+    } else {
+      const spans = [...el.ptext.querySelectorAll('span.s')];
+      if (!spans.length) return;
+      let cur = 0;
+      spans.forEach((sp, i) => { if (sp.offsetTop - 10 <= pOff + 2) cur = i; });
+      const alvo = spans[Math.min(Math.max(0, cur + d), spans.length - 1)];
+      pOff = alvo.offsetTop - 10; prompterClamp(); paintPrompter();
+    }
+    const b = d < 0 ? el.fPrev : el.fNext;
+    b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 160);
+  }
+  [[el.fPrev, -1], [el.fNext, 1]].forEach(([b, d]) => {
+    b.addEventListener('pointerdown', (e) => e.stopPropagation());
+    b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); passo(d); b.blur(); });
+  });
+  // Rolagem: toque no texto = pausa/continua; arrastar = mover o texto à mão. Frase a frase: o texto não reage.
   let drag = null;
   el.prompter.addEventListener('pointerdown', (e) => {
+    if (frase()) return;
     drag = { y: e.clientY, off: pOff, moved: false, wasPlaying: pPlay };
     try { el.prompter.setPointerCapture(e.pointerId); } catch (err) { /* ok */ }
   });
@@ -408,7 +506,26 @@
   };
   el.prompter.addEventListener('pointerup', endDrag);
   el.prompter.addEventListener('pointercancel', () => { drag = null; paintPrompter(); });
-  el.prompter.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pPlay ? pPause() : pStart(); } });
+  // Teclado (Mac): ↑/↓ frase; espaço = próxima frase (frase a frase) ou pausa/continua (rolagem).
+  // Espaço nunca aciona o botão em foco (gravar), nem fora dos campos de texto.
+  const digitando = (e) => { const t = e.target; return !!t && (t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && !/^(checkbox|range|file)$/.test(t.type))); };
+  const teclaLivre = (e) => !digitando(e) && !openSheet && el.review.hidden;
+  document.addEventListener('keydown', (e) => {
+    if (!teclaLivre(e) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'ArrowUp') { e.preventDefault(); passo(-1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); passo(1); }
+    else if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); if (frase()) passo(1); else (pPlay ? pPause() : pStart()); }
+  }, true);
+  document.addEventListener('keyup', (e) => { if ((e.key === ' ' || e.code === 'Space') && teclaLivre(e)) e.preventDefault(); }, true);
+  document.querySelectorAll('[data-modo]').forEach((b) => b.addEventListener('click', () => {
+    S.modo = b.dataset.modo; save(); pTop(); renderModo(); renderPrompter(); layout();
+  }));
+  function renderModo() { document.querySelectorAll('[data-modo]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.modo === (frase() ? 'frase' : 'rolagem')))); }
+  el.infoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const on = !el.app.classList.contains('showsel');
+    el.app.classList.toggle('showsel', on); el.infoBtn.setAttribute('aria-pressed', String(on));
+  });
 
   document.querySelector('.quick').addEventListener('click', (e) => {
     const b = e.target.closest('[data-act]'); if (!b) return;
@@ -418,7 +535,7 @@
     if (a === 'fs-') S.fs = Math.max(18, S.fs - 2);
     if (a === 'fs+') S.fs = Math.min(64, S.fs + 2);
     if (a === 'top') pTop();
-    save(); renderPrompter();
+    save(); renderPrompter(); layout();
   });
 
   /* ---------- Fantasma ---------- */
@@ -592,7 +709,7 @@
   function countdown() {
     sheet(null);
     setState('count');
-    pTop();
+    if (!frase()) pTop(); // frase a frase: grava a partir da frase escolhida (↺ volta à 1ª)
     let n = 3;
     el.countN.textContent = n; el.count.hidden = false;
     const restart = () => { el.countN.style.animation = 'none'; void el.countN.offsetWidth; el.countN.style.animation = ''; };
@@ -673,7 +790,7 @@
   }
   function closeReview() {
     try { el.play.pause(); } catch (e) { /* ok */ }
-    el.review.hidden = true; setState('idle'); pTop();
+    el.review.hidden = true; setState('idle'); if (!frase()) pTop(); else paintPrompter();
   }
   el.redoBtn.addEventListener('click', () => { discardTake(); closeReview(); countdown(); });
   el.nextBtn.addEventListener('click', () => { closeReview(); });
@@ -700,7 +817,7 @@
   }
 
   /* ---------- Início ---------- */
-  renderTipo(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle');
+  renderTipo(); renderModo(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle');
   keepAwake();
   startCam();
 })();

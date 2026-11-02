@@ -23,6 +23,13 @@
 <div class="app" id="app">
 
   <main class="area" id="area">
+    <!-- Faixa do teleprompter: no alto, perto da lente. Com sobra de altura fica acima do quadro;
+         sem sobra, por cima do quadro com fundo escuro (layout() decide). -->
+    <div class="prompter" id="prompter" role="button" aria-label="Texto do teleprompter">
+      <div class="ptext" id="ptext"></div>
+    </div>
+    <div class="ptag" id="ptag" aria-live="polite"></div>
+
     <div class="stage" id="stage">
       <video id="cam" class="cam" autoplay muted playsinline></video>
       <img id="ghostImg" class="ghost" alt="" hidden>
@@ -32,10 +39,9 @@
       <div class="grid" id="grid" hidden><i class="v1"></i><i class="v2"></i><i class="h1"></i><i class="h2"></i></div>
       <div class="eye" id="eye" hidden><span class="eye-h" id="eyeHandle">olhos ↕</span></div>
 
-      <div class="prompter" id="prompter" role="button" tabindex="0" aria-label="Texto do teleprompter. Toque para pausar ou continuar; arraste para mover.">
-        <div class="ptext" id="ptext"></div>
-      </div>
-      <div class="ptag" id="ptag" aria-live="polite"></div>
+      <button type="button" class="fbtn" id="fPrev" aria-label="Frase anterior"><b>▲</b><span>frase<br>anterior</span></button>
+      <button type="button" class="fbtn" id="fNext" aria-label="Próxima frase"><b>▼</b><span>próxima<br>frase</span></button>
+      <button type="button" class="ibtn" id="infoBtn" aria-label="Mostrar as medidas da câmera" aria-pressed="false">i</button>
 
       <div class="recpill" id="recPill" hidden><b></b><span id="recTime">0,0 s</span></div>
       <div class="restag" id="resTag"></div>
@@ -50,7 +56,7 @@
 
   <nav class="dock" id="dock">
     <div class="quick">
-      <div class="stepper" aria-label="Velocidade do texto">
+      <div class="stepper" id="spdStep" aria-label="Velocidade do texto">
         <span class="lbl">Vel</span>
         <button type="button" data-act="spd-" aria-label="Mais devagar">−</button>
         <output id="spdOut">6</output>
@@ -128,6 +134,11 @@
 
   <section class="sheet" id="sheet-ajustes" hidden aria-label="Ajustes">
     <header><h2>Ajustes</h2><button type="button" class="btn ghostbtn" data-close>Pronto</button></header>
+    <p class="hint">Texto</p>
+    <div class="seg" role="radiogroup" aria-label="Modo do texto">
+      <button type="button" role="radio" data-modo="frase">Frase a frase</button>
+      <button type="button" role="radio" data-modo="rolagem">Rolagem automática</button>
+    </div>
     <div class="toggles">
       <label class="sw"><input type="checkbox" id="optGrid"><span>Grade de terços</span></label>
       <label class="sw"><input type="checkbox" id="optEye"><span>Marca da altura dos olhos <small>arraste a linha amarela</small></span></label>
