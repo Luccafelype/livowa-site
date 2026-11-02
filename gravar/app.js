@@ -20,6 +20,9 @@
     const raw = localStorage.getItem(KEY);
     if (raw) Object.assign(S, JSON.parse(raw) || {});
   } catch (e) { /* sem localStorage: segue com o padrão */ }
+  // Valor estragado no localStorage nunca vira letra 0/NaN (o texto sumiria).
+  S.fs = Math.min(64, Math.max(18, Math.round(+S.fs) || DEF.fs));
+  S.speed = Math.min(25, Math.max(1, Math.round(+S.speed) || DEF.speed));
   let saveT = 0;
   function save() {
     clearTimeout(saveT);
@@ -59,32 +62,16 @@
     const [w, h] = camDims();
     return (S.recorte916 || !w || !h) ? 9 / 16 : w / h;
   }
-  // Coluna: [faixa do texto, no alto] → [quadro inteiro] → [controles]. A altura que sobra depois do quadro
-  // vai para a faixa do texto; sem sobra (menos de ~2 linhas), o texto volta por cima do quadro, com fundo escuro.
+  // O quadro (proporção do arquivo, contain) fica centralizado na área livre entre o topo seguro e os controles.
+  // O texto mora dentro do quadro, com posição e altura em CSS: nenhum resize mexe nele além do tamanho do quadro.
   function layout() {
     const r = el.area.getBoundingClientRect();
-    if (!r.width || !r.height) return;
+    if (r.width < 20 || r.height < 20) return; // medição no meio do redimensionamento: fica o último quadro
     const a = stageAspect();
     let w = r.width, h = w / a;
     if (h > r.height) { h = r.height; w = h * a; }
     // Sem arredondar: no modo recorte (cover) um pixel a menos já tiraria uma lasca do 9:16.
-    const minBand = Math.round(S.fs * 1.22 * 1.5 + 24);
-    const sobra = Math.floor(r.height - h);
-    const band = sobra >= minBand;
-    const top = band ? sobra : 0;
-    const left = Math.floor((r.width - w) / 2);
-    Object.assign(el.stage.style, { left: left + 'px', top: top + 'px', width: w + 'px', height: h + 'px' });
-    el.app.classList.toggle('band', band);
-    const ph = band ? sobra : Math.min(h, Math.max(Math.round(h * 0.31), minBand));
-    el.prompter.style.height = ph + 'px';
-    el.ptag.style.top = (ph + 6) + 'px';
-    el.ptag.style.left = (left + 10) + 'px';
-    el.app.dataset.layout = band ? 'faixa' : 'sobre';
-    // Botões de frase: borda direita do quadro, abaixo do texto quando ele está por cima.
-    const fTop = band ? 10 : Math.min(h - 120, ph + 8);
-    const each = Math.max(48, Math.floor((h - fTop - 12) / 2) - 4);
-    Object.assign(el.fPrev.style, { top: fTop + 'px', height: each + 'px' });
-    Object.assign(el.fNext.style, { top: (fTop + each + 8) + 'px', height: each + 'px' });
+    Object.assign(el.stage.style, { left: ((r.width - w) / 2) + 'px', top: ((r.height - h) / 2) + 'px', width: w + 'px', height: h + 'px' });
     el.cam.classList.toggle('crop916', !!S.recorte916);
     // Guia 9:16: linhas finas mostrando o que sobra num corte 9:16 (o vídeo do Instagram).
     const g = el.g916, t = 9 / 16;
@@ -95,7 +82,8 @@
       if (a > t) { const p = t / a * 100; g.style.left = ((100 - p) / 2) + '%'; g.style.width = p + '%'; g.style.top = '0'; g.style.height = '100%'; }
       else { const p = a / t * 100; g.style.top = ((100 - p) / 2) + '%'; g.style.height = p + '%'; g.style.left = '0'; g.style.width = '100%'; }
     }
-    fitFrase(); prompterClamp(); paintPrompter();
+    // Refaz o texto depois de qualquer resize (nós novos, pintura nova) e reajusta a letra ao quadro novo.
+    renderPrompter();
   }
   // Barra do Safari some/aparece, giro, teclado: recalcula num quadro de animação (sem pulo intermediário).
   // O enquadramento não muda com o tamanho: o quadro tem a proporção do arquivo e a câmera usa contain
@@ -430,11 +418,13 @@
     if (!frase() || !atual()) return;
     const n = el.ptext.querySelector('.fnext');
     if (n) n.hidden = false;
+    el.prompter.classList.remove('rola');
     const ph = el.prompter.clientHeight;
-    if (ph < 40) return; // medição no meio de um redimensionamento: o próximo layout() refaz
+    if (ph < 40) return; // medição no meio de um redimensionamento: fica a letra cheia; o próximo layout() refaz
     const cabe = () => el.ptext.scrollHeight <= ph;
     while (!cabe() && f > 18) { f = Math.max(18, f - 2); el.app.style.setProperty('--fsf', f + 'px'); }
-    if (!cabe() && n) n.hidden = true;
+    if (!cabe() && n) n.hidden = true;            // primeiro sai a próxima frase
+    if (!cabe()) el.prompter.classList.add('rola'); // depois, rolagem com o dedo; a atual nunca some
     el.prompter.dataset.fsf = String(f);
   }
   function pMax() { return frase() ? 0 : Math.max(0, el.ptext.scrollHeight - el.prompter.clientHeight * 0.45); }

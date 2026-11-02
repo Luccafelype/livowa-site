@@ -23,13 +23,6 @@
 <div class="app" id="app">
 
   <main class="area" id="area">
-    <!-- Faixa do teleprompter: no alto, perto da lente. Com sobra de altura fica acima do quadro;
-         sem sobra, por cima do quadro com fundo escuro (layout() decide). -->
-    <div class="prompter" id="prompter" role="button" aria-label="Texto do teleprompter">
-      <div class="ptext" id="ptext"></div>
-    </div>
-    <div class="ptag" id="ptag" aria-live="polite"></div>
-
     <div class="stage" id="stage">
       <video id="cam" class="cam" autoplay muted playsinline></video>
       <img id="ghostImg" class="ghost" alt="" hidden>
@@ -38,6 +31,13 @@
       <div class="g916" id="g916" hidden></div>
       <div class="grid" id="grid" hidden><i class="v1"></i><i class="v2"></i><i class="h1"></i><i class="h2"></i></div>
       <div class="eye" id="eye" hidden><span class="eye-h" id="eyeHandle">olhos ↕</span></div>
+
+      <!-- Texto SEMPRE por cima do quadro, no alto dele (perto da lente), com degradê escuro atrás.
+           Posição e altura só em CSS (% do quadro): nada de conta com a altura da janela. -->
+      <div class="prompter" id="prompter" role="button" aria-label="Texto do teleprompter">
+        <div class="ptext" id="ptext"></div>
+      </div>
+      <div class="ptag" id="ptag" aria-live="polite"></div>
 
       <button type="button" class="fbtn" id="fPrev" aria-label="Frase anterior"><b>▲</b><span>frase<br>anterior</span></button>
       <button type="button" class="fbtn" id="fNext" aria-label="Próxima frase"><b>▼</b><span>próxima<br>frase</span></button>
