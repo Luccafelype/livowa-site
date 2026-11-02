@@ -39,6 +39,7 @@ const GRADE = [
   ['textura', 'Textura irregular'], ['outro', 'Outro'],
 ];
 const ROT = {   // rótulos curtos das respostas (tela e analytics)
+  sexo:{ f:'mulher', m:'homem' },
   seguranca:{ nenhuma:'nenhuma', gravida:'grávida', amamentando:'amamentando', tentando:'tentando engravidar' },
   alergia:{ nao:'sem alergia', sensivel:'pele sensível', reacao:'já teve reação', nao_sei:'não sabe' },
   tipo:{ oleosa:'oleosa', seca:'seca', mista:'mista', normal:'normal', nao_sei:'não sabe' },
@@ -53,8 +54,8 @@ const nome1 = () => (R.nome || '').trim().split(/\s+/)[0] || '';
 
 // ---------- telas ----------
 // ordem do NIKS (teardown v1), sem as telas que ele não tem: nome → 2 de segurança → grade → tipo → sol → água → sono → rotina → objetivo → câmera
-const ORDEM = ['nome','seguranca','alergia','incomoda','tipo','sol','agua','sono','rotina','objetivo','instrucao','scan','carregando','resultado','fechar','erro'];
-const QUIZ = ['seguranca','alergia','incomoda','tipo','sol','agua','sono','rotina','objetivo'];
+const ORDEM = ['nome','sexo','seguranca','alergia','incomoda','tipo','sol','agua','sono','rotina','objetivo','instrucao','scan','carregando','resultado','fechar','erro'];
+const QUIZ = ['sexo','seguranca','alergia','incomoda','tipo','sol','agua','sono','rotina','objetivo'];
 const VOLTA = { scan:'instrucao', erro:'instrucao', fechar:'resultado' };
 let cur = 'nome';
 function show(s){
@@ -80,12 +81,18 @@ function show(s){
 }
 function medirBarra(){ const b = $('cta-bar'); document.documentElement.style.setProperty('--cta-h', (b.hidden ? 0 : b.offsetHeight) + 'px'); }
 addEventListener('resize', medirBarra);
-const proxima = () => show(ORDEM[ORDEM.indexOf(cur) + 1]);
+// homem não vê a pergunta de gestação: segurança fica "nenhuma" sozinha; se voltar e trocar para mulher, a pergunta volta
+const pula = s => s === 'seguranca' && R.sexo === 'm';
+function ajustarSeguranca(){
+  if (R.sexo === 'm'){ if (R.seguranca == null){ R.seguranca = 'nenhuma'; R.segAuto = true; Analytics.track('answer', { stepId:'seguranca', valueText:'nenhuma' }); } }
+  else if (R.segAuto){ delete R.seguranca; delete R.segAuto; document.querySelectorAll('[data-q="seguranca"] [data-v]').forEach(x => x.setAttribute('aria-pressed', 'false')); }
+}
+function proxima(){ ajustarSeguranca(); let i = ORDEM.indexOf(cur) + 1; while (pula(ORDEM[i])) i++; show(ORDEM[i]); }
 function respondida(q){ return q === 'incomoda' ? R.incomoda.length > 0 : R[q] != null; }
 
 $('back').addEventListener('click', () => {
   if (VOLTA[cur]) return show(VOLTA[cur]);
-  const i = ORDEM.indexOf(cur); if (i > 0) show(ORDEM[i - 1]);
+  let i = ORDEM.indexOf(cur) - 1; while (i > 0 && pula(ORDEM[i])) i--; if (i >= 0) show(ORDEM[i]);
 });
 
 // ---------- nome ----------
@@ -105,7 +112,7 @@ function ligarOpcoes(box){
       $('cta').classList.toggle('off', !R.incomoda.length);
       return;
     }
-    R[q] = v;
+    R[q] = v; if (q === 'seguranca') delete R.segAuto;
     box.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     Analytics.track('answer', { stepId:q, valueText:v });
     if (box.dataset.fica){ atualizarFechamento(); return; }

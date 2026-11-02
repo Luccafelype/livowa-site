@@ -22,6 +22,15 @@
       <input id="nome" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" maxlength="40" placeholder="Seu primeiro nome"></label>
   </section>
 
+  <!-- 0b · sexo (só a mulher vê a pergunta de gestação) -->
+  <section class="screen" data-s="sexo" hidden>
+    <h2><span class="nm"></span>para ajustar os cuidados à sua pele: você é</h2>
+    <div class="opts" data-q="sexo" data-tipo="um">
+      <button type="button" class="opt" data-v="f"><span class="txt">Mulher</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="m"><span class="txt">Homem</span><span class="box"></span></button>
+    </div>
+  </section>
+
   <!-- 1 · segurança -->
   <section class="screen" data-s="seguranca" hidden>
     <h2><b class="tag-imp">Importante:</b> alguns cuidados de pele precisam ser evitados em certas fases.</h2>
@@ -243,6 +252,6 @@
     <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
   </div></div>
 </div>
-<script type="module" src="app.js?v=2"></script>
+<script type="module" src="app.js?v=3"></script>
 </body>
 </html>

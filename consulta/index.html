@@ -496,7 +496,7 @@ async function salvarPorta(el){
 const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['pele2','Pele 2'],['teste-braco','Idade muscular'],['quiz-longevidade','Quiz'],['link-bio','Link da bio'],['quiz-metabolico','Quiz do app']];
 const ETAPA = {
   'teste-pernas': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, peso e altura', camera:'Câmera (5 levantadas)', resultado:'Tela final' },
-  'pele2': { nome:'Nome', seguranca:'Gestação/amamentação', alergia:'Alergia', incomoda:'O que incomoda (fotos)', tipo:'Tipo de pele', sol:'Sol por dia', agua:'Água', sono:'Sono', rotina:'Rotina', objetivo:'Objetivo', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (frente e lados)', carregando:'Analisando', resultado:'Resultado', fechar:'Médico + 2 perguntas', erro:'Erro' },
+  'pele2': { nome:'Nome', sexo:'Sexo', seguranca:'Gestação/amamentação', alergia:'Alergia', incomoda:'O que incomoda (fotos)', tipo:'Tipo de pele', sol:'Sol por dia', agua:'Água', sono:'Sono', rotina:'Rotina', objetivo:'Objetivo', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (frente e lados)', carregando:'Analisando', resultado:'Resultado', fechar:'Médico + 2 perguntas', erro:'Erro' },
   'teste-pele': { 'pele-inicio':'Início da pele (aceite)', 'pele-camera':'Câmera da selfie', 'pele-envio':'Conferir e enviar a foto', 'pele-analise':'Analisando a foto', 'pele-resultado':'Tela final da pele', 'pele-erro':'Erro na pele' },
   'teste-braco': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, sexo e peso', sensor:'Permissão do sensor', medir:'Medição (10 s)', analise:'Analisando', resultado:'Tela final', erro:'Erro no sensor' },
   'quiz-longevidade': { capa:'Capa do quiz', autoridade:'Quem vai ler as respostas', objetivo:'O que quer continuar fazendo', idade:'Idade', 'lugar-certo':'Você está no lugar certo', rotina:'Rotina da semana', ciencia:'A ciência', incomoda:'O que incomoda', atrapalha:'O que trava', ajuda:'Sozinho ou com médico', contato:'Contato', loading:'Calculando', resultado:'Resultado' },
@@ -622,6 +622,7 @@ const REG2 = ['Testa', 'Olhos', 'Zona T e nariz', 'Bochechas', 'Nariz à boca', 
 const REG_ACNE2 = { testa:'Testa', nariz:'Zona T e nariz', bochechas:'Bochechas', queixo:'Queixo', mandibula:'Mandíbula e contorno' };
 const GRAU2 = ['sem achado', 'leve', 'moderado', 'marcado'];
 const ROT2 = {
+  sexo:['Sexo', { f:'mulher', m:'homem' }],
   seguranca:['Gestação/amamentação', { nenhuma:'nenhuma', gravida:'grávida', amamentando:'amamentando', tentando:'tentando engravidar' }],
   alergia:['Alergia', { nao:'sem alergia', sensivel:'pele sensível', reacao:'já teve reação', nao_sei:'não sabe' }],
   incomoda:['Queixas', { acne:'Acne / espinhas', manchas:'Manchas', cravos:'Cravos', oleosidade:'Oleosidade', rugas:'Rugas e linhas', poros:'Poros dilatados', olheiras:'Olheiras', ressecamento:'Ressecamento', textura:'Textura irregular', outro:'Outro' }],
