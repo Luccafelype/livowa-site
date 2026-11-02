@@ -14,7 +14,16 @@ const LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
 // ---------- medição (mesmo Supabase de /idade; em localhost só loga no console) ----------
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 Analytics.init({ enabled:true, funnelId:'pele2', variant:Q.get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
-Analytics.track('view');
+// Teste A/B do fim (02/11, pedido do Lucca): A = "vai explicar o seu resultado em vídeo"; B = sem falar em vídeo (o vídeo
+// é surpresa). Sorteio 50/50 uma vez por aparelho; ?fim=A|B força. O variant do Analytics fica como está (Pele × Pele 2):
+// a variante vai em props.fim de TODOS os eventos e no valueText do cta_click da tela final ('explicar|fimB').
+const FIM = (() => {
+  const q = (Q.get('fim') || '').toUpperCase(); if (q === 'A' || q === 'B') return q;
+  try { let v = localStorage.getItem('livowa_pele2_fim'); if (v !== 'A' && v !== 'B'){ v = Math.random() < .5 ? 'A' : 'B'; localStorage.setItem('livowa_pele2_fim', v); } return v; }
+  catch { return Math.random() < .5 ? 'A' : 'B'; }
+})();
+const track = (tipo, o = {}) => Analytics.track(tipo, { ...o, props:{ ...(o.props || {}), fim:FIM } });
+track('view');
 
 // ---------- análise: a MESMA edge de /idade (analisar-pele), mesmo corpo, mesmo freio ----------
 // Em localhost dá para apontar para um mock com ?pele=<url>.
@@ -63,7 +72,7 @@ function show(s){
   if (cur === 'scan' && s !== 'scan') Scan.parar();
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
   cur = s;
-  Analytics.track('step_view', { stepId:s, stepIndex:ORDEM.indexOf(s) });
+  track('step_view', { stepId:s, stepIndex:ORDEM.indexOf(s) });
   document.body.classList.toggle('scan-on', s === 'scan');
   $('top').hidden = ['capa','scan','carregando','resultado'].includes(s);
   const cta = $('cta'), c2 = $('cta-2');
@@ -90,7 +99,7 @@ if ('ResizeObserver' in window) new ResizeObserver(medirBarra).observe($('cta-ba
 // homem não vê a pergunta de gestação: segurança fica "nenhuma" sozinha; se voltar e trocar para mulher, a pergunta volta
 const pula = s => s === 'seguranca' && R.sexo === 'm';
 function ajustarSeguranca(){
-  if (R.sexo === 'm'){ if (R.seguranca == null){ R.seguranca = 'nenhuma'; R.segAuto = true; Analytics.track('answer', { stepId:'seguranca', valueText:'nenhuma' }); } }
+  if (R.sexo === 'm'){ if (R.seguranca == null){ R.seguranca = 'nenhuma'; R.segAuto = true; track('answer', { stepId:'seguranca', valueText:'nenhuma' }); } }
   else if (R.segAuto){ delete R.seguranca; delete R.segAuto; document.querySelectorAll('[data-q="seguranca"] [data-v]').forEach(x => x.setAttribute('aria-pressed', 'false')); }
 }
 // "Sair sem maquiagem" não cabe para homem: a opção some; se ele tinha marcado (e voltou para trocar o sexo), a resposta cai
@@ -125,7 +134,7 @@ function ligarOpcoes(box){
     }
     R[q] = v; if (q === 'seguranca') delete R.segAuto;
     box.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    Analytics.track('answer', { stepId:q, valueText:v });
+    track('answer', { stepId:q, valueText:v });
     $('cta').classList.remove('off');
     setTimeout(() => { if (cur === q) proxima(); }, 260);
   });
@@ -169,16 +178,16 @@ $('cta').addEventListener('click', () => {
     return;
   }
   if (cur === 'capa') return proxima();
-  if (cur === 'nome'){ R.nome = nomeBonito(); Analytics.track('answer', { stepId:'nome', valueText:'ok' }); return proxima(); }
-  if (cur === 'incomoda'){ Analytics.track('answer', { stepId:'incomoda', valueText:R.incomoda.join('+') }); return proxima(); }
+  if (cur === 'nome'){ R.nome = nomeBonito(); track('answer', { stepId:'nome', valueText:'ok' }); return proxima(); }
+  if (cur === 'incomoda'){ track('answer', { stepId:'incomoda', valueText:R.incomoda.join('+') }); return proxima(); }
   if (QUIZ.includes(cur)) return proxima();
   if (cur === 'instrucao') return abrirScan();
   if (cur === 'erro') return erroRede && fotos ? enviar(fotos) : abrirScan();
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; return show('fechar'); }
+  if (cur === 'resultado'){ track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; return show('fechar'); }
 });
 $('cta-2').addEventListener('click', () => {
   if (cur === 'erro') $('arquivo').click();
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'lembrete' }); caminho = 2; show('fechar'); }
+  if (cur === 'resultado'){ track('cta_click', { stepId:'resultado', valueText:'lembrete' }); caminho = 2; show('fechar'); }
 });
 $('galeria').addEventListener('click', () => { if (!$('aceite').checked) return apontarAceite(); $('arquivo').click(); });
 $('aceite').addEventListener('change', () => { $('aceite').closest('.consent').classList.remove('alerta'); if (cur === 'instrucao') $('cta').classList.toggle('off', !$('aceite').checked); });
@@ -188,14 +197,14 @@ function apontarAceite(){ const l = $('aceite').closest('.consent'); l.classList
 function abrirScan(){
   Scan.liberarVoz();   // iOS: a voz só sai se começar dentro do toque
   show('scan'); $('scan-help').hidden = true;
-  Scan.abrir({ onPronto: f => { Analytics.track('answer', { stepId:'scan', valueText:Object.keys(f).join('+'), props:{ angulos:Object.keys(f).length } }); enviar(f); },
-               onErro: e => Analytics.track('answer', { stepId:'scan', valueText:'erro-camera', props:{ erro:e?.name || 'erro' } }) });
+  Scan.abrir({ onPronto: f => { track('answer', { stepId:'scan', valueText:Object.keys(f).join('+'), props:{ angulos:Object.keys(f).length } }); enviar(f); },
+               onErro: e => track('answer', { stepId:'scan', valueText:'erro-camera', props:{ erro:e?.name || 'erro' } }) });
 }
 $('scan-fechar').addEventListener('click', () => { Scan.parar(); show('instrucao'); });
 $('scan-ajuda').addEventListener('click', () => { $('scan-help').hidden = !$('scan-help').hidden; });
 $('scan-help-ok').addEventListener('click', () => { $('scan-help').hidden = true; });
 $('scan-galeria').addEventListener('click', () => { Scan.parar(); $('arquivo').click(); });
-$('scan-pular').addEventListener('click', () => { Analytics.track('answer', { stepId:'scan', valueText:'pulou-lados' }); Scan.seguirComOQueTem(); });
+$('scan-pular').addEventListener('click', () => { track('answer', { stepId:'scan', valueText:'pulou-lados' }); Scan.seguirComOQueTem(); });
 
 // ---------- galeria (só a foto de frente) ----------
 let faceImagem = null;
@@ -218,7 +227,7 @@ $('arquivo').addEventListener('change', async e => {
       else if (p.pitch < .22 || p.pitch > .66) prob = 'Nessa foto a câmera está abaixo ou acima do rosto. Escolha uma com a câmera na altura dos olhos.';
       else if (m.lum < 60) prob = 'Essa foto está escura. Escolha uma com mais luz no rosto.';
       else if (m.nitidez < NITIDEZ_MIN*.6) prob = 'Essa foto está tremida. Escolha uma mais nítida.';
-      else { Analytics.track('answer', { stepId:'scan', valueText:'galeria' }); return enviar({ frente:{ angulo:'frente', src:cv, lm, g:geometria(lm, cv.width, cv.height), pose:p, lum:Math.round(m.lum), nitidez:Math.round(m.nitidez), origem:'galeria' } }); }
+      else { track('answer', { stepId:'scan', valueText:'galeria' }); return enviar({ frente:{ angulo:'frente', src:cv, lm, g:geometria(lm, cv.width, cv.height), pose:p, lum:Math.round(m.lum), nitidez:Math.round(m.nitidez), origem:'galeria' } }); }
     }
     cv.width = 0; erro(prob, false);
   } catch (err) { console.error(err); erro('Não consegui abrir essa foto. Tente outra, ou use a câmera.', false); }
@@ -313,6 +322,23 @@ const lower1 = s => s ? s[0].toLocaleLowerCase('pt-BR') + s.slice(1) : s;
 const lista = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a.at(-1) : (a[0] || '');
 const fmtData = d => d.toLocaleDateString('pt-BR', { day:'numeric', month:'short' }) + ', ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
 
+// ---------- personalização (02/11): toda frase que depende de uma resposta cita a resposta DELA ----------
+// gestação: só a condição que ela marcou, nunca a lista das três
+const GEST = { gravida:['Como você está grávida', 'na gestação', 'fica para depois da gestação'],
+               amamentando:['Como você está amamentando', 'na amamentação', 'fica para depois da amamentação'],
+               tentando:['Como você está tentando engravidar', 'para quem está tentando engravidar', 'fica de fora enquanto você tenta engravidar'] };
+const SENS = { sensivel:'Como a sua pele reage fácil', reacao:'Como você já teve reação a um produto' };
+const comoTipo = () => ['oleosa','mista','seca'].includes(R.tipo) ? `Como você marcou pele ${ROT.tipo[R.tipo]}` : '';
+const QX = { acne:'espinhas', manchas:'manchas', cravos:'cravos', oleosidade:'oleosidade', rugas:'rugas e linhas', poros:'poros dilatados', olheiras:'olheiras', ressecamento:'ressecamento', textura:'textura irregular' };
+const marcou = ids => { const m = R.incomoda.filter(x => ids.includes(x)).map(x => QX[x]);   // na ordem em que ela marcou
+  return m.length ? `Como você marcou ${lista(m)}` : ''; };
+function poroOleo(){
+  const t = ['oleosa','mista'].includes(R.tipo) ? `pele ${ROT.tipo[R.tipo]}` : '';
+  if (R.sexo === 'm' || t) return `Como você ${R.sexo === 'm' ? 'é homem' + (t ? ` e marcou ${t}` : '') : `marcou ${t}`}, o poro tende a aparecer mais: ele tem muito de óleo e de hormônio.`;
+  return BIB.frases.poro_oleo;
+}
+const juntar = (...xs) => xs.filter(Boolean).join(' ');
+
 function montarResultado(j, f){
   const B = BIB.sinais, fr = f.frente, al = alinhar(fr.src, fr.g);
   const sinais = Object.fromEntries((j.sinais || []).map(s => [s.id, { visivel:s.visivel !== false && s.nivel != null, nivel:Math.max(0, Math.min(3, +s.nivel || 0)),
@@ -362,7 +388,7 @@ function montarResultado(j, f){
   $('r-abas').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return;
     $('r-abas').querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', String(x === b)));
     box.querySelectorAll('.achado').forEach(a => { a.hidden = b.dataset.t !== 'todos' && a.dataset.tema !== b.dataset.t; });
-    Analytics.track('answer', { stepId:'resultado-aba', valueText:b.dataset.t }); };
+    track('answer', { stepId:'resultado-aba', valueText:b.dataset.t }); };
 
   // "Sua preocupação faz sentido?": uma linha por queixa marcada, com o recorte da área
   let vh = `<h3>${esc(nomeBonito())}, sua preocupação faz sentido?</h3>`;
@@ -375,7 +401,7 @@ function montarResultado(j, f){
     if (!m.mede){
       selo = 'A foto não mede isso'; cls = 'nao';
       txt = NAO_MEDE[q] + (top && max ? ` Na mesma área, a foto mostra: ${nomeTop} (${GRAU[max].toLowerCase()}).` : '');
-      if (q === 'oleosidade' && top) txt += ` ${BIB.frases.poro_oleo}`;
+      if (q === 'oleosidade' && top) txt += ` ${poroOleo()}`;
       if (q === 'ressecamento' && R.tipo) txt += ` Você marcou pele ${ROT.tipo[R.tipo]}.`;
     } else if (max == null){ selo = 'Não deu para ver'; cls = 'nao'; txt = 'Essa área não apareceu bem na foto. Vale tirar de novo, com mais luz.'; }
     else if (max >= 2){ selo = 'Bate com a análise'; txt = `Faz sentido: a foto mostra ${nomeTop}${onde}, grau ${GRAU[max].toLowerCase()}.`; }
@@ -388,39 +414,55 @@ function montarResultado(j, f){
   $('r-valida').innerHTML = vh;
   $('r-valida').querySelectorAll('canvas[data-r]').forEach(cv => { const c = corte(cv.dataset.r, 112); cv.width = c.width; cv.height = c.height; cv.getContext('2d').drawImage(c, 0, 0); c.width = 0; });
 
-  // o que fazer agora: 3 linhas, por classe (sem marca, sem concentração)
-  const grav = R.seguranca && R.seguranca !== 'nenhuma', sens = ['sensivel','reacao'].includes(R.alergia), qx = new Set(R.incomoda);
+  // o que fazer agora: 3 linhas, por classe (sem marca, sem concentração), cada uma citando a resposta dela
+  const grav = R.seguranca && R.seguranca !== 'nenhuma', G = GEST[R.seguranca], sens = ['sensivel','reacao'].includes(R.alergia), qx = new Set(R.incomoda);
   const comCor = nivel('manchas') >= 1 || qx.has('manchas');
+  const porqueCor = qx.has('manchas') ? 'Como você marcou manchas' : 'Como a foto mostra manchas';
   const espinha = (grauDe('acne_ativa') ?? 0) >= 1 || (!temAcne && qx.has('acne'));
   const oleosa = ['oleosa','mista'].includes(R.tipo);
+  const solMuito = ['1a3h','mais_3h'].includes(R.sol);
+  const quais = espinha && (qx.has('cravos') || nivel('comedoes') >= 1) ? 'as espinhas e os cravos' : espinha ? 'as espinhas' : 'os cravos';
+  const hidr = oleosa ? 'leve' : R.tipo === 'seca' ? 'mais encorpado' : 'simples';
   const fazer = [
-    `Protetor solar todo dia${comCor ? ', de preferência com cor' : ''}, no rosto inteiro.`,
-    `Limpador suave e hidratante ${oleosa ? 'leve' : R.tipo === 'seca' ? 'mais encorpado' : 'simples'}, de manhã e à noite${sens ? ', um produto novo por vez' : ''}.`,
-    espinha || qx.has('cravos') ? `Para as espinhas e os cravos: um ativo que desobstrui o poro, escolhido com o médico${grav ? ' (na gestação, amamentação ou tentando engravidar, sem retinoide)' : ''}. Sem espremer.`
-    : qx.has('manchas') || nivel('manchas') >= 2 ? 'Para as manchas: clareador só com orientação médica, depois do protetor.'
-    : qx.has('rugas') || ['linhas_testa','olhos'].some(id => nivel(id) >= 2) ? `Para as linhas finas: retinoide tópico é a classe com melhor evidência, com orientação${grav ? ' (fora da gestação e da amamentação)' : ''}.`
+    juntar('Protetor solar todo dia, no rosto inteiro.', comCor ? `${porqueCor}, de preferência com cor.` : '', solMuito ? `Como você fica ${ROT.sol[R.sol].replace(' de sol', '')} no sol por dia, reaplique enquanto estiver nele.` : ''),
+    juntar(comoTipo() ? `${comoTipo()}: limpador suave e hidratante ${hidr}, de manhã e à noite.` : `Limpador suave e hidratante ${hidr}, de manhã e à noite.`, sens ? `${SENS[R.alergia]}, um produto novo por vez.` : ''),
+    espinha || qx.has('cravos') ? juntar(`Para ${quais}: um ativo que desobstrui o poro, escolhido com o médico. Sem espremer.`, grav ? `${G[0]}, sem retinoide: o médico escolhe um ativo seguro ${G[1]}.` : '')
+    : qx.has('manchas') || nivel('manchas') >= 2 ? juntar('Para as manchas: clareador só com orientação médica, depois do protetor.', grav ? `${G[0]}, o médico escolhe um clareador seguro ${G[1]}.` : '')
+    : qx.has('rugas') || ['linhas_testa','olhos'].some(id => nivel(id) >= 2) ? juntar('Para as linhas finas: retinoide tópico é a classe com melhor evidência, com orientação.', grav ? `${G[0]}, ele ${G[2]}.` : '')
+    : ['poros','oleosidade'].some(x => qx.has(x)) ? juntar(`${marcou(['poros','oleosidade'])}: um ativo que desobstrui o poro, escolhido com o médico, depois que a base estiver em dia.`, grav ? `${G[0]}, sem retinoide: o médico escolhe um ativo seguro ${G[1]}.` : '')
     : 'Nova foto em 4 semanas, na mesma luz, para comparar.',
   ];
-  $('r-fazer').innerHTML = `<h3>O que fazer agora</h3><ol class="fazer">${fazer.map(x => `<li><span>${esc(x)}</span></li>`).join('')}</ol>`;
+  const obj = R.objetivo && R.objetivo !== 'outro' ? ROT.objetivo[R.objetivo] : '';
+  $('r-fazer').innerHTML = `<h3>O que fazer agora</h3>${obj ? `<p>Para o seu objetivo, “${esc(lower1(obj))}”, comece por aqui:</p>` : ''}<ol class="fazer">${fazer.map(x => `<li><span>${esc(x)}</span></li>`).join('')}</ol>`;
 
   // ---------- relatório completo (recolhido) ----------
-  const fortes = ids.filter(id => nivel(id) === 0 && (id !== 'acne_ativa' || nivel('comedoes') === 0)).map(id => [B[id].titulos[0], FORTE[id]]);
-  if (['quase_nada','menos_1h'].includes(R.sol)) fortes.push(['Pouco sol no dia a dia', BIB.frases.sol]);
-  if (['7','8','9mais'].includes(R.sono)) fortes.push(['Sono em dia', BIB.frases.sono]);
-  if (R.alergia === 'nao') fortes.push(['Sem reação conhecida a produtos', 'Facilita testar um produto novo de cada vez.']);
+  const fortes = [];   // primeiro o que ela contou, depois o que a foto mostra
+  if (['quase_nada','menos_1h'].includes(R.sol)) fortes.push(['Pouco sol no dia a dia', `Você contou que fica ${ROT.sol[R.sol].replace(' de sol', '')} no sol por dia. ${BIB.frases.sol}`]);
+  if (['7','8','9mais'].includes(R.sono)) fortes.push(['Sono em dia', `Você contou que dorme ${ROT.sono[R.sono]} por noite. ${BIB.frases.sono}`]);
+  if (R.alergia === 'nao') fortes.push(['Sem reação conhecida a produtos', 'Como você não tem reação conhecida, fica mais fácil testar um produto novo de cada vez.']);
+  fortes.push(...ids.filter(id => nivel(id) === 0 && (id !== 'acne_ativa' || nivel('comedoes') === 0)).map(id => [B[id].titulos[0], FORTE[id]]));
   $('r-fortes').innerHTML = fortes.length ? `<h3>Pontos fortes da sua pele</h3>${fortes.slice(0, 4).map(([t, d]) => `<div class="forte"><i>✓</i><div><b>${esc(t)}</b><span>${esc(d)}</span></div></div>`).join('')}` : '';
 
   const recs = [], fonteCurta = x => esc(x.split(' — ')[0]);
-  recs.push({ cls:'Fotoproteção', t:'Protetor solar todo dia', d:`Amplo espectro, no rosto inteiro, mesmo em casa perto de janela; reaplique se ficar no sol.${comCor ? ' De preferência com cor: ela barra também a luz visível, que escurece mancha.' : ''}`, ev:BIB.classes.protetor });
-  recs.push({ cls:'Limpeza', t:R.tipo === 'seca' || sens ? 'Limpador suave, sem espuma forte' : 'Limpador suave', d:R.tipo === 'seca' || sens ? 'À noite; de manhã, só água basta. Sem bucha nem esfoliante de grânulos.' : oleosa ? 'De manhã e à noite, em gel. Sem bucha nem esfoliante de grânulos.' : 'Uma a duas vezes ao dia. Sem bucha nem esfoliante de grânulos.' });
-  recs.push({ cls:'Hidratação', t:R.tipo === 'seca' ? 'Hidratante mais encorpado' : oleosa ? 'Hidratante leve, em gel ou fluido' : 'Hidratante simples', d:R.tipo === 'seca' ? 'Logo depois do banho, com a pele ainda úmida.' : oleosa ? 'Pele oleosa também precisa, principalmente quando entrar um ativo, que costuma ressecar.' : `Fórmula simples${sens ? ', sem perfume' : ''}, de manhã e à noite.` });
+  recs.push({ cls:'Fotoproteção', t:'Protetor solar todo dia', d:juntar('Amplo espectro, no rosto inteiro, mesmo em casa perto de janela.',
+    solMuito ? `Como você fica ${ROT.sol[R.sol].replace(' de sol', '')} no sol por dia, reaplique enquanto estiver nele.` : 'Reaplique se ficar no sol.',
+    comCor ? `${porqueCor}, de preferência com cor: ela barra também a luz visível, que escurece mancha.` : ''), ev:BIB.classes.protetor });
+  const limpSuave = R.tipo === 'seca' || sens;
+  recs.push({ cls:'Limpeza', t:limpSuave ? 'Limpador suave, sem espuma forte' : 'Limpador suave',
+    d:juntar(R.tipo === 'seca' ? `${comoTipo()}: à noite; de manhã, só água basta.` : sens ? `${SENS[R.alergia]}: à noite; de manhã, só água basta.` : oleosa ? `${comoTipo()}: de manhã e à noite, em gel.` : 'Uma a duas vezes ao dia.', 'Sem bucha nem esfoliante de grânulos.') });
+  recs.push({ cls:'Hidratação', t:R.tipo === 'seca' ? 'Hidratante mais encorpado' : oleosa ? 'Hidratante leve, em gel ou fluido' : 'Hidratante simples',
+    d:R.tipo === 'seca' ? `${comoTipo()}: logo depois do banho, com a pele ainda úmida.` : oleosa ? `${comoTipo()}: ela também precisa de hidratante, principalmente quando entrar um ativo, que costuma ressecar.` : sens ? `${SENS[R.alergia]}: fórmula simples, sem perfume, de manhã e à noite.` : 'Fórmula simples, de manhã e à noite.' });
   const ativos = [];
   if (espinha || ['acne','cravos','poros','oleosidade'].some(x => qx.has(x)) || nivel('textura_poros') >= 2)
-    ativos.push({ cls:'Ativo (classe)', t:'Um ativo que desobstrui o poro', d:'Da classe dos retinoides, do peróxido de benzoíla ou dos ácidos que agem dentro do poro. Qual e em que dose, o médico escolhe com você.', ev:espinha ? BIB.classes.acne_topicos : BIB.classes.poro });
-  if (qx.has('rugas') || ['linhas_testa','olhos'].some(id => nivel(id) >= 2)) ativos.push({ cls:'Ativo (classe)', t:'Retinoide tópico, para as linhas finas', d:'É a classe com melhor evidência para linha fina do sol. Irrita no começo e precisa de orientação.', ev:BIB.classes.retinoide_linhas });
-  if (qx.has('manchas') || nivel('manchas') >= 2) ativos.push({ cls:'Ativo (classe)', t:'Clareador, só com orientação médica', d:'Antes dele, o protetor com cor todo dia: sem isso, a mancha volta.' });
-  for (const a of ativos.slice(0, 2)) recs.push(grav ? { ...a, d:a.d + ' Grávida, amamentando ou tentando engravidar: retinoide fica de fora, e o médico confere cada ativo antes.' } : a);
-  if (sens) recs.push({ cls:'Cuidado', t:'Um produto novo por vez', d:'Teste antes numa área pequena, por alguns dias, antes de passar no rosto todo.' });
+    ativos.push({ cls:'Ativo (classe)', t:'Um ativo que desobstrui o poro', d:juntar(marcou(['acne','cravos','poros','oleosidade']) ? marcou(['acne','cravos','poros','oleosidade']) + ':' : '', 'da classe dos retinoides, do peróxido de benzoíla ou dos ácidos que agem dentro do poro. Qual e em que dose, o médico escolhe com você.').replace(/^da/, 'Da'),
+      ev:espinha ? BIB.classes.acne_topicos : BIB.classes.poro, gest:G ? `${G[0]}, retinoide fica de fora: o médico escolhe com você um ativo seguro ${G[1]}.` : '' });
+  if (qx.has('rugas') || ['linhas_testa','olhos'].some(id => nivel(id) >= 2)) ativos.push({ cls:'Ativo (classe)', t:'Retinoide tópico, para as linhas finas', d:juntar(marcou(['rugas']) ? marcou(['rugas']) + ':' : '', 'é a classe com melhor evidência para linha fina do sol. Irrita no começo e precisa de orientação.').replace(/^é/, 'É'), ev:BIB.classes.retinoide_linhas,
+      gest:G ? `${G[0]}, ele ${G[2]}.` : '' });
+  if (qx.has('manchas') || nivel('manchas') >= 2) ativos.push({ cls:'Ativo (classe)', t:'Clareador, só com orientação médica', d:juntar(marcou(['manchas']) ? marcou(['manchas']) + ':' : '', 'antes dele, o protetor com cor todo dia; sem isso, a mancha volta.').replace(/^antes/, 'Antes'),
+      gest:G ? `${G[0]}, o médico escolhe um clareador seguro ${G[1]}.` : '' });
+  for (const a of ativos.slice(0, 2)) recs.push({ ...a, d:juntar(a.d, a.gest) });
+  if (sens) recs.push({ cls:'Cuidado', t:'Um produto novo por vez', d:`${SENS[R.alergia]}: teste antes numa área pequena, por alguns dias, antes de passar no rosto todo.` });
+  if (R.rotina === 'receitada') recs.push({ cls:'Cuidado', t:'Os produtos que você já usa', d:'Como você usa produtos receitados por médico, mostre-os ao Dr. Lucca antes de trocar ou somar qualquer coisa.' });
   $('r-recs').innerHTML = `<h3>Recomendações para você</h3>${recs.map((r, i) => `<div class="rec"><em>${i + 1}</em><div><small>${esc(r.cls)}</small><b>${esc(r.t)}</b><span>${esc(r.d)}</span>${r.ev ? `<span class="ev">Evidência: ${esc(r.ev.evidencia)} <i>(${fonteCurta(r.ev.fonte)})</i></span>` : ''}</div></div>`).join('')}`;
 
   // condição geral + correção do autodiagnóstico só quando a foto sustenta
@@ -437,27 +479,32 @@ function montarResultado(j, f){
 
   const ev = [];
   if (espinha || ['acne','cravos'].some(x => qx.has(x))) ev.push(['Espremer espinhas e cravos', 'Pode deixar mancha e marca no lugar.']);
+  if (grav) ev.push(['Começar retinoide ou ácido por conta própria', `${G[0]}, o médico escolhe o que é seguro ${G[1]}.`]);
   ev.push(['Trocar vários produtos ao mesmo tempo', 'Se a pele reagir, você não sabe qual foi.']);
-  if (oleosa || espinha || qx.has('oleosidade')) ev.push(['Bucha e esfoliante de grânulos no rosto', 'Agridem a barreira da pele e não tiram o óleo de dentro do poro.']);
-  if (sens) ev.push(['Produto com perfume forte', 'É uma causa comum de ardência em pele sensível.']);
+  if (oleosa || espinha || qx.has('oleosidade')) ev.push(['Bucha e esfoliante de grânulos no rosto', `${oleosa ? `${comoTipo()}: eles` : 'Eles'} agridem a barreira da pele e não tiram o óleo de dentro do poro.`]);
+  if (sens) ev.push(['Produto com perfume forte', `${SENS[R.alergia]}: perfume é uma causa comum de ardência.`]);
   ev.push(['Receita caseira com limão, bicarbonato ou pasta de dente', 'Irrita a pele; limão no rosto com sol pode manchar.']);
-  if (grav) ev.push(['Começar retinoide ou ácido por conta própria', 'Na gestação, na amamentação e tentando engravidar, o médico escolhe o que é seguro.']);
   $('r-evitar').innerHTML = `<h3>Evitar para a sua pele</h3><ul class="evitar">${ev.slice(0, 4).map(([t, d]) => `<li><div>${esc(t)}<span>${esc(d)}</span></div></li>`).join('')}</ul>`;
 
+  const BASE = { nenhuma:'Como você ainda não tem rotina, comece só por estes três: limpador suave, hidratante e protetor, todo dia.',
+    funciona:'Como você já tem uma rotina que funciona, mantenha o que dá certo e confira se ela tem limpador suave, hidratante e protetor todo dia.',
+    receitada:'Como você usa produtos receitados, mantenha-os como o médico orientou e confira se a rotina tem limpador suave, hidratante e protetor.',
+    nao_sei:'Como você não sabe se a sua rotina funciona, simplifique: limpador suave, hidratante e protetor todo dia, para a pele se acostumar.' };
   const S = [
-    ['A base', `Limpador suave, hidratante e protetor todo dia. Só isso, para a pele se acostumar.${espinha || qx.has('cravos') ? ' Sem espremer.' : ''}`],
-    ['Constância', 'A mesma rotina, todo dia. Anote o que arde, coça ou descama: isso guia o próximo passo.'],
-    ativos.length ? ['Um passo a mais', 'Se o médico indicar, entra um ativo, à noite, em dias alternados. Um de cada vez.'] : ['Proteção reforçada', 'Protetor também nos dias nublados, e reaplicado se ficar no sol.'],
-    ['Nova foto', 'Refaça esta análise na mesma luz e compare com a foto de hoje.'],
+    ['A base', juntar(BASE[R.rotina] || 'Limpador suave, hidratante e protetor todo dia. Só isso, para a pele se acostumar.', espinha || qx.has('cravos') ? 'Sem espremer.' : '')],
+    ['Constância', juntar('A mesma rotina, todo dia. Anote o que arde, coça ou descama: isso guia o próximo passo.', sens ? `${SENS[R.alergia]}, anote também o produto de cada dia.` : '')],
+    ativos.length ? ['Um passo a mais', grav ? `Se o médico indicar, entra um ativo seguro ${G[1]}, à noite, em dias alternados. Um de cada vez.` : 'Se o médico indicar, entra um ativo, à noite, em dias alternados. Um de cada vez.']
+                  : ['Proteção reforçada', solMuito ? `Como você fica ${ROT.sol[R.sol].replace(' de sol', '')} no sol por dia, protetor também nos dias nublados, e reaplicado enquanto estiver nele.` : 'Protetor também nos dias nublados, e reaplicado se ficar no sol.'],
+    ['Nova foto', obj ? `Refaça esta análise na mesma luz e compare com a foto de hoje, pensando no seu objetivo: “${lower1(obj)}”.` : 'Refaça esta análise na mesma luz e compare com a foto de hoje.'],
   ];
   $('r-plano').innerHTML = `<h3>Seu plano para as próximas 4 semanas</h3>
     <p class="meta-obj">Seu objetivo: <b>${esc(ROT.objetivo[R.objetivo] || '—')}</b></p>
     ${S.map(([t, d], i) => `<div class="semana"><em>Sem.<br>${i + 1}</em><div><b>${esc(t)}</b><span>${esc(d)}</span></div></div>`).join('')}`;
   $('r-completo').open = false;
-  $('r-completo').ontoggle = () => { if ($('r-completo').open) Analytics.track('answer', { stepId:'resultado-completo', valueText:'abriu' }); };
+  $('r-completo').ontoggle = () => { if ($('r-completo').open) track('answer', { stepId:'resultado-completo', valueText:'abriu' }); };
 
   al.width = al.height = 0;
-  Analytics.track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:achados.join('+') || 'nenhum',
+  track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:achados.join('+') || 'nenhum',
     props:{ codigo:meuCodigo(), respostas:respostasLimpa(), angulos:Object.keys(f), origem:fr.origem, enviadas:window.__ultimoEnvio?.n || 1, acne:temAcne,
             faixa:j.faixa ? `${j.faixa.min} a ${j.faixa.max} anos` : null, confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null,
             sinais:Object.entries(sinais).map(([id, s]) => ({ id, visivel:s.visivel, nivel:s.visivel ? s.nivel : null, ...(s.comedoes != null ? { comedoes:s.comedoes } : {}), ...(s.regioes.length ? { regioes:s.regioes.join('+') } : {}), ...(s.tipo ? { tipo:s.tipo } : {}) })) } });
@@ -480,10 +527,13 @@ const escolha = () => caminho === 2 ? 'lembrete' : 'explicar';
 function prepararFechamento(){
   const c1 = caminho !== 2, nome = nomeBonito();
   $('cod').textContent = meuCodigo();
-  $('f-tit').textContent = c1 ? (nome ? `${nome}, o Dr. Lucca vai explicar o seu resultado em vídeo` : 'O Dr. Lucca vai explicar o seu resultado em vídeo')
+  const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado em vídeo';
+  $('f-tit').textContent = c1 ? (nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1))
                               : 'Combinado: em 4 semanas, um lembrete para refazer a foto';
-  $('f-sub').textContent = c1 ? `Um vídeo de 1 minuto sobre a sua foto, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`
+  const canal = LV ? 'Direct' : 'WhatsApp';
+  $('f-sub').textContent = c1 ? (FIM === 'B' ? `Ele responde pessoalmente no seu ${canal}, em até 24 horas.` : `Um vídeo de 1 minuto sobre a sua foto, no seu ${canal}, em até 24 horas. Ele grava um por um.`)
                               : 'Siga o plano desta análise. Na 4ª semana o Dr. Lucca te manda um lembrete para comparar com a foto de hoje.';
+  $('f-troca').textContent = FIM === 'B' ? 'Quero que o Dr. Lucca olhe o meu resultado' : 'Quero a explicação em vídeo';
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(c1 ? mensagem() : mensagemLembrete())}`;
   $('f-troca').hidden = c1;
   if (LV) return fimDirect();
@@ -492,7 +542,8 @@ function prepararFechamento(){
 }
 $('f-troca').addEventListener('click', () => { caminho = 1; prepararFechamento(); });
 const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo() });
-$('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
+const fimValor = (esc_ = escolha()) => `${esc_}|fim${FIM}`;   // valueText do cta_click final: 'explicar|fimA', 'lembrete|fimB'…
+$('cta-wa').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
 $('cta-dm').addEventListener('click', e => { if (LV) return direto_lv(e, escolha()); abrirDirect(e); });
 
 // Direct: o Instagram não aceita texto pronto. Um toque só: copia DENTRO do toque (exigência do iOS), avisa e deixa o
@@ -508,14 +559,14 @@ let toastT = null;
 const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // navegador de dentro do app: ig.me abre como página e pede login
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps('explicar') } });
+  track('cta_click', { stepId:'fechar', valueText:fimValor('explicar'), props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps('explicar') } });
   if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem:txt, copiou, voz:true }); return; }   // animação X → Mensagem → colar
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }   // o link segue e abre o app
   e.preventDefault();
   $('aviso-msg').textContent = txt; $('aviso-link').href = $('cta-dm').href; $('aviso-dm').hidden = false;
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
-$('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
+$('aviso-link').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor('explicar') + '|abrir', props:{ canal:'direct', ...fimProps('explicar') } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 // link marcado (?lv=): quem veio do Direct pelo link do Dr. Lucca não precisa de código. Mesmo molde: "Voltar ao
 // Instagram" (ele já recebeu a análise) e "ou pelo WhatsApp"; a escolha (explicar/lembrete) vai no evento.
 const LV = Analytics.getLv();
@@ -530,7 +581,7 @@ function fimDirect(){
   if (nota.nextElementSibling !== wa) nota.after(wa);
 }
 function direto_lv(e, esc_){
-  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps(esc_) } });
+  track('cta_click', { stepId:'fechar', valueText:fimValor(esc_), props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps(esc_) } });
   if (!NO_INSTAGRAM) return;
   e.preventDefault(); dicaDirect({ lv:true, voz:true });
 }
