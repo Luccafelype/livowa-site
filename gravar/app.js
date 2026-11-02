@@ -126,25 +126,41 @@
     }
     showCamMsg('Abrindo a câmera…', false);
     const audio = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+    const v = (w, h) => Object.assign({ facingMode: { ideal: S.facing } }, w ? { width: { ideal: w }, height: { ideal: h } } : {});
     const tries = [
-      // 4:3 em pé costuma ser o campo cheio do sensor da frontal; depois 9:16; depois o que vier.
-      { video: { facingMode: { ideal: S.facing }, width: { ideal: 1440 }, height: { ideal: 1920 } }, audio },
-      { video: { facingMode: { ideal: S.facing }, width: { ideal: 1080 }, height: { ideal: 1920 } }, audio },
-      { video: { facingMode: { ideal: S.facing } }, audio },
+      // 4:3 em pé costuma ser o campo cheio do sensor da frontal; depois 9:16. O iOS pode ler largura/altura
+      // na orientação do sensor (deitado) e entregar um quadro deitado e cortado; por isso, com o aparelho
+      // em pé, quadro deitado = tenta o próximo pedido (incluindo as medidas trocadas).
+      { video: v(1440, 1920), audio },
+      { video: v(1080, 1920), audio },
+      { video: v(1920, 1440), audio },
+      { video: v(1920, 1080), audio },
+      { video: v(), audio },
       { video: true, audio: true },
     ];
-    let lastErr = null;
-    for (const c of tries) {
-      try { stream = await navigator.mediaDevices.getUserMedia(c); break; } catch (e) {
+    const wantPortrait = portraitDevice();
+    let lastErr = null, got = null;
+    for (let i = 0; i < tries.length; i++) {
+      let s1 = null;
+      try { s1 = await navigator.mediaDevices.getUserMedia(tries[i]); } catch (e) {
         lastErr = e;
         if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) break;
+        continue;
       }
+      if (got) got.getTracks().forEach((t) => t.stop());
+      got = s1;
+      if (!wantPortrait || i === tries.length - 1) break;
+      el.cam.srcObject = s1;
+      await waitDims(el.cam);
+      await new Promise((r) => setTimeout(r, 250)); // o iOS gira o quadro logo depois do loadedmetadata
+      if (!(el.cam.videoWidth > el.cam.videoHeight)) break; // em pé: serve
     }
+    stream = got;
     if (!stream) { showCamMsg(camError(lastErr), true); return; }
     const vt = stream.getVideoTracks()[0];
     const st = (vt && vt.getSettings && vt.getSettings()) || {};
     facingNow = st.facingMode || (S.facing === 'environment' && videoInputs > 1 ? 'environment' : 'user');
-    el.cam.srcObject = stream;
+    if (el.cam.srcObject !== stream) el.cam.srcObject = stream;
     try { const p = el.cam.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* autoplay cuida */ }
     applyMirror();
     await waitDims(el.cam);
@@ -193,13 +209,30 @@
   el.flipBtn.addEventListener('click', () => {
     S.facing = S.facing === 'user' ? 'environment' : 'user'; save(); startCam();
   });
+  function portraitDevice() {
+    try { return navigator.maxTouchPoints > 0 && window.matchMedia('(orientation: portrait)').matches; } catch (e) { return false; }
+  }
+  // Medidas do track (getSettings): no iOS vêm do sensor, deitadas, mesmo com o <video> em pé.
+  function trackDims() {
+    const vt = stream && stream.getVideoTracks()[0];
+    const st = (vt && vt.getSettings && vt.getSettings()) || {};
+    return [st.width || 0, st.height || 0];
+  }
+  // Track e <video> com orientações diferentes: o stream direto pode sair deitado no arquivo → grava pelo canvas.
+  function rotated() {
+    const [tw, th] = trackDims(), [w, h] = camDims();
+    return !!(tw && th && w && h && tw !== th && w !== h && (tw > th) !== (w > h));
+  }
   function mirrored() { return facingNow !== 'environment' && S.mirrorFront; }
   function applyMirror() {
     el.cam.classList.toggle('mirror', mirrored());
     applyGhost();
   }
   function camDims() { return [el.cam.videoWidth || 0, el.cam.videoHeight || 0]; }
+  // Direta = MediaRecorder no stream da câmera. Canvas quando há recorte 9:16 ou quando o track está
+  // girado em relação ao <video> (caso do iPhone em pé): o canvas desenha o <video> em pé.
   function direct() {
+    if (rotated()) return false;
     if (!S.recorte916) return true;
     const [w, h] = camDims();
     return !!(w && h && Math.abs(w / h - 9 / 16) < 0.02);
@@ -214,32 +247,28 @@
     if (!w || !h) return [0, 0];
     if (direct()) return [w, h];
     let sw = w, sh = h;
-    if (w / h > 9 / 16) sw = h * 9 / 16; else sh = w * 16 / 9;
-    const k = Math.min(1, 1920 / sh);
+    if (S.recorte916) { if (w / h > 9 / 16) sw = h * 9 / 16; else sh = w * 16 / 9; }
+    const k = Math.min(1, 1920 / Math.max(sw, sh));
     return [Math.round(sw * k / 2) * 2, Math.round(sh * k / 2) * 2];
   }
   function updateInfo() {
     const [w, h] = camDims();
     const [ow, oh] = outDims();
     const mime = pickMime();
-    // Selo de diagnóstico: o que o track entrega (getSettings), proporção, zoom e formato.
-    const vt = stream && stream.getVideoTracks()[0];
-    const st = (vt && vt.getSettings && vt.getSettings()) || {};
-    const tw = st.width || w, th = st.height || h;
+    // Selo de diagnóstico: medidas do track (getSettings) e da tela (<video>), proporção da tela, zoom, rota, formato.
+    const [tw, th] = trackDims();
     let selo = '';
-    if (tw && th) {
-      selo = tw + '×' + th + ' · ' + ratioTxt(tw, th);
-      if (st.aspectRatio && Math.abs(st.aspectRatio - tw / th) > 0.01) selo += ' (ar ' + (+st.aspectRatio).toFixed(2) + ')';
-      if (w && h && (w !== tw || h !== th)) selo += ' · tela ' + w + '×' + h;
+    if (w && h) {
+      selo = (tw && th ? 'track ' + tw + '×' + th + ' · ' : '') + 'tela ' + w + '×' + h + ' · ' + ratioTxt(w, h);
       selo += zoomCap ? ' · zoom ' + (+zoomCap.min).toFixed(1).replace('.0', '') + '–' + (+zoomCap.max).toFixed(1).replace('.0', '') : ' · sem zoom';
-      if (!direct()) selo += ' · recorte ' + ow + '×' + oh;
+      if (!direct()) selo += ' · canvas ' + ow + '×' + oh;
       selo += ' · ' + extOf(mime);
     }
     el.resTag.textContent = selo;
     const rows = [
       ['Câmera', w ? w + '×' + h + (facingNow === 'environment' ? ' (traseira)' : ' (frontal)') : '—'],
       ['Arquivo', ow ? ow + '×' + oh : '—'],
-      ['Rota', w ? (direct() ? 'quadro inteiro da câmera' : 'recorte 9:16 do centro') : '—'],
+      ['Rota', w ? (direct() ? 'quadro inteiro, direto da câmera' : S.recorte916 ? 'recorte 9:16 do centro (canvas)' : 'quadro inteiro pelo canvas (track girado)') : '—'],
       ['Formato', mime || (window.MediaRecorder ? 'padrão do navegador' : 'este navegador não grava')],
     ];
     el.info.textContent = '';
@@ -523,7 +552,7 @@
   function canvasStream() {
     const [w, h] = camDims();
     let sw = w, sh = h;
-    if (w / h > 9 / 16) sw = Math.round(h * 9 / 16); else sh = Math.round(w * 16 / 9);
+    if (S.recorte916) { if (w / h > 9 / 16) sw = Math.round(h * 9 / 16); else sh = Math.round(w * 16 / 9); }
     const sx = Math.round((w - sw) / 2), sy = Math.round((h - sh) / 2);
     const [ow, oh] = outDims();
     if (!canvas) { canvas = document.createElement('canvas'); canvas.className = 'rec-canvas'; canvas.setAttribute('aria-hidden', 'true'); document.body.append(canvas); }
@@ -541,9 +570,9 @@
   }
   function beginRecording() {
     if (!window.MediaRecorder) { toast('Este navegador não grava vídeo. Atualize o iOS ou use o Chrome.'); return false; }
-    route = direct() ? 'quadro inteiro' : 'recorte 9:16';
+    route = direct() ? 'direta' : S.recorte916 ? 'recorte 9:16' : 'canvas em pé';
     let src;
-    try { src = route === 'quadro inteiro' ? stream : canvasStream(); } catch (e) { route = 'quadro inteiro'; src = stream; }
+    try { src = route === 'direta' ? stream : canvasStream(); } catch (e) { route = 'direta'; src = stream; }
     const mime = pickMime();
     const opts = { videoBitsPerSecond: 8000000, audioBitsPerSecond: 128000 };
     if (mime) opts.mimeType = mime;
