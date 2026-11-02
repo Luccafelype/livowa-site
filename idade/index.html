@@ -206,6 +206,32 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .meter{display:flex;gap:3px}
 .meter i{width:14px;height:8px;border-radius:3px;background:var(--line)}
 .meter i.on{background:var(--accent)}
+/* ---- 02/11: o mesmo fim da pele2 (capa com o médico, resultado com os dois caminhos, tela final de um passo) ---- */
+.medico{display:flex;gap:14px;align-items:center}
+.medico img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--surface);box-shadow:0 2px 12px rgba(0,0,0,.12);flex:none}
+.medico b{display:block;font:700 1.1rem var(--display)}
+.medico span{color:var(--muted);font-size:.88rem}
+.screen.capa{gap:14px}
+.capa .medico{margin-top:14px}
+.capa .anim.v{height:min(40vh,400px)}
+.conf{align-self:stretch;min-height:40px;border-radius:12px;border:1.5px solid var(--accent);background:var(--surface);color:var(--accent);font:600 .9rem var(--body);cursor:pointer}
+.conf[aria-pressed="true"]{background:var(--accent-2);border-color:var(--accent-2)}
+.wheelbox.alerta .wheel-wrap,.wheelbox.alerta .conf{border-color:var(--warn);background:var(--warn-bg)}
+.wheelbox.alerta label{color:var(--warn);font-weight:600}
+.falta{font-size:.88rem;text-align:center;color:var(--muted)}
+.falta.alerta{color:var(--warn);font-weight:600}
+.medida{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.medida .rot{font:600 .78rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.medida b{font:800 1.7rem/1.15 var(--display);color:var(--accent)}
+.res-txt{font-size:1.02rem}
+.res-txt b{font-weight:600}
+.btn.ghost.link{min-height:40px;padding:4px 8px;font:500 .88rem/1.3 var(--body);text-decoration:underline;text-underline-offset:3px}
+.pele-card .btn.sec{background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);padding:13px}
+.screen.fim{gap:14px}
+.f-acao{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.f-nota{text-align:center;font-size:.88rem;color:var(--muted)}
+.link-alt{align-self:center;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 12px;background:none;border:0;cursor:pointer;color:var(--accent);font:600 .95rem var(--body);text-decoration:underline;text-underline-offset:3px}
+.screen.fim .cod-ref{margin-top:auto;text-align:center;font-size:.8rem;padding-top:4px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script>/* link da pele (?pele=1|teste): esconde a página até o script abrir a pele, para não piscar a tela das pernas */
@@ -219,8 +245,9 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
     <div class="bar" aria-hidden="true"><i id="progress"></i></div>
   </div>
 
-  <section class="screen" data-s="inicio" data-p="0">
-    <div class="who" style="margin-top:20px"><span class="dot"></span><span><b>Dr. Lucca Marques</b> · Médico · CRM-GO 33.990</span></div>
+  <section class="screen capa" data-s="inicio" data-p="0">
+    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="64" height="64">
+      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
     <h1>Quantos anos têm as suas pernas?</h1>
     <p class="sub">Levante da cadeira 5 vezes na frente da câmera e descubra a idade que a força das suas pernas mostra.</p>
     <div class="anim v" aria-hidden="true"><video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video></div>
@@ -250,11 +277,13 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
       <button type="button" data-sexo="f" aria-pressed="false">Mulher</button>
     </div>
     <div class="wheels">
-      <div class="wheelbox"><label id="l-idade">Idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade"></div></div></div>
-      <div class="wheelbox"><label id="l-peso">Peso (kg)</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso"></div></div></div>
-      <div class="wheelbox"><label id="l-altura">Altura (cm)</label><div class="wheel-wrap"><div class="wheel" id="w-altura" tabindex="0" role="listbox" aria-labelledby="l-altura"></div></div></div>
+      <div class="wheelbox"><label id="l-idade">Idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade"></div></div><button type="button" class="conf" data-conf="idade" aria-pressed="false">Confirmo</button></div>
+      <div class="wheelbox"><label id="l-peso">Peso (kg)</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso"></div></div><button type="button" class="conf" data-conf="peso" aria-pressed="false">Confirmo</button></div>
+      <div class="wheelbox"><label id="l-altura">Altura (cm)</label><div class="wheel-wrap"><div class="wheel" id="w-altura" tabindex="0" role="listbox" aria-labelledby="l-altura"></div></div><button type="button" class="conf" data-conf="altura" aria-pressed="false">Confirmo</button></div>
     </div>
-    <p class="sub" style="font-size:.85rem;text-align:center">Role para escolher.</p>
+    <!-- 02/11: as rodas começam em 40/80/172; quem não mexia mandava esses números como se fossem seus. Cada número
+         precisa ser rolado ou confirmado ("Confirmo") antes da câmera. -->
+    <p class="falta" id="falta">Role cada número até o seu, ou toque em Confirmo.</p>
   </section>
 
   <section class="screen" data-s="camera" data-p="75" hidden>
@@ -268,19 +297,37 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
     <div class="sound"><button type="button" id="mute">Voz ligada</button></div>
   </section>
 
-  <section class="screen c final" data-s="resultado" data-p="100" hidden>
-    <span class="pill">Último passo</span>
-    <h2>Seu resultado está <em>pronto</em></h2>
-    <p class="sub">Só falta um passo para você receber a explicação do seu resultado: mandar uma mensagem para o Dr. Lucca. Escolha o WhatsApp ou o Direct do Instagram.</p>
-    <p class="cod-ref">A mensagem já vai pronta, com o seu código <b id="res-cod">LV-0000</b>. No Direct, ela vai copiada: é só colar.</p>
+  <!-- resultado (02/11, molde da pele2): o número continua só na conversa (decisão de 28/10); a tela repete o que foi
+       medido e cita as respostas. Botão = caminho 1 (o Dr. Lucca explica em vídeo); link discreto = caminho 2 (lembrete). -->
+  <section class="screen final" data-s="resultado" data-p="100" hidden>
+    <span class="pill">Teste concluído</span>
+    <h2 id="res-tit">Seu teste está <em>pronto</em></h2>
+    <div class="medida"><span class="rot">O que a câmera mediu</span><b id="res-medida">5 levantadas em 0,0 s</b></div>
+    <p class="res-txt" id="res-txt1"></p>
+    <p class="res-txt" id="res-txt2"></p>
     <div class="pele-card" id="pele-card" hidden>
       <div>
         <span class="pill sm" id="pele-card-pill">Uma selfie</span>
         <h3 id="pele-card-h">Agora a <em>pele</em>: 30 segundos</h3>
         <p>A análise da pele vai junto no mesmo código.</p>
       </div>
-      <button class="btn" id="pele-ir" type="button">Fazer a análise da pele</button>
+      <button class="btn sec" id="pele-ir" type="button">Fazer a análise da pele</button>
     </div>
+  </section>
+
+  <!-- tela final (02/11, molde da pele2): UM passo só, em 3ª pessoa. O caminho vem da escolha no resultado. -->
+  <section class="screen fim" data-s="fechar" data-p="100" hidden>
+    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
+      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
+    <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado em vídeo</h2>
+    <p class="sub" id="f-sub">Um vídeo de 1 minuto sobre o seu teste, no seu WhatsApp, em até 24 horas. Ele grava um por um.</p>
+    <div class="f-acao">
+      <a class="btn ico" id="f-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="f-wa-txt">Enviar meu código pelo WhatsApp</span></a>
+      <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
+      <a class="link-alt" id="f-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
+      <button type="button" class="link-alt" id="f-troca" hidden>Quero a explicação em vídeo</button>
+    </div>
+    <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b> · </span>Estimativa, não é diagnóstico.</p>
   </section>
 
   <!-- ===================== PELE ===================== -->
@@ -342,8 +389,8 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
     <p class="cod-ref">A mensagem já vai pronta, com o seu código <b id="pr-cod">LV-0000</b>. No Direct, ela vai copiada: é só colar.</p>
   </section>
 
-  <div class="cta"><div>
-    <!-- fim: dois canais com o mesmo peso. WhatsApp leva a mensagem pronta; o Direct não aceita texto pronto, então ela vai copiada -->
+  <div class="cta" id="cta-bar"><div>
+    <!-- fim da pele (?pele): dois canais com o mesmo peso. WhatsApp leva a mensagem pronta; o Direct não aceita texto pronto, então ela vai copiada -->
     <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg>WhatsApp</a>
     <a class="btn ico" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>Direct do Instagram</a>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
@@ -401,25 +448,56 @@ let sexo = null;   // 02/11: sem padrão (antes vinha Homem marcado e a mulher q
 // ---------- seletores de rolagem ----------
 const dados = {};
 let dadosOk = false;   // 01/11: só vale a idade que a pessoa confirmou na tela de dados (a roda começa em 40)
+// 02/11: cada número precisa de um gesto da pessoa (rolar a roda ou tocar "Confirmo"). Antes, quem não mexia mandava
+// 40 anos, 80 kg e 1,72 m como se fossem seus, e a potência e a régua da idade saíam erradas.
+const confirmado = {};   // chave → 'rolou' | 'confirmou'
 function wheel(id, from, to, start){
   const w = $(id), items = [], H = 44, key = id.slice(2);
   for (let v = from; v <= to; v++){ const d = document.createElement('div'); d.textContent = v; d.setAttribute('role','option'); w.appendChild(d); items.push(d); }
+  let mao = false;   // o rolar veio da pessoa (dedo, roda do mouse, teclado), não do posicionamento inicial
   const pick = () => { const i = Math.max(0, Math.min(items.length-1, Math.round(w.scrollTop / H)));
-    items.forEach((d,j) => { d.classList.toggle('sel', j === i); d.setAttribute('aria-selected', String(j === i)); }); dados[key] = from + i; };
+    items.forEach((d,j) => { d.classList.toggle('sel', j === i); d.setAttribute('aria-selected', String(j === i)); });
+    const mudou = dados[key] !== from + i; dados[key] = from + i;
+    if (mao && mudou) confirmar(key, 'rolou'); };
+  ['pointerdown','touchstart','wheel','keydown'].forEach(ev => w.addEventListener(ev, () => { mao = true; }, {passive:true}));
   w.addEventListener('scroll', pick, {passive:true});
   w.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); w.scrollBy({top: e.key === 'ArrowDown' ? H : -H, behavior:'smooth'}); } });
-  items.forEach((d,j) => d.addEventListener('click', () => w.scrollTo({top: j*H, behavior:'smooth'})));
-  dados[key] = start; w._set = v => { w.scrollTop = (v - from) * H; pick(); };
+  items.forEach((d,j) => d.addEventListener('click', () => { mao = true; w.scrollTo({top: j*H, behavior:'smooth'}); if (from + j === dados[key]) confirmar(key, 'confirmou'); }));
+  dados[key] = start; w._set = v => { mao = false; w.scrollTop = (v - from) * H; pick(); };
   return w;
 }
 const wheels = [wheel('w-idade', 18, 90, 40), wheel('w-peso', 40, 180, 80), wheel('w-altura', 140, 210, 172)];
-const starts = [40, 80, 172];
+const starts = [40, 80, 172], CHAVES = ['idade','peso','altura'];
+const NOME_DADO = { idade:'a idade', peso:'o peso', altura:'a altura' };
+function confirmar(key, como){
+  if (!confirmado[key]) confirmado[key] = como;
+  const b = document.querySelector(`[data-conf="${key}"]`); b.setAttribute('aria-pressed', 'true'); b.textContent = '✓ Confirmado';
+  b.closest('.wheelbox').classList.remove('alerta');
+  atualizarDados();
+}
+document.querySelectorAll('[data-conf]').forEach(b => b.addEventListener('click', () => confirmar(b.dataset.conf, 'confirmou')));
+const faltam = () => [...(sexo ? [] : ['sexo']), ...CHAVES.filter(k => !confirmado[k])];
+function atualizarDados(){
+  if (cur !== 'dados') return;
+  const f = faltam(), n = f.filter(k => k !== 'sexo');
+  $('cta').classList.toggle('off', f.length > 0);
+  const el = $('falta');
+  if (!f.length){ el.textContent = 'Tudo certo. Pode abrir a câmera.'; el.classList.remove('alerta'); return; }
+  if (!el.classList.contains('alerta')) { el.textContent = 'Role cada número até o seu, ou toque em Confirmo.'; return; }
+  el.textContent = 'Falta ' + [...(f.includes('sexo') ? ['marcar homem ou mulher'] : []), ...(n.length ? ['confirmar ' + n.map(k => NOME_DADO[k]).join(', ').replace(/, ([^,]*)$/, ' e $1')] : [])].join(' e ') + '.';
+}
+function apontarDados(){
+  $('falta').classList.add('alerta');
+  if (!sexo) document.querySelector('.seg').classList.add('alerta');
+  CHAVES.forEach(k => { if (!confirmado[k]) document.querySelector(`[data-conf="${k}"]`).closest('.wheelbox').classList.add('alerta'); });
+  atualizarDados();
+  (sexo ? document.querySelector('.wheels') : document.querySelector('.seg')).scrollIntoView({ block:'center', behavior:'smooth' });
+}
 document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click', () => {
   sexo = b.dataset.sexo; document.querySelectorAll('[data-sexo]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-  b.parentNode.classList.remove('alerta'); if (cur === 'dados') $('cta').classList.remove('off');
+  b.parentNode.classList.remove('alerta'); atualizarDados();
   Analytics.track('answer', { stepId:'dados', valueText:'sexo-' + sexo, props:{ sexo } });
 }));
-function apontarSexo(){ const g = document.querySelector('.seg'); g.classList.add('alerta'); g.scrollIntoView({ block:'center', behavior:'smooth' }); }
 
 // ---------- voz ----------
 // Regras da voz (28/10, teste no iPhone): fala de orientação só quando a instrução MUDA e fica estável ~1 s
@@ -443,27 +521,46 @@ function falarEstavel(txt){
   if (txt === candDita || now - candDesde < 1000) return;               // já dita, ou ainda instável
   const antes = ultimoT; falar(txt); if (ultimoT !== antes) candDita = txt;
 }
-function zerarFala(){ candFala = ''; candDita = ''; }
-function guia(txt, ok){ const g = $('guide'); if (g.textContent !== txt) g.textContent = txt; g.classList.toggle('ok', !!ok); }
+function zerarFala(){ candFala = ''; candDita = ''; guiaJanela = []; guiaDesde = 0; }
+let guiaDesde = 0, guiaJanela = [];
+function guia(txt, ok){ const g = $('guide'); if (g.textContent !== txt){ g.textContent = txt; guiaDesde = performance.now(); } g.classList.toggle('ok', !!ok); }
+// 02/11 (vídeo do Lucca de 31/10, 23h30): o texto do guia trocava a cada quadro (Sente na cadeira → Chegue mais perto →
+// Afaste o celular → Não estou te vendo; 22 trocas em 6 s na reprodução). Agora o guia mostra a instrução que mais
+// apareceu no último 1 s (só se valeu em pelo menos metade dos quadros) e a que está na tela fica pelo menos 1,5 s.
+// Contagem ("2 de 5") e "Pode começar!" continuam na hora.
+function guiaEstavel(txt, ok){
+  const now = performance.now(), g = $('guide');
+  guiaJanela.push({ t:now, txt, ok }); while (guiaJanela.length && now - guiaJanela[0].t > 1000) guiaJanela.shift();
+  if (txt === g.textContent){ g.classList.toggle('ok', !!ok); return; }
+  if (now - guiaDesde < 1500) return;
+  const n = {}; for (const x of guiaJanela) n[x.txt] = (n[x.txt] || 0) + 1;
+  const [moda, k] = Object.entries(n).sort((a, b) => b[1] - a[1])[0];
+  if (moda !== g.textContent && k >= guiaJanela.length / 2 && guiaJanela.length >= 3) guia(moda, guiaJanela.findLast(x => x.txt === moda).ok);
+}
 
 // ---------- navegação ----------
-const order = ['inicio','como','dados','camera','resultado','pele-inicio','pele-camera','pele-envio','pele-analise','pele-resultado','pele-erro'];
-const VOLTA = { 'pele-inicio':'resultado', 'pele-camera':'pele-inicio', 'pele-envio':'pele-camera', 'pele-analise':'pele-envio', 'pele-resultado':'resultado', 'pele-erro':'pele-inicio' };
+// 'fechar' (02/11) vai no fim da lista para não mudar o número das etapas da pele no painel do Funil
+const order = ['inicio','como','dados','camera','resultado','pele-inicio','pele-camera','pele-envio','pele-analise','pele-resultado','pele-erro','fechar'];
+const VOLTA = { 'pele-inicio':'resultado', 'pele-camera':'pele-inicio', 'pele-envio':'pele-camera', 'pele-analise':'pele-envio', 'pele-resultado':'resultado', 'pele-erro':'pele-inicio', fechar:'resultado' };
 let cur = 'inicio';
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
   cur = s; const el = document.querySelector(`[data-s="${s}"]`); Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s), ...(s.startsWith('pele') ? { props:{ fotos:FOTOS } } : {}) });
-  $('top').hidden = s === 'inicio';
+  $('top').hidden = s === 'inicio' || s === 'resultado';
   $('progress').style.width = (el.dataset.p || 0) + '%';
   const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true; $('cta-dm').hidden = true;
+  $('cta-bar').hidden = s === 'fechar';   // tela final: o botão mora na própria tela
+  c2.classList.toggle('link', s === 'resultado');
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
-  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; ctaPernas(); fimDirect(s); }
+  // resultado: botão = caminho 1 (o Dr. Lucca explica); link discreto, sem opção negativa = caminho 2 (lembrete)
+  if (s === 'resultado'){ cta.textContent = 'Quero que o Dr. Lucca me explique'; c2.hidden = false; c2.textContent = c2.dataset.txt || 'Prefiro seguir sozinho e receber um lembrete em 4 semanas'; }
+  if (s === 'fechar') prepararFechamento();
   cta.disabled = false;
   cta.classList.remove('off');
-  if (s === 'dados') cta.classList.toggle('off', !sexo);   // a régua muda com o sexo: sem escolher, não segue
+  if (s === 'dados') atualizarDados();   // sexo e os 3 números: sem cada um, não segue
   if (s === 'pele-inicio'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('pele-ok').checked); c2.hidden = false; c2.textContent = 'Prefiro escolher uma foto'; }
   if (s === 'pele-camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
   if (s === 'pele-envio'){ cta.textContent = 'Analisar minha pele'; c2.hidden = false; c2.textContent = capturas.length > 1 ? 'Tirar de novo' : 'Tirar outra foto'; }
@@ -484,7 +581,12 @@ $('back').addEventListener('click', () => {
 $('cta').addEventListener('click', () => {
   if (cur === 'inicio') show('como');
   else if (cur === 'como') show('dados');
-  else if (cur === 'dados'){ if (!sexo) return apontarSexo(); dadosOk = true; falar(' ', true); show('camera'); abrirCamera(); }
+  else if (cur === 'dados'){
+    if (faltam().length) return apontarDados();
+    dadosOk = true; falar(' ', true);
+    Analytics.track('answer', { stepId:'dados', valueText:'confirmado', props:{ idade:dados.idade, peso:dados.peso, altura:dados.altura, como:{ ...confirmado } } });
+    show('camera'); abrirCamera(); }
+  else if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); caminho = 1; show('fechar'); }
   else if (cur === 'pele-inicio'){ if (!$('pele-ok').checked) return apontarAceite(); falar(' ', true); show('pele-camera'); abrirCameraPele(); }
   else if (cur === 'pele-envio') enviarPele();
   else if (cur === 'pele-erro'){ if (peleErroRede && capturas.length) enviarPele(); else { show('pele-camera'); abrirCameraPele(); } }
@@ -493,7 +595,8 @@ $('cta-2').addEventListener('click', () => {
   pararCamera(); pararCameraPele();
   if (cur === 'pele-inicio' || cur === 'pele-camera' || cur === 'pele-erro'){ if ($('pele-ok').checked) $('pele-arquivo').click(); return; }
   if (cur === 'pele-envio' || cur === 'pele-resultado'){ descartarCaptura(); show('pele-camera'); abrirCameraPele(); return; }
-  if (cur === 'resultado'){ show('camera'); abrirCamera(); } else show('dados');
+  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'lembrete' }); caminho = 2; show('fechar'); return; }
+  show('dados');
 });
 
 // ---------- detector ----------
@@ -517,11 +620,17 @@ function enquadramento(lm, calibrando){
   if (!calibrando) return (V(lm,23) || V(lm,24)) ? null : ['Afaste o celular', 'Afaste o celular. Seu quadril saiu da tela'];   // durante o teste só o quadril importa
   if (!lado) return ['Afaste o celular', 'Afaste o celular. Seus joelhos não aparecem'];
   {
+    const shY = (lm[11].y+lm[12].y)/2, kY = Math.max(lm[25].y, lm[26].y), hipY = (lm[23].y+lm[24].y)/2;
+    // tronco pelo comprimento (ombro → quadril), não pela altura: agachado ou inclinado, a altura encolhe e dava
+    // "Chegue mais perto" e "Vire de lado" sem motivo (vídeo de 31/10)
+    const vv = $('video'), ar = (vv.videoWidth || 3) / (vv.videoHeight || 4);
+    const tronco = Math.hypot(((lm[11].x+lm[12].x)/2 - (lm[23].x+lm[24].x)/2) * ar, shY - hipY);
+    // de pé: o enquadramento é o de quem está sentado; de pé ele mandava afastar/aproximar. Primeiro, sentar.
+    if (tronco > 0 && ((lm[25].y+lm[26].y)/2 - hipY) / tronco > 0.6) return ['Sente na cadeira', 'Sente na cadeira para começar'];
     if (!ombro || Math.min(lm[11].y, lm[12].y) < 0.06) return ['Afaste o celular', 'Afaste o celular. Seus ombros não aparecem'];
-    const shY = (lm[11].y+lm[12].y)/2, kY = Math.max(lm[25].y, lm[26].y);
     if (kY > 0.92) return ['Afaste o celular', 'Afaste o celular. Seus joelhos estão no limite da tela'];
-    if (kY - shY < 0.2) return ['Chegue mais perto', 'Chegue mais perto do celular'];
-    const ombros = Math.abs(lm[11].x - lm[12].x), tronco = Math.abs(shY - (lm[23].y+lm[24].y)/2);
+    if (Math.max(kY - shY, tronco) < 0.2) return ['Chegue mais perto', 'Chegue mais perto do celular'];
+    const ombros = Math.abs(lm[11].x - lm[12].x);
     if (tronco > 0 && ombros / tronco > 0.55) return ['Vire de lado', 'Vire de lado para o celular'];
   }
   const cx = (lm[23].x + lm[24].x)/2;
@@ -658,7 +767,10 @@ function resultado(c){
   const vel = subidas.length ? sobe / (subidas.reduce((a,b)=>a+b,0)/subidas.length) : null;
   const eq = faixaEquivalente(sexo, rel), pc = Math.round(percentil(sexo, idade, rel));
   // decisão do Lucca (28/10): o resultado NÃO aparece na tela; vai no evento 'complete' com o código e ele responde por áudio
+  // 02/11: a tela repete o que a câmera mediu (a pessoa viu o tempo correr) e cita as respostas dela em cada frase
   $('res-cod').textContent = meuCodigo();
+  $('res-medida').textContent = `${c.reps} levantadas em ${fmt(t)}\u00a0s`;
+  personalizar();
   pernas = { rel, idade, faixa:eq.txt };
   $('pele-card').hidden = !PELE_ENDPOINT;
   falar('Pronto.', true);
@@ -697,18 +809,18 @@ function loop(){
     }
     const prob = lm ? enquadramento(lm, !counter || counter.phase === 'calib') : ['Não estou te vendo', 'Fique na frente da câmera'];
     desenhar(lm, !prob);
-    if (prob){ guia(prob[0]); falarEstavel(prob[1]); }
+    if (prob){ guiaEstavel(prob[0]); falarEstavel(prob[1]); }
     else {
       const st = feed(counter, lm, ts);
       $('reps').innerHTML = `${counter.reps}<small>/5</small>`;
       if (counter.tStart != null) $('time').textContent = fmt(((counter.tEnd ?? ts) - counter.tStart)/1000,1) + ' s';
-      if (st === 'em-pe'){ guia('Sente na cadeira'); falarEstavel('Sente na cadeira para começar'); }
-      else if (st === 'calib' || st === 'parado') guia('Na cadeira, sem se mexer…');
-      else if (st === 'andando'){ guia('Volte para a cadeira'); falarEstavel('Volte para a cadeira'); }
+      if (st === 'em-pe'){ guiaEstavel('Sente na cadeira'); falarEstavel('Sente na cadeira para começar'); }
+      else if (st === 'calib' || st === 'parado') guiaEstavel('Na cadeira, sem se mexer…');
+      else if (st === 'andando'){ guiaEstavel('Volte para a cadeira'); falarEstavel('Volte para a cadeira'); }
       else if (st === 'espera'){ guia('Pode começar!', true); falarEstavel('Pode começar. Levante e sente cinco vezes, rápido.'); }
       else if (st === 'run'){
         const desde = ts - Math.max(counter.t0, counter.lastRep);
-        if (desde > 6000){ guia('Fique de pé por completo'); falarEstavel('Fique de pé por completo e sente de novo'); } else guia('Continue', true);
+        if (desde > 6000){ guiaEstavel('Fique de pé por completo'); falarEstavel('Fique de pé por completo e sente de novo'); } else guiaEstavel('Continue', true);
       }
       else if (st === 'rep'){ guia(`${counter.reps} de 5`, true); falar(NUM[counter.reps], true); }
       if (st === 'fim'){ pararCamera(); resultado(counter); return; }
@@ -756,6 +868,63 @@ function fimDirect(sec){
   wa.classList.add('ghost'); if (wa.lastChild && wa.lastChild.nodeType === 3) wa.lastChild.textContent = 'Prefere WhatsApp?';
   if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);   // Direct primeiro, WhatsApp pequeno embaixo
 }
+// =====================================================================
+// FIM DAS PERNAS (02/11, molde da pele2): a escolha é feita UMA vez, no resultado (botão = caminho 1, link = caminho 2).
+// Tela final de um passo, em 3ª pessoa. Medição igual à pele2: cta_click com props.canal whatsapp/direct (é o que a
+// Caixa e o Funil contam como conversa) + props.escolha (explicar/lembrete) + props.codigo.
+// =====================================================================
+let caminho = 1;
+const escolha = () => caminho === 2 ? 'lembrete' : 'explicar';
+const sozinho = () => sexo === 'f' ? 'sozinha' : 'sozinho';
+const homemMulher = () => sexo === 'f' ? 'uma mulher' : 'um homem';
+const homensMulheres = () => sexo === 'f' ? 'mulheres' : 'homens';
+const metros = cm => (cm / 100).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 }) + '&nbsp;m';
+// toda frase que depende de uma resposta cita a resposta
+function personalizar(){
+  const i = dados.idade;
+  $('res-txt1').innerHTML = `Para ${homemMulher()} de <b>${i}&nbsp;anos</b>, com <b>${dados.peso}&nbsp;kg</b> e <b>${metros(dados.altura)}</b>, esse tempo mostra a potência das pernas.`;
+  $('res-txt2').innerHTML = `O Dr. Lucca compara a sua potência com a de <b>${homensMulheres()} de ${i}&nbsp;anos</b> e explica a idade que as suas pernas mostram.`;
+  $('cta-2').dataset.txt = `Prefiro seguir ${sozinho()} e receber um lembrete em 4 semanas`;
+}
+function mensagemFim(){
+  return caminho === 2
+    ? `Oi, Dr. Lucca! Fiz o teste das pernas, código ${meuCodigo()}. Vou seguir ${sozinho()} e quero o lembrete para refazer o teste em 4 semanas.`
+    : `Oi, Dr. Lucca! Fiz o teste das pernas, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
+}
+function prepararFechamento(){
+  const c1 = caminho !== 2;
+  $('res-cod').textContent = meuCodigo();
+  $('f-tit').textContent = c1 ? 'O Dr. Lucca vai explicar o seu resultado em vídeo' : 'Combinado: em 4 semanas, um lembrete para refazer o teste';
+  $('f-sub').textContent = c1 ? `Um vídeo de 1 minuto sobre o seu teste, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`
+                              : 'O Dr. Lucca te responde com o seu resultado por escrito. Na 4ª semana, ele te manda um lembrete para refazer o teste e comparar.';
+  $('f-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagemFim())}`;
+  $('f-troca').hidden = c1;
+  if (LV) return fimDirectFechar();
+  $('f-wa-txt').textContent = c1 ? 'Enviar meu código pelo WhatsApp' : 'Receber o lembrete no WhatsApp';
+  $('f-dm').hidden = !c1;   // o Direct só no caminho 1 (o lembrete é pelo WhatsApp), como na pele2
+}
+$('f-troca').addEventListener('click', () => { caminho = 1; prepararFechamento(); });
+const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
+$('f-wa').addEventListener('click', () => Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } }));
+$('f-dm').addEventListener('click', e => {
+  if (LV){
+    Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps() } });
+    if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ lv:true, voz }); }
+    return;
+  }
+  abrirDirect(e, mensagemFim(), fimProps());
+});
+// ?lv= (veio do Direct pelo link do Dr. Lucca): "Voltar ao Instagram" em primeiro, WhatsApp como link; sem código
+const IG_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>';
+function fimDirectFechar(){
+  const dm = $('f-dm'), wa = $('f-wa'), nota = $('f-nota');
+  $('f-cod').hidden = true; dm.hidden = false;
+  nota.textContent = 'O Dr. Lucca já recebeu o seu teste. É só voltar ao Direct.';
+  dm.className = 'btn ico'; dm.innerHTML = IG_SVG + '<span>Voltar ao Instagram</span>';
+  wa.className = 'link-alt'; wa.innerHTML = '<span>ou pelo WhatsApp</span>';
+  if (nota.previousElementSibling !== dm) nota.before(dm);
+  if (nota.nextElementSibling !== wa) nota.after(wa);
+}
 function ctaPernas(){
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp', props:{ canal:'whatsapp' } });
@@ -774,9 +943,9 @@ function copiar(txt){
 }
 let toastT = null;
 const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // navegador de dentro do app: ig.me abre como página e pede login (31/10)
-function abrirDirect(e){
-  const txt = mensagem(), copiou = copiar(txt);
-  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM } });
+function abrirDirect(e, txt = mensagem(), extra = {}){
+  const copiou = copiar(txt);
+  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...extra } });
   if (NO_INSTAGRAM){
     e.preventDefault(); dicaDirect({ mensagem:txt, copiou, voz }); return;   // animação X → Mensagem → colar (assets/js/dica-direct.js)
   }
