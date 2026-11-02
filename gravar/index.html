@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob: mediastream:; connect-src 'none'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Gravar · Livowa</title>
+<!-- Ferramenta interna do Dr. Lucca (02/11/2026): grava chamadas de 5-10 s e trechos-ponte
+     com teleprompter e fantasma de enquadramento. Tudo roda no aparelho: sem análise de uso,
+     sem envio (connect-src 'none' no CSP). sw.js guarda a página para abrir sem internet. -->
+<link rel="stylesheet" href="gravar.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<div class="app" id="app">
+
+  <main class="area" id="area">
+    <div class="stage" id="stage">
+      <video id="cam" class="cam" autoplay muted playsinline></video>
+      <img id="ghostImg" class="ghost" alt="" hidden>
+      <video id="ghostVid" class="ghost" muted playsinline preload="auto" hidden></video>
+
+      <div class="grid" id="grid" hidden><i class="v1"></i><i class="v2"></i><i class="h1"></i><i class="h2"></i></div>
+      <div class="eye" id="eye" hidden><span class="eye-h" id="eyeHandle">olhos ↕</span></div>
+
+      <div class="prompter" id="prompter" role="button" tabindex="0" aria-label="Texto do teleprompter. Toque para pausar ou continuar; arraste para mover.">
+        <div class="ptext" id="ptext"></div>
+      </div>
+      <div class="ptag" id="ptag" aria-live="polite"></div>
+
+      <div class="recpill" id="recPill" hidden><b></b><span id="recTime">0,0 s</span></div>
+      <div class="restag" id="resTag"></div>
+      <div class="count" id="count" hidden><span id="countN">3</span></div>
+
+      <div class="cammsg" id="camMsg" hidden>
+        <p id="camMsgText">Abrindo a câmera…</p>
+        <button class="btn primary" id="camRetry" type="button">Abrir câmera</button>
+      </div>
+    </div>
+  </main>
+
+  <nav class="dock" id="dock">
+    <div class="quick">
+      <div class="stepper" aria-label="Velocidade do texto">
+        <span class="lbl">Vel</span>
+        <button type="button" data-act="spd-" aria-label="Mais devagar">−</button>
+        <output id="spdOut">6</output>
+        <button type="button" data-act="spd+" aria-label="Mais rápido">+</button>
+      </div>
+      <div class="stepper" aria-label="Tamanho da letra">
+        <span class="lbl">Aa</span>
+        <button type="button" data-act="fs-" aria-label="Letra menor">−</button>
+        <output id="fsOut">30</output>
+        <button type="button" data-act="fs+" aria-label="Letra maior">+</button>
+      </div>
+      <button type="button" class="round" data-act="top" aria-label="Voltar ao começo do texto">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5"/></svg>
+      </button>
+    </div>
+    <div class="main">
+      <button type="button" class="tool" data-open="texto">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14M5 10h14M5 15h9M5 20h6"/></svg>
+        <span>Texto</span>
+      </button>
+      <button type="button" class="tool" data-open="fantasma" id="ghostBtn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V10a6 6 0 0 1 12 0v11l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z"/><circle cx="10" cy="10" r=".9"/><circle cx="14" cy="10" r=".9"/></svg>
+        <span>Fantasma</span>
+      </button>
+      <button type="button" class="rec" id="recBtn" aria-label="Gravar"><i></i></button>
+      <button type="button" class="tool" id="flipBtn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><path d="M9 13.5a3 3 0 0 1 5.2-2M15 12.5a3 3 0 0 1-5.2 2M14.6 9.6v2h-2M9.4 16.4v-2h2"/></svg>
+        <span id="flipLbl">Câmera</span>
+      </button>
+      <button type="button" class="tool" data-open="ajustes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        <span>Ajustes</span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <section class="sheet" id="sheet-texto" hidden aria-label="Roteiros">
+    <header><h2>Roteiros</h2><button type="button" class="btn ghostbtn" data-close>Pronto</button></header>
+    <div class="seg" role="radiogroup" aria-label="Tipo do trecho">
+      <button type="button" role="radio" data-tipo="chamada">Chamada</button>
+      <button type="button" role="radio" data-tipo="ponte">Ponte</button>
+    </div>
+    <textarea id="txt" rows="6" spellcheck="false" placeholder="Cole aqui. Um roteiro por bloco, separados por uma linha em branco.&#10;&#10;O 1º termo vira o nome do arquivo (ou comece com uma linha #PERNAS, que não aparece no texto)."></textarea>
+    <p class="hint" id="listHint">Toque no roteiro que vai gravar.</p>
+    <div class="lista" id="lista"></div>
+    <p class="priv">Sem análise de uso. Texto, ajustes e vídeos ficam só neste aparelho.</p>
+  </section>
+
+  <section class="sheet" id="sheet-fantasma" hidden aria-label="Fantasma de enquadramento">
+    <header><h2>Fantasma</h2><button type="button" class="btn ghostbtn" data-close>Pronto</button></header>
+    <p class="hint">Um quadro de um vídeo antigo por cima da câmera, para casar posição, distância e luz. Aparece só na tela; não entra no arquivo.</p>
+    <label class="btn primary file">
+      <input type="file" id="ghostFile" accept="image/*,video/*">
+      <span>Escolher imagem ou vídeo</span>
+    </label>
+    <p class="status" id="ghostStatus">Nenhum fantasma carregado.</p>
+    <div class="row" id="opRow">
+      <label for="ghostOp">Opacidade</label>
+      <input type="range" id="ghostOp" min="0" max="60" step="1" value="35">
+      <output id="ghostOpOut">35%</output>
+    </div>
+    <div class="row" id="frameRow" hidden>
+      <label for="ghostFrame">Quadro</label>
+      <input type="range" id="ghostFrame" min="0" max="1000" step="1" value="0">
+      <output id="ghostFrameOut">0,0 s</output>
+    </div>
+    <div class="toggles">
+      <label class="sw"><input type="checkbox" id="ghostOn" checked><span>Mostrar o fantasma</span></label>
+      <label class="sw"><input type="checkbox" id="ghostFlip"><span>Inverter lado do fantasma</span></label>
+    </div>
+    <button type="button" class="btn" id="ghostClear" disabled>Tirar o fantasma</button>
+  </section>
+
+  <section class="sheet" id="sheet-ajustes" hidden aria-label="Ajustes">
+    <header><h2>Ajustes</h2><button type="button" class="btn ghostbtn" data-close>Pronto</button></header>
+    <div class="toggles">
+      <label class="sw"><input type="checkbox" id="optGrid"><span>Grade de terços</span></label>
+      <label class="sw"><input type="checkbox" id="optEye"><span>Marca da altura dos olhos <small>arraste a linha amarela</small></span></label>
+      <label class="sw"><input type="checkbox" id="optMirror" checked><span>Espelhar a câmera frontal na tela <small>o arquivo nunca sai espelhado</small></span></label>
+      <label class="sw"><input type="checkbox" id="optCrop"><span>Gravar pelo recorte 9:16 <small>use se o vídeo sair deitado ou com outra proporção</small></span></label>
+    </div>
+    <dl class="info" id="info"></dl>
+    <p class="priv">Esta página não tem análise de uso e não envia nada pela internet. Depois de aberta uma vez, funciona sem conexão.</p>
+  </section>
+
+  <section class="review" id="review" hidden aria-label="Revisar gravação">
+    <video id="play" controls playsinline></video>
+    <div class="rv-info">
+      <p class="rv-dur" id="rvDur">0,0 s</p>
+      <p class="rv-meta" id="rvMeta"></p>
+      <p class="rv-name" id="rvName"></p>
+    </div>
+    <div class="rv-actions">
+      <button type="button" class="btn big" id="redoBtn">Regravar</button>
+      <button type="button" class="btn big primary" id="saveBtn">Salvar</button>
+    </div>
+    <div class="rv-more">
+      <a id="dlLink" class="link" href="#" download>Baixar o arquivo</a>
+      <button type="button" class="link" id="nextBtn">Gravar o próximo</button>
+    </div>
+    <p class="rv-tip" id="rvTip" hidden></p>
+  </section>
+
+  <div class="toast" id="toast" hidden></div>
+</div>
+</body>
+</html>
