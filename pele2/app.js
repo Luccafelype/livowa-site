@@ -56,7 +56,7 @@ const ROT = {   // rótulos curtos das respostas (tela e analytics)
   agua:{ menos_1l:'menos de 1 L', '1a2l':'1 a 2 L', '2a3l':'2 a 3 L', mais_3l:'mais de 3 L' },
   sono:{ '4a5':'4 a 5 h', '6':'6 h', '7':'7 h', '8':'8 h', '9mais':'9 h ou mais' },
   rotina:{ nenhuma:'sem rotina', funciona:'rotina que funciona', receitada:'produtos receitados', nao_sei:'não sabe se funciona' },
-  objetivo:{ confianca:'Me sentir bem e confiante com a minha pele', sem_maquiagem:'Sair sem maquiagem nem filtro, sem me preocupar', fotos:'Gostar de me ver em foto de perto', prevenir:'Cuidar agora, antes que piore', parar_gastar:'Parar de gastar com o que não funciona', outro:'O que você me contar' },
+  objetivo:{ confianca:'Me sentir bem e confiante com a minha pele', sem_maquiagem:'Sair sem maquiagem nem filtro, sem me preocupar', sem_filtro:'Sair sem filtro na foto', fotos:'Gostar de me ver em foto de perto', prevenir:'Cuidar agora, antes que piore', parar_gastar:'Parar de gastar com o que não funciona', outro:'O que você me contar' },
   incomoda:Object.fromEntries(GRADE),
 };
 const nome1 = () => (R.nome || '').trim().split(/\s+/)[0] || '';
@@ -102,10 +102,13 @@ function ajustarSeguranca(){
   if (R.sexo === 'm'){ if (R.seguranca == null){ R.seguranca = 'nenhuma'; R.segAuto = true; track('answer', { stepId:'seguranca', valueText:'nenhuma' }); } }
   else if (R.segAuto){ delete R.seguranca; delete R.segAuto; document.querySelectorAll('[data-q="seguranca"] [data-v]').forEach(x => x.setAttribute('aria-pressed', 'false')); }
 }
-// "Sair sem maquiagem" não cabe para homem: a opção some; se ele tinha marcado (e voltou para trocar o sexo), a resposta cai
+// "Sair sem maquiagem nem filtro" vira, para homem, "Sair sem filtro na foto" (valor próprio, sem_filtro); se a pessoa
+// voltou e trocou o sexo depois de marcar, a resposta passa para a versão do outro sexo
 function objetivoPorSexo(){
-  const mq = document.querySelector('[data-q="objetivo"] [data-v="sem_maquiagem"]'); mq.hidden = R.sexo === 'm';
-  if (mq.hidden && R.objetivo === 'sem_maquiagem'){ delete R.objetivo; mq.setAttribute('aria-pressed', 'false'); }
+  const op = v => document.querySelector(`[data-q="objetivo"] [data-v="${v}"]`), h = R.sexo === 'm';
+  op('sem_maquiagem').hidden = h; op('sem_filtro').hidden = !h;
+  const de = h ? 'sem_maquiagem' : 'sem_filtro', para = h ? 'sem_filtro' : 'sem_maquiagem';
+  if (R.objetivo === de){ R.objetivo = para; op(de).setAttribute('aria-pressed', 'false'); op(para).setAttribute('aria-pressed', 'true'); }
 }
 function proxima(){ ajustarSeguranca(); let i = ORDEM.indexOf(cur) + 1; while (pula(ORDEM[i])) i++; show(ORDEM[i]); }
 function respondida(q){ return q === 'incomoda' ? R.incomoda.length > 0 : R[q] != null; }
@@ -338,6 +341,32 @@ function poroOleo(){
   return BIB.frases.poro_oleo;
 }
 const juntar = (...xs) => xs.filter(Boolean).join(' ');
+// Água e sono (02/11, regra do Lucca): hábito bom NUNCA é causa; entra como contrapartida ("Apesar de beber bastante água e
+// dormir bem, …" + causa ligada ao achado da foto). Lacuna entra como conclusão ("Como você ainda não tem uma rotina…").
+// Água tem evidência fraca para a pele: só aparece como contrapartida, nunca como causa nem como promessa (pouca água não
+// é citada). Sono curto (≤ 5 h) tem estudo: Oyetakin-White 2015 (conferido no PubMed em 02/11, resumo).
+const SONO_EV = { evidencia:'Em 60 mulheres, quem dormia mal (5 h ou menos) teve mais sinais de envelhecimento intrínseco e barreira da pele que se recuperou mais devagar; é associação, não prova de causa.',
+  fonte:'Oyetakin-White 2015, Clin Exp Dermatol 40(1):17-22 — https://doi.org/10.1111/ced.12455 (conferido no PubMed, resumo)' };
+const CAUSA = {   // causa plausível de cada achado, nas palavras da biblioteca (mecanismo)
+  acne_ativa:'as espinhas podem vir de dentro do poro: o hormônio aumenta o óleo e o poro entope',
+  textura_poros:'a textura e o poro aparente podem vir mais do óleo e do hormônio',
+  manchas:'as manchas podem vir, em boa parte, do sol acumulado ao longo dos anos',
+  linhas_testa:'as linhas podem vir do movimento da expressão e do sol', olhos:'as linhas podem vir do movimento da expressão e do sol',
+  sulco_nasolabial:'o vinco do nariz à boca pode vir da idade, que muda o apoio do rosto',
+  flacidez:'o contorno pode mudar com a idade, que diminui o apoio do osso',
+  cicatriz_acne:'as marcas podem vir de espinhas antigas, que destruíram colágeno',
+};
+function textoHabitos(principal){
+  const aguaBoa = ['2a3l','mais_3l'].includes(R.agua), sonoBom = ['7','8','9mais'].includes(R.sono), sonoCurto = R.sono === '4a5';
+  const inf = [aguaBoa && 'beber bastante água', sonoBom && 'dormir bem'].filter(Boolean), ger = [aguaBoa && 'bebendo bastante água', sonoBom && 'dormindo bem'].filter(Boolean);
+  const causa = CAUSA[principal] || '', Causa = causa ? causa[0].toUpperCase() + causa.slice(1) + '.' : '';
+  const fr = [];
+  if (R.rotina === 'nenhuma') fr.push(ger.length ? `Mesmo ${lista(ger)}, sem uma rotina de cuidados a pele fica sem a limpeza, a hidratação e o protetor de todo dia. ${Causa}`
+                                                 : `Como você ainda não tem uma rotina de cuidados, a base (limpador suave, hidratante e protetor) é o primeiro passo. ${Causa}`);
+  else if (inf.length && causa) fr.push(`Apesar de ${lista(inf)}, ${causa}.`);
+  if (sonoCurto) fr.push('Como você dorme 4 a 5 h por noite, vale cuidar do sono também: dormir pouco aparece ligado a mais sinais de envelhecimento na pele e a uma barreira que se recupera mais devagar.');
+  return { txt:fr.map(x => x.trim()).join(' '), ev:sonoCurto ? SONO_EV : null };
+}
 
 function montarResultado(j, f){
   const B = BIB.sinais, fr = f.frente, al = alinhar(fr.src, fr.g);
@@ -411,6 +440,8 @@ function montarResultado(j, f){
     vh += `<div class="valida" data-q="${q}"><canvas data-r="${reg}" role="img" aria-label="Recorte da sua foto"></canvas><div>
       <div class="vt"><h4>${esc(ROT.incomoda[q])}</h4><span class="selo ${cls}">${esc(selo)}</span></div><p>${esc(txt)}</p></div></div>`;
   }
+  const hab = textoHabitos(achados[0]);   // água e sono: contrapartida ou conclusão, nunca causa
+  if (hab.txt) vh += `<p class="meta-obj"><b>Sobre os seus hábitos.</b> ${esc(hab.txt)}${hab.ev ? `<br><small>Evidência: ${esc(hab.ev.evidencia)} <i>(${esc(hab.ev.fonte.split(' — ')[0])})</i></small>` : ''}</p>`;
   $('r-valida').innerHTML = vh;
   $('r-valida').querySelectorAll('canvas[data-r]').forEach(cv => { const c = corte(cv.dataset.r, 112); cv.width = c.width; cv.height = c.height; cv.getContext('2d').drawImage(c, 0, 0); c.width = 0; });
 
@@ -591,4 +622,4 @@ document.querySelectorAll('.opts[data-q], .grade[data-q]').forEach(ligarOpcoes);
 montarGrade();
 show('capa');
 // ganchos do teste automático (headless): estado e resultado sem câmera
-window.__pele2 = { R, estado:() => ({ cur, codigo, envio:window.__ultimoEnvio || null }), show, montarResultado:(j, f) => { montarResultado(j, f); show('resultado'); } };
+window.__pele2 = { R, textoHabitos, estado:() => ({ cur, codigo, envio:window.__ultimoEnvio || null }), show, montarResultado:(j, f) => { montarResultado(j, f); show('resultado'); } };
