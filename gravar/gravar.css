@@ -152,6 +152,10 @@ textarea{display:block;width:100%;min-height:130px;resize:vertical;background:va
 .diag ol{margin:6px 0 10px;padding-left:20px;font:500 11px/1.5 var(--mono);color:var(--muted);-webkit-user-select:text;user-select:text}
 .pbar{position:absolute;left:0;right:0;top:calc(36% - 3px);height:3px;z-index:4;background:rgba(255,255,255,.18);pointer-events:none}
 .pbar i{display:block;height:100%;width:0;background:var(--accent)}
+.rmini{position:absolute;left:56px;top:calc(36% + 9px);z-index:5;display:flex;align-items:center;height:36px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.45);color:#fff}
+.rmini button{width:34px;height:34px;border:0;background:none;color:#fff;font-size:20px;line-height:1;padding:0}
+.rmini output{min-width:30px;text-align:center;font:600 12px/1 var(--mono)}
 .abtn{position:absolute;left:10px;top:calc(36% + 6px);z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.4);
   background:rgba(0,0,0,.45);color:#fff;font-size:16px;line-height:1;padding:0}
 .abtn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}

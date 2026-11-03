@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob: mediastream:; connect-src 'none'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob: mediastream:; connect-src https://vfzbtnrqbdkfjzhqkiiu.supabase.co; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark">
@@ -14,7 +14,8 @@
 <title>Gravar · Livowa</title>
 <!-- Ferramenta interna do Dr. Lucca (02/11/2026): grava chamadas de 5-10 s e trechos-ponte
      com teleprompter e fantasma de enquadramento. Tudo roda no aparelho: sem análise de uso,
-     sem envio (connect-src 'none' no CSP). sw.js guarda a página para abrir sem internet. -->
+     sem envio de vídeo nem de texto; só o diagnóstico técnico de cada gravação vai ao Supabase do site
+     (connect-src só para ele no CSP). sw.js guarda a página para abrir sem internet. -->
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="gravar.css">
 <script src="texto.js" defer></script>
@@ -41,6 +42,7 @@
       <div class="ptag" id="ptag" aria-live="polite"></div>
       <div class="pbar" id="pbar" hidden><i id="pbarI"></i></div>
       <button type="button" class="abtn" id="autoBtn" hidden aria-label="Passar as telas sozinho" aria-pressed="false">▶</button>
+      <div class="rmini" id="rmini" hidden><button type="button" data-act="ppm-" aria-label="Ritmo mais devagar">−</button><output id="ppmMini">150</output><button type="button" data-act="ppm+" aria-label="Ritmo mais rápido">+</button></div>
 
       <button type="button" class="fbtn" id="fPrev" aria-label="Frase anterior"><b>▲</b><span>frase<br>anterior</span></button>
       <button type="button" class="fbtn" id="fNext" aria-label="Próxima frase"><b>▼</b><span>próxima<br>frase</span></button>
@@ -113,7 +115,7 @@
     <div class="lista" id="lista"></div>
     <button type="button" class="btn" id="verTelas" aria-expanded="false">Ver telas</button>
     <div class="telas" id="telas" hidden></div>
-    <p class="priv">Sem análise de uso. Texto, ajustes e vídeos ficam só neste aparelho. <span class="ver"></span></p>
+    <p class="priv">Texto e vídeos ficam só neste aparelho. Só o diagnóstico técnico de cada gravação (sem vídeo e sem texto) vai para a Livowa. <span class="ver"></span></p>
   </section>
 
   <section class="sheet" id="sheet-fantasma" hidden aria-label="Fantasma de enquadramento">
@@ -186,7 +188,7 @@
       <ol id="diagLog"></ol>
       <button type="button" class="btn" id="diagClear">Limpar</button>
     </details>
-    <p class="priv">Esta página não tem análise de uso e não envia nada pela internet. Depois de aberta uma vez, funciona sem conexão.</p>
+    <p class="priv">Sem análise de uso. Vídeos e texto não saem do aparelho; ao fim de cada gravação vai para a Livowa só o diagnóstico técnico (versão, aparelho, medidas da câmera, eventos). Depois de aberta uma vez, funciona sem conexão.</p>
     <p class="priv"><span class="ver"></span></p>
     <button type="button" class="btn" id="atualizar">Atualizar a página (limpa a cópia guardada)</button>
   </section>

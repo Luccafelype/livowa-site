@@ -6,14 +6,15 @@
      corpo dele está no texto (para as edições de tela voltarem ao texto guardado).
    - telas(corpo, max): o que aparece de cada vez no frase a frase. Regras, nesta ordem:
        1. quebra de linha digitada = tela nova, sempre;
-       2. . ? ! … fecham a tela; , ; : e travessão abrem tela nova (pausa natural);
-       3. pedaço com menos de 3 palavras junta com o seguinte da mesma frase (o último, com o anterior);
-       4. só pedaço que ainda passe de max palavras é quebrado no limite, sem terminar em número ou
-          palavra de ligação e sem sobra de 1-2 palavras.
-     Espaço não separável (U+00A0) entre duas palavras = "juntar" manual: ali nunca há corte, e um pedaço
-     juntado à mão não é quebrado pelo limite.
+       2. . ? ! … fecham a tela;
+       3. dentro de cada frase, n = ceil(palavras/max) telas de tamanho parecido (programação dinâmica:
+          (palavras − alvo)², bônus para quebrar em , ; : ou travessão, penalidade para terminar em número ou
+          palavra de ligação; maior − menor ≤ 3 quando possível; teto = max, +1 se a tela termina numa pausa).
+          Vírgula sozinha não abre tela.
+     Espaço não separável (U+00A0) = "juntar" manual: a frase que o contém vira uma tela só.
    - duracao(tela, ppm, próxima): segundos que a tela fica no ar no "passar sozinho".
-   - juntar(corpo, telas, k) / dividir(corpo, tela, i): edições manuais, devolvem o corpo novo.
+   - juntar(corpo, telas, k) / dividir(corpo, telas, tela, i): edições manuais; fixam as outras quebras da
+     linha (viram quebra de linha) para o equilíbrio não desfazer a edição; devolvem o corpo novo.
    - editar(texto, item, corpoNovo): devolve o texto inteiro com o corpo trocado. */
 (function (root) {
   'use strict';
@@ -85,26 +86,51 @@
     return out;
   }
 
-  // Corte por palavras: n pedaços equilibrados; o corte foge de palavra que "prende" a seguinte. Devolve índices.
-  function porPalavras(toks, max) {
-    const len = toks.length;
-    if (len <= max) return [[0, len]];
-    const n = Math.ceil(len / max), alvo = len / n, out = [];
-    let i = 0;
-    while (len - i > max) {
-      const ideal = Math.round(i + alvo);
-      let melhor = -1, dist = 1e9;
-      for (let b = i + Math.min(3, max); b <= Math.min(i + max, len - 1); b++) { // pedaço com 3+ palavras
-        if (prende(toks[b - 1].w)) continue;
-        const d = Math.abs(b - ideal) + (len - b <= 2 ? 50 : 0);
-        if (d < dist) { dist = d; melhor = b; }
+  // Telas equilibradas (02/11, pedido do Lucca: "umas com muito texto, outras com pouco").
+  // Dentro de cada frase: n = ceil(palavras/max) telas de tamanho parecido, por programação dinâmica:
+  // custo = (palavras − alvo)², alvo = palavras/n; bônus para quebrar logo depois de , ; : ou antes de travessão
+  // quando o desvio é de até 2 palavras; penalidade para terminar em número ou palavra de ligação. Tenta primeiro
+  // com desvio máximo de 1,5 palavra (maior − menor ≤ 3); se não houver jeito, sem limite.
+  function equilibra(toks, max) {
+    const w = toks.map(nPal);
+    const W = w.reduce((a, b) => a + b, 0);
+    const n = Math.ceil(W / max);
+    if (n <= 1 || toks.length < 2) return [[0, toks.length]];
+    const alvo = W / n;
+    const pre = [0]; w.forEach((x, i) => pre.push(pre[i] + x));
+    const custo = (a, b, ultimo, estrito) => { // tela = toks[a..b)
+      const p = pre[b] - pre[a], d = Math.abs(p - alvo);
+      let c = d * d;
+      const fim = toks[b - 1].w;
+      const pausa = PAUSA.test(fim) || (b < toks.length && TRACO.test(toks[b].w));
+      if (!ultimo && pausa && d <= 2) c -= 5;
+      if (!ultimo && prende(fim)) { if (estrito) return { c, d: Infinity }; c += 6; }
+      // teto: o máximo; +1 só quando a tela termina numa pausa natural (vírgula etc.)
+      if (p > max + ((pausa || ultimo && FECHA.test(fim)) ? 1 : 0)) return { c, d: Infinity };
+      return { c, d };
+    };
+    // 1º sem terminar em número/ligação e com maior − menor ≤ 3; depois aceitando (com penalidade); depois folgando.
+    for (const [lim, estrito] of [[1.5, true], [1.5, false], [3, false], [1e9, false]]) {
+      // f[m][j]: melhor custo para j tokens em m telas
+      const f = Array.from({ length: n + 1 }, () => new Array(toks.length + 1).fill(Infinity));
+      const de = Array.from({ length: n + 1 }, () => new Array(toks.length + 1).fill(-1));
+      f[0][0] = 0;
+      for (let m = 1; m <= n; m++) {
+        for (let j = 1; j <= toks.length; j++) {
+          for (let a = m - 1; a < j; a++) {
+            if (f[m - 1][a] === Infinity) continue;
+            const { c, d } = custo(a, j, m === n, estrito);
+            if (d > lim) continue;
+            if (f[m - 1][a] + c < f[m][j]) { f[m][j] = f[m - 1][a] + c; de[m][j] = a; }
+          }
+        }
       }
-      if (melhor < 0) melhor = Math.min(i + max, len - 1);
-      out.push([i, melhor]); i = melhor;
+      if (f[n][toks.length] === Infinity) continue;
+      const cortes = []; let j = toks.length;
+      for (let m = n; m >= 1; m--) { const a = de[m][j]; cortes.unshift([a, j]); j = a; }
+      return cortes;
     }
-    out.push([i, len]);
-    if (out.length > 1 && out[out.length - 1][1] - out[out.length - 1][0] <= 2) { const u = out.pop(); out[out.length - 1][1] = u[1]; }
-    return out;
+    return [[0, toks.length]];
   }
 
   function telas(body, max) {
@@ -116,50 +142,54 @@
     while (a <= body.length) {
       let b = body.indexOf('\n', a); if (b < 0) b = body.length;
       const toks = tokens(body, a, b);
-      // frases (fecham em . ? ! …) → orações (abrem em , ; : e travessão)
-      let frase = [], oracao = [];
-      const fechaOracao = () => { if (oracao.length) frase.push(oracao); oracao = []; };
-      const fechaFrase = () => {
-        fechaOracao();
+      let frase = [];
+      const fecha = () => {
         if (!frase.length) return;
-        // oração com < 3 palavras junta com a seguinte (a última, com a anterior)
-        const ps = []; let acc = [];
-        frase.forEach((o) => { acc = acc.concat(o); if (acc.reduce((n, t) => n + nPal(t), 0) >= 3) { ps.push(acc); acc = []; } });
-        if (acc.length) { if (ps.length) ps[ps.length - 1] = ps[ps.length - 1].concat(acc); else ps.push(acc); }
-        ps.forEach((p) => {
-          const manual = p.some((t) => t.w.indexOf(NB) >= 0);
-          if (manual || p.length <= max) out.push(peca(p));
-          else porPalavras(p, max).forEach(([i, j]) => out.push(peca(p.slice(i, j))));
-        });
+        // juntado à mão (U+00A0) = uma tela só; senão, telas equilibradas
+        if (frase.some((t) => t.w.indexOf(NB) >= 0)) out.push(peca(frase));
+        else equilibra(frase, max).forEach(([i, j]) => out.push(peca(frase.slice(i, j))));
         frase = [];
       };
-      toks.forEach((t) => {
-        if (TRACO.test(t.w)) fechaOracao();
-        oracao.push(t);
-        if (FECHA.test(t.w)) fechaFrase();
-        else if (PAUSA.test(t.w)) fechaOracao();
-      });
-      fechaFrase();
+      toks.forEach((t) => { frase.push(t); if (FECHA.test(t.w)) fecha(); }); // ponto final sempre fecha a tela
+      fecha();
       a = b + 1;
     }
     return out;
   }
 
-  // Juntar a tela k com a k+1: o espaço (ou quebra de linha) entre elas vira U+00A0.
+  // Edição manual: reconstrói o corpo a partir das telas atuais. Nas linhas tocadas, as quebras automáticas
+  // viram quebras de linha digitadas (ficam fixas), para a edição não ser desfeita pelo equilíbrio.
+  const linhaDe = (body, pos) => (body.slice(0, pos).match(/\n/g) || []).length;
+  function reconstroi(body, ts, linhas, sepDe, textoDe) {
+    let r = body.slice(0, ts[0].s);
+    ts.forEach((t, i) => {
+      r += textoDe ? textoDe(i, body.slice(t.s, t.e)) : body.slice(t.s, t.e);
+      if (i === ts.length - 1) { r += body.slice(t.e); return; }
+      const sep = body.slice(t.e, ts[i + 1].s);
+      const fixo = sepDe && sepDe(i, sep);
+      if (fixo !== undefined && fixo !== null) r += fixo;
+      else if (sep.indexOf('\n') < 0 && linhas.has(linhaDe(body, t.s))) r += '\n';
+      else r += sep;
+    });
+    return r;
+  }
+  // Juntar a tela k com a k+1: o espaço (ou quebra) entre elas vira U+00A0 (nunca corta ali; vira uma tela só).
   function juntar(body, ts, k) {
     if (!ts[k] || !ts[k + 1]) return body;
-    return body.slice(0, ts[k].e) + NB + body.slice(ts[k + 1].s);
+    const linhas = new Set([linhaDe(body, ts[k].s), linhaDe(body, ts[k + 1].s)]);
+    return reconstroi(body, ts, linhas, (i) => (i === k ? NB : undefined));
   }
-  // Dividir a tela antes da palavra i (i ≥ 1): o espaço antes dela vira quebra de linha.
-  function dividir(body, t, i) {
-    const re = /[ \t ]+/g;
-    const trecho = body.slice(t.s, t.e);
-    let m, n = 0;
-    while ((m = re.exec(trecho))) {
-      n++;
-      if (n === i) return body.slice(0, t.s + m.index) + '\n' + body.slice(t.s + m.index + m[0].length);
-    }
-    return body;
+  // Dividir a tela t antes da palavra i (i ≥ 1): o espaço antes dela vira quebra de linha.
+  function dividir(body, ts, t, i) {
+    if (Array.isArray(ts) === false) { i = t; t = ts; ts = [t]; } // compatível com dividir(body, tela, i)
+    const k = ts.indexOf(t);
+    const linhas = new Set([linhaDe(body, t.s)]);
+    return reconstroi(body, ts, linhas, null, (j, txt) => {
+      if (j !== k) return txt;
+      const re = /[ \t ]+/g; let m, n = 0;
+      while ((m = re.exec(txt))) { n++; if (n === i) return txt.slice(0, m.index) + '\n' + txt.slice(m.index + m[0].length); }
+      return txt;
+    });
   }
   const palavrasDaTela = (t) => t.texto.split(/[ \t ]+/).filter(Boolean);
   function editar(texto, item, corpo) {

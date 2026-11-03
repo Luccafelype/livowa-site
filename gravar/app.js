@@ -8,7 +8,7 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = '794f5d6+1';
+  const VERSAO = '3f67c43+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
@@ -55,7 +55,7 @@
     optGuide: $('#optGuide'), g916: $('#g916'), zoomRow: $('#zoomRow'), zoom: $('#zoom'), zoomOut: $('#zoomOut'),
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
-    toast: $('#toast'), optSeq: $('#optSeq'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
+    toast: $('#toast'), optSeq: $('#optSeq'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
     fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
     ritmoBtn: $('#ritmoBtn'), palOut: $('#palOut'), ppmOut: $('#ppmOut'), optAuto: $('#optAuto'), autoBtn: $('#autoBtn'),
     pbar: $('#pbar'), pbarI: $('#pbarI'), verTelas: $('#verTelas'), telas: $('#telas'),
@@ -115,7 +115,11 @@
     el.app.classList.toggle('recording', s === 'rec');
     el.app.classList.toggle('counting', s === 'count');
     el.recBtn.setAttribute('aria-label', s === 'rec' ? 'Parar' : s === 'count' ? 'Cancelar contagem' : 'Gravar');
-    document.querySelectorAll('.tool').forEach((b) => { b.disabled = (s === 'rec' || s === 'count'); });
+    const trava = s === 'rec' || s === 'count';
+    // Na gravação: Ajustes e "Telas e ritmo" continuam (não tocam na câmera); Texto, Fantasma e Câmera travam,
+    // e em Ajustes travam só Qualidade, Recorte, Zoom e Atualizar (os que mexem na câmera/página).
+    document.querySelectorAll('.tool').forEach((b) => { b.disabled = trava && b.dataset.open !== 'ajustes'; });
+    document.querySelectorAll('[data-qual], #optCrop, #zoom, #atualizar').forEach((x) => { x.disabled = trava; });
     el.app.dataset.state = s;
   }
 
@@ -313,8 +317,17 @@
 
   /* Tela acesa enquanto a página está aberta (Safari 16.4+, Chrome). */
   let wake = null;
-  async function keepAwake() {
-    try { if ('wakeLock' in navigator && document.visibilityState === 'visible') wake = await navigator.wakeLock.request('screen'); } catch (e) { /* sem suporte */ }
+  // Pedido de novo no toque de gravar (gesto do usuário) e registrado: sem ele, com Bloqueio Automático de 30 s
+  // (Modo de Pouca Energia), o iPhone escurece a tela ~20 s depois do último toque — a janela das paradas de 14-20 s.
+  async function keepAwake(origem) {
+    if (!('wakeLock' in navigator)) { if (origem) diag('tela acesa: sem suporte a Wake Lock (a tela pode escurecer sozinha)'); return; }
+    try {
+      if (document.visibilityState !== 'visible') return;
+      if (wake && !wake.released) { if (origem) diag('tela acesa: ativo'); return; }
+      wake = await navigator.wakeLock.request('screen');
+      if (origem) diag('tela acesa: ativo (' + origem + ')');
+      wake.addEventListener('release', () => { if (gravando()) diag('tela acesa: LIBERADO durante a gravação'); });
+    } catch (e) { if (origem) diag('tela acesa: negado (' + ((e && e.name) || e) + ')'); }
   }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
@@ -550,7 +563,7 @@
   function aDurAtual() { const f = frases(); return f.length ? G.duracao(f[fIdx], S.ppm, f[fIdx + 1]) * 1000 : 0; }
   function paintAuto() {
     const on = frase() && !!S.auto && !!atual();
-    el.pbar.hidden = !on; el.autoBtn.hidden = !on;
+    el.pbar.hidden = !on; el.autoBtn.hidden = !on; el.rmini.hidden = !on; el.ppmMini.textContent = S.ppm;
     el.autoBtn.setAttribute('aria-pressed', String(aRun));
     el.autoBtn.textContent = aRun ? '❚❚' : '▶';
     el.autoBtn.setAttribute('aria-label', aRun ? 'Pausar as telas' : 'Passar as telas sozinho');
@@ -601,17 +614,25 @@
     if (a === 'ppm+') S.ppm = Math.min(220, S.ppm + 10);
     if (a === 'top') pTop();
     save(); renderPrompter(); layout();
-    if (/^(pal|ppm|top)/.test(a)) aRestartTela(); else paintAuto();
+    if (/^(pal|top)/.test(a)) aRestartTela(); else if (/^ppm/.test(a)) aRitmoMudou(); else paintAuto();
   }
+  // Ritmo mudou no meio de uma tela: mantém a fração já passada dela.
+  function aRitmoMudou() {
+    const now = performance.now(), g = aRun ? now - aT0 : aGone, frac = aDurMs ? Math.min(1, g / aDurMs) : 0;
+    aDurMs = aDurAtual(); aGone = frac * aDurMs; if (aRun) aT0 = now - aGone; paintAuto();
+  }
+  el.rmini.addEventListener('pointerdown', (e) => e.stopPropagation());
+  el.rmini.addEventListener('click', (e) => { e.stopPropagation(); onAct(e); });
   document.querySelector('.quick').addEventListener('click', onAct);
   $('#sheet-ritmo').addEventListener('click', onAct);
 
   /* ---------- Fantasma ---------- */
-  let ghostURL = '', ghostKind = '';
+  let ghostURL = '', ghostKind = '', ghostFoto = false;
   function applyGhost() {
     const show = !!ghostKind && S.ghostOn;
-    el.ghostImg.hidden = !(show && ghostKind === 'image');
-    el.ghostVid.hidden = !(show && ghostKind === 'video');
+    const kind = ghostFoto ? 'image' : ghostKind;
+    el.ghostImg.hidden = !(show && kind === 'image');
+    el.ghostVid.hidden = !(show && kind === 'video');
     const flip = mirrored() !== !!S.ghostFlip;
     [el.ghostImg, el.ghostVid].forEach((g) => {
       g.style.opacity = String(S.op / 100);
@@ -622,7 +643,30 @@
     el.ghostBtn.classList.toggle('on', show);
     el.ghostClear.disabled = !ghostKind;
   }
+  // Durante a gravação o fantasma de vídeo vira uma foto do quadro escolhido e o <video> dele é descarregado
+  // (sem src): nada de segundo vídeo decodificando nem sessão de mídia extra enquanto a câmera grava.
+  function congelaFantasma(on) {
+    if (ghostKind !== 'video') return;
+    if (on && !ghostFoto) {
+      try {
+        const v = el.ghostVid, c = document.createElement('canvas');
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        if (c.width && c.height) { c.getContext('2d').drawImage(v, 0, 0); el.ghostImg.src = c.toDataURL('image/jpeg', 0.85); }
+      } catch (e) { /* sem foto: o fantasma some durante a gravação */ }
+      try { el.ghostVid.pause(); } catch (e) { /* ok */ }
+      el.ghostVid.removeAttribute('src'); try { el.ghostVid.load(); } catch (e) { /* ok */ }
+      ghostFoto = true; applyGhost();
+      diag('fantasma de vídeo: virou foto durante a gravação');
+    } else if (!on && ghostFoto) {
+      ghostFoto = false;
+      el.ghostImg.removeAttribute('src');
+      el.ghostVid.src = ghostURL; // o loadedmetadata do loadGhost volta ao quadro do controle "Quadro"
+      try { el.ghostVid.load(); } catch (e) { /* ok */ }
+      applyGhost();
+    }
+  }
   function clearGhost() {
+    ghostFoto = false;
     if (ghostURL) URL.revokeObjectURL(ghostURL);
     ghostURL = ''; ghostKind = '';
     el.ghostImg.removeAttribute('src');
@@ -717,7 +761,7 @@
   /* ---------- Painéis ---------- */
   let openSheet = null;
   function sheet(name) {
-    if (name && gravando()) return; // sem folhas (nem edição) durante a contagem e a gravação
+    if (name && gravando() && name !== 'ritmo' && name !== 'ajustes') return; // Texto e Fantasma não abrem gravando
     if (openSheet) openSheet.hidden = true;
     openSheet = name ? $('#sheet-' + name) : null;
     el.scrim.hidden = !openSheet;
@@ -805,7 +849,33 @@
 
   /* ---------- Vigia da gravação: se a imagem parar, avisa na hora e registra o motivo ---------- */
   const LOGK = 'livowa_gravar_log';
+  // Diagnóstico sem print (02/11): ao fim de cada gravação (e quando a imagem para) o log DESTE take vai ao Supabase
+  // do site pelo mesmo RPC dos funis (log_funnel_event, chave pública). funnel_id 'gravar', event_type 'answer'
+  // (a função só aceita view/step_view/answer/lead_capture/complete/cta_click), step_id 'gravar_diag'.
+  // Nada de vídeo nem de texto do roteiro: só versão, qualidade, aparelho e as linhas do diagnóstico.
+  const SB_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co';
+  const SB_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K'; // chave pública (anon), a mesma dos funis
+  const uuid = () => { try { if (crypto.randomUUID) return crypto.randomUUID(); } catch (e) { /* ok */ } return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); };
+  const SID = uuid();
+  let logTake = [];
+  function enviaDiag(motivo, seg, bytes) {
+    try {
+      const h = location.hostname;
+      if (h === 'localhost' || h === '127.0.0.1' || location.protocol === 'file:') return;
+      const props = { versao: VERSAO, qualidade: S.qual, rota: route, motivo, duracao_s: seg === undefined ? null : seg,
+        bytes: bytes === undefined ? null : bytes, user_agent: navigator.userAgent, log: logTake.slice() };
+      while (JSON.stringify(props).length > 3500 && props.log.length > 1) props.log.shift(); // limite de 4 KB do RPC
+      fetch(SB_URL + '/rest/v1/rpc/log_funnel_event', {
+        method: 'POST', keepalive: true,
+        headers: { 'Content-Type': 'application/json', apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY },
+        body: JSON.stringify({ p_event_id: uuid(), p_funnel_id: 'gravar', p_variant: 'A', p_session_id: SID, p_event_type: 'answer',
+          p_step_id: 'gravar_diag', p_step_index: null, p_value_text: String(motivo).slice(0, 80), p_props: props, p_client_ts: new Date().toISOString() }),
+      }).catch(() => {});
+    } catch (e) { /* diagnóstico nunca atrapalha a gravação */ }
+  }
   function diag(msg) {
+    logTake.push(Math.round((performance.now() - (tStart || performance.now())) / 1000) + 's ' + msg);
+    if (logTake.length > 40) logTake.shift();
     let l = [];
     try { l = JSON.parse(localStorage.getItem(LOGK) || '[]'); } catch (e) { l = []; }
     const d = new Date();
@@ -834,6 +904,7 @@
     const seg = () => Math.round((performance.now() - tStart) / 1000);
     const falha = (motivo) => {
       diag('IMAGEM PAROU aos ' + seg() + ' s: ' + motivo);
+      if (!v.avisou) { enviaDiag('imagem parada aos ' + seg() + ' s'); }
       if (!v.avisou) { v.avisou = true; falhaTake = 'A câmera parou aos ' + seg() + ' s neste take. Grave de novo.'; el.alerta.textContent = 'A câmera parou aos ' + seg() + ' s — pare e grave de novo'; el.alerta.hidden = false; }
     };
     if (vt) {
@@ -873,6 +944,9 @@
     setState('count');
     if (!frase()) pTop(); // frase a frase: grava a partir da frase escolhida (↺ volta à 1ª)
     else aParar();        // o tempo da tela começa junto com a gravação
+    logTake = []; tStart = performance.now();
+    keepAwake('gravar');
+    congelaFantasma(true); // fantasma de vídeo vira foto durante a gravação (libera o decodificador)
     let n = 3;
     el.countN.textContent = n; el.count.hidden = false;
     const restart = () => { el.countN.style.animation = 'none'; void el.countN.offsetWidth; el.countN.style.animation = ''; };
@@ -880,7 +954,7 @@
       n -= 1;
       if (n > 0) { el.countN.textContent = n; restart(); return; }
       clearInterval(countTimer); el.count.hidden = true;
-      if (!beginRecording()) { setState('idle'); return; }
+      if (!beginRecording()) { setState('idle'); congelaFantasma(false); return; }
       setState('rec');
       pStart();                       // rolagem automática
       if (frase()) aPlay('gravação');   // frase a frase: passar sozinho (registra se não iniciar e por quê)
@@ -889,7 +963,7 @@
       recTimer = setInterval(() => { el.recTime.textContent = fmtS(performance.now() - tStart); }, 100);
     }, 1000);
   }
-  function cancelCount() { clearInterval(countTimer); el.count.hidden = true; setState('idle'); aPause('contagem cancelada'); paintPrompter(); }
+  function cancelCount() { clearInterval(countTimer); el.count.hidden = true; setState('idle'); aPause('contagem cancelada'); congelaFantasma(false); paintPrompter(); }
   function stopRecording() {
     clearInterval(recTimer);
     aPause('fim da gravação');
@@ -919,6 +993,7 @@
   function finishRecording() {
     drawing = false;
     vigiar(false);
+    congelaFantasma(false);
     if (!tStop) tStop = performance.now();
     const type = ((rec && rec.mimeType) || pickMime() || (isIOS ? 'video/mp4' : 'video/webm')).split(';')[0];
     const blob = new Blob(chunks, { type });
@@ -938,7 +1013,8 @@
     el.rvName.textContent = name;
     el.dlLink.href = url; el.dlLink.download = name;
     el.rvTip.textContent = falhaTake; el.rvTip.hidden = !falhaTake;
-    if (falhaTake) diag('take com imagem parada: ' + name);
+    if (falhaTake) diag('take com imagem parada');
+    enviaDiag(falhaTake ? 'fim com imagem parada' : 'fim', Math.round(take.ms / 100) / 10, blob.size);
     el.review.dataset.bytes = String(blob.size);
     el.review.dataset.type = type;
     el.review.dataset.ms = String(Math.round(take.ms));
@@ -987,7 +1063,7 @@
         const ws = document.createElement('div'); ws.className = 'ws';
         G.palavrasDaTela(t).forEach((w, i) => {
           const b = document.createElement('button'); b.type = 'button'; b.textContent = w; b.disabled = i === 0;
-          b.addEventListener('click', () => { divK = -1; aplicarCorpo(G.dividir(it.body, t, i)); });
+          b.addEventListener('click', () => { divK = -1; aplicarCorpo(G.dividir(it.body, ts, t, i)); });
           ws.append(b);
         });
         const aj = document.createElement('small'); aj.className = 'ajuda'; aj.textContent = 'Toque na palavra que começa a tela nova.';
