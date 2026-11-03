@@ -8,14 +8,14 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = 'f98633e+1';
+  const VERSAO = 'af65846+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true, leve: true, semImg: false, linhas: 3, motor: 'canvas',
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true, leve: true, semImg: false, linhas: 3, motor: 'canvas', somSep: true,
     qual: 'segura', // modo seguro por padrão até achar a causa da imagem parada no iPhone (02/11)
   };
   const S = Object.assign({}, DEF);
@@ -24,7 +24,7 @@
     if (raw) Object.assign(S, JSON.parse(raw) || {});
   } catch (e) { /* sem localStorage: segue com o padrão */ }
   // Valor estragado no localStorage nunca vira letra 0/NaN (o texto sumiria).
-  S.fs = Math.min(64, Math.max(18, Math.round(+S.fs) || DEF.fs));
+  S.fs = Math.min(64, Math.max(12, Math.round(+S.fs) || DEF.fs)); // Aa: mínimo 12 (era 18)
   S.speed = Math.min(25, Math.max(1, Math.round(+S.speed) || DEF.speed));
   S.maxPal = Math.min(20, Math.max(4, Math.round(+S.maxPal) || DEF.maxPal));
   S.ppm = Math.min(220, Math.max(90, Math.round((+S.ppm || DEF.ppm) / 10) * 10));
@@ -33,6 +33,7 @@
   if (S.auto !== false) S.auto = true;
   if (![2, 3, 4].includes(+S.linhas)) S.linhas = 3;
   // 02/11: o arquivo da rota direta congela no iOS 26 com a câmera viva → motor padrão Canvas
+  if (S.somSepV !== 1) { S.somSep = true; S.somSepV = 1; } // 02/11: experimento "Som separado" ligado
   if (S.motorV !== 1 || !['canvas', 'direta', 'simples'].includes(S.motor)) { S.motor = 'canvas'; S.motorV = 1; }
   if (S.seqV !== 2) { S.seq = true; S.seqV = 2; } // 02/11: "Gravar ganchos em sequência" passa a vir ligado
   // Qualidade Segura: 720×960, 2,5 Mbps, sempre rota direta (nunca canvas). Recorte 9:16 só na Alta.
@@ -60,7 +61,7 @@
     optGuide: $('#optGuide'), g916: $('#g916'), zoomRow: $('#zoomRow'), zoom: $('#zoom'), zoomOut: $('#zoomOut'),
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
-    toast: $('#toast'), optSeq: $('#optSeq'), rvArq: $('#rvArq'), rvPend: $('#rvPend'), rvMot: $('#rvMot'), optLeve: $('#optLeve'), optSemImg: $('#optSemImg'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
+    toast: $('#toast'), optSeq: $('#optSeq'), optSomSep: $('#optSomSep'), rvArq: $('#rvArq'), rvPend: $('#rvPend'), rvMot: $('#rvMot'), optLeve: $('#optLeve'), optSemImg: $('#optSemImg'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
     fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
     ritmoBtn: $('#ritmoBtn'), palOut: $('#palOut'), ppmOut: $('#ppmOut'), optAuto: $('#optAuto'), autoBtn: $('#autoBtn'),
     pbar: $('#pbar'), pbarI: $('#pbarI'), verTelas: $('#verTelas'), telas: $('#telas'),
@@ -145,7 +146,7 @@
     // Na gravação: Ajustes e "Telas e ritmo" continuam (não tocam na câmera); Texto, Fantasma e Câmera travam,
     // e em Ajustes travam só Qualidade, Recorte, Zoom e Atualizar (os que mexem na câmera/página).
     document.querySelectorAll('.tool').forEach((b) => { b.disabled = trava && b.dataset.open !== 'ajustes'; });
-    document.querySelectorAll('[data-qual], [data-motor], #optCrop, #zoom, #atualizar').forEach((x) => { x.disabled = trava; });
+    document.querySelectorAll('[data-qual], [data-motor], #optSomSep, #optCrop, #zoom, #atualizar').forEach((x) => { x.disabled = trava; });
     el.app.dataset.state = s;
     el.app.classList.toggle('leve', S.leve !== false);
     el.app.classList.toggle('semimg', !!S.semImg);
@@ -683,8 +684,9 @@
     const a = b.dataset.act;
     if (a === 'spd-') S.speed = Math.max(1, S.speed - 1);
     if (a === 'spd+') S.speed = Math.min(25, S.speed + 1);
-    if (a === 'fs-') S.fs = Math.max(18, S.fs - 2);
-    if (a === 'fs+') S.fs = Math.min(64, S.fs + 2);
+    // Aa: de 12 a 64; passo 1 até 20, passo 2 acima (mínimo era 18)
+    if (a === 'fs-') S.fs = S.fs > 20 ? S.fs - 2 : Math.max(12, S.fs - 1);
+    if (a === 'fs+') S.fs = S.fs >= 20 ? Math.min(64, S.fs + 2) : S.fs + 1;
     if (a === 'pal-') S.maxPal = Math.max(4, S.maxPal - 1);
     if (a === 'pal+') S.maxPal = Math.min(20, S.maxPal + 1);
     if (a === 'ppm-') S.ppm = Math.max(90, S.ppm - 10);
@@ -821,6 +823,8 @@
   // (sombra do texto, linhas-guia, fantasma, piscar do REC); "Esconder a imagem" deixa o <video> com opacity 0,01.
   el.optLeve.checked = S.leve !== false; el.optSemImg.checked = !!S.semImg;
   el.optLeve.addEventListener('change', () => { S.leve = el.optLeve.checked; save(); setState(state); diag('gravação leve: ' + (S.leve ? 'ligada' : 'desligada')); });
+  el.optSomSep.checked = !!S.somSep;
+  el.optSomSep.addEventListener('change', () => { S.somSep = el.optSomSep.checked; save(); diag('som separado: ' + (S.somSep ? 'ligado' : 'desligado')); });
   el.optSemImg.addEventListener('change', () => { S.semImg = el.optSemImg.checked; save(); setState(state); diag('esconder a imagem gravando: ' + (S.semImg ? 'ligado' : 'desligado')); });
   function renderQual() { document.querySelectorAll('[data-qual]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.qual === S.qual))); }
   document.querySelectorAll('[data-qual]').forEach((b) => b.addEventListener('click', () => {
@@ -882,6 +886,7 @@
   }
   function extOf(m) { return /mp4/.test(m || '') ? 'mp4' : /webm/.test(m || '') ? 'webm' : (isIOS ? 'mp4' : 'webm'); }
 
+  let recA = null, chunksA = [], paradas = 0; // "Som separado": 2º gravador só com o áudio
   let rec = null, chunks = [], tStart = 0, tStop = 0, startedAt = null, recTimer = 0, countTimer = 0, recTermo = '';
   let canvas = null, drawing = false, route = '';
   function canvasStream() {
@@ -918,12 +923,29 @@
     const vbps = S.motor === 'simples' ? 0 : S.motor === 'canvas' ? 2500000 : segura() ? 2500000 : 6000000;
     const opts = S.motor === 'simples' ? {} : { videoBitsPerSecond: vbps, audioBitsPerSecond: 128000 };
     if (mime) opts.mimeType = mime;
+    // Som separado (experimento 02/11): um gravador só com a trilha de VÍDEO e outro só com a de ÁUDIO, do mesmo
+    // instante. Se o vídeo sem som não congelar, o problema é a mistura áudio+vídeo do gravador do Safari.
+    recA = null; chunksA = [];
+    if (S.somSep && stream.getAudioTracks().length) {
+      src = new MediaStream(src.getVideoTracks());
+      delete opts.audioBitsPerSecond;
+      try { recA = new MediaRecorder(new MediaStream(stream.getAudioTracks()), { audioBitsPerSecond: 128000 }); }
+      catch (e) { try { recA = new MediaRecorder(new MediaStream(stream.getAudioTracks())); } catch (e2) { recA = null; diag('som separado: gravador de áudio falhou (' + (e2.name || e2) + ')'); } }
+    }
     try { rec = new MediaRecorder(src, opts); } catch (e) {
       try { rec = new MediaRecorder(src); } catch (e2) { drawing = false; toast('Não deu para gravar: ' + (e2.message || e2.name)); return false; }
     }
     chunks = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
-    rec.onstop = finishRecording;
+    // termina quando os dois gravadores pararem
+    paradas = recA ? 2 : 1;
+    const parou = () => { if (--paradas <= 0) finishRecording(); };
+    rec.onstop = parou;
+    if (recA) {
+      recA.ondataavailable = (e) => { if (e.data && e.data.size) chunksA.push(e.data); };
+      recA.onstop = parou;
+      recA.onerror = (e) => diag('gravador de áudio erro: ' + ((e.error && e.error.name) || '?'));
+    }
     rec.onerror = (e) => { const n = (e.error && e.error.name) || 'desconhecido'; diag('MediaRecorder erro: ' + n); toast('Erro na gravação: ' + n); };
     startedAt = new Date();
     recTermo = termo(); // nome do arquivo = roteiro do começo do take (em sequência o ▼ pode trocar no meio)
@@ -931,11 +953,11 @@
     rec.onstart = () => { tStart = performance.now(); };
     // Sem timeslice (de volta, 02/11): um pedaço só no stop; o tamanho é medido no fim. O crescimento do arquivo
     // não acusava a imagem parada (o áudio continua entrando) e timeslice no iOS já foi relatado travando vídeo.
-    try { rec.start(); } catch (e) { drawing = false; toast('Não deu para gravar: ' + (e.message || e.name)); return false; }
+    try { rec.start(); if (recA) recA.start(); } catch (e) { drawing = false; toast('Não deu para gravar: ' + (e.message || e.name)); return false; }
     const [ow, oh] = outDims();
     const vtS = (stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings && stream.getVideoTracks()[0].getSettings()) || {};
     diag('início · versão ' + VERSAO + ' · qualidade ' + S.qual + ' · track ' + vtS.width + '×' + vtS.height + '@' + (vtS.frameRate ? Math.round(vtS.frameRate) : '?') +
-      ' · arquivo ' + ow + '×' + oh + ' · motor ' + S.motor + ' · rota ' + route + ' · ' + (rec.mimeType || mime || '?') + ' · ' + (vbps ? (vbps / 1e6).toFixed(1) + ' Mbps' : 'taxa do Safari') + ' · sem timeslice');
+      ' · arquivo ' + ow + '×' + oh + ' · motor ' + S.motor + ' · rota ' + route + ' · ' + (rec.mimeType || mime || '?') + ' · ' + (vbps ? (vbps / 1e6).toFixed(1) + ' Mbps' : 'taxa do Safari') + ' · sem timeslice · som ' + (recA ? 'separado (' + (recA.mimeType || '?') + ')' : 'junto'));
     vigiar(true);
     return true;
   }
@@ -956,7 +978,7 @@
       const h = location.hostname;
       if (h === 'localhost' || h === '127.0.0.1' || location.protocol === 'file:') return;
       const props = { versao: VERSAO, qualidade: S.qual, rota: route, motivo, duracao_s: seg === undefined ? null : seg,
-        bytes: bytes === undefined ? null : bytes, motor: S.motor, user_agent: navigator.userAgent, log: logTake.slice() };
+        bytes: bytes === undefined ? null : bytes, motor: S.motor, som_separado: !!S.somSep, user_agent: navigator.userAgent, log: logTake.slice() };
       if (extra) Object.assign(props, extra);
       while (JSON.stringify(props).length > 3500 && props.log.length > 1) props.log.shift(); // limite de 4 KB do RPC
       fetch(SB_URL + '/rest/v1/rpc/log_funnel_event', {
@@ -1097,7 +1119,8 @@
     tStop = performance.now();
     pPause();
     el.recPill.hidden = true;
-    try { if (rec && rec.state !== 'inactive') rec.stop(); } catch (e) { finishRecording(); }
+    try { if (recA && recA.state !== 'inactive') recA.stop(); } catch (e) { paradas--; }
+    try { if (rec && rec.state !== 'inactive') rec.stop(); } catch (e) { paradas = 0; finishRecording(); }
   }
   el.recBtn.addEventListener('click', () => {
     if (state === 'idle') { if (!camReady) { startCam(); return; } countdown(); }
@@ -1198,11 +1221,23 @@
     layout(); // o quadro volta a acompanhar a janela (ficou congelado durante a gravação)
     if (!blob.size) { setState('idle'); toast('A gravação saiu vazia. Tente de novo.'); return; }
     discardTake();
-    const name = fileName(extOf(type));
+    let name = fileName(extOf(type));
+    let audio = null;
+    if (recA && chunksA.length) { // som separado: …-video.mp4 + …-audio.m4a
+      const typeA = ((recA.mimeType || 'audio/mp4').split(';')[0]) || 'audio/mp4';
+      const extA = /mp4|m4a|aac/.test(typeA) ? 'm4a' : /webm/.test(typeA) ? 'webm' : 'audio';
+      name = name.replace(/\.(\w+)$/, '-video.$1');
+      const nameA = name.replace(/-video\.\w+$/, '-audio.' + extA);
+      const blobA = new Blob(chunksA, { type: typeA });
+      let fileA = null; try { fileA = new File([blobA], nameA, { type: typeA }); } catch (e) { /* ok */ }
+      audio = { blob: blobA, url: URL.createObjectURL(blobA), name: nameA, file: fileA, type: typeA };
+      diag('som separado: vídeo ' + fmtMB(blob.size) + ' + áudio ' + fmtMB(blobA.size) + ' (' + typeA + ')');
+    }
+    chunksA = [];
     const url = URL.createObjectURL(blob);
     let file = null;
     try { file = new File([blob], name, { type }); } catch (e) { /* Safari antigo */ }
-    take = { blob, url, name, ms: Math.max(0, tStop - tStart), file, type };
+    take = { blob, url, name, ms: Math.max(0, tStop - tStart), file, type, audio };
     if (recomecar) { // guarda e recomeça do mesmo ponto, sem passar pela revisão
       recomecar = false;
       guardados.push(take); take = null;
@@ -1215,7 +1250,7 @@
     el.play.src = url;
     el.rvDur.textContent = fmtS(take.ms);
     el.rvMeta.textContent = fmtMB(blob.size) + ' · ' + extOf(type) + (ow ? ' · ' + ow + '×' + oh : '') + ' · rota ' + route;
-    el.rvName.textContent = name;
+    el.rvName.textContent = name + (take.audio ? ' + ' + take.audio.name : '');
     el.dlLink.href = url; el.dlLink.download = name;
     el.rvTip.textContent = falhaTake; el.rvTip.hidden = !falhaTake;
     const gaps = semImagem.map(([a, b]) => 'de ' + a + ' s a ' + b + ' s').join('; ');
@@ -1241,7 +1276,7 @@
     };
   }
   function discardTake() {
-    if (take) { URL.revokeObjectURL(take.url); take = null; }
+    if (take) { URL.revokeObjectURL(take.url); if (take.audio) URL.revokeObjectURL(take.audio.url); take = null; }
     el.play.removeAttribute('src'); try { el.play.load(); } catch (e) { /* ok */ }
   }
   function closeReview() {
@@ -1316,10 +1351,11 @@
   // Salvar um take: folha de compartilhar no iPhone ("Salvar Vídeo" / "Salvar em Arquivos"); download no Mac.
   async function salvar(t) {
     if (!t) return false;
-    if (isIOS && t.file && navigator.canShare && navigator.canShare({ files: [t.file] })) {
-      try { await navigator.share({ files: [t.file], title: t.name }); return true; } catch (e) { if (e && e.name === 'AbortError') return false; }
+    const files = [t.file, t.audio && t.audio.file].filter(Boolean); // som separado: os dois juntos
+    if (isIOS && files.length && navigator.canShare && navigator.canShare({ files })) {
+      try { await navigator.share({ files, title: t.name }); return true; } catch (e) { if (e && e.name === 'AbortError') return false; }
     }
-    const a = document.createElement('a'); a.href = t.url; a.download = t.name; document.body.append(a); a.click(); a.remove();
+    [t, t.audio].filter(Boolean).forEach((x) => { const a = document.createElement('a'); a.href = x.url; a.download = x.name; document.body.append(a); a.click(); a.remove(); });
     return true;
   }
   el.saveBtn.addEventListener('click', async () => {
