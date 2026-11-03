@@ -22,8 +22,11 @@ const FIM = (() => {
   try { let v = localStorage.getItem('livowa_pele2_fim'); if (v !== 'A' && v !== 'B'){ v = Math.random() < .5 ? 'A' : 'B'; localStorage.setItem('livowa_pele2_fim', v); } return v; }
   catch { return Math.random() < .5 ? 'A' : 'B'; }
 })();
-const track = (tipo, o = {}) => Analytics.track(tipo, { ...o, props:{ ...(o.props || {}), fim:FIM } });
+// 03/11: ponte da bio (/assets/js/ponte.js): props.ponte sim|nao em todos os eventos de quem veio da bio; a linha entra na capa
+const PONTE = window.lvPonte?.props?.() || {};
+const track = (tipo, o = {}) => Analytics.track(tipo, { ...o, props:{ ...(o.props || {}), fim:FIM, ...PONTE } });
 track('view');
+window.lvPonte?.pintar(document.querySelector('[data-s="capa"] .sub'), 'pele');
 
 // ---------- análise: a MESMA edge de /idade (analisar-pele), mesmo corpo, mesmo freio ----------
 // Em localhost dá para apontar para um mock com ?pele=<url>.

@@ -398,6 +398,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
   </div></div>
 </div>
 
+<script defer src="/assets/js/ponte.js?v=1"></script>
 <script type="module">
 // 02/11: o MediaPipe (137 KB) carrega por trás; a 1ª tela não espera por ele (antes travava todo o script)
 let PoseLandmarker, FaceLandmarker, FilesetResolver, DrawingUtils;
@@ -405,13 +406,15 @@ const mpPronto = import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.
 // 02/11: nenhum import estático antes do 1º toque. No 3G o módulo esperava funnel-analytics.js e dica-direct.js
 // chegarem (e disputarem banda com o vídeo da capa) e o botão só respondia 2 a 5 s depois de aparecer.
 // A medição entra numa fila com a hora do toque e sai quando o módulo chega; a dica do Direct carrega por trás.
+const PONTE = window.lvPonte?.props?.() || {};
 function filaAnalytics(mod){
   let A = null; const fila = [];
   mod.then(m => { A = m; fila.splice(0).forEach(f => f()); }).catch(() => {});
   const lvOk = v => typeof v === 'string' && /^[A-Za-z0-9_-]{22}$/.test(v);
   return {
     init: c => { if (A) A.init(c); else fila.push(() => A.init(c)); },
-    track: (t, o = {}) => { const oo = { ...o, ts:new Date().toISOString() }; if (A) A.track(t, oo); else fila.push(() => A.track(t, oo)); },
+    // 03/11: props.ponte (sim|nao) da ponte da bio, /assets/js/ponte.js, em todos os eventos de quem veio da bio
+    track: (t, o = {}) => { const oo = { ...o, props:{ ...(o.props || {}), ...PONTE }, ts:new Date().toISOString() }; if (A) A.track(t, oo); else fila.push(() => A.track(t, oo)); },
     getLv: () => { try { const q = new URLSearchParams(location.search).get('lv'); if (lvOk(q)){ try { sessionStorage.setItem('livowa_lv', q); } catch {} return q; }
                          const s = sessionStorage.getItem('livowa_lv'); return lvOk(s) ? s : null; } catch { return null; } }   // igual ao getLv do módulo
   };
@@ -431,6 +434,8 @@ Analytics.track('view');
 const PELE_PRODUCAO = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/analisar-pele';   // aberta ao público em 31/10 (ok do Lucca)
 const PELE_TESTE = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/analisar-pele';
 const LOCAL = ['localhost','127.0.0.1'].includes(location.hostname), PELE_Q = new URLSearchParams(location.search).get('pele');
+// 03/11: ponte da bio na 1ª tela (a da pele quando o link abre direto na pele; senão a das pernas)
+window.lvPonte?.pintar(document.querySelector((PELE_Q === '1' || PELE_Q === 'teste') ? '#pele-ini-sub' : '[data-s="inicio"] .sub'), (PELE_Q === '1' || PELE_Q === 'teste') ? 'pele' : 'pernas');
 const PELE_ENDPOINT = (LOCAL && PELE_Q && PELE_Q !== 'teste' && PELE_Q) || (PELE_Q === 'teste' && PELE_TESTE) || PELE_PRODUCAO;
 // A/B da pele (28/10): 1 foto (rosto parado) × 3 fotos (parado, sorriso forte, sobrancelhas levantadas).
 // Sorteio 50/50 por pessoa, guardado no navegador; ?fotos=1 ou ?fotos=3 força (sem gravar). Vai no analytics como props.fotos.

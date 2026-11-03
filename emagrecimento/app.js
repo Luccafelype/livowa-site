@@ -3,7 +3,7 @@
 // Regras: sem promessa de resultado e sem número sem fonte (todo estudo citado foi conferido no PubMed em 02/11);
 // sem "grátis" nem "consulta"; não indica remédio nem marca; IMC e cintura/altura como estimativa (OMS e NICE NG246).
 // UMA pergunta decide o perfil do resultado: "acontece" (VT p.92). As outras personalizam as linhas do resultado.
-import * as Analytics from '/idade/funnel-analytics.js';
+import * as A0 from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
 
 const $ = id => document.getElementById(id);
@@ -12,6 +12,9 @@ const Q = new URLSearchParams(location.search);
 
 // ---------- medição (mesmo Supabase dos outros testes; a Caixa lê o código no complete e o canal no cta_click) ----------
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
+// 03/11: ponte da bio (/assets/js/ponte.js): props.ponte sim|nao em todos os eventos de quem veio da bio; a linha entra na capa
+const PONTE = window.lvPonte?.props?.() || {};
+const Analytics = { ...A0, track:(tipo, o = {}) => A0.track(tipo, { ...o, props:{ ...(o.props || {}), ...PONTE } }) };
 Analytics.init({ enabled:true, funnelId:'teste-emagrecimento', variant:Q.get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
 Analytics.track('view');
 const WHATSAPP = '5562991774809';
@@ -59,8 +62,8 @@ function show(s){
   cta.textContent = 'Continuar';
   if (s === 'capa') cta.textContent = 'Começar o teste';
   if (s === 'nome') cta.classList.toggle('off', nome1().length < 2);
-  if (s === 'medidas') validarMedidas(false);
-  if (s === 'cintura') cta.classList.toggle('off', !cinturaPronta());
+  if (s === 'medidas') posicionar(['peso', 'altura']);
+  if (s === 'cintura'){ posicionar(['cintura']); cta.classList.toggle('off', !mexeu.cintura); }
   if (s === 'tentou') cta.classList.toggle('off', !R.tentou.length);
   if (QUIZ.includes(s)) cta.classList.toggle('off', R[s] == null);
   if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
@@ -89,35 +92,74 @@ $('back').addEventListener('click', () => {
 $('nome').addEventListener('input', () => { R.nome = $('nome').value.replace(/[<>]/g, '').slice(0, 40); $('cta').classList.toggle('off', nome1().length < 2); });
 $('nome').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('cta').click(); } });
 
-// ---------- peso, altura e cintura ----------
-const lerNum = v => { const n = parseFloat(String(v).replace(',', '.').replace(/[^\d.]/g, '')); return Number.isFinite(n) ? n : null; };
-const lerAltura = v => { let n = lerNum(v); if (n != null && n > 1 && n < 2.5) n = Math.round(n * 100); return n; };   // "1,65" vira 165
-function validarMedidas(mostrarErro){
-  const p = lerNum($('peso').value), a = lerAltura($('altura').value);
-  const okP = p != null && p >= 30 && p <= 300, okA = a != null && a >= 120 && a <= 230;
-  $('m-peso').classList.toggle('erro', mostrarErro && !okP); $('m-altura').classList.toggle('erro', mostrarErro && !okA);
-  const d = $('dica-medidas');
-  d.classList.toggle('erro', mostrarErro && !(okP && okA));
-  d.textContent = mostrarErro && !okP ? 'Confira o peso: em quilos, entre 30 e 300.' : mostrarErro && !okA ? 'Confira a altura: em centímetros, entre 120 e 230 (1,65 m = 165).' : 'Altura em centímetros: 1,65 m = 165.';
-  if (okP && okA){ R.peso = Math.round(p * 10) / 10; R.altura = Math.round(a); } else { delete R.peso; delete R.altura; }
-  if (cur === 'medidas') $('cta').classList.toggle('off', !(okP && okA));
-  return okP && okA;
+// ---------- peso, altura e cintura: rodas de rolar (03/11) ----------
+// Mesmo componente das rodas de /idade e /braco (faixa do meio, snap a cada número), com teclado e leitor de tela.
+// Peso e altura: começam num valor comum para o sexo marcado e NÃO travam o Continuar (decisão do Lucca nas pernas,
+// 02/11: "deixar como está"); o evento diz se a pessoa rolou cada número ('rolou') ou deixou como veio ('padrao').
+// Cintura: é opcional, então só vale se a pessoa mexer na roda; senão o Continuar fica apagado e "Pular" segue com o IMC.
+const H = 44;
+const mexeu = {};   // chave → 'rolou' | 'confirmou'
+function roda(id, de, ate, aoMexer){
+  const w = $(id), itens = [], key = id.slice(2);
+  for (let v = de; v <= ate; v++){
+    const d = document.createElement('div'); d.textContent = v; d.id = `${id}-${v}`;
+    d.setAttribute('role', 'option'); d.setAttribute('aria-selected', 'false'); w.appendChild(d); itens.push(d);
+  }
+  let mao = false, valor = null;   // mao: o rolar veio da pessoa (dedo, mouse, teclado), não do posicionamento inicial
+  const pick = () => {
+    const i = Math.max(0, Math.min(itens.length - 1, Math.round(w.scrollTop / H)));
+    if (valor === de + i) return;
+    if (valor != null){ const a = itens[valor - de]; a.classList.remove('sel'); a.setAttribute('aria-selected', 'false'); }
+    valor = de + i; itens[i].classList.add('sel'); itens[i].setAttribute('aria-selected', 'true');
+    w.setAttribute('aria-activedescendant', itens[i].id);
+    if (mao){ mexeu[key] = mexeu[key] || 'rolou'; aoMexer?.(); }
+  };
+  ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(ev => w.addEventListener(ev, () => { mao = true; }, { passive:true }));
+  w.addEventListener('scroll', pick, { passive:true });
+  w.addEventListener('keydown', e => {
+    const passo = { ArrowDown:1, ArrowUp:-1, PageDown:10, PageUp:-10 }[e.key];
+    if (passo){ e.preventDefault(); w.scrollTo({ top:(Math.max(de, Math.min(ate, valor + passo)) - de) * H, behavior:'smooth' }); }
+    else if (e.key === 'Home' || e.key === 'End'){ e.preventDefault(); w.scrollTo({ top:(e.key === 'Home' ? 0 : ate - de) * H, behavior:'smooth' }); }
+    else if (e.key === 'Enter'){ e.preventDefault(); if (valor != null && !mexeu[key]){ mexeu[key] = 'confirmou'; aoMexer?.(); } $('cta').click(); }
+  });
+  // tocar num número leva até ele; tocar no número do meio confirma o valor que já está ali
+  itens.forEach((d, j) => d.addEventListener('click', () => {
+    mao = true;
+    if (de + j === valor){ if (!mexeu[key]){ mexeu[key] = 'confirmou'; aoMexer?.(); } }
+    else w.scrollTo({ top:j * H, behavior:'smooth' });
+  }));
+  return {
+    get valor(){ return valor; },
+    set(v){ mao = false; w.scrollTop = (Math.max(de, Math.min(ate, v)) - de) * H; pick(); },
+    pronta: () => w.clientHeight > 0,
+  };
 }
-['peso','altura'].forEach(id => {
-  $(id).addEventListener('input', () => validarMedidas(false));
-  $(id).addEventListener('blur', () => { if ($(id).value) validarMedidas(true); });
-  $(id).addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); if (id === 'peso') $('altura').focus(); else $('cta').click(); } });
+const RODA = {
+  peso: roda('w-peso', 35, 250, () => { R.peso = RODA.peso.valor; }),
+  altura: roda('w-altura', 130, 215, () => { R.altura = RODA.altura.valor; }),
+  cintura: roda('w-cintura', 50, 170, atualizarCintura),   // R.cinturaCm só no Continuar
+};
+// ponto de partida das rodas (não é dado da pessoa): valores comuns de adulto por sexo
+const PADRAO = { f:{ peso:70, altura:162, cintura:85 }, m:{ peso:85, altura:175, cintura:95 } };
+function posicionar(chaves){   // display:none perde a rolagem: ao mostrar a tela, cada roda volta ao seu número
+  const p = PADRAO[R.sexo] || PADRAO.f;
+  requestAnimationFrame(() => chaves.forEach(k => {
+    if (!RODA[k].pronta()) return;
+    RODA[k].set(mexeu[k] && RODA[k].valor != null ? RODA[k].valor : p[k]);   // sem mexer: segue o sexo marcado
+    if (k !== 'cintura') R[k] = RODA[k].valor;
+  }));
+}
+function atualizarCintura(){
+  if (cur !== 'cintura') return;
+  $('cta').classList.toggle('off', !mexeu.cintura);
+  const d = $('dica-cintura'); d.classList.remove('erro');
+  d.textContent = mexeu.cintura ? `Cintura: ${RODA.cintura.valor} cm` : 'Arraste até a sua medida.';
+}
+$('pular-cintura').addEventListener('click', () => {
+  R.cintura = 'sem_fita'; delete R.cinturaCm;
+  Analytics.track('answer', { stepId:'cintura', valueText:'sem_fita' });
+  proxima();
 });
-function cinturaPronta(){
-  if (R.cintura === 'sem_fita') return true;
-  if (R.cintura !== 'sei') return false;
-  const c = lerNum($('cintura').value), ok = c != null && c >= 40 && c <= 200;
-  if (ok) R.cinturaCm = Math.round(c); else delete R.cinturaCm;
-  return ok;
-}
-$('cintura').addEventListener('input', () => { const ok = cinturaPronta(); $('m-cintura').classList.remove('erro'); if (cur === 'cintura') $('cta').classList.toggle('off', !ok); });
-$('cintura').addEventListener('blur', () => { if ($('cintura').value) $('m-cintura').classList.toggle('erro', !cinturaPronta()); });
-$('cintura').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('cta').click(); } });
 
 // ---------- opções: uma escolha (avança sozinho) e várias ("tentou") ----------
 function ligarOpcoes(box){
@@ -136,11 +178,6 @@ function ligarOpcoes(box){
     R[q] = v; if (q === 'fase') delete R.faseAuto;
     box.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     Analytics.track('answer', { stepId:q, valueText:v });
-    if (q === 'cintura'){
-      $('cintura-campo').hidden = v !== 'sei';
-      if (v === 'sei'){ $('cta').classList.toggle('off', !cinturaPronta()); setTimeout(() => $('cintura').focus(), 60); return; }
-      delete R.cinturaCm;
-    }
     $('cta').classList.remove('off');
     setTimeout(() => { if (cur === q) proxima(); }, 260);
   });
@@ -150,14 +187,21 @@ function ligarOpcoes(box){
 $('cta').addEventListener('click', () => {
   if ($('cta').classList.contains('off')){
     if (cur === 'nome') return $('nome').focus();
-    if (cur === 'medidas') return validarMedidas(true);
-    if (cur === 'cintura' && R.cintura === 'sei'){ $('m-cintura').classList.add('erro'); return $('cintura').focus(); }
+    if (cur === 'cintura'){ const d = $('dica-cintura'); d.textContent = 'Arraste a roda até a sua medida, ou toque em Pular.'; d.classList.add('erro'); return $('w-cintura').focus(); }
     return;
   }
   if (cur === 'capa') return proxima();
   if (cur === 'nome'){ R.nome = nomeBonito(); Analytics.track('answer', { stepId:'nome', valueText:'ok' }); return proxima(); }
-  if (cur === 'medidas'){ Analytics.track('answer', { stepId:'medidas', valueText:'ok' }); return proxima(); }
-  if (cur === 'cintura'){ Analytics.track('answer', { stepId:'cintura', valueText:R.cintura === 'sei' ? 'mediu' : 'sem_fita' }); return proxima(); }
+  if (cur === 'medidas'){
+    R.peso = RODA.peso.valor; R.altura = RODA.altura.valor;
+    Analytics.track('answer', { stepId:'medidas', valueText:'ok', props:{ peso:R.peso, altura:R.altura, como:{ peso:mexeu.peso || 'padrao', altura:mexeu.altura || 'padrao' } } });
+    return proxima();
+  }
+  if (cur === 'cintura'){
+    R.cintura = 'sei'; R.cinturaCm = RODA.cintura.valor;
+    Analytics.track('answer', { stepId:'cintura', valueText:'mediu', props:{ cintura:R.cinturaCm, como:mexeu.cintura } });
+    return proxima();
+  }
   if (cur === 'tentou'){ Analytics.track('answer', { stepId:'tentou', valueText:R.tentou.join('+') }); return proxima(); }
   if (QUIZ.includes(cur)) return proxima();
   if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
@@ -417,6 +461,7 @@ function direto_lv(e, esc_){
 
 // ---------- início ----------
 document.querySelectorAll('.opts[data-q]').forEach(ligarOpcoes);
+window.lvPonte?.pintar(document.querySelector('[data-s="capa"] .sub'), 'emag');
 show('capa');
 // ganchos do teste automático (headless)
 window.__emag = { R, estado:() => ({ cur, codigo, perfil:R.acontece }), show };

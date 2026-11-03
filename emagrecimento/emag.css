@@ -183,20 +183,29 @@ details.completo .bloco{margin-bottom:12px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .kick-capa{font:600 .78rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
 .opt[hidden]{display:none!important}
-/* medidas: dois campos grandes com unidade */
-.medidas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.medida{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.95rem}
-.medida .cx{position:relative}
-.medida input{font:600 1.5rem var(--body);padding:14px 52px 14px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);min-height:60px;width:100%}
-.medida input:focus{outline:none;border-color:var(--accent)}
-.medida .un{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font:500 1rem var(--body);pointer-events:none}
-.medida.erro input{border-color:var(--warn);background:var(--warn-bg)}
-.dica-campo{font-size:.82rem;color:var(--muted)}
-.dica-campo.erro{color:var(--warn)}
+/* medidas (03/11): rodas de rolar, o mesmo componente das pernas e do braço (/idade, /braco): faixa do meio marcada,
+   snap em cada número, arrastar com o dedo; teclado ↑ ↓ PageUp PageDown Home End */
+.wheels{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.wheels.uma{grid-template-columns:minmax(0,200px);justify-content:center}
+.wheelbox{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.wheelbox label{font-size:.88rem;font-weight:600;color:var(--muted)}
+.wheel-wrap{position:relative;width:100%;height:220px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.wheel-wrap::before{content:"";position:absolute;left:6px;right:6px;top:88px;height:44px;border-radius:10px;background:var(--accent-2);pointer-events:none}
+.wheel-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(var(--surface),transparent 35%,transparent 65%,var(--surface))}
+.wheel-wrap .un{position:absolute;right:12px;top:88px;height:44px;display:grid;place-items:center;color:var(--accent);font:500 .9rem var(--body);pointer-events:none;z-index:1}
+.wheel{position:relative;height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;padding-block:88px;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.wheel::-webkit-scrollbar{display:none}
+.wheel:focus-visible{box-shadow:inset 0 0 0 2px var(--accent);border-radius:16px}
+.wheel div{height:44px;display:grid;place-items:center;scroll-snap-align:center;font:600 1.3rem var(--mono);color:var(--muted);cursor:pointer;user-select:none;-webkit-user-select:none}
+.wheel div.sel{color:var(--fg);font-size:1.45rem}
+.dica-campo{font-size:.85rem;color:var(--muted);text-align:center}
+.dica-campo.erro{color:var(--warn);font-weight:600}
+.pular{align-self:center;display:flex;flex-direction:column;align-items:center;min-height:44px;padding:6px 12px;background:none;border:0;cursor:pointer;color:var(--muted);font:500 .92rem var(--body)}
+.pular span{text-decoration:underline;text-underline-offset:3px}
+.pular small{font-size:.76rem;display:block}
 .como-medir{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;font-size:.88rem;line-height:1.35}
 .como-medir svg{width:64px;height:auto}
 .como-medir .fonte{display:block;font-size:.72rem;color:var(--muted);margin-top:4px}
-.medida.uma{max-width:220px}
 /* resultado */
 .res-topo{display:flex;flex-direction:column;gap:6px;padding-top:6px}
 .res-topo .data{color:var(--muted);font-size:.85rem}

@@ -8,7 +8,7 @@
 <title>Teste do emagrecimento · Dr. Lucca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="emag.css?v=2">
+<link rel="stylesheet" href="emag.css?v=3">
 </head>
 <body>
 <!-- livowa.com/emagrecimento · teste do emagrecimento no padrão da pele2 (02/11/2026).
@@ -65,30 +65,29 @@
       <input id="nome" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" maxlength="40" placeholder="Seu primeiro nome"></label>
   </section>
 
-  <!-- 5 · peso e altura -->
+  <!-- 5 · peso e altura (03/11, Lucca: "seria melhor ser de arrastar, não de digitar"): rodas de rolar como em /idade e /braco -->
   <section class="screen" data-s="medidas" hidden>
     <h2><span class="nm"></span>qual é o seu peso e a sua altura?</h2>
-    <p class="sub">Pode ser aproximado. É com eles que sai o seu IMC.</p>
-    <div class="medidas">
-      <label class="medida" id="m-peso">Peso<span class="cx"><input id="peso" type="text" inputmode="decimal" enterkeyhint="next" placeholder="70" maxlength="5" autocomplete="off"><span class="un">kg</span></span></label>
-      <label class="medida" id="m-altura">Altura<span class="cx"><input id="altura" type="text" inputmode="numeric" enterkeyhint="done" placeholder="165" maxlength="4" autocomplete="off"><span class="un">cm</span></span></label>
+    <p class="sub">Arraste cada roda até o seu número. Pode ser aproximado: é com eles que sai o seu IMC.</p>
+    <div class="wheels">
+      <div class="wheelbox"><label id="l-peso">Peso</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso" aria-describedby="un-peso"></div><span class="un" id="un-peso" aria-label="quilos">kg</span></div></div>
+      <div class="wheelbox"><label id="l-altura">Altura</label><div class="wheel-wrap"><div class="wheel" id="w-altura" tabindex="0" role="listbox" aria-labelledby="l-altura" aria-describedby="un-altura"></div><span class="un" id="un-altura" aria-label="centímetros">cm</span></div></div>
     </div>
-    <p class="dica-campo" id="dica-medidas">Altura em centímetros: 1,65 m = 165.</p>
   </section>
 
-  <!-- 6 · cintura (opcional): razão cintura/altura, NICE NG246 -->
+  <!-- 6 · cintura (opcional; 03/11, Lucca: a pergunta sim/não "parece muito ruim, pouco prático"): a roda já aberta e
+       "Pular" discreto. Continuar só depois de mexer na roda: sem isso o número não é dela e a razão cintura/altura sairia
+       inventada. Razão cintura/altura: NICE NG246. -->
   <section class="screen" data-s="cintura" hidden>
-    <h2>Você sabe a medida da sua cintura?</h2>
-    <p class="sub">Com ela, o resultado mostra também a sua cintura em relação à altura, que diz mais que o peso sozinho.</p>
-    <div class="opts" data-q="cintura" data-tipo="um">
-      <button type="button" class="opt" data-v="sei"><span class="txt">Sei a medida (ou vou medir agora)</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="sem_fita"><span class="txt">Estou sem fita agora<small>o resultado usa só o IMC</small></span><span class="box"></span></button>
+    <h2>E a sua cintura, quantos centímetros?</h2>
+    <p class="sub">Com ela, o resultado mostra a cintura em relação à altura, que diz mais que o peso sozinho.</p>
+    <div class="como-medir"><svg viewBox="0 0 64 80" aria-hidden="true"><path d="M20 6c-6 10-8 22-6 34s6 22 4 34M44 6c6 10 8 22 6 34s-6 22-4 34" fill="none" stroke="#5f6d65" stroke-width="2.4" stroke-linecap="round"/><path d="M14 38q18 8 36 0" fill="none" stroke="#0d6a4d" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="4 3"/><circle cx="32" cy="45" r="1.8" fill="#5f6d65"/></svg>
+      <span>Fita no meio, entre a última costela e o alto do quadril (logo acima do umbigo). Solte o ar e meça.<span class="fonte">Modo de medir da NICE (diretriz NG246)</span></span></div>
+    <div class="wheels uma">
+      <div class="wheelbox"><label id="l-cintura">Cintura</label><div class="wheel-wrap"><div class="wheel" id="w-cintura" tabindex="0" role="listbox" aria-labelledby="l-cintura" aria-describedby="un-cintura dica-cintura"></div><span class="un" id="un-cintura" aria-label="centímetros">cm</span></div></div>
     </div>
-    <div id="cintura-campo" hidden>
-      <div class="como-medir"><svg viewBox="0 0 64 80" aria-hidden="true"><path d="M20 6c-6 10-8 22-6 34s6 22 4 34M44 6c6 10 8 22 6 34s-6 22-4 34" fill="none" stroke="#5f6d65" stroke-width="2.4" stroke-linecap="round"/><path d="M14 38q18 8 36 0" fill="none" stroke="#0d6a4d" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="4 3"/><circle cx="32" cy="45" r="1.8" fill="#5f6d65"/></svg>
-        <span>Fita no meio, entre a última costela e o alto do quadril (logo acima do umbigo). Solte o ar e meça.<span class="fonte">Modo de medir da NICE (diretriz NG246)</span></span></div>
-      <label class="medida uma" id="m-cintura" style="margin-top:12px">Cintura<span class="cx"><input id="cintura" type="text" inputmode="numeric" enterkeyhint="done" placeholder="85" maxlength="3" autocomplete="off"><span class="un">cm</span></span></label>
-    </div>
+    <p class="dica-campo" id="dica-cintura" aria-live="polite">Arraste até a sua medida.</p>
+    <button type="button" class="pular" id="pular-cintura"><span>Pular: estou sem fita agora</span><small>o resultado usa só o IMC</small></button>
   </section>
 
   <!-- 7 · A PERGUNTA QUE DECIDE O PERFIL (VT p.92); opções com a fala do público (VOZ-DO-PUBLICO.md) -->
@@ -232,6 +231,7 @@
     <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
   </div></div>
 </div>
-<script type="module" src="app.js?v=2"></script>
+<script defer src="/assets/js/ponte.js?v=1"></script>
+<script type="module" src="app.js?v=3"></script>
 </body>
 </html>

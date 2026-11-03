@@ -269,17 +269,20 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   </div></div>
 </div>
 
+<script defer src="/assets/js/ponte.js?v=1"></script>
 <script type="module">
 // 02/11: nenhum import estático antes do 1º toque. No 3G o módulo esperava funnel-analytics.js e dica-direct.js
 // chegarem (e disputarem banda com o vídeo da capa) e o botão só respondia 2 a 5 s depois de aparecer.
 // A medição entra numa fila com a hora do toque e sai quando o módulo chega; a dica do Direct carrega por trás.
+const PONTE = window.lvPonte?.props?.() || {};
 function filaAnalytics(mod){
   let A = null; const fila = [];
   mod.then(m => { A = m; fila.splice(0).forEach(f => f()); }).catch(() => {});
   const lvOk = v => typeof v === 'string' && /^[A-Za-z0-9_-]{22}$/.test(v);
   return {
     init: c => { if (A) A.init(c); else fila.push(() => A.init(c)); },
-    track: (t, o = {}) => { const oo = { ...o, ts:new Date().toISOString() }; if (A) A.track(t, oo); else fila.push(() => A.track(t, oo)); },
+    // 03/11: props.ponte (sim|nao) da ponte da bio, /assets/js/ponte.js, em todos os eventos de quem veio da bio
+    track: (t, o = {}) => { const oo = { ...o, props:{ ...(o.props || {}), ...PONTE }, ts:new Date().toISOString() }; if (A) A.track(t, oo); else fila.push(() => A.track(t, oo)); },
     getLv: () => { try { const q = new URLSearchParams(location.search).get('lv'); if (lvOk(q)){ try { sessionStorage.setItem('livowa_lv', q); } catch {} return q; }
                          const s = sessionStorage.getItem('livowa_lv'); return lvOk(s) ? s : null; } catch { return null; } }   // igual ao getLv do módulo
   };
@@ -291,6 +294,7 @@ const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // o mesmo teste 
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 Analytics.init({ enabled:true, funnelId:'teste-braco', variant:new URLSearchParams(location.search).get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
 Analytics.track('view');
+window.lvPonte?.pintar(document.querySelector('[data-s="inicio"] .sub'), 'braco');   // 03/11: ponte da bio
 
 const $ = id => document.getElementById(id);
 const WHATSAPP = '5562991774809';

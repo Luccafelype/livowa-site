@@ -75,7 +75,7 @@ const url = todos[id];
 try { const Analytics = await Promise.race([analyticsPronto, new Promise((_, n) => setTimeout(n, 300))]);
   Analytics.init({ enabled:true, funnelId:'link-bio', variant:id, supabaseUrl:SUPA, supabaseKey:CHAVE });
   Analytics.track('view', { stepId:'roteador', valueText:`${canal}:${tema}${camp ? ':' + camp : ''}:${rota.fonte}` }); } catch {}
-['f', 'canal', 'camp'].forEach(x => q.delete(x)); q.set('v', id);   // sem ?sid: cada funil abre a própria sessão
+['f', 'camp'].forEach(x => q.delete(x)); q.set('v', id); q.set('canal', canal);   // sem ?sid: cada funil abre a própria sessão. 03/11: canal=bio|direct segue para o teste (a ponte da bio, /assets/js/ponte.js, só aparece com canal=bio)
 if (!q.has('utm_source')) q.set('utm_source', canal === 'direct' ? 'ig_direct' : 'ig_bio');
 if (camp && !q.has('utm_campaign')) q.set('utm_campaign', camp.toLowerCase());
 // o sid da bio fica na aba; apagar para o funil abrir sessão nova e não cair na linha 'link-bio' do resumo
