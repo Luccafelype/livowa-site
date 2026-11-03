@@ -1,8 +1,14 @@
 // Geometria do rosto, luz/nitidez, pose, recorte com tarja e a imagem que vai para a análise.
 // Copiado de /idade/index.html (01/11/2026) para a pele2 não depender da página das pernas. Mudou só: exports,
 // o recorte por região (recorteRegiao) e a foto do topo do resultado (fotoTopo).
-import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
-export { FaceLandmarker };
+// 03/11 (auditoria): o MediaPipe vem sob demanda, dentro de criarFace. Antes o import estático segurava a página inteira:
+// com o CDN lento a capa só respondia em 3 s; com o CDN fora, nunca (nem o 'view' saía). FaceLandmarker é ligação viva:
+// fica null até a primeira criarFace (scan.js só desenha a malha depois de ter rosto).
+const MP_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
+export let FaceLandmarker = null;
+let FilesetResolver = null, mpPronto = null;
+const carregarMP = () => (mpPronto ??= import(MP_URL).then(m => { FaceLandmarker = m.FaceLandmarker; FilesetResolver = m.FilesetResolver; })
+  .catch(e => { mpPronto = null; throw e; }));
 
 const MODELO_ROSTO = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 export const OVAL = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
@@ -98,6 +104,7 @@ export function recorteRegiao(al, g, nome, outW = 200){
 // ---------- detector ----------
 let visionFiles = null;
 export async function criarFace(modo){
+  await carregarMP();
   visionFiles ??= await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm");
   const opts = delegate => ({ baseOptions:{ modelAssetPath:MODELO_ROSTO, delegate }, runningMode:modo, numFaces:2,
     minFaceDetectionConfidence:.5, minFacePresenceConfidence:.5, minTrackingConfidence:.5 });

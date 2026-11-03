@@ -6,9 +6,14 @@
 // Conteúdo: config.js. Este arquivo não precisa mudar para trocar textos.
 // ============================================================
 
-import { CONFIG } from './config.js?v=lg2';
+import { CONFIG } from './config.js?v=lg3';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
 import * as Analytics from './funnel-analytics.js?v=lg3';
 import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js?v=3';
+// 03/11: o link "Ou meça suas pernas agora" leva a origem junto (utm_*, canal e o lv do link marcado), senão a sessão das
+// pernas perde ig_bio/ig_direct e a ponte da bio não reconhece quem veio da bio
+const comOrigem = url => { const q = new URLSearchParams(location.search), o = new URLSearchParams();
+  for (const [k, v] of q) if (/^utm_/.test(k) || k === 'canal' || k === 'lv') o.set(k, v);
+  const t = o.toString(); return t ? url + (url.includes('?') ? '&' : '?') + t : url; };
 
 const FLOW = CONFIG.flow;
 const N = FLOW.length;
@@ -498,7 +503,7 @@ function renderResult() {
       el('div', { class: 'codigo' }, el('span', {}, R.codigoRotulo), el('b', { id: 'codigo' }, cod)),
       el('p', { class: 'linha' }, R.codigoLinha),
       main, alt),
-    el('a', { class: 'link-teste', id: 'cta-teste', href: CONFIG.links.teste, onclick: () => clique('teste_idade') }, R.teste)
+    el('a', { class: 'link-teste', id: 'cta-teste', href: comOrigem(CONFIG.links.teste), onclick: () => clique('teste_idade') }, R.teste)
   );
 }
 

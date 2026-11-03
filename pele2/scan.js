@@ -9,7 +9,7 @@
 // (boca/queixo, longe dos olhos), onde a pessoa está olhando: seta grande animada para o lado + "Vire devagar para a
 // esquerda", barrinha que enche conforme o rosto vira, "Segure" quando chegou, e um ✓ "Esquerda pronta" quando a foto
 // sai. É só desenho por cima: a detecção lê o vídeo cru, a guia não atrapalha. Mesmos gatilhos do anel (prog, captura).
-import { criarFace, FaceLandmarker, medir, pose, geometria, caixa, OVAL, NITIDEZ_MIN, subirTesta, olhoMedioY } from './rosto.js?v=2';
+import { criarFace, FaceLandmarker, medir, pose, geometria, caixa, OVAL, NITIDEZ_MIN, subirTesta, olhoMedioY } from './rosto.js?v=3';
 
 const $ = id => document.getElementById(id);
 const N_TK = 72;                    // risquinhos do anel
@@ -122,7 +122,7 @@ function desenharMalha(v, lm, bom){
   ctx.save(); ctx.beginPath(); ctx.ellipse(geo.cx, geo.cy, geo.rx + 2, geo.ry + 2, 0, 0, Math.PI*2); ctx.clip();
   ctx.lineWidth = .6; ctx.strokeStyle = bom ? 'rgba(160,240,205,.5)' : 'rgba(255,255,255,.34)';
   ctx.beginPath();
-  for (const { start, end } of FaceLandmarker.FACE_LANDMARKS_TESSELATION){ const a = lm[start], b = lm[end]; if (!a || !b) continue; ctx.moveTo(X(a), Y(a)); ctx.lineTo(X(b), Y(b)); }
+  for (const { start, end } of (FaceLandmarker?.FACE_LANDMARKS_TESSELATION || [])){ const a = lm[start], b = lm[end]; if (!a || !b) continue; ctx.moveTo(X(a), Y(a)); ctx.lineTo(X(b), Y(b)); }
   ctx.stroke();
   // contorno do rosto (com a testa até perto do cabelo, como no recorte que vai para a análise)
   const tela = OVAL.map(i => ({ x:X(lm[i]), y:Y(lm[i]) })), Q = lm.map(p => ({ y:Y(p) }));

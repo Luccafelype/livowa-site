@@ -3,8 +3,8 @@
 // biblioteca (biblioteca.json, gerado de paginas/consulta-codigo/web/sinais.json); nada de texto livre da IA na tela.
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
-import * as Scan from './scan.js?v=3';
-import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=2';
+import * as Scan from './scan.js?v=4';
+import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=3';
 
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
@@ -239,7 +239,13 @@ $('arquivo').addEventListener('change', async e => {
 
 // ---------- envio e carregamento em etapas ----------
 let erroRede = false;
-function erro(txt, rede){ erroRede = !!rede; $('erro-tit').textContent = rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler'; $('erro-txt').textContent = txt; show('erro'); }
+// 03/11: limite de análises (429) não perde o lead: "Muitas análises agora" + WhatsApp e Direct na própria tela + "Tentar de novo" (as mesmas fotos)
+function erro(txt, rede, limite){ erroRede = !!rede; $('erro-tit').textContent = limite ? 'Muitas análises agora' : rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler'; $('erro-txt').textContent = txt;
+  $('erro-contato').hidden = !limite;
+  if (limite){ const s = sou(); $('erro-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Oi, Dr. Lucca! ${s ? s + '. ' : ''}Tentei fazer a análise da pele, código ${meuCodigo()}, mas deu muitas análises agora.`)}`; }
+  show('erro'); }
+$('erro-wa').addEventListener('click', () => track('cta_click', { stepId:'erro', valueText:'limite', props:{ canal:'whatsapp', codigo:meuCodigo() } }));
+$('erro-dm').addEventListener('click', () => track('cta_click', { stepId:'erro', valueText:'limite', props:{ canal:'direct', codigo:meuCodigo() } }));
 const PERIM = 326.7;
 function progresso(p, etapa){
   $('prog-c').style.strokeDashoffset = (PERIM * (1 - p/100)).toFixed(1);
@@ -267,7 +273,7 @@ async function enviar(f){
   try {
     const r = await fetch(PELE_ENDPOINT, { method:'POST', signal:ctl.signal, headers:{ 'Content-Type':'application/json', apikey:SUPA_KEY }, body:JSON.stringify(corpo) });
     const j = await r.json().catch(() => null);
-    if (r.status === 429){ clearInterval(tick); return erro('Você já fez algumas análises agora. Espere uns minutos e tente de novo.', false); }
+    if (r.status === 429){ clearInterval(tick); return erro('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou mande o seu código ao Dr. Lucca e fale com ele direto.', true, true); }
     if (!r.ok || !j){ clearInterval(tick); return erro('Pode ser a internet. É só tentar de novo.', true); }
     if (!j.ok){ clearInterval(tick); return erro('A foto não deu para ler direito. Tente de novo de frente para a luz, com o rosto inteiro no oval.', false); }
     const resta = MIN - (performance.now() - t0);
@@ -423,8 +429,8 @@ function montarResultado(j, f){
   // "Sua preocupação faz sentido?": uma linha por queixa marcada, com o recorte da área
   let vh = `<h3>${esc(nomeBonito())}, sua preocupação faz sentido?</h3>`;
   for (const q of R.incomoda){
-    const m = MAPA[q], ns = m.sinais.map(nivel).filter(x => x != null), max = ns.length ? Math.max(...ns) : null;
-    const top = m.sinais.find(id => nivel(id) === max);
+    const m = MAPA[q], ns = m.sinais.map(grauDe).filter(x => x != null), max = ns.length ? Math.max(...ns) : null;   // 03/11: grauDe, o mesmo grau do cartão (espinhas 1 + cravos 2 = moderado nos dois)
+    const top = m.sinais.find(id => grauDe(id) === max);
     const nomeTop = top ? lower1(titulo(top, max)) : '';
     const onde = top === 'acne_ativa' || top === 'comedoes' ? (sinais.acne_ativa.regioes.length ? ` (${lista(sinais.acne_ativa.regioes.slice(0, 3).map(r => NOME_REG[r]))})` : '') : '';
     let selo, cls = '', txt;

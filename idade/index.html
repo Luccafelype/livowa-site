@@ -371,6 +371,10 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
     <div id="pele-erro-emo" hidden></div>
     <h2 id="pele-erro-tit">Essa foto não deu para ler</h2>
     <p class="sub" id="pele-erro-txt"></p>
+    <div id="pele-erro-contato" style="display:flex;flex-direction:column;gap:8px;margin-top:8px" hidden>
+      <a class="btn ico" id="pele-erro-wa" href="#" target="_blank" rel="noopener"><span>Falar com o Dr. Lucca no WhatsApp</span></a>
+      <a class="link-alt" id="pele-erro-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
+    </div>
   </section>
 
   <section class="screen c final" data-s="pele-resultado" data-p="100" hidden>
@@ -888,6 +892,8 @@ function prepararFechamento(){
 }
 const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
 $('f-wa').addEventListener('click', () => Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } }));
+$('pele-erro-wa').addEventListener('click', () => Analytics.track('cta_click', { stepId:'pele-erro', valueText:'limite', props:{ canal:'whatsapp', codigo:meuCodigo() } }));
+$('pele-erro-dm').addEventListener('click', () => Analytics.track('cta_click', { stepId:'pele-erro', valueText:'limite', props:{ canal:'direct', codigo:meuCodigo() } }));
 $('f-dm').addEventListener('click', e => {
   if (LV){
     Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps() } });
@@ -1298,10 +1304,12 @@ $('pele-ir').addEventListener('click', () => { Analytics.track('cta_click', { st
 $('cta-2').addEventListener('click', () => { if (cur === 'pele-inicio' && !$('pele-ok').checked) apontarAceite(); }, true);
 
 // ---------- envio e resultado ----------
-function erroPele(txt, rede){
+// 03/11: limite de análises (429) não perde o lead: "Muitas análises agora" + WhatsApp e Direct + "Tentar de novo" (a mesma foto)
+function erroPele(txt, rede, limite){
   peleErroRede = !!rede;
-  
-  $('pele-erro-tit').textContent = rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler';
+  const ct = $('pele-erro-contato'); ct.hidden = !limite; ct.style.display = limite ? 'flex' : 'none';
+  if (limite) $('pele-erro-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Oi, Dr. Lucca! Tentei fazer a análise da pele, código ${meuCodigo()}, mas deu muitas análises agora.`)}`;
+  $('pele-erro-tit').textContent = limite ? 'Muitas análises agora' : rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler';
   $('pele-erro-txt').textContent = txt;
   show('pele-erro');
 }
@@ -1323,7 +1331,7 @@ async function enviarPele(){
       body: JSON.stringify({ imagens, modo, ocultas, codigo:meuCodigo() }) });
     const j = await r.json().catch(() => null);
     clearInterval(tick);
-    if (r.status === 429) return erroPele('Você já fez algumas análises agora. Espere uns minutos e tente de novo.', false);
+    if (r.status === 429) return erroPele('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou mande o seu código ao Dr. Lucca e fale com ele direto.', true, true);
     if (!r.ok || !j) return erroPele('Pode ser a internet. É só tentar de novo.', true);
     if (!j.ok) return erroPele((j.dica ? j.dica + ' ' : '') + 'Tente de novo de frente para a luz, com o rosto inteiro na tela.', false);
     $('pele-bar').style.width = '100%'; $('pele-pct').textContent = '100%';
