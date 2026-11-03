@@ -1,8 +1,10 @@
 // livowa.com/emagrecimento · teste do emagrecimento no padrão da pele2 (02/11/2026).
-// Pesquisa, perguntas e fontes: livowa-empresa/tarefas/emagrecimento-teste/pesquisa.md.
-// Regras: sem promessa de resultado e sem número sem fonte (todo estudo citado foi conferido no PubMed em 02/11);
-// sem "grátis" nem "consulta"; não indica remédio nem marca; IMC e cintura/altura como estimativa (OMS e NICE NG246).
-// UMA pergunta decide o perfil do resultado: "acontece" (VT p.92). As outras personalizam as linhas do resultado.
+// v2 (03/11/2026, pedidos do Lucca): sem a pergunta da cintura; bloco de saúde e hormônios (ciclo e sinais de SOP na mulher,
+// sinais da tireoide, sinais da síndrome metabólica, remédios de uso contínuo, ronco); resultado em narrativa que leva ao
+// botão, com as fontes só no rodapé recolhido. Pesquisa e fonte de cada critério: livowa-empresa/tarefas/emagrecimento-teste/pesquisa-v2.md.
+// Regras: sem promessa de resultado e sem número sem fonte; nada de diagnóstico ("só consulta e exame confirmam");
+// sem "grátis" nem "consulta"; não indica remédio nem marca; nunca mandar parar remédio.
+// UMA pergunta decide o perfil ("acontece", VT p.92); o bloco de saúde decide os SINAIS que aparecem no resultado.
 import * as A0 from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
 
@@ -14,28 +16,28 @@ const Q = new URLSearchParams(location.search);
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 // 03/11: ponte da bio (/assets/js/ponte.js): props.ponte sim|nao em todos os eventos de quem veio da bio; a linha entra na capa
 const PONTE = window.lvPonte?.props?.() || {};
-const Analytics = { ...A0, track:(tipo, o = {}) => A0.track(tipo, { ...o, props:{ ...(o.props || {}), ...PONTE } }) };
+const Analytics = { ...A0, track:(tipo, o = {}) => A0.track(tipo, { ...o, props:{ ...(o.props || {}), versao:'v2', ...PONTE } }) };
 Analytics.init({ enabled:true, funnelId:'teste-emagrecimento', variant:Q.get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
 Analytics.track('view');
 const WHATSAPP = '5562991774809';
 
-const R = { tentou:[] };   // respostas
+const VARIAS = ['tentou', 'pele', 'tireoide', 'exames', 'remedios'];   // perguntas de várias respostas
+const R = Object.fromEntries(VARIAS.map(k => [k, []]));               // respostas
 let codigo = null;
 const ALFA = 'ACDEFGHJKMNPQRTUVWXY34679';
 function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
 
 const ROT = {   // rótulos curtos das respostas (tela, analytics e Caixa)
-  sexo:{ f:'mulher', m:'homem' },
-  fase:{ nenhuma:'nenhuma', gravida:'grávida', amamentando:'amamentando', pos_parto:'bebê há menos de 1 ano' },
+  fase:{ nenhuma:'nenhuma', gravida:'grávida', amamentando:'amamentando', pos_parto:'bebê há menos de 1 ano', menopausa:'menopausa' },
   idade:{ '18a29':'18 a 29 anos', '30a39':'30 a 39 anos', '40a49':'40 a 49 anos', '50a59':'50 a 59 anos', '60mais':'60 anos ou mais' },
-  cintura:{ sei:'mediu', sem_fita:'sem fita' },
   acontece:{ volta:'Eu emagreço, mas depois engordo tudo de novo', vontade:'A vontade de comer vence, principalmente de doce', balanca:'Faço tudo certo e a balança não desce', constancia:'Começo e paro em poucas semanas', comeco:'Ainda não sei por onde começar' },
-  tentou:{ dieta:'dieta da internet', low_carb:'cortar carboidrato', jejum:'jejum intermitente', academia:'academia ou corrida', nutri:'nutricionista', cha:'chá, shake ou suplemento', remedio:'remédio para emagrecer', nenhum:'nenhum destes' },
+  tentou:{ dieta:'dieta da internet', low_carb:'cortar carboidrato', jejum:'jejum', academia:'academia ou corrida', nutri:'nutricionista', cha:'chá, shake ou suplemento', remedio:'remédio para emagrecer', nenhum:'nenhum destes' },
+  tireoide:{ cansaco:'cansaço que não passa', frio:'frio fora de hora', intestino:'intestino preso', pele_seca:'pele muito seca' },
+  exames:{ pressao:'pressão alta', glicose:'glicose alta', gordura:'triglicerídeo alto ou HDL baixo' },
+  remedios:{ humor:'para depressão ou ansiedade', diabetes:'para diabetes', outro:'de uso contínuo' },
   vontade:{ noite:'à noite', tarde:'à tarde', ansiedade:'na ansiedade', fim_semana:'no fim de semana', dia_todo:'o dia todo', pouco:'quase não atrapalha' },
   sono:{ '5menos':'5 h ou menos', '6':'6 h', '7':'7 h', '8':'8 h', '9mais':'9 h ou mais' },
-  forca:{ '0':'ainda não faz', '1':'1 vez por semana', '2mais':'2 vezes ou mais' },
-  proteina:{ '1menos':'em 1 refeição ou menos', '2':'em 2 refeições', '3mais':'em 3 refeições ou mais' },
-  objetivo:{ roupas:'Voltar a usar as roupas que eu gosto', nao_voltar:'Parar de engordar tudo de novo', disposicao:'Ter mais disposição no dia a dia', saude:'Cuidar da saúde e dos exames', corpo:'Me sentir bem com o meu corpo', outro:'O que você me contar' },
+  objetivo:{ roupas:'Voltar a usar as roupas que eu gosto', nao_voltar:'Parar de engordar tudo de novo', disposicao:'Ter mais disposição no dia a dia', saude:'Cuidar da saúde e dos exames', corpo:'Me sentir bem com o meu corpo', outro:'o que você me contar' },
 };
 const nome1 = () => (R.nome || '').trim().split(/\s+/)[0] || '';
 function nomeBonito(){ const n = nome1(); return n ? n[0].toLocaleUpperCase('pt-BR') + n.slice(1) : ''; }
@@ -43,14 +45,16 @@ const g = (fem, masc) => R.sexo === 'm' ? masc : fem;
 const gravida = () => R.fase === 'gravida';
 const lista = xs => xs.length <= 1 ? (xs[0] || '') : xs.slice(0, -1).join(', ') + ' e ' + xs[xs.length - 1];
 const num = (x, d = 1) => x.toLocaleString('pt-BR', { minimumFractionDigits:d, maximumFractionDigits:d });
+const sem = (k, x) => R[k].filter(v => v !== x);
 
 // ---------- telas ----------
-const ORDEM = ['capa','sexo','fase','idade','nome','medidas','cintura','acontece','tentou','vontade','sono','forca','proteina','objetivo','carregando','resultado','fechar'];
-const QUIZ = ['sexo','fase','idade','acontece','vontade','sono','forca','proteina','objetivo'];
+const ORDEM = ['capa','sexo','fase','idade','nome','medidas','acontece','tentou','ciclo','pele','tireoide','exames','remedios','vontade','sono','ronco','forca','objetivo','carregando','resultado','fechar'];
+const UM = ['sexo','fase','idade','acontece','ciclo','vontade','sono','ronco','forca','objetivo'];   // uma resposta (avança sozinho)
 const VOLTA = { fechar:'resultado' };
 let cur = 'capa';
-// homem não vê a fase; grávida não faz peso/altura/cintura (o teste não calcula IMC na gestação)
-const pula = s => (s === 'fase' && R.sexo === 'm') || (['medidas','cintura'].includes(s) && gravida());
+// homem não vê fase, ciclo nem pelos; grávida não faz peso e altura; quem não menstrua pela fase não vê o ciclo
+const pula = s => (['fase','ciclo','pele'].includes(s) && R.sexo === 'm') || (s === 'medidas' && gravida()) ||
+                  (s === 'ciclo' && ['gravida','amamentando','pos_parto','menopausa'].includes(R.fase));
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
   cur = s;
@@ -63,12 +67,12 @@ function show(s){
   if (s === 'capa') cta.textContent = 'Começar o teste';
   if (s === 'nome') cta.classList.toggle('off', nome1().length < 2);
   if (s === 'medidas') posicionar(['peso', 'altura']);
-  if (s === 'cintura') posicionar(['cintura']);   // 03/11: sem trava; o botão diz o número ("Confirmar 95 cm") até a pessoa rolar
-  if (s === 'tentou') cta.classList.toggle('off', !R.tentou.length);
-  if (QUIZ.includes(s)) cta.classList.toggle('off', R[s] == null);
-  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
+  if (VARIAS.includes(s)) cta.classList.toggle('off', !R[s].length);
+  if (UM.includes(s)) cta.classList.toggle('off', R[s] == null);
+  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11)
   if (s === 'fechar') prepararFechamento();
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nomeBonito() + ', ' : ''; });
+  document.querySelectorAll('[data-g]').forEach(el => { const [f, m] = el.dataset.g.split('|'); el.textContent = g(f, m); });
   $('txt-constancia').textContent = `Começo ${g('animada', 'animado')} e paro em poucas semanas`;
   $('txt-ansiosa').textContent = `Quando fico ${g('ansiosa', 'ansioso')} ou ${g('preocupada', 'preocupado')}`;
   window.scrollTo(0, 0);
@@ -92,11 +96,10 @@ $('back').addEventListener('click', () => {
 $('nome').addEventListener('input', () => { R.nome = $('nome').value.replace(/[<>]/g, '').slice(0, 40); $('cta').classList.toggle('off', nome1().length < 2); });
 $('nome').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('cta').click(); } });
 
-// ---------- peso, altura e cintura: rodas de rolar (03/11) ----------
+// ---------- peso e altura: rodas de rolar (03/11; Lucca: "seria melhor ser de arrastar, não de digitar") ----------
 // Mesmo componente das rodas de /idade e /braco (faixa do meio, snap a cada número), com teclado e leitor de tela.
-// Peso e altura: começam num valor comum para o sexo marcado e NÃO travam o Continuar (decisão do Lucca nas pernas,
-// 02/11: "deixar como está"); o evento diz se a pessoa rolou cada número ('rolou') ou deixou como veio ('padrao').
-// Cintura: é opcional, então só vale se a pessoa mexer na roda; senão o Continuar fica apagado e "Pular" segue com o IMC.
+// Começam num valor comum para o sexo marcado e NÃO travam o Continuar (decisão do Lucca nas pernas, 02/11); o evento
+// diz se a pessoa rolou cada número ('rolou') ou deixou como veio ('padrao').
 const H = 44;
 const mexeu = {};   // chave → 'rolou' | 'confirmou'
 function roda(id, de, ate, aoMexer){
@@ -137,49 +140,30 @@ function roda(id, de, ate, aoMexer){
 const RODA = {
   peso: roda('w-peso', 35, 250, () => { R.peso = RODA.peso.valor; }),
   altura: roda('w-altura', 130, 215, () => { R.altura = RODA.altura.valor; }),
-  cintura: roda('w-cintura', 50, 170, atualizarCintura),   // R.cinturaCm só no Continuar
 };
 // ponto de partida das rodas (não é dado da pessoa): valores comuns de adulto por sexo
-const PADRAO = { f:{ peso:70, altura:162, cintura:85 }, m:{ peso:85, altura:175, cintura:95 } };
+const PADRAO = { f:{ peso:70, altura:162 }, m:{ peso:85, altura:175 } };
 function posicionar(chaves){   // display:none perde a rolagem: ao mostrar a tela, cada roda volta ao seu número
   const p = PADRAO[R.sexo] || PADRAO.f;
   requestAnimationFrame(() => chaves.forEach(k => {
     if (!RODA[k].pronta()) return;
     RODA[k].set(mexeu[k] && RODA[k].valor != null ? RODA[k].valor : p[k]);   // sem mexer: segue o sexo marcado
-    if (k !== 'cintura') R[k] = RODA[k].valor;
-    else atualizarCintura();
+    R[k] = RODA[k].valor;
   }));
 }
-// 03/11 (auditoria): o Continuar da cintura ficava APAGADO até a pessoa rolar; quem tinha a cintura igual ao número de
-// partida (85 mulher, 95 homem) não conseguia seguir (sessão real de 03/11 parada 2,5 min nesta tela). Agora o botão
-// fica sempre aceso: sem rolar, ele diz o número ("Confirmar 95 cm") e confirmar vale como escolha ('confirmou');
-// rolando, volta a "Continuar". Quem está sem fita segue pelo "Pular" (resultado só com o IMC).
-function atualizarCintura(){
-  if (cur !== 'cintura') return;
-  const cta = $('cta'), v = RODA.cintura.valor;
-  cta.classList.remove('off');
-  cta.textContent = mexeu.cintura || v == null ? 'Continuar' : `Confirmar ${v} cm`;
-  const d = $('dica-cintura'); d.classList.remove('erro');
-  d.textContent = mexeu.cintura ? `Cintura: ${v} cm` : 'Arraste até a sua medida, ou confirme se já for esta.';
-}
-$('pular-cintura').addEventListener('click', () => {
-  R.cintura = 'sem_fita'; delete R.cinturaCm;
-  Analytics.track('answer', { stepId:'cintura', valueText:'sem_fita' });
-  proxima();
-});
 
-// ---------- opções: uma escolha (avança sozinho) e várias ("tentou") ----------
+// ---------- opções: uma escolha (avança sozinho) e várias (data-x = exclusiva, como "Nenhum destes") ----------
 function ligarOpcoes(box){
   box.addEventListener('click', e => {
     const b = e.target.closest('[data-v]'); if (!b) return;
     const q = box.dataset.q, v = b.dataset.v;
     if (box.dataset.tipo === 'varias'){
-      const i = R.tentou.indexOf(v);
-      if (i >= 0) R.tentou.splice(i, 1);
-      else if (v === 'nenhum') R.tentou = ['nenhum'];   // "Ainda nenhum destes" é exclusiva
-      else { R.tentou = R.tentou.filter(x => x !== 'nenhum'); R.tentou.push(v); }
-      box.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(R.tentou.includes(x.dataset.v))));
-      $('cta').classList.toggle('off', !R.tentou.length);
+      const so = !!b.dataset.x, i = R[q].indexOf(v);
+      if (i >= 0) R[q].splice(i, 1);
+      else if (so) R[q] = [v];
+      else { const fora = [...box.querySelectorAll('[data-x]')].map(x => x.dataset.v); R[q] = R[q].filter(x => !fora.includes(x)); R[q].push(v); }
+      box.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(R[q].includes(x.dataset.v))));
+      $('cta').classList.toggle('off', !R[q].length);
       return;
     }
     R[q] = v; if (q === 'fase') delete R.faseAuto;
@@ -192,68 +176,109 @@ function ligarOpcoes(box){
 
 // ---------- botões principais ----------
 $('cta').addEventListener('click', () => {
-  if ($('cta').classList.contains('off')){
-    if (cur === 'nome') return $('nome').focus();
-    return;
-  }
+  if ($('cta').classList.contains('off')){ if (cur === 'nome') $('nome').focus(); return; }
   if (cur === 'capa') return proxima();
   if (cur === 'nome'){ R.nome = nomeBonito(); Analytics.track('answer', { stepId:'nome', valueText:'ok' }); return proxima(); }
   if (cur === 'medidas'){
-    R.peso = RODA.peso.valor; R.altura = RODA.altura.valor;
+    if (RODA.peso.valor != null) R.peso = RODA.peso.valor;
+    if (RODA.altura.valor != null) R.altura = RODA.altura.valor;
     Analytics.track('answer', { stepId:'medidas', valueText:'ok', props:{ peso:R.peso, altura:R.altura, como:{ peso:mexeu.peso || 'padrao', altura:mexeu.altura || 'padrao' } } });
     return proxima();
   }
-  if (cur === 'cintura'){
-    if (RODA.cintura.valor == null) return;
-    if (!mexeu.cintura) mexeu.cintura = 'confirmou';
-    R.cintura = 'sei'; R.cinturaCm = RODA.cintura.valor;
-    Analytics.track('answer', { stepId:'cintura', valueText:'mediu', props:{ cintura:R.cinturaCm, como:mexeu.cintura } });
-    return proxima();
-  }
-  if (cur === 'tentou'){ Analytics.track('answer', { stepId:'tentou', valueText:R.tentou.join('+') }); return proxima(); }
-  if (QUIZ.includes(cur)) return proxima();
+  if (VARIAS.includes(cur)){ Analytics.track('answer', { stepId:cur, valueText:R[cur].join('+') }); return proxima(); }
+  if (UM.includes(cur)) return proxima();
   if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
 });
 
 // =====================================================================
-// MEDIDAS: IMC (OMS; classes da NICE NG246 rec. 1.9.10) e cintura/altura (NICE NG246, 2022). Estimativa, não diagnóstico.
+// IMC (OMS; classes da NICE NG246 rec. 1.9.10). Estimativa, não diagnóstico.
 // =====================================================================
 const FAIXAS = [   // [de, até, nome, zona da barra]
   [0, 18.5, 'abaixo do peso', 0], [18.5, 25, 'peso saudável', 1], [25, 30, 'sobrepeso', 2],
-  [30, 35, 'obesidade classe 1', 3], [35, 40, 'obesidade classe 2', 4], [40, 99, 'obesidade classe 3', 5],
+  [30, 35, 'obesidade grau 1', 3], [35, 40, 'obesidade grau 2', 4], [40, 99, 'obesidade grau 3', 5],
 ];
 function medidas(){
   if (gravida() || !R.peso || !R.altura) return null;
-  const imc = Math.round(R.peso / (R.altura / 100) ** 2 * 10) / 10, f = FAIXAS.find(([a, b]) => imc >= a && imc < b);   // a faixa sai do número mostrado (29,98 → 30,0 → classe 1)
-  const rc = R.cinturaCm ? R.cinturaCm / R.altura : null;
-  const rcFaixa = rc == null ? null : rc < .5 ? 0 : rc < .6 ? 1 : 2;
-  return { imc, faixa:f[2], zona:f[3], de:f[0], ate:f[1], rc:rc == null ? null : Math.round(rc * 100) / 100, rcFaixa };
+  const imc = Math.round(R.peso / (R.altura / 100) ** 2 * 10) / 10, f = FAIXAS.find(([a, b]) => imc >= a && imc < b);   // a faixa sai do número mostrado
+  return { imc, faixa:f[2], zona:f[3], de:f[0], ate:f[1] };
 }
 
 // =====================================================================
-// FONTES (todas conferidas no PubMed ou no site oficial em 02/11/2026; ver pesquisa.md §4)
+// FONTES (conferidas no PubMed ou no texto completo em 02 e 03/11/2026; ver pesquisa-v2.md §2). Na tela, só no rodapé.
 // =====================================================================
 const F = {
-  oms:['OMS, "Obesity and overweight" (2026)', 'https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight'],
-  nice:['NICE, diretriz NG246 (2022/2025): IMC e cintura/altura', 'https://www.nice.org.uk/guidance/ng246'],
-  ashwell:['Ashwell 2012, Obes Rev: cintura/altura × IMC', 'https://doi.org/10.1111/j.1467-789X.2011.00952.x'],
+  oms:['OMS, “Obesity and overweight” (2026): faixas do IMC', 'https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight'],
+  nice:['NICE, diretriz NG246: classes do IMC', 'https://www.nice.org.uk/guidance/ng246'],
+  teede:['Teede 2023, diretriz internacional de SOP (J Clin Endocrinol Metab): ciclo irregular, pelos, apneia', 'https://doi.org/10.1210/clinem/dgad463'],
+  chaker:['Chaker 2017, Lancet: sintomas do hipotireoidismo', 'https://doi.org/10.1016/S0140-6736(17)30703-1'],
+  taylor:['Taylor 2024, Lancet: os sintomas não bastam, o diagnóstico é pelo exame de sangue', 'https://doi.org/10.1016/S0140-6736(24)01614-3'],
+  alberti:['Alberti 2009, Circulation: os 5 sinais da síndrome metabólica (3 fecham o quadro)', 'https://doi.org/10.1161/CIRCULATIONAHA.109.192644'],
+  apovian:['Apovian 2015, diretriz da Endocrine Society: remédios de uso contínuo que mexem no peso', 'https://doi.org/10.1210/jc.2014-3415'],
+  chung:['Chung 2008, Anesthesiology: questionário STOP para apneia do sono', 'https://doi.org/10.1097/ALN.0b013e31816d83e4'],
+  greendale:['Greendale 2019, JCI Insight: gordura e músculo na transição da menopausa', 'https://doi.org/10.1172/jci.insight.124865'],
   polidori:['Polidori 2016, Obesity: a vontade de comer depois de perder peso', 'https://doi.org/10.1002/oby.21653'],
   tasali:['Tasali 2022, JAMA Intern Med: dormir mais e comer menos', 'https://doi.org/10.1001/jamainternmed.2021.8098'],
-  nedeltcheva:['Nedeltcheva 2010, Ann Intern Med: sono curto na dieta', 'https://doi.org/10.7326/0003-4819-153-7-201010050-00006'],
-  watson:['Watson 2015, Sleep: 7 horas ou mais (AASM e SRS)', 'https://doi.org/10.5665/sleep.4716'],
-  oms_at:['Bull 2020, diretriz da OMS de atividade física', 'https://doi.org/10.1136/bjsports-2020-102955'],
-  wewege:['Wewege 2022, Sports Med: força e gordura (58 estudos)', 'https://doi.org/10.1007/s40279-021-01562-2'],
-  leidy:['Leidy 2015, Am J Clin Nutr: proteína no emagrecimento', 'https://doi.org/10.3945/ajcn.114.084038'],
   kreitzman:['Kreitzman 1992, Am J Clin Nutr: glicogênio e água', 'https://doi.org/10.1093/ajcn/56.1.292S'],
-  turicchi:['Turicchi 2020, PLoS One: o peso dentro da semana', 'https://doi.org/10.1371/journal.pone.0232152'],
-  franz:['Franz 2007, J Am Diet Assoc: 80 estudos de emagrecimento', 'https://doi.org/10.1016/j.jada.2007.07.017'],
+  turicchi:['Turicchi 2020, PLoS One: o peso oscila dentro da semana', 'https://doi.org/10.1371/journal.pone.0232152'],
   dansinger:['Dansinger 2005, JAMA: 4 dietas por 1 ano', 'https://doi.org/10.1001/jama.293.1.43'],
+  bull:['Bull 2020, diretriz da OMS de atividade física', 'https://doi.org/10.1136/bjsports-2020-102955'],
+  watson:['Watson 2015, Sleep: 7 horas ou mais', 'https://doi.org/10.5665/sleep.4716'],
 };
 const usadas = new Set();
-const fonte = (...ks) => { ks.forEach(k => usadas.add(k)); return `<p class="fonte">Fonte: ${ks.map(k => esc(F[k][0].split(':')[0])).join('; ')}</p>`; };
+const usa = (...ks) => ks.forEach(k => usadas.add(k));
 
 // =====================================================================
-// CARREGAMENTO em etapas que citam as respostas
+// SINAIS: o que o bloco de saúde mostra. Cada sinal só aparece se a resposta pedir; nenhum é diagnóstico.
+// =====================================================================
+function sinais(){
+  const S = [];   // { id, tit, txt, passo }
+  const ex = sem('exames', 'nada').filter(x => x !== 'sem_exames'), tir = sem('tireoide', 'nenhum'), rem = sem('remedios', 'nenhum');
+  // hormônios da mulher (SOP): ciclo irregular e pelos grossos são critérios; espinha e cabelo sozinhos são sinais fracos (Teede 2023, 1.1.1, 1.3.1, 1.3.2)
+  if (R.sexo === 'f' && !gravida()){
+    const irr = R.ciclo === 'irregular', pelos = R.pele.includes('pelos'), fracos = R.pele.filter(x => ['espinhas','cabelo'].includes(x));
+    if (irr || pelos){
+      const fortes = lista([irr && 'a menstruação falha ou atrasa', pelos && 'aparecem pelos grossos no rosto, no queixo ou na barriga'].filter(Boolean));
+      const extra = fracos.length ? ` Você também marcou ${fracos.length === 2 ? 'espinhas e cabelo afinando' : fracos[0] === 'espinhas' ? 'espinhas que não passam' : 'cabelo afinando'}, que o médico olha junto.` : '';
+      S.push({ id:'sop', tit:'Os seus hormônios', txt:`Você contou que ${fortes}. ${irr && pelos ? 'Esses dois sinais juntos estão entre os critérios' : 'Isso é um dos critérios'} que o médico usa para investigar a síndrome dos ovários policísticos (SOP), uma alteração de hormônio comum que muda o plano para o peso.${extra} Só consulta e exame confirmam, e descartam outras causas.`, passo:'Anote o primeiro dia de cada menstruação nos próximos 2 meses: é a primeira coisa que o Dr. Lucca vai querer ver.' });
+      usa('teede');
+    }
+  }
+  if (R.fase === 'menopausa'){
+    S.push({ id:'menopausa', tit:'A menopausa', txt:'Você contou que está na menopausa ou chegando nela. É quando o ganho de gordura dobra de ritmo e o músculo começa a cair, mesmo que a balança mude pouco. Por isso, o que funcionava antes pode parar de funcionar.', passo:null });
+    usa('greendale');
+  }
+  // tireoide: cansaço, frio, intestino preso e pele seca estão entre os sintomas mais comuns; são inespecíficos (Chaker 2017; Taylor 2024).
+  // Regra de desenho (não é da fonte): o cartão aparece com 2 ou mais marcados.
+  if (tir.length >= 2){
+    S.push({ id:'tireoide', tit:'A tireoide', txt:`Você marcou ${lista(tir.map(x => ROT.tireoide[x]))}. Estão entre os sinais mais comuns da tireoide lenta, que também faz ganhar peso. Mas aparecem em muitas outras situações: quem decide é o exame de sangue, não o sintoma.`, passo:'Se tiver exames de sangue do último ano, separe uma foto deles.' });
+    usa('chaker', 'taylor');
+  }
+  // síndrome metabólica: pressão, glicose, triglicerídeo, HDL e cintura; 3 de 5 fecham o quadro (Alberti 2009)
+  if (ex.length){
+    const n = ex.length;   // "triglicerídeo alto ou HDL baixo" conta como 1 (pode ser 2): conta por baixo
+    S.push({ id:'metabolica', tit:'O metabolismo', txt:`Você já ouviu que tem ${lista(ex.map(x => ROT.exames[x]))}. Pressão, glicose, triglicerídeo, colesterol bom (HDL) e cintura são os 5 sinais da síndrome metabólica: quando 3 aparecem juntos, ela se confirma. Pelas suas respostas, você já tem ${n === 1 ? 'pelo menos 1' : `pelo menos ${n}`}.`, passo:'Separe uma foto dos seus últimos exames de sangue e da última medida de pressão.' });
+    usa('alberti');
+  } else if (R.exames.includes('sem_exames')){
+    S.push({ id:'sem_exames', tit:'Os exames', txt:'Você contou que faz tempo que não faz exames. Pressão, glicose e gordura no sangue não doem quando sobem: só o exame mostra. São 3 dos 5 sinais da síndrome metabólica.', passo:null });
+    usa('alberti');
+  }
+  // remédios: vários remédios de uso contínuo (diabetes, depressão e outros) mexem no peso (Apovian 2015)
+  if (rem.length){
+    S.push({ id:'remedio', tit:'Os remédios', txt:`Você toma remédio ${lista(rem.map(x => ROT.remedios[x]))}. Vários remédios de uso contínuo mexem no peso, para mais ou para menos. Não pare nem troque por conta própria: é uma das coisas que o Dr. Lucca olha com você.`, passo:'Tire uma foto da caixa de cada remédio que você toma todo dia.' });
+    usa('apovian');
+  }
+  // ronco: ronco, cansaço de dia, parar de respirar dormindo e pressão alta são as 4 perguntas do STOP (Chung 2008);
+  // na mulher com SOP, ronco + acordar cansada pede investigar apneia (Teede 2023, 1.10.2)
+  if (R.ronco === 'ronco_cansa'){
+    const pa = R.exames.includes('pressao');
+    S.push({ id:'ronco', tit:'O sono', txt:`Você ronca e acorda ${g('cansada', 'cansado')}${pa ? ', e tem pressão alta' : ''}. Ronco, cansaço de dia, parar de respirar dormindo e pressão alta são as 4 perguntas que os médicos usam para rastrear apneia do sono. Você respondeu sim a ${pa ? '3' : '2'} delas.`, passo:'Pergunte a quem dorme perto de você se você para de respirar ou engasga dormindo.' });
+    usa('chung');
+  }
+  return S;
+}
+
+// =====================================================================
+// CARREGAMENTO em etapas que citam as respostas (VT p.91: "montando seu diagnóstico" repetindo as respostas)
 // =====================================================================
 const PERIM = 326.7;
 function progresso(p, etapa){
@@ -261,13 +286,13 @@ function progresso(p, etapa){
   $('prog-pct').innerHTML = `${Math.round(p)}<small>%</small>`;
   if (etapa != null){ $('prog-etapa').textContent = etapa.txt; [...$('prog-dots').children].forEach((d, i) => d.classList.toggle('on', i === etapa.i)); }
 }
-const FORCA_CURTA = { '0':'ainda sem treino de força', '1':'força 1 vez por semana', '2mais':'força 2 vezes ou mais' };
 const ACONTECE_CURTO = { volta:'emagrece e engorda de novo', vontade:'a vontade de comer vence', balanca:'a balança não desce', constancia:'começa e para', comeco:'ainda não sabe por onde começar' };
 async function calcular(){
   const m = medidas();
+  const saude = [R.sexo === 'f' && !gravida() && R.ciclo ? 'o ciclo' : null, 'a tireoide', 'os exames', 'os remédios'].filter(Boolean);
   const ETAPAS = [
-    { i:0, ate:24, txt:m ? `Calculando seu IMC: ${num(R.altura / 100, 2)} m e ${num(R.peso, R.peso % 1 ? 1 : 0)} kg` : 'Lendo as suas respostas' },
-    { i:1, ate:52, txt:`Cruzando com o que você contou: ${ROT.sono[R.sono]} de sono, ${FORCA_CURTA[R.forca]}` },
+    { i:0, ate:24, txt:m ? `Calculando seu IMC: ${num(R.altura / 100, 2)} m e ${num(R.peso, 0)} kg` : 'Lendo as suas respostas' },
+    { i:1, ate:52, txt:`Cruzando ${lista(saude)}` },
     { i:2, ate:82, txt:`Lendo o que mais acontece: ${ACONTECE_CURTO[R.acontece]}` },
     { i:3, ate:100, txt:'Montando seu resultado' },
   ];
@@ -282,131 +307,94 @@ async function calcular(){
 }
 
 // =====================================================================
-// RESULTADO: medidas → o que mais pesa (perfil) → o que as respostas mostram → o que fazer agora → botão do médico.
-// Toda frase que depende de resposta cita a resposta ("Você contou…", "Você dorme…").
+// RESULTADO (v2, pesquisa-v2.md §3). Ordem da mini VSL de fim de quiz (VT p.91 e p.143): o que apareceu nas respostas
+// → por que o que você tentou não segurou → o que o teste não alcança → o que acontece quando você toca no botão
+// (GA p.23-24) com o motivo para agir agora (L p.52-53: escassez real, ele grava um por um). Linguagem de conversa;
+// nada de "Fonte:" no meio do texto: as fontes ficam no rodapé recolhido.
 // =====================================================================
 const PERFIL = {
   volta:'o peso que volta', vontade:'a vontade de comer', balanca:'a balança que não mostra tudo',
   constancia:'manter por mais de algumas semanas', comeco:'saber por onde começar',
 };
 const sonoCurto = () => ['5menos','6'].includes(R.sono);
+const NUM_TXT = ['nenhum', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis'];
 function montarResultado(){
   usadas.clear();
-  const m = medidas(), nome = nomeBonito(), tent = R.tentou.filter(x => x !== 'nenhum');
-  const nDietas = tent.filter(x => ['dieta','low_carb','jejum'].includes(x)).length;
+  const m = medidas(), nome = nomeBonito(), tent = sem('tentou', 'nenhum'), S = sinais();
   $('r-data').textContent = new Date().toLocaleDateString('pt-BR', { day:'numeric', month:'long', year:'numeric' });
-  $('r-tit').innerHTML = `${nome ? esc(nome) + ', o' : 'O'} que mais pesa no seu caso: <em>${esc(PERFIL[R.acontece])}</em>`;
+  const n = S.length;
+  $('r-tit').innerHTML = n
+    ? `${nome ? esc(nome) + ', as' : 'As'} suas respostas mostram <em>${NUM_TXT[n] || n} ${n === 1 ? 'ponto' : 'pontos'}</em> que merecem o olhar de um médico`
+    : `${nome ? esc(nome) + ', o' : 'O'} que mais pesa no seu caso: <em>${esc(PERFIL[R.acontece])}</em>`;
+  $('r-lead').textContent = n
+    ? `E o que mais acontece com você é ${PERFIL[R.acontece]}. Veja o que cada resposta mostra.`
+    : 'Nas perguntas de saúde, nada chamou a atenção. Veja o que as outras respostas mostram.';
 
   // fase
-  $('r-fase').innerHTML = gravida() ? '<p class="nota-fase">Você contou que está grávida. Na gestação, este teste não calcula IMC nem cintura e não sugere dieta para emagrecer: cada mudança passa pelo seu pré-natal.</p>'
-    : ['amamentando','pos_parto'].includes(R.fase) ? `<p class="nota-fase">Você contou que ${R.fase === 'amamentando' ? 'está amamentando' : 'teve bebê há menos de 1 ano'}. O corpo ainda está mudando: leia os números abaixo como ponto de partida, sem dieta apertada.</p>` : '';
+  $('r-fase').innerHTML = gravida() ? '<p class="nota-fase">Você contou que está grávida. Na gestação, este teste não calcula IMC e não sugere dieta para emagrecer: cada mudança passa pelo seu pré-natal.</p>'
+    : ['amamentando','pos_parto'].includes(R.fase) ? `<p class="nota-fase">Você contou que ${R.fase === 'amamentando' ? 'está amamentando' : 'teve bebê há menos de 1 ano'}. O corpo ainda está mudando: leia o número abaixo como ponto de partida, sem dieta apertada.</p>` : '';
 
-  // medidas
+  // IMC, curto
   let mh = '';
   if (m){
     const pos = Math.max(0, Math.min(100, (m.imc - 15) / 30 * 100));
-    const faixaTxt = m.zona === 0 ? 'abaixo de 18,5' : m.zona === 5 ? 'a partir de 40' : `de ${num(m.de)} a ${num(m.ate - .1)}`;
-    mh += `<div class="metrica"><div class="mt"><small>Seu IMC</small><span class="val">${num(m.imc)}<i>kg/m²</i></span></div>
+    mh = `<div class="metrica"><div class="mt"><small>Seu IMC</small><span class="val">${num(m.imc)}<i>kg/m²</i></span></div>
       <div class="barra" aria-hidden="true"><span class="z0" style="flex:3.5"></span><span class="z1" style="flex:6.5"></span><span class="z2" style="flex:5"></span><span class="z3" style="flex:5"></span><span class="z4" style="flex:5"></span><span class="z5" style="flex:5"></span><i class="pino" style="left:${pos.toFixed(1)}%"></i><span class="rotulos">${[18.5, 25, 30, 35, 40].map(v => `<em style="left:${((v - 15) / 30 * 100).toFixed(1)}%">${num(v, v % 1 ? 1 : 0)}</em>`).join('')}</span></div>
-      <p>Com ${num(R.peso, R.peso % 1 ? 1 : 0)} kg e ${num(R.altura / 100, 2)} m, o seu IMC fica na faixa <b>${esc(m.faixa)}</b> (${faixaTxt}), pelas faixas da OMS e da NICE. O IMC não separa músculo de gordura: é um ponto de partida.</p>${fonte('oms', 'nice')}</div>`;
-    if (m.rc != null){
-      const t = ['abaixo de 0,5: dentro da meta', 'entre 0,5 e 0,59: risco aumentado para a saúde', '0,6 ou mais: risco mais aumentado para a saúde'][m.rcFaixa];
-      mh += `<div class="metrica"><div class="mt"><small>Cintura ÷ altura</small><span class="val">${num(m.rc, 2)}</span></div>
-        <p>Sua cintura de ${R.cinturaCm} cm dividida pela altura dá <b>${num(m.rc, 2)}</b>, ${esc(t)}. A meta da NICE é a cintura ficar abaixo da metade da altura (menos de 0,5); ela mostra risco melhor que o IMC sozinho.${m.imc >= 35 ? ' Com IMC a partir de 35, a NICE usa o IMC como régua principal.' : ''}</p>${fonte('nice', 'ashwell')}</div>`;
-    } else {
-      mh += `<div class="metrica"><div class="mt"><small>Cintura ÷ altura</small><span class="val" style="font-size:1.3rem">sem fita</span></div>
-        <p>Você contou que está sem fita agora. Quando medir, divida pela altura (${R.altura} cm): a meta da NICE é ficar abaixo de 0,5, ou seja, cintura menor que ${Math.floor(R.altura / 2)} cm.</p>${fonte('nice')}</div>`;
-    }
+      <p>Com ${num(R.peso, 0)} kg e ${num(R.altura / 100, 2)} m, você está na faixa <b>${esc(m.faixa)}</b>. É a conta do peso pela altura: não separa músculo de gordura, mas é por onde o médico começa.</p></div>`;
+    usa('oms', 'nice');
   }
   $('r-metricas').innerHTML = mh;
 
-  // o que mais pesa (o perfil decidido pela pergunta "acontece")
-  const fraco = [sonoCurto() && 'o sono', R.forca !== '2mais' && 'a força', R.proteina !== '3mais' && 'a proteína'].filter(Boolean);
-  const cintH = m?.rc != null ? ` A sua hoje: ${R.cinturaCm} cm.` : gravida() ? '' : ' Vale medir a sua.';
+  // os sinais de saúde
+  $('r-sinais').innerHTML = n ? S.map(s => `<div class="sinal"><h4>${esc(s.tit)}</h4><p>${esc(s.txt)}</p></div>`).join('') : '';
+
+  // o que mais acontece (o perfil), em uma fala simples
   const P = {
-    volta:[`Isso tem explicação. Quando o peso cai, o corpo aumenta a vontade de comer: cerca de 100 calorias a mais por dia para cada quilo perdido, mais de 3 vezes o quanto o gasto de energia cai. Não é falta de força de vontade: é o corpo puxando de volta para o peso de antes.`, ['polidori']],
-    vontade:[`A vontade de comer não é só cabeça, e o sono pesa nela: adultos que dormiam menos de 6,5 h e passaram a dormir 1,2 h a mais por noite comeram 270 calorias a menos por dia, sem dieta.${sonoCurto() ? ` Você dorme ${ROT.sono[R.sono]}.` : ` Você dorme ${ROT.sono[R.sono]}, então o próximo passo é ver em que hora e depois de quê ela aparece.`}`, ['tasali']],
-    balanca:[`A balança pesa tudo junto: água, gordura e músculo. O estoque de energia do músculo e do fígado (glicogênio) é guardado com 3 a 4 partes de água, e o peso oscila sozinho dentro da semana. Além disso, com dieta, o peso costuma parar de cair por volta do 6º mês. Por isso a cintura diz mais que a balança.${cintH}`, ['kreitzman', 'turicchi', 'franz']],
-    constancia:[`Comparando 4 dietas famosas por 1 ano, o peso perdido acompanhou o quanto a pessoa conseguiu manter a dieta, e não o tipo de dieta. O melhor plano é o que cabe na sua rotina.${tent.length >= 2 ? ` Você já tentou ${tent.length} caminhos: o que faltou pode não ter sido o caminho.` : ''}`, ['dansinger']],
-    comeco:[`O começo mais seguro é saber onde você está${m ? ` (o IMC${m.rc != null ? ' e a cintura' : ''} acima)` : ''} e mexer primeiro no que mais pesa nas suas respostas${fraco.length ? `: ${lista(fraco)}` : ''}. Uma coisa de cada vez.`, []],
+    volta:['Quando o peso cai, o corpo aumenta a vontade de comer para voltar ao peso de antes. Não é falta de força de vontade: é o corpo se defendendo.', ['polidori']],
+    vontade:[`A vontade de comer não é só cabeça. O sono pesa nela: quem dormia pouco e passou a dormir cerca de 1 hora a mais por noite comeu menos, sem fazer dieta.${sonoCurto() ? ` Você dorme ${ROT.sono[R.sono]}.` : ''}${R.vontade && R.vontade !== 'pouco' ? ` E ela aparece mais ${ROT.vontade[R.vontade]}, você contou.` : ''}`, ['tasali']],
+    balanca:['A balança pesa tudo junto: água, gordura e músculo. O peso sobe e desce sozinho dentro da semana, e a água guardada com o glicogênio muda o número de um dia para o outro. Ela sozinha não mostra o que está mudando por dentro.', ['kreitzman', 'turicchi']],
+    constancia:['Comparando 4 dietas famosas por 1 ano, quem perdeu mais peso foi quem conseguiu manter, e não quem escolheu esta ou aquela dieta. O plano certo é o que cabe na sua rotina.', ['dansinger']],
+    comeco:['O começo mais seguro é saber o que está por trás do peso antes de escolher a dieta. É por isso que as perguntas de saúde vieram antes.', []],
   }[R.acontece];
-  $('r-perfil').innerHTML = `<small>Por que isso acontece</small><p>Você contou: “${esc(R.acontece === 'constancia' ? `Começo ${g('animada', 'animado')} e paro em poucas semanas` : ROT.acontece[R.acontece])}”.</p><p>${esc(P[0])}</p>${P[1].length ? fonte(...P[1]) : ''}`;
+  usa(...P[1]);
+  $('r-perfil').innerHTML = `<small>O que mais acontece com você</small><p>Você contou: “${esc(R.acontece === 'constancia' ? `Começo ${g('animada', 'animado')} e paro em poucas semanas` : ROT.acontece[R.acontece])}”.</p><p>${esc(P[0])}</p>`;
 
-  // o que as respostas mostram (uma linha por resposta, cada uma citando a resposta)
-  const L = [];   // [titulo, selo, classe, texto, fontes]
-  if (sonoCurto()) L.push(['Sono', 'Vale olhar', 'parcial', `Você dorme ${ROT.sono[R.sono]}. Dormir pouco atrapalha quem tenta emagrecer: numa dieta, quem dormiu 5 h e meia em vez de 8 h e meia perdeu 55% menos gordura e teve mais vontade de comer.`, ['nedeltcheva']]);
-  else L.push(['Sono', 'A favor', 'forte', `Você dorme ${ROT.sono[R.sono]}: dentro das 7 horas ou mais por noite recomendadas para adultos.`, ['watson']]);
-  if (R.forca === '0') L.push(['Força', 'Vale olhar', 'parcial', `Você contou que ainda não faz exercício de força. A OMS recomenda força em 2 dias ou mais por semana, e o treino de força reduz gordura, inclusive a da barriga.`, ['oms_at', 'wewege']]);
-  else if (R.forca === '1') L.push(['Força', 'Vale olhar', 'parcial', `Você faz força 1 vez por semana. A OMS recomenda 2 dias ou mais: falta um.`, ['oms_at']]);
-  else L.push(['Força', 'A favor', 'forte', `Você faz força 2 vezes ou mais por semana, como a OMS recomenda. O treino de força reduz gordura, inclusive a da barriga.`, ['oms_at', 'wewege']]);
-  if (R.proteina === '3mais') L.push(['Proteína', 'A favor', 'forte', `Você contou que a proteína entra em 3 refeições ou mais. Na dieta para emagrecer, mais proteína dá mais saciedade e ajuda a manter o músculo.`, ['leidy']]);
-  else L.push(['Proteína', 'Vale olhar', 'parcial', `Você contou que a proteína entra ${ROT.proteina[R.proteina]}. Na dieta para emagrecer, mais proteína dá mais saciedade e ajuda a manter o músculo; os estudos falam em cerca de 25 a 30 g por refeição.`, ['leidy']]);
-  const vt = {
-    noite:[`Você contou que a vontade de comer aparece mais à noite.${sonoCurto() ? ` E você dorme ${ROT.sono[R.sono]}: quem dormia pouco e passou a dormir 1,2 h a mais comeu 270 calorias a menos por dia.` : ' Vale anotar por uma semana o que vem antes dela.'}`, sonoCurto() ? ['tasali'] : []],
-    tarde:['Você contou que a vontade de comer aparece mais à tarde. Vale anotar por uma semana o que você comeu antes e a que horas: ajuda a ver de onde ela vem.', []],
-    ansiedade:[`Você contou que a vontade de comer aparece quando fica ${g('ansiosa', 'ansioso')} ou ${g('preocupada', 'preocupado')}. Conte isso ao Dr. Lucca: o caminho muda quando a vontade vem da ansiedade.`, []],
-    fim_semana:['Você contou que a vontade de comer aparece no fim de semana. É comum: o peso sobe no fim de semana e desce nos dias úteis, cerca de 0,35% dentro da semana.', ['turicchi']],
-    dia_todo:[`Você contou que a vontade de comer aparece o dia todo.${sonoCurto() ? ` Com ${ROT.sono[R.sono]} de sono, ela tende a ser maior.` : ''}${R.proteina !== '3mais' ? ' Mais proteína nas refeições dá mais saciedade.' : ''} Conte isso ao Dr. Lucca no vídeo.`, [...(sonoCurto() ? ['nedeltcheva'] : []), ...(R.proteina !== '3mais' ? ['leidy'] : [])]],
-    pouco:['Você contou que a vontade de comer quase não te atrapalha. É um ponto a favor.', []],
-  }[R.vontade];
-  L.push(['Vontade de comer', R.vontade === 'pouco' ? 'A favor' : 'Vale olhar', R.vontade === 'pouco' ? 'forte' : 'parcial', vt[0], vt[1]]);
-  if (!tent.length) L.push(['O que já tentou', 'A favor', 'forte', 'Você contou que ainda não tentou nenhum destes. Começar sem uma tentativa frustrada é um ponto a favor.', []]);
-  else {
-    let t = `Você já tentou ${lista(tent.map(x => ROT.tentou[x]))}.`, fs = [];
-    if ((nDietas >= 2 || tent.length >= 3) && R.acontece !== 'constancia'){ t += ' Num estudo que comparou 4 dietas famosas por 1 ano, o peso perdido acompanhou o quanto a pessoa conseguiu manter a dieta, não o tipo de dieta.'; fs = ['dansinger']; }
-    if (tent.includes('remedio')) t += ' Se algum remédio faz sentido para você, é decisão com o médico que te acompanha. Este teste não indica remédio.';
-    L.push(['O que já tentou', tent.length >= 3 ? 'Já tentou de tudo' : 'Já tentou', 'nao', t, fs]);
-  }
-  $('r-respostas').innerHTML = `<h3>O que as suas respostas mostram</h3>` + L.map(([t, s, c, x, fs]) =>
-    `<div class="linha"><div class="vt"><h4>${esc(t)}</h4><span class="selo ${c}">${esc(s)}</span></div><p>${esc(x)}</p>${fs.length ? fonte(...fs) : ''}</div>`).join('');
+  // por que o que já tentou não segurou (VT p.91: "preciso explicar por que tudo que você tentou não funcionou")
+  const fora = S.map(s => ({ sop:'os hormônios', menopausa:'a menopausa', tireoide:'a tireoide', metabolica:'o metabolismo', sem_exames:'os exames', remedio:'os remédios', ronco:'o sono' }[s.id]));
+  let t = '';
+  if (tent.length){
+    t = `Você já tentou ${lista(tent.map(x => ROT.tentou[x]))}. `;
+    t += fora.length ? `Tudo isso mexe no que você come e no que você gasta. ${lista(fora).replace(/^./, c => c.toUpperCase())} ${fora.length === 1 ? 'fica' : 'ficam'} de fora, e ${fora.length === 1 ? 'é justamente o que apareceu' : 'são justamente o que apareceu'} nas suas respostas.`
+      : `Quando a mesma coisa não segura, o problema raramente é a sua força de vontade: é o plano que não foi feito para você.`;
+    if (tent.includes('remedio')) t += ' Se algum remédio para emagrecer faz sentido no seu caso, é decisão do médico que te acompanha. Este teste não indica remédio.';
+  } else t = fora.length ? `Você ainda não tentou nada para emagrecer. É a melhor hora para olhar ${lista(fora)} antes de escolher a dieta.` : 'Você ainda não tentou nada para emagrecer: dá para começar pelo caminho certo, sem tentativa frustrada pelo meio.';
+  $('r-tentou').innerHTML = `<h3>Por que o que você tentou não segurou</h3><p>${esc(t)}</p>`;
 
-  // o que fazer agora: 3 passos, na ordem do perfil, só os que as respostas pedem
-  const PASSO = {
-    cintura: !gravida() && 'Meça a cintura uma vez por semana, no mesmo dia, além da balança.',
-    pesar: !gravida() && 'Se for se pesar, faça no mesmo dia da semana e na mesma hora, e compare semana com semana.',
-    sono: sonoCurto() && 'Deite 1 hora mais cedo, todas as noites, nas próximas 4 semanas.',
-    forca: R.forca === '0' ? `Comece com 2 treinos de força por semana, mesmo curtos${gravida() ? ', se o pré-natal liberar' : R.idade === '60mais' || (m && m.imc >= 35) ? ', com orientação de quem acompanha o treino' : ''}.` : R.forca === '1' ? `Acrescente um 2º treino de força na semana${gravida() ? ', se o pré-natal liberar' : ''}.` : false,
-    proteina: R.proteina === '1menos' ? 'Ponha uma fonte de proteína (ovo, frango, peixe, carne, queijo ou iogurte) no café da manhã e no almoço.' : R.proteina === '2' ? 'Ponha uma fonte de proteína em mais uma refeição do dia.' : false,
-    anotar: R.vontade !== 'pouco' && `Anote por uma semana a hora em que a vontade de comer aparece (${ROT.vontade[R.vontade]}, você contou) e o que veio antes.`,
-    uma: 'Escolha uma mudança só e mantenha por 2 semanas antes de somar a próxima.',
-  };
-  const ORD = { volta:['cintura','sono','proteina','forca','anotar','uma'], vontade:['anotar','sono','proteina','forca','uma'], balanca:['cintura','pesar','forca','sono','proteina'],
-                constancia:['uma','sono','forca','proteina','anotar'], comeco:['sono','forca','proteina','cintura','uma'] }[R.acontece];
-  const fazer = [...(gravida() ? ['Na gestação, nada de dieta para emagrecer: leve estas respostas ao seu pré-natal.'] : []), ...ORD.map(k => PASSO[k]).filter(Boolean)];
-  if (fazer.length < 3) fazer.push(PASSO.uma);
-  const tres = [...new Set(fazer)].slice(0, 3);
-  $('r-fazer').innerHTML = `<h3>O que fazer agora</h3><ol class="fazer">${tres.map(x => `<li><span>${esc(x)}</span></li>`).join('')}</ol>`;
+  // o que o teste não alcança + o que acontece ao tocar no botão (GA p.23-24) + o motivo para agir agora (L p.52-53)
+  const passo = (S.find(s => s.passo) || {}).passo || (sonoCurto() ? 'Deite 1 hora mais cedo nas próximas noites e repare na vontade de comer no dia seguinte.'
+    : R.forca === '0' ? 'Comece com 2 treinos de força curtos por semana: é o que a OMS recomenda.' : 'Anote por uma semana a hora em que a vontade de comer aparece e o que veio antes.');
+  if (!S.find(s => s.passo)){ if (sonoCurto()) usa('watson'); else if (R.forca === '0') usa('bull'); }
+  const obj = R.objetivo && R.objetivo !== 'outro' ? ` e chegar ao seu objetivo (“${ROT.objetivo[R.objetivo].replace(/^./, c => c.toLowerCase())}”)` : '';
+  $('r-proximo').innerHTML = `<h3>O que este teste não consegue fazer</h3>
+    <p>Um teste não pede exame, não examina você e não conhece a sua história. ${n ? `Para saber se ${n === 1 ? 'esse ponto pesa' : 'esses pontos pesam'} no seu caso` : 'Para saber o que pesa no seu caso'}${obj}, alguém precisa olhar as suas respostas com você.</p>
+    <h3>O próximo passo</h3>
+    <ol class="passos">
+      <li><b>Você manda o seu código</b><span>A mensagem já vai pronta. É só enviar.</span></li>
+      <li><b>O Dr. Lucca lê as suas respostas</b><span>${n ? `Começando ${n === 1 ? 'pelo ponto' : 'pelos pontos'} acima.` : 'Uma por uma.'}</span></li>
+      <li><b>Você recebe um vídeo dele sobre o seu caso</b><span>De 1 minuto, em até 24 horas. Ele grava um por um, na ordem em que os códigos chegam.</span></li>
+    </ol>
+    <p class="enquanto"><b>Enquanto isso:</b> ${esc(passo)}</p>`;
 
-  // ---------- relatório completo (recolhido) ----------
-  const cel = (t, v, s) => `<div><small>${esc(t)}</small><b>${esc(v)}</b><span>${esc(s)}</span></div>`;
-  $('r-cond').innerHTML = `<h3>Condição geral</h3><div class="cond">
-    ${m ? cel('IMC', num(m.imc), m.faixa) : cel('IMC', '—', gravida() ? 'não calculado na gestação' : '')}
-    ${m?.rc != null ? cel('Cintura ÷ altura', num(m.rc, 2), `${R.cinturaCm} cm de cintura`) : cel('Cintura ÷ altura', '—', gravida() ? 'não calculada na gestação' : 'sem fita hoje')}
-    ${cel('Sono', ROT.sono[R.sono], 'você contou')}${cel('Força', ROT.forca[R.forca].replace('ainda não faz', 'ainda não'), 'você contou')}
-    ${cel('Idade', ROT.idade[R.idade] || '—', 'você contou')}${cel('Proteína', ROT.proteina[R.proteina].replace('em ', ''), 'você contou')}</div>`;
-  const fortes = L.filter(x => x[2] === 'forte').map(x => [x[0], x[3]]);
-  if (m && m.zona === 1) fortes.unshift(['IMC na faixa de peso saudável', 'Pelas faixas da OMS e da NICE.']);
-  if (m?.rcFaixa === 0) fortes.unshift(['Cintura abaixo da metade da altura', 'É a meta da NICE.']);
-  $('r-fortes').innerHTML = fortes.length ? `<h3>Pontos a seu favor</h3>${fortes.slice(0, 4).map(([t, d]) => `<div class="forte"><i>✓</i><div><b>${esc(t)}</b><span>${esc(d)}</span></div></div>`).join('')}` : '';
-  const S = [['O primeiro passo', tres[0]], ['Somar o segundo', tres[1] || PASSO.uma], ['Somar o terceiro', tres[2] || 'Manter os dois primeiros.'],
-             ['Comparar', gravida() ? 'Refazer o teste e levar as respostas ao pré-natal.' : 'Refazer este teste e comparar a cintura e as respostas com as de hoje.']];
-  $('r-plano').innerHTML = `<h3>Seu plano para as próximas 4 semanas</h3>
-    <p class="meta-obj">Seu objetivo: <b>${esc(ROT.objetivo[R.objetivo] || '—')}</b></p>
-    ${S.map(([t, d], i) => `<div class="semana"><em>Sem.<br>${i + 1}</em><div><b>${esc(t)}</b><span>${esc(d)}</span></div></div>`).join('')}`;
-  const ev = [['Dieta muito apertada que você não consegue manter', 'O que pesa no resultado é conseguir manter.'], ['Se guiar pela balança de um dia só', 'O peso oscila sozinho dentro da semana.'],
-              ['Remédio, chá ou suplemento para emagrecer por conta própria', 'Remédio é decisão com o médico que te acompanha.']];
-  if (gravida()) ev.unshift(['Dieta para emagrecer na gestação', 'Cada mudança passa pelo pré-natal.']);
-  usadas.add('dansinger'); usadas.add('turicchi');
-  $('r-evitar').innerHTML = `<h3>Evitar</h3><ul class="evitar">${ev.map(([t, d]) => `<li><div>${esc(t)}<span>${esc(d)}</span></div></li>`).join('')}</ul>`;
-  $('r-fontes').innerHTML = `<h3>Fontes</h3><ol class="fontes">${[...usadas].map(k => `<li><a href="${esc(F[k][1])}" target="_blank" rel="noopener">${esc(F[k][0])}</a></li>`).join('')}</ol>`;
+  $('r-fontes').innerHTML = `<ol class="fontes">${[...usadas].map(k => `<li><a href="${esc(F[k][1])}" target="_blank" rel="noopener">${esc(F[k][0])}</a></li>`).join('')}</ol>`;
   $('r-completo').open = false;
-  $('r-completo').ontoggle = () => { if ($('r-completo').open) Analytics.track('answer', { stepId:'resultado-completo', valueText:'abriu' }); };
+  $('r-completo').ontoggle = () => { if ($('r-completo').open) Analytics.track('answer', { stepId:'resultado-fontes', valueText:'abriu' }); };
 
   Analytics.track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:R.acontece,
-    props:{ codigo:meuCodigo(), perfil:R.acontece, imc:m?.imc ?? null, faixa:m?.faixa ?? null, rc:m?.rc ?? null, respostas:respostasLimpa() } });
-  window.__emagResultado?.({ m, perfil:R.acontece, fazer:tres });
+    props:{ codigo:meuCodigo(), perfil:R.acontece, imc:m?.imc ?? null, faixa:m?.faixa ?? null, sinais:S.map(s => s.id).join('+') || 'nenhum', respostas:respostasLimpa() } });
+  window.__emagResultado?.({ m, perfil:R.acontece, sinais:S.map(s => s.id) });
 }
-function respostasLimpa(){ const { nome, faseAuto, ...r } = R; return { ...r, tentou:R.tentou.join('+') }; }
+function respostasLimpa(){ const { nome, faseAuto, ...r } = R; const o = { ...r }; VARIAS.forEach(k => { o[k] = R[k].join('+'); }); return o; }
+
 
 // =====================================================================
 // FECHAMENTO (mesmo molde da pele2, 02/11 v2): o resultado tem um botão só (o Dr. Lucca explica); o lembrete de 4 semanas saiu.
@@ -466,6 +454,7 @@ function direto_lv(e, esc_){
   if (!NO_INSTAGRAM) return;
   e.preventDefault(); dicaDirect({ lv:true, voz:false });
 }
+
 
 // ---------- início ----------
 document.querySelectorAll('.opts[data-q]').forEach(ligarOpcoes);

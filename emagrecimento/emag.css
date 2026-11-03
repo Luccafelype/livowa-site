@@ -241,3 +241,18 @@ details.completo .bloco{margin-bottom:12px}
 .selo.forte{background:var(--accent-2);color:var(--accent)}
 .fontes{margin:0;padding-left:18px;font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:4px;word-break:break-word}
 .fontes a{color:inherit}
+/* v2 (03/11): resultado em narrativa — sinais de saúde, próximo passo em 3 toques, fontes só no rodapé */
+.r-lead{margin:6px 0 0;font-size:.98rem;color:var(--muted)}
+.sinais .sinal{border-left:3px solid var(--accent);padding:2px 0 2px 12px;display:flex;flex-direction:column;gap:4px}
+.sinais .sinal + .sinal{margin-top:6px}
+.sinais .sinal h4{margin:0;font:700 1rem var(--body);color:var(--fg)}
+.sinais .sinal p{margin:0;font-size:.95rem;line-height:1.45;color:var(--fg)}
+.bloco h3{margin:0}
+.bloco.proximo h3 + p, .bloco > p{line-height:1.45}
+.passos{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:p}
+.passos li{display:grid;grid-template-columns:30px 1fr;column-gap:10px;counter-increment:p}
+.passos li::before{content:counter(p);grid-row:span 2;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font:700 .9rem var(--mono)}
+.passos b{font-size:.96rem}
+.passos span{font-size:.88rem;color:var(--muted)}
+.enquanto{background:var(--accent-2);border-radius:14px;padding:10px 12px;font-size:.92rem;color:var(--fg)!important}
+.enquanto b{color:var(--accent)}

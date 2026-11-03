@@ -8,10 +8,10 @@
 <title>Teste do emagrecimento · Dr. Lucca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="emag.css?v=3">
+<link rel="stylesheet" href="emag.css?v=4">
 </head>
 <body>
-<!-- livowa.com/emagrecimento · teste do emagrecimento no padrão da pele2 (02/11/2026).
+<!-- livowa.com/emagrecimento · teste do emagrecimento no padrão da pele2 (02/11/2026; v2 em 03/11: sem cintura, com saúde e hormônios).
      Pesquisa e fontes: livowa-empresa/tarefas/emagrecimento-teste/pesquisa.md. Uma pergunta decide o perfil: "acontece". -->
 <div class="app">
   <div class="top" id="top" hidden><button class="back" id="back" type="button" aria-label="Voltar">←</button></div>
@@ -22,7 +22,7 @@
       <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
     <p class="kick-capa">Teste do emagrecimento</p>
     <h1>Já tentou de tudo para emagrecer? Veja <em>o que mais pesa</em> no seu caso</h1>
-    <p class="sub">Responda algumas perguntas de toque e veja seu IMC, sua cintura e o que as suas respostas mostram, com a leitura de um médico. Leva poucos minutos.</p>
+    <p class="sub">Perguntas de toque sobre o seu corpo, os seus hormônios e a sua rotina. No fim, você vê o que pode estar segurando o seu peso. Leva poucos minutos.</p>
   </section>
 
   <!-- 1 · sexo (sem padrão; só a mulher vê a fase) -->
@@ -43,6 +43,7 @@
       <button type="button" class="opt" data-v="gravida"><span class="txt">Estou grávida</span><span class="box"></span></button>
       <button type="button" class="opt" data-v="amamentando"><span class="txt">Estou amamentando</span><span class="box"></span></button>
       <button type="button" class="opt" data-v="pos_parto"><span class="txt">Tive bebê há menos de 1 ano</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="menopausa"><span class="txt">Estou na menopausa ou chegando nela</span><span class="box"></span></button>
     </div>
   </section>
 
@@ -68,26 +69,11 @@
   <!-- 5 · peso e altura (03/11, Lucca: "seria melhor ser de arrastar, não de digitar"): rodas de rolar como em /idade e /braco -->
   <section class="screen" data-s="medidas" hidden>
     <h2><span class="nm"></span>qual é o seu peso e a sua altura?</h2>
-    <p class="sub">Arraste cada roda até o seu número. Pode ser aproximado: é com eles que sai o seu IMC.</p>
+    <p class="sub">Arraste cada roda até o seu número. Pode ser aproximado.</p>
     <div class="wheels">
       <div class="wheelbox"><label id="l-peso">Peso</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso" aria-describedby="un-peso"></div><span class="un" id="un-peso" aria-label="quilos">kg</span></div></div>
       <div class="wheelbox"><label id="l-altura">Altura</label><div class="wheel-wrap"><div class="wheel" id="w-altura" tabindex="0" role="listbox" aria-labelledby="l-altura" aria-describedby="un-altura"></div><span class="un" id="un-altura" aria-label="centímetros">cm</span></div></div>
     </div>
-  </section>
-
-  <!-- 6 · cintura (opcional; 03/11, Lucca: a pergunta sim/não "parece muito ruim, pouco prático"): a roda já aberta e
-       "Pular" discreto. Botão sempre aceso: sem rolar, diz "Confirmar 95 cm" (a pessoa confirma o número); rolando,
-       "Continuar". Razão cintura/altura: NICE NG246. -->
-  <section class="screen" data-s="cintura" hidden>
-    <h2>E a sua cintura, quantos centímetros?</h2>
-    <p class="sub">Com ela, o resultado mostra a cintura em relação à altura, que diz mais que o peso sozinho.</p>
-    <div class="como-medir"><svg viewBox="0 0 64 80" aria-hidden="true"><path d="M20 6c-6 10-8 22-6 34s6 22 4 34M44 6c6 10 8 22 6 34s-6 22-4 34" fill="none" stroke="#5f6d65" stroke-width="2.4" stroke-linecap="round"/><path d="M14 38q18 8 36 0" fill="none" stroke="#0d6a4d" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="4 3"/><circle cx="32" cy="45" r="1.8" fill="#5f6d65"/></svg>
-      <span>Fita no meio, entre a última costela e o alto do quadril (logo acima do umbigo). Solte o ar e meça.<span class="fonte">Modo de medir da NICE (diretriz NG246)</span></span></div>
-    <div class="wheels uma">
-      <div class="wheelbox"><label id="l-cintura">Cintura</label><div class="wheel-wrap"><div class="wheel" id="w-cintura" tabindex="0" role="listbox" aria-labelledby="l-cintura" aria-describedby="un-cintura dica-cintura"></div><span class="un" id="un-cintura" aria-label="centímetros">cm</span></div></div>
-    </div>
-    <p class="dica-campo" id="dica-cintura" aria-live="polite">Arraste até a sua medida, ou confirme se já for esta.</p>
-    <button type="button" class="pular" id="pular-cintura"><span>Pular: estou sem fita agora</span><small>o resultado usa só o IMC</small></button>
   </section>
 
   <!-- 7 · A PERGUNTA QUE DECIDE O PERFIL (VT p.92); opções com a fala do público (VOZ-DO-PUBLICO.md) -->
@@ -119,6 +105,65 @@
     </div>
   </section>
 
+  <!-- 03/11 v2 (Lucca: "perguntas simples sobre saúde e problemas hormonais"): bloco de saúde. Critérios e fontes em
+       livowa-empresa/tarefas/emagrecimento-teste/pesquisa-v2.md. Só mulher que menstrua vê o ciclo; só mulher vê os pelos. -->
+  <section class="screen" data-s="ciclo" hidden>
+    <h2><span class="nm"></span>como é a sua menstruação?</h2>
+    <p class="sub">O ciclo conta muito sobre os hormônios.</p>
+    <div class="opts" data-q="ciclo" data-tipo="um">
+      <button type="button" class="opt" data-v="regular"><span class="txt">Vem todo mês, mais ou menos no mesmo intervalo</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="irregular"><span class="txt">Falha meses, atrasa muito ou vem fora de hora</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="hormonio"><span class="txt">Uso anticoncepcional ou DIU hormonal</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="outro"><span class="txt">Não menstruo por outro motivo</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <section class="screen" data-s="pele" hidden>
+    <h2>Você tem algum destes?</h2>
+    <p class="sub">Marque tudo o que acontece com você.</p>
+    <div class="opts" data-q="pele" data-tipo="varias">
+      <button type="button" class="opt" data-v="pelos"><span class="txt">Pelos grossos no rosto, no queixo ou na barriga</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="espinhas"><span class="txt">Espinhas que não passam</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="cabelo"><span class="txt">Cabelo afinando no alto da cabeça</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nenhum" data-x="1"><span class="txt">Nenhum destes</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <section class="screen" data-s="tireoide" hidden>
+    <h2>E no dia a dia, você sente algum destes?</h2>
+    <p class="sub">Marque tudo o que acontece com você.</p>
+    <div class="opts" data-q="tireoide" data-tipo="varias">
+      <button type="button" class="opt" data-v="cansaco"><span class="txt">Cansaço que não passa, mesmo dormindo</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="frio"><span class="txt">Frio quando os outros não sentem</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="intestino"><span class="txt">Intestino preso</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="pele_seca"><span class="txt">Pele muito seca</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nenhum" data-x="1"><span class="txt">Nenhum destes</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <section class="screen" data-s="exames" hidden>
+    <h2>Algum médico ou exame já te disse que você tem:</h2>
+    <p class="sub">Marque tudo o que já ouviu.</p>
+    <div class="opts" data-q="exames" data-tipo="varias">
+      <button type="button" class="opt" data-v="pressao"><span class="txt">Pressão alta</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="glicose"><span class="txt">Glicose alta, pré-diabetes ou diabetes</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="gordura"><span class="txt">Triglicerídeo alto ou colesterol bom (HDL) baixo</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nada" data-x="1"><span class="txt">Nada disso</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="sem_exames" data-x="1"><span class="txt">Faz tempo que não faço exames</span><span class="box"></span></button>
+    </div>
+  </section>
+
+  <section class="screen" data-s="remedios" hidden>
+    <h2>Você toma algum remédio todo dia?</h2>
+    <p class="sub">Alguns remédios mexem no peso. Marque tudo o que vale.</p>
+    <div class="opts" data-q="remedios" data-tipo="varias">
+      <button type="button" class="opt" data-v="humor"><span class="txt">Para depressão ou ansiedade</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="diabetes"><span class="txt">Para diabetes</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="outro"><span class="txt">Outro remédio de uso contínuo</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nenhum" data-x="1"><span class="txt">Nenhum remédio todo dia</span><span class="box"></span></button>
+    </div>
+  </section>
+
   <!-- 9 · vontade de comer (a palavra do público; nunca "fome") -->
   <section class="screen" data-s="vontade" hidden>
     <h2><span class="nm"></span>quando a vontade de comer aparece mais forte?</h2>
@@ -144,6 +189,17 @@
     </div>
   </section>
 
+  <section class="screen" data-s="ronco" hidden>
+    <h2>E o seu sono, como é?</h2>
+    <div class="opts" data-q="ronco" data-tipo="um">
+      <button type="button" class="opt" data-v="ronco_cansa"><span class="txt">Ronco e acordo <span data-g="cansada|cansado">cansada</span></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="ronco"><span class="txt">Ronco, mas acordo bem</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="cansa"><span class="txt">Não ronco, mas acordo <span data-g="cansada|cansado">cansada</span></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="bem"><span class="txt">Durmo e acordo bem</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nao_sei"><span class="txt">Não sei se ronco</span><span class="box"></span></button>
+    </div>
+  </section>
+
   <!-- 11 · força -->
   <section class="screen" data-s="forca" hidden>
     <h2>Quantas vezes por semana você faz exercício de força?</h2>
@@ -152,16 +208,6 @@
       <button type="button" class="opt" data-v="0"><span class="txt">Ainda não faço</span><span class="box"></span></button>
       <button type="button" class="opt" data-v="1"><span class="txt">1 vez por semana</span><span class="box"></span></button>
       <button type="button" class="opt" data-v="2mais"><span class="txt">2 vezes ou mais</span><span class="box"></span></button>
-    </div>
-  </section>
-
-  <!-- 12 · proteína -->
-  <section class="screen" data-s="proteina" hidden>
-    <h2>Em quantas refeições do seu dia entra carne, frango, peixe, ovo, queijo ou iogurte?</h2>
-    <div class="opts" data-q="proteina" data-tipo="um">
-      <button type="button" class="opt" data-v="1menos"><span class="txt">Em 1 ou menos</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="2"><span class="txt">Em 2</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="3mais"><span class="txt">Em 3 ou mais</span><span class="box"></span></button>
     </div>
   </section>
 
@@ -183,26 +229,22 @@
   <section class="screen c" data-s="carregando" hidden>
     <p class="kicker">Teste do emagrecimento</p>
     <div class="prog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="tr"/><circle cx="60" cy="60" r="52" class="pr" id="prog-c"/></svg><b id="prog-pct">0<small>%</small></b></div>
-    <h2 id="prog-etapa">Calculando seu IMC</h2>
+    <h2 id="prog-etapa">Lendo as suas respostas</h2>
     <p class="sub">Isso leva alguns segundos. Não feche a página.</p>
     <div class="dots" id="prog-dots"><i class="on"></i><i></i><i></i><i></i></div>
   </section>
 
-  <!-- 15 · resultado -->
+  <!-- 15 · resultado (03/11 v2, Lucca: "a narrativa não leva à chamada"; pesquisa-v2.md §3): o que apareceu → por que o que
+       tentou não segurou → o que o teste não alcança → o que acontece ao tocar no botão. Fontes só no rodapé recolhido. -->
   <section class="screen res" data-s="resultado" hidden>
-    <div class="res-topo"><span class="data" id="r-data"></span><h2 id="r-tit"></h2></div>
+    <div class="res-topo"><span class="data" id="r-data"></span><h2 id="r-tit"></h2><p class="r-lead" id="r-lead"></p></div>
     <div id="r-fase"></div>
     <div class="metricas" id="r-metricas"></div>
+    <div class="bloco sinais" id="r-sinais"></div>
     <div class="perfil" id="r-perfil"></div>
-    <div class="bloco" id="r-respostas"></div>
-    <div class="bloco" id="r-fazer"></div>
-    <details class="completo" id="r-completo"><summary>Ver relatório completo</summary>
-      <div class="bloco" id="r-cond"></div>
-      <div class="bloco" id="r-fortes"></div>
-      <div class="bloco" id="r-plano"></div>
-      <div class="bloco" id="r-evitar"></div>
-      <div class="bloco" id="r-fontes"></div>
-    </details>
+    <div class="bloco" id="r-tentou"></div>
+    <div class="bloco proximo" id="r-proximo"></div>
+    <details class="completo" id="r-completo"><summary>De onde vêm essas informações</summary><div class="bloco" id="r-fontes"></div></details>
     <p class="aviso">Estimativa pelas suas respostas, não é diagnóstico.</p>
   </section>
 
@@ -232,6 +274,6 @@
   </div></div>
 </div>
 <script defer src="/assets/js/ponte.js?v=1"></script>
-<script type="module" src="app.js?v=4"></script>
+<script type="module" src="app.js?v=5"></script>
 </body>
 </html>
