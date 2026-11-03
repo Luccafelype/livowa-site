@@ -8,7 +8,7 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = 'fe7aa0d+1';
+  const VERSAO = '740efb7+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
@@ -449,16 +449,28 @@
       el.ptext.append(c);
       if (f[fIdx + 1]) { const n = document.createElement('div'); n.className = 'fnext'; n.textContent = f[fIdx + 1]; el.ptext.append(n); }
     } else {
-      // Rolagem: o texto inteiro, cada frase num <span> para ▲/▼ acharem o começo dela.
+      // Rolagem: o texto começa ABAIXO da linha de leitura (espaço no topo = ~55% da faixa) e entra rolando.
+      // Com "Gravar ganchos em sequência" (ou num Gancho), segue a lista: Gancho 1, Gancho 2…, Corpo, CTA, cada bloco
+      // com o título pequeno antes e um espaço maior entre blocos. Cada frase num <span> para ▲/▼.
+      const esp = document.createElement('div'); esp.className = 'resp';
+      esp.style.height = Math.round(el.prompter.clientHeight * 0.55) + 'px';
+      el.ptext.append(esp);
+      const l = roteiros();
       let k = 0;
-      r.body.split('\n').forEach((l, li) => {
-        if (li) el.ptext.append('\n');
-        (l.match(/[^.!?…]+(?:[.!?…]+["'”»)\]]*|$)/g) || []).forEach((x, xi) => {
-          if (!x.trim()) { el.ptext.append(x); return; }
-          const sp = document.createElement('span'); sp.className = 's'; sp.dataset.i = k++; sp.textContent = (xi ? ' ' : '') + x.trim();
-          el.ptext.append(sp);
+      for (let bi = r.i; bi < l.length; bi++) {
+        const bloco = document.createElement('div'); bloco.className = 'rbl';
+        if (l[bi].titulo) { const tt = document.createElement('div'); tt.className = 'ftit'; tt.textContent = l[bi].titulo; bloco.append(tt); }
+        l[bi].body.split('\n').forEach((ln, li) => {
+          if (li) bloco.append('\n');
+          (ln.match(/[^.!?…]+(?:[.!?…]+["'”»)\]]*|$)/g) || []).forEach((x, xi) => {
+            if (!x.trim()) { bloco.append(x); return; }
+            const sp = document.createElement('span'); sp.className = 's'; sp.dataset.i = k++; sp.textContent = (xi ? ' ' : '') + x.trim();
+            bloco.append(sp);
+          });
         });
-      });
+        el.ptext.append(bloco);
+        if (!G.continua(l, bi, S.seq)) break;
+      }
     }
     el.fPrev.disabled = !r; el.fNext.disabled = !r;
     el.prompter.dataset.frase = String(fIdx);
@@ -484,8 +496,9 @@
     if (!cabe()) el.prompter.classList.add('rola'); // depois, rolagem com o dedo; a atual nunca some
     el.prompter.dataset.fsf = String(f);
   }
-  // Rola até a última linha chegar no alto (texto curto também rola um pouco).
-  function pMax() { return frase() ? 0 : Math.max(0, el.ptext.scrollHeight - S.fs * 1.25 * 1.5 - 34); }
+  // Linha de leitura = 1ª linha do alto da faixa (perto da lente). A rolagem só acaba quando a última linha passou dela.
+  const linhaLeitura = () => 10 + S.fs * 1.25;
+  function pMax() { return frase() ? 0 : Math.max(0, el.ptext.scrollHeight - 24 - linhaLeitura() + 2); }
   function prompterClamp() { pOff = Math.min(Math.max(0, pOff), pMax()); }
   function paintPrompter() {
     // Frase a frase não usa deslocamento; na rolagem, translateY simples (sem camada 3D, ver gravar.css).
