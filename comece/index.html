@@ -15,7 +15,7 @@
 <noscript><a href="/idade/">Continuar</a></noscript>
 <script type="module">
 // Link da bio e do Direct: um endereço, vários testes. Desde 01/11 o Lucca escolhe o tema e a % de cada teste na aba
-// Portas da consulta privada (tabela public.rotas, lida pela RPC pública rota_ler). Se o banco não responder em 0,9 s,
+// Portas da consulta privada (tabela public.rotas, lida pela RPC pública rota_ler). Se o banco não responder em 1,5 s,
 // vale a RESERVA abaixo (o estado de 31/10).
 //   ?canal=direct   usa a rota do Direct (as campanhas do OpenReply mandam assim); sem canal = bio
 //   ?camp=PERNAS    a campanha pode ter um teste fixo (definido na aba Portas) ou seguir as % do Direct
@@ -40,7 +40,7 @@ const canal = q.get('canal') === 'direct' ? 'direct' : 'bio', camp = (q.get('cam
 
 async function lerRota(){
   try {
-    const r = await fetch(SUPA + '/rest/v1/rpc/rota_ler', { method:'POST', signal: AbortSignal.timeout(900),
+    const r = await fetch(SUPA + '/rest/v1/rpc/rota_ler', { method:'POST', signal: AbortSignal.timeout(1500),   // 03/11: a RPC leva 0,75-0,87 s; com 0,9 s, 2 em cada 4 entradas caíam na RESERVA e ignoravam a aba Portas
       headers:{ apikey: CHAVE, 'Content-Type':'application/json' }, body: JSON.stringify({ p_canal: canal, p_camp: camp }) });
     if (!r.ok) throw 0;
     const j = await r.json();
