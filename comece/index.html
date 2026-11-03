@@ -34,7 +34,7 @@ const RESERVA = {
   direct: { tema:'longevidade', pesos:{ pele:25, quiz:25, teste:25, braco:25 }, fixo:null },
 };
 const CAMP_RESERVA = { PERNAS:'teste', MUSCULO:'braco', PELE:'pele', IDADE:'quiz' };
-const PELE2_PCT = 50;
+const PELE2_PCT = 100;   // 03/11, Lucca: "pode deixar a pele 2". A pele antiga (/idade/?pele=1) sai do sorteio; continua no ar e abre com ?f=pele. Voltar ao A/B = 50
 const q = new URLSearchParams(location.search);
 const canal = q.get('canal') === 'direct' ? 'direct' : 'bio', camp = (q.get('camp') || '').toUpperCase() || null;
 
@@ -68,6 +68,7 @@ if (!id){
 if (id === 'pele' && q.get('f') !== 'pele' && PELE2_PCT > 0){
   let lado = null;
   try { lado = localStorage.getItem('livowa_pele_ab'); } catch {}
+  if (PELE2_PCT >= 100) lado = 'pele2';   // quem já tinha sorteado a pele antiga também passa para a pele2
   if (lado !== 'pele' && lado !== 'pele2'){ lado = Math.random()*100 < PELE2_PCT ? 'pele2' : 'pele'; try { localStorage.setItem('livowa_pele_ab', lado); } catch {} }
   id = lado;
 }

@@ -47,6 +47,12 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .st button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:10px 4px;font-size:.82rem;font-weight:600;border-radius:10px;line-height:1.2}
 .st button[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:#fff}
 .st button[data-s="nao_quis"][aria-pressed="true"]{background:var(--m);border-color:var(--m)}
+.ac{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.ac>span{font-size:.82rem;color:var(--m);display:flex;justify-content:space-between;gap:8px}
+.ac .acb{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ac button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:8px 4px;font-size:.8rem;font-weight:600;border-radius:10px;line-height:1.2}
+.ac button[aria-pressed="true"]{background:var(--a2);border-color:var(--a);color:var(--a)}
+.ac button[data-a="nao"][aria-pressed="true"]{background:var(--w2);border-color:var(--w);color:var(--w)}
 .nota{width:100%;margin-top:8px;font:15px/1.4 system-ui;padding:9px 11px;border:1.5px solid var(--l);border-radius:10px;background:var(--bg);color:var(--fg);resize:vertical;min-height:40px}
 .acoes{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px}
 .acoes small{color:var(--m)}
@@ -363,12 +369,34 @@ function desenhaCaixa(){
       <div class="tags">${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
         <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
       <div class="resumo">${esc(resumo(l))}</div>
-      ${botoes(l)}
+      ${botoes(l)}${aceiteBox(l)}
       <textarea class="nota" data-c="${esc(l.codigo)}" maxlength="500" rows="1" placeholder="Nota (ex.: mandei áudio, volta segunda)">${esc(l.nota || '')}</textarea>
       <div class="acoes"><small id="ok-${esc(l.codigo)}">${l.atualizado_em ? 'Marcado ' + esc(new Date(l.atualizado_em).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })) : ''}</small>
         <button type="button" class="ver" data-ver="${esc(l.codigo)}">Ver resultado completo</button></div>
     </article>`;
   }).join('');
+}
+// 03/11 (decisão do Lucca: "você deveria saber quem concordou e quem recusou"): aceita orientações e novos testes?
+// Ele pergunta na conversa e marca aqui. sim | nao | '' (sem resposta) + a data em que mudou. Só aparece quando o banco
+// já devolve o campo (script aplicar_aceite_caixa.sh); antes disso a Caixa fica igual.
+const ACEITE = [['sim','Sim'],['nao','Não'],['','Sem resposta']];
+const dataCurta = d => new Date(d).toLocaleDateString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit' });
+const aceiteBox = l => !l || !('aceite' in l) ? '' : `<div class="ac" role="group" aria-label="Aceita orientações e novos testes">
+  <span><b style="font-weight:600">Aceita orientações e novos testes?</b><i id="ac-${esc(l.codigo)}" style="font-style:normal">${l.aceite_em ? 'desde ' + esc(dataCurta(l.aceite_em)) : ''}</i></span>
+  <div class="acb">${ACEITE.map(([v, t]) => `<button type="button" data-a="${v}" data-c="${esc(l.codigo)}" aria-pressed="${(l.aceite || '') === v}">${t}</button>`).join('')}</div></div>`;
+async function marcarAceite(c, v){
+  const l = LEADS.find(x => x.codigo === c); if (!l) return;
+  const antes = { aceite:l.aceite, aceite_em:l.aceite_em }, info = () => document.querySelectorAll(`[id="ac-${c}"]`);
+  const pinta = () => document.querySelectorAll(`.ac button[data-c="${c}"]`).forEach(b => b.setAttribute('aria-pressed', b.dataset.a === (l.aceite || '')));
+  l.aceite = v || null; pinta(); info().forEach(e => { e.textContent = 'Salvando…'; });
+  try {
+    const r = await post({ acao:'aceite', c, aceite:v });
+    const j = await r.json(); if (!j.ok) throw 0;
+    l.aceite = j.gestao?.aceite ?? (v || null); l.aceite_em = j.gestao?.aceite_em || new Date().toISOString();
+    pinta(); info().forEach(e => { e.textContent = 'desde ' + dataCurta(l.aceite_em); });
+  } catch {
+    Object.assign(l, antes); pinta(); info().forEach(e => { e.textContent = 'Não salvou. Tente de novo.'; });
+  }
 }
 const botoes = l => `<div class="st" role="group" aria-label="Status">${STATUS.map(([s, t]) => `<button type="button" data-s="${s}" data-c="${esc(l.codigo)}" aria-pressed="${l.status === s}">${t}</button>`).join('')}</div>`;
 async function carregar(){
@@ -404,6 +432,7 @@ async function marcar(c, status, nota){
   }
 }
 document.addEventListener('click', ev => {
+  const a = ev.target.closest('.ac button'); if (a){ marcarAceite(a.dataset.c, a.dataset.a); return; }
   const s = ev.target.closest('.st button');
   if (s){ s.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === s)); marcar(s.dataset.c, s.dataset.s); return; }
   const v = ev.target.closest('[data-ver]'); if (v){ abrirCodigo(v.dataset.ver, true); return; }
@@ -607,7 +636,7 @@ $('voltar').onclick = () => aba('caixa');
 function abrirCodigo(c, daCaixa){ aba('cod'); $('voltar').hidden = !daCaixa; $('c').value = c; ver(c); }
 function desenhaGestao(c){
   const l = LEADS.find(x => x.codigo === c);
-  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2><div class="q">Status</div>${botoes(l || { codigo:c, status:'novo' })}
+  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2><div class="q">Status</div>${botoes(l || { codigo:c, status:'novo' })}${aceiteBox(l)}
     <textarea class="nota" data-c="${esc(c)}" maxlength="500" rows="1" placeholder="Nota">${esc(l?.nota || '')}</textarea>
     <div class="acoes"><small id="ok-${esc(c)}"></small></div></div>`;
 }
