@@ -17,6 +17,7 @@
      sem envio (connect-src 'none' no CSP). sw.js guarda a página para abrir sem internet. -->
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="gravar.css">
+<script src="texto.js" defer></script>
 <script src="app.js" defer></script>
 </head>
 <body>
@@ -103,6 +104,7 @@
     </div>
     <textarea id="txt" rows="6" spellcheck="false" placeholder="Cole aqui. Um roteiro por bloco, separados por uma linha em branco.&#10;&#10;O 1º termo vira o nome do arquivo (ou comece com uma linha #PERNAS, que não aparece no texto)."></textarea>
     <p class="hint" id="listHint">Toque no roteiro que vai gravar.</p>
+    <label class="sw"><input type="checkbox" id="optSeq"><span>Gravar ganchos em sequência <small>▼ no fim de um roteiro passa para o seguinte; "Gravar o próximo" já abre o seguinte</small></span></label>
     <div class="lista" id="lista"></div>
     <p class="priv">Sem análise de uso. Texto, ajustes e vídeos ficam só neste aparelho.</p>
   </section>
@@ -138,6 +140,14 @@
     <div class="seg" role="radiogroup" aria-label="Modo do texto">
       <button type="button" role="radio" data-modo="frase">Frase a frase</button>
       <button type="button" role="radio" data-modo="rolagem">Rolagem automática</button>
+    </div>
+    <p class="hint">Máximo de palavras por vez <small>(frase a frase)</small></p>
+    <div class="seg seg5" role="radiogroup" aria-label="Máximo de palavras por vez">
+      <button type="button" role="radio" data-max="6">6</button>
+      <button type="button" role="radio" data-max="8">8</button>
+      <button type="button" role="radio" data-max="10">10</button>
+      <button type="button" role="radio" data-max="12">12</button>
+      <button type="button" role="radio" data-max="15">15</button>
     </div>
     <div class="toggles">
       <label class="sw"><input type="checkbox" id="optGrid"><span>Grade de terços</span></label>

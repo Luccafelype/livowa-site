@@ -133,6 +133,9 @@ textarea{display:block;width:100%;min-height:130px;resize:vertical;background:va
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface);padding:4px;border-radius:12px;margin-bottom:12px}
 .seg button{border:0;background:none;min-height:42px;border-radius:9px;font-weight:600;color:var(--muted)}
 .seg button[aria-checked="true"]{background:var(--surface-2);color:var(--fg)}
+.seg.seg5{grid-template-columns:repeat(5,1fr)}
+.item .tt{display:block;font-weight:700;font-size:13px;color:var(--accent);margin-bottom:2px}
+#optSeq+span{font-size:15px}
 .lista{display:flex;flex-direction:column;gap:8px}
 .item{display:grid;grid-template-columns:28px 1fr;gap:10px;text-align:left;border:1px solid var(--line);background:var(--surface);
   border-radius:12px;padding:12px;min-height:56px}

@@ -13,7 +13,7 @@
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase',
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: false,
   };
   const S = Object.assign({}, DEF);
   try {
@@ -23,6 +23,8 @@
   // Valor estragado no localStorage nunca vira letra 0/NaN (o texto sumiria).
   S.fs = Math.min(64, Math.max(18, Math.round(+S.fs) || DEF.fs));
   S.speed = Math.min(25, Math.max(1, Math.round(+S.speed) || DEF.speed));
+  if (![6, 8, 10, 12, 15].includes(+S.maxPal)) S.maxPal = DEF.maxPal;
+  const G = window.GravarTexto; // texto.js: blocos (títulos), frases e pedaços por tela
   let saveT = 0;
   function save() {
     clearTimeout(saveT);
@@ -44,7 +46,7 @@
     optGuide: $('#optGuide'), g916: $('#g916'), zoomRow: $('#zoomRow'), zoom: $('#zoom'), zoomOut: $('#zoomOut'),
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
-    toast: $('#toast'),
+    toast: $('#toast'), optSeq: $('#optSeq'),
     fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
   };
 
@@ -303,23 +305,19 @@
   });
 
   /* ---------- Roteiros ---------- */
-  function roteiros() {
-    return S.texto.replace(/\r/g, '').split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
-  }
-  function splitLabel(t) {
-    const m = t.match(/^#\s*([^\n]*)\n?/);
-    return m ? { label: m[1].trim(), body: t.slice(m[0].length).trim() } : { label: '', body: t };
-  }
+  // Parágrafos viram roteiros; "Gancho 2", "Corpo", "CTA", "#PERNAS"… numa linha sozinha são o título do bloco (texto.js).
+  function roteiros() { return G.blocos(S.texto); }
   function atual() {
     const l = roteiros();
     if (!l.length) return null;
     const i = Math.min(Math.max(0, S.idx | 0), l.length - 1);
-    return Object.assign({ i }, splitLabel(l[i]));
+    return Object.assign({ i }, l[i]);
   }
+  // Nome do arquivo: #PALAVRA → PALAVRA; título "Gancho 2" → GANCHO2; sem título → 1ª palavra do texto.
   function termo() {
     const r = atual();
-    const src = r ? (r.label || r.body) : '';
-    const m = src.normalize('NFD').replace(/[̀-ͯ]/g, '').match(/[A-Za-z0-9]+/);
+    const src = r ? (r.hash ? r.titulo : r.titulo ? r.titulo.replace(/\s+/g, '') : r.body) : '';
+    const m = src.normalize('NFD').replace(/[\u0300-\u036f]/g, '').match(/[A-Za-z0-9]+/);
     return m ? m[0].toUpperCase() : 'TAKE';
   }
   function palavras(t) { return (t.match(/\S+/g) || []).length; }
@@ -329,17 +327,17 @@
     el.listHint.hidden = l.length < 1;
     el.listHint.textContent = l.length > 1 ? l.length + ' roteiros. Toque no que vai gravar.' : 'Um roteiro. Para vários, separe com uma linha em branco.';
     const cur = atual();
-    l.forEach((raw, i) => {
-      const { label, body } = splitLabel(raw);
+    l.forEach((it, i) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'item'; b.dataset.i = i;
       b.setAttribute('aria-pressed', String(!!cur && cur.i === i));
       const n = document.createElement('span'); n.className = 'n'; n.textContent = String(i + 1);
       const w = document.createElement('span');
-      const t = document.createElement('span'); t.className = 't'; t.textContent = (label ? label + ' · ' : '') + body.replace(/\s+/g, ' ');
+      if (it.titulo) { const tt = document.createElement('span'); tt.className = 'tt'; tt.textContent = it.titulo; w.append(tt); }
+      const t = document.createElement('span'); t.className = 't'; t.textContent = it.body.replace(/\s+/g, ' ');
       const m = document.createElement('span'); m.className = 'm';
-      const p = palavras(body);
-      m.textContent = p + ' palavras · ~' + Math.max(1, Math.round(p / 2.5)) + ' s';
+      const p = palavras(it.body), nt = G.telas(it.body, S.maxPal).length;
+      m.textContent = p + ' palavras · ~' + Math.max(1, Math.round(p / 2.5)) + ' s · ' + nt + (nt === 1 ? ' tela' : ' telas');
       w.append(t, m); b.append(n, w);
       el.lista.append(b);
     });
@@ -366,14 +364,8 @@
   let pOff = 0, pPlay = false, pLast = 0, pRaf = 0, fIdx = 0;
   const pps = () => S.speed * 3.5 * (S.fs / 30); // px por segundo
   const frase = () => S.modo !== 'rolagem';
-  function frases() {
-    const r = atual(); if (!r) return [];
-    const out = [];
-    r.body.split(/\n+/).forEach((l) => {
-      (l.match(/[^.!?…]+(?:[.!?…]+["'”»)\]]*|$)/g) || []).forEach((x) => { x = x.trim(); if (x) out.push(x); });
-    });
-    return out;
-  }
+  // Frase a frase: frases quebradas em pedaços de no máximo S.maxPal palavras (texto.js).
+  function frases() { const r = atual(); return r ? G.telas(r.body, S.maxPal) : []; }
   function renderPrompter() {
     const r = atual();
     const f = frases();
@@ -434,7 +426,7 @@
     el.ptext.style.transform = (frase() || pOff <= 0) ? 'none' : 'translateY(' + (-pOff).toFixed(1) + 'px)';
     let tag = '';
     if (atual()) {
-      if (frase()) { const n = frases().length; tag = n ? 'frase ' + (fIdx + 1) + '/' + n : ''; }
+      if (frase()) { const n = frases().length; tag = n ? (fIdx + 1) + '/' + n : ''; }
       else if (!pPlay) {
         if (state === 'rec') tag = 'pausado · toque para seguir';
         else if (pOff === 0) tag = 'toque para testar a rolagem';
@@ -463,7 +455,11 @@
     if (!atual()) return;
     if (frase()) {
       const n = frases().length;
-      fIdx = Math.min(Math.max(0, fIdx + d), Math.max(0, n - 1));
+      const tot = roteiros().length;
+      // Em sequência: passar do fim (ou do começo) de um roteiro vai para o seguinte (ou o anterior).
+      if (S.seq && d > 0 && fIdx >= n - 1 && S.idx < tot - 1) { S.idx += 1; fIdx = 0; save(); }
+      else if (S.seq && d < 0 && fIdx <= 0 && S.idx > 0) { S.idx -= 1; fIdx = Math.max(0, frases().length - 1); save(); }
+      else fIdx = Math.min(Math.max(0, fIdx + d), Math.max(0, n - 1));
       renderPrompter();
     } else {
       const spans = [...el.ptext.querySelectorAll('span.s')];
@@ -660,7 +656,7 @@
   }
   function extOf(m) { return /mp4/.test(m || '') ? 'mp4' : /webm/.test(m || '') ? 'webm' : (isIOS ? 'mp4' : 'webm'); }
 
-  let rec = null, chunks = [], tStart = 0, tStop = 0, startedAt = null, recTimer = 0, countTimer = 0;
+  let rec = null, chunks = [], tStart = 0, tStop = 0, startedAt = null, recTimer = 0, countTimer = 0, recTermo = '';
   let canvas = null, drawing = false, route = '';
   function canvasStream() {
     const [w, h] = camDims();
@@ -697,6 +693,7 @@
     rec.onstop = finishRecording;
     rec.onerror = (e) => { toast('Erro na gravação: ' + ((e.error && e.error.name) || 'desconhecido')); };
     startedAt = new Date();
+    recTermo = termo(); // nome do arquivo = roteiro do começo do take (em sequência o ▼ pode trocar no meio)
     tStart = performance.now(); tStop = 0;
     rec.onstart = () => { tStart = performance.now(); };
     try { rec.start(); } catch (e) { drawing = false; toast('Não deu para gravar: ' + (e.message || e.name)); return false; }
@@ -741,7 +738,7 @@
   const usados = {}; // dois takes no mesmo minuto: o 2º ganha -2 (senão um arquivo cobre o outro em Downloads)
   function fileName(ext) {
     const d = startedAt || new Date();
-    const base = S.tipo + '-' + termo() + '-' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes());
+    const base = S.tipo + '-' + (recTermo || termo()) + '-' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes());
     usados[base] = (usados[base] || 0) + 1;
     return base + (usados[base] > 1 ? '-' + usados[base] : '') + '.' + ext;
   }
@@ -789,7 +786,17 @@
     el.review.hidden = true; setState('idle'); if (!frase()) pTop(); else paintPrompter();
   }
   el.redoBtn.addEventListener('click', () => { discardTake(); closeReview(); countdown(); });
-  el.nextBtn.addEventListener('click', () => { closeReview(); });
+  el.nextBtn.addEventListener('click', () => {
+    // Em sequência: depois de um take, já abre o roteiro seguinte (gancho 1 → gancho 2 → …).
+    if (S.seq && S.idx < roteiros().length - 1) { S.idx += 1; fIdx = 0; save(); renderPrompter(); }
+    closeReview();
+  });
+  el.optSeq.checked = !!S.seq;
+  el.optSeq.addEventListener('change', () => { S.seq = el.optSeq.checked; save(); });
+  document.querySelectorAll('[data-max]').forEach((b) => b.addEventListener('click', () => {
+    S.maxPal = +b.dataset.max; fIdx = 0; save(); renderMax(); renderPrompter();
+  }));
+  function renderMax() { document.querySelectorAll('[data-max]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.max === S.maxPal))); }
   el.saveBtn.addEventListener('click', async () => {
     if (!take) return;
     // iPhone/iPad: folha de compartilhar → "Salvar Vídeo" (Fotos) ou "Salvar em Arquivos".
@@ -813,7 +820,7 @@
   }
 
   /* ---------- Início ---------- */
-  renderTipo(); renderModo(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle');
+  renderTipo(); renderModo(); renderMax(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle');
   keepAwake();
   startCam();
 })();

@@ -1,8 +1,8 @@
 /* livowa.com/gravar — guarda a página para abrir sem internet.
    Rede primeiro (pega a versão nova quando há conexão); sem conexão, usa a cópia guardada.
    Escopo: só /gravar/. Não guarda nem envia vídeo nenhum. */
-const CACHE = 'gravar-v1';
-const FILES = ['./', './index.html', './app.js', './gravar.css'];
+const CACHE = 'gravar-v2';
+const FILES = ['./', './index.html', './texto.js', './app.js', './gravar.css'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
