@@ -8,14 +8,14 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = 'a003992+1';
+  const VERSAO = 'fe7aa0d+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true,
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true, leve: true, semImg: false,
     qual: 'segura', // modo seguro por padrão até achar a causa da imagem parada no iPhone (02/11)
   };
   const S = Object.assign({}, DEF);
@@ -56,7 +56,7 @@
     optGuide: $('#optGuide'), g916: $('#g916'), zoomRow: $('#zoomRow'), zoom: $('#zoom'), zoomOut: $('#zoomOut'),
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
-    toast: $('#toast'), optSeq: $('#optSeq'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
+    toast: $('#toast'), optSeq: $('#optSeq'), rvMot: $('#rvMot'), optLeve: $('#optLeve'), optSemImg: $('#optSemImg'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
     fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
     ritmoBtn: $('#ritmoBtn'), palOut: $('#palOut'), ppmOut: $('#ppmOut'), optAuto: $('#optAuto'), autoBtn: $('#autoBtn'),
     pbar: $('#pbar'), pbarI: $('#pbarI'), verTelas: $('#verTelas'), telas: $('#telas'),
@@ -143,6 +143,8 @@
     document.querySelectorAll('.tool').forEach((b) => { b.disabled = trava && b.dataset.open !== 'ajustes'; });
     document.querySelectorAll('[data-qual], #optCrop, #zoom, #atualizar').forEach((x) => { x.disabled = trava; });
     el.app.dataset.state = s;
+    el.app.classList.toggle('leve', S.leve !== false);
+    el.app.classList.toggle('semimg', !!S.semImg);
   }
 
   /* ---------- Câmera ---------- */
@@ -482,7 +484,8 @@
     if (!cabe()) el.prompter.classList.add('rola'); // depois, rolagem com o dedo; a atual nunca some
     el.prompter.dataset.fsf = String(f);
   }
-  function pMax() { return frase() ? 0 : Math.max(0, el.ptext.scrollHeight - el.prompter.clientHeight * 0.45); }
+  // Rola até a última linha chegar no alto (texto curto também rola um pouco).
+  function pMax() { return frase() ? 0 : Math.max(0, el.ptext.scrollHeight - S.fs * 1.25 * 1.5 - 34); }
   function prompterClamp() { pOff = Math.min(Math.max(0, pOff), pMax()); }
   function paintPrompter() {
     // Frase a frase não usa deslocamento; na rolagem, translateY simples (sem camada 3D, ver gravar.css).
@@ -491,27 +494,39 @@
     if (atual()) {
       if (frase()) { const n = frases().length; tag = n ? (fIdx + 1) + '/' + n : ''; }
       else if (!pPlay) {
-        if (state === 'rec') tag = 'pausado · toque para seguir';
+        if (pOff >= pMax() - 0.5 && pOff > 0) tag = 'fim do texto';
+        else if (state === 'rec') tag = 'pausado · toque para seguir';
         else if (pOff === 0) tag = 'toque para testar a rolagem';
-        else if (pOff >= pMax() - 0.5) tag = 'fim do texto';
         else tag = 'pausado';
       }
     }
     el.ptag.textContent = tag;
     el.prompter.dataset.off = pOff.toFixed(1);
   }
-  function tick(t) {
-    if (!pPlay) return;
+  // Relógio por setInterval de 33 ms (o requestAnimationFrame para quando o Safari esconde/rola a página).
+  // ▲/▼ na rolagem: desliza em 250 ms até o começo da frase; enquanto desliza, a rolagem automática espera.
+  let pSalto = 0;
+  function rolaPara(alvo) {
+    clearInterval(pSalto);
+    const de = pOff, t0 = performance.now(), dur = 250;
+    pSalto = setInterval(() => {
+      const k = Math.min(1, (performance.now() - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      pOff = de + (Math.min(Math.max(0, alvo), pMax()) - de) * e; paintPrompter();
+      if (k >= 1) { clearInterval(pSalto); pSalto = 0; pLast = 0; }
+    }, 16);
+  }
+  function tick() {
+    if (!pPlay || pSalto) return;
+    const t = performance.now();
     const dt = pLast ? Math.min(0.1, (t - pLast) / 1000) : 0;
     pLast = t;
     pOff += pps() * dt;
     const max = pMax();
-    if (pOff >= max) { pOff = max; pPlay = false; }
+    if (pOff >= max) { pOff = max; pPlay = false; clearInterval(pRaf); }
     paintPrompter();
-    if (pPlay) pRaf = requestAnimationFrame(tick);
   }
-  function pStart() { if (!atual() || frase()) return; if (pOff >= pMax() - 0.5) pOff = 0; pPlay = true; pLast = 0; cancelAnimationFrame(pRaf); pRaf = requestAnimationFrame(tick); paintPrompter(); }
-  function pPause() { pPlay = false; cancelAnimationFrame(pRaf); paintPrompter(); }
+  function pStart() { if (!atual() || frase()) return; if (pOff >= pMax() - 0.5) pOff = 0; pPlay = true; pLast = 0; clearInterval(pRaf); pRaf = setInterval(tick, 33); paintPrompter(); }
+  function pPause() { pPlay = false; clearInterval(pRaf); paintPrompter(); }
   function pTop() { pPause(); pOff = 0; fIdx = 0; if (frase()) renderPrompter(); else paintPrompter(); }
   // ▲/▼: frase anterior/seguinte. Não mexe em pausa nem em gravação.
   function passo(d) {
@@ -531,7 +546,7 @@
       let cur = 0;
       spans.forEach((sp, i) => { if (sp.offsetTop - 10 <= pOff + 2) cur = i; });
       const alvo = spans[Math.min(Math.max(0, cur + d), spans.length - 1)];
-      pOff = alvo.offsetTop - 10; prompterClamp(); paintPrompter();
+      rolaPara(alvo.offsetTop - 10); // rolagem suave até a frase ficar na linha de leitura; pausa/rolagem continuam como estavam
     }
     const b = d < 0 ? el.fPrev : el.fNext;
     b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 160);
@@ -550,7 +565,7 @@
   el.prompter.addEventListener('pointermove', (e) => {
     if (!drag) return;
     const dy = e.clientY - drag.y;
-    if (!drag.moved && Math.abs(dy) > 8) { drag.moved = true; if (pPlay) { pPlay = false; cancelAnimationFrame(pRaf); } }
+    if (!drag.moved && Math.abs(dy) > 8) { drag.moved = true; if (pPlay) { pPlay = false; clearInterval(pRaf); } }
     if (drag.moved) { pOff = drag.off - dy; prompterClamp(); paintPrompter(); }
   });
   const endDrag = () => {
@@ -768,6 +783,11 @@
   el.optMirror.addEventListener('change', () => { S.mirrorFront = el.optMirror.checked; save(); applyMirror(); });
   el.optCrop.addEventListener('change', () => { S.recorte916 = el.optCrop.checked; save(); layout(); updateInfo(); });
   el.optGuide.addEventListener('change', () => { S.guia916 = el.optGuide.checked; save(); layout(); });
+  // Experimento (02/11): "Gravação leve" tira das camadas por cima do vídeo ao vivo o que pesa na GPU durante a gravação
+  // (sombra do texto, linhas-guia, fantasma, piscar do REC); "Esconder a imagem" deixa o <video> com opacity 0,01.
+  el.optLeve.checked = S.leve !== false; el.optSemImg.checked = !!S.semImg;
+  el.optLeve.addEventListener('change', () => { S.leve = el.optLeve.checked; save(); setState(state); diag('gravação leve: ' + (S.leve ? 'ligada' : 'desligada')); });
+  el.optSemImg.addEventListener('change', () => { S.semImg = el.optSemImg.checked; save(); setState(state); diag('esconder a imagem gravando: ' + (S.semImg ? 'ligado' : 'desligado')); });
   function renderQual() { document.querySelectorAll('[data-qual]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.qual === S.qual))); }
   document.querySelectorAll('[data-qual]').forEach((b) => b.addEventListener('click', () => {
     if (gravando() || S.qual === b.dataset.qual) return;
@@ -872,13 +892,13 @@
     recTermo = termo(); // nome do arquivo = roteiro do começo do take (em sequência o ▼ pode trocar no meio)
     tStart = performance.now(); tStop = 0;
     rec.onstart = () => { tStart = performance.now(); };
-    // Timeslice de 1000 ms (antes: nenhum, um pedaço só no stop): o arquivo vem em pedaços de 1 s e o vigia
-    // vê a cada 5 s se o tamanho cresce; se parar de crescer com o áudio ligado, é o codificador.
-    try { rec.start(1000); } catch (e) { drawing = false; toast('Não deu para gravar: ' + (e.message || e.name)); return false; }
+    // Sem timeslice (de volta, 02/11): um pedaço só no stop; o tamanho é medido no fim. O crescimento do arquivo
+    // não acusava a imagem parada (o áudio continua entrando) e timeslice no iOS já foi relatado travando vídeo.
+    try { rec.start(); } catch (e) { drawing = false; toast('Não deu para gravar: ' + (e.message || e.name)); return false; }
     const [ow, oh] = outDims();
     const vtS = (stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings && stream.getVideoTracks()[0].getSettings()) || {};
     diag('início · versão ' + VERSAO + ' · qualidade ' + S.qual + ' · track ' + vtS.width + '×' + vtS.height + '@' + (vtS.frameRate ? Math.round(vtS.frameRate) : '?') +
-      ' · arquivo ' + ow + '×' + oh + ' · rota ' + route + ' · ' + (rec.mimeType || mime || '?') + ' · ' + (vbps / 1e6).toFixed(1) + ' Mbps · timeslice 1 s');
+      ' · arquivo ' + ow + '×' + oh + ' · rota ' + route + ' · ' + (rec.mimeType || mime || '?') + ' · ' + (vbps / 1e6).toFixed(1) + ' Mbps · sem timeslice');
     vigiar(true);
     return true;
   }
@@ -926,60 +946,72 @@
     (l.length ? l : ['(vazio)']).forEach((x) => { const li = document.createElement('li'); li.textContent = x; el.diagLog.append(li); });
   }
   el.diagClear.addEventListener('click', () => { try { localStorage.removeItem(LOGK); } catch (e) { /* ok */ } renderDiag([]); });
-  let vigia = null, falhaTake = '';
+  // Vigia (02/11, revisto): o aviso só aparece com 2 sinais concordando, porque o requestVideoFrameCallback pode
+  // parar quando a pré-visualização não é repintada sem que a trilha pare (alarme falso "aos 18 s" com a imagem
+  // do arquivo parando aos 28 s). Sinais: (1) pré-visualização sem quadro novo há 2 s (requestVideoFrameCallback);
+  // (2) trilha de vídeo muda ou não 'live'; (3) quadros decodificados do <video> parados há 2 s (getVideoPlaybackQuality).
+  // 'ended' da trilha basta sozinho. O motivo vai para a revisão (linha curta) e para o diagnóstico.
+  let vigia = null, falhaTake = '', motivoTake = '';
+  const iosVer = () => { const m = navigator.userAgent.match(/OS (\d+)[_.](\d+)/); return m ? 'iOS ' + m[1] + '.' + m[2] : (navigator.platform || 'aparelho'); };
   function vigiar(on) {
     if (vigia) {
       clearInterval(vigia.iv); vigia.off.forEach((f) => f()); vigia = null;
     }
     el.alerta.hidden = true;
     if (!on || !stream) return;
-    falhaTake = '';
+    falhaTake = ''; motivoTake = '';
     const vt = stream.getVideoTracks()[0];
-    const v = { quadros: 0, ult: -1, parado: 0, avisou: false, off: [] };
+    const v = { quadros: 0, ultQ: -1, paradoQ: 0, ultD: -1, paradoD: 0, avisou: false, off: [], prevSem: false };
     const ouve = (alvo, ev, fn) => { alvo.addEventListener(ev, fn); v.off.push(() => alvo.removeEventListener(ev, fn)); };
     const seg = () => Math.round((performance.now() - tStart) / 1000);
+    const anota = (m) => { if (!motivoTake) motivoTake = m; };
     const falha = (motivo) => {
+      anota(motivo);
       diag('IMAGEM PAROU aos ' + seg() + ' s: ' + motivo);
-      if (!v.avisou) { enviaDiag('imagem parada aos ' + seg() + ' s'); }
-      if (!v.avisou) { v.avisou = true; falhaTake = 'A câmera parou aos ' + seg() + ' s neste take. Grave de novo.'; el.alerta.textContent = 'A câmera parou aos ' + seg() + ' s — pare e grave de novo'; el.alerta.hidden = false; }
+      if (!v.avisou) {
+        v.avisou = true; enviaDiag('imagem parada aos ' + seg() + ' s: ' + motivo);
+        falhaTake = 'A câmera parou aos ' + seg() + ' s neste take. Grave de novo.';
+        el.alerta.textContent = 'A câmera parou aos ' + seg() + ' s — pare e grave de novo'; el.alerta.hidden = false;
+      }
     };
     if (vt) {
-      ouve(vt, 'ended', () => falha('track de vídeo terminou (ended)'));
-      ouve(vt, 'mute', () => { diag('track de vídeo mudo (mute) aos ' + seg() + ' s'); });
-      ouve(vt, 'unmute', () => diag('track de vídeo voltou (unmute) aos ' + seg() + ' s'));
+      ouve(vt, 'ended', () => falha('trilha encerrada aos ' + seg() + ' s'));
+      ouve(vt, 'mute', () => { anota('trilha de vídeo muda aos ' + seg() + ' s'); diag('trilha de vídeo muda (mute) aos ' + seg() + ' s'); });
+      ouve(vt, 'unmute', () => diag('trilha de vídeo voltou (unmute) aos ' + seg() + ' s'));
     }
-    ouve(el.cam, 'pause', () => { diag('<video> pausou aos ' + seg() + ' s; play() de novo'); try { const p = el.cam.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ok */ } });
+    ouve(el.cam, 'pause', () => { anota('<video> pausado aos ' + seg() + ' s'); diag('<video> pausou aos ' + seg() + ' s; play() de novo'); try { const p = el.cam.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ok */ } });
     ouve(el.cam, 'stalled', () => diag('<video> stalled aos ' + seg() + ' s'));
     ouve(document, 'visibilitychange', () => diag('página ' + (document.visibilityState === 'visible' ? 'visível' : 'ESCONDIDA') + ' aos ' + seg() + ' s'));
-    if (el.cam.requestVideoFrameCallback) {
+    const temRVFC = !!el.cam.requestVideoFrameCallback;
+    if (temRVFC) {
       const conta = () => { if (vigia !== v) return; v.quadros++; el.cam.requestVideoFrameCallback(conta); };
       el.cam.requestVideoFrameCallback(conta);
     }
-    // A cada 1 s: o quadro avançou? (contador do requestVideoFrameCallback; senão quadros decodificados; senão currentTime)
-    const marca = () => {
-      if (el.cam.requestVideoFrameCallback) return v.quadros;
-      const q = el.cam.getVideoPlaybackQuality && el.cam.getVideoPlaybackQuality();
-      return q && q.totalVideoFrames ? q.totalVideoFrames : el.cam.currentTime;
-    };
-    let tic = 0, ultBytes = -1;
+    const decod = () => { try { const q = el.cam.getVideoPlaybackQuality && el.cam.getVideoPlaybackQuality(); return q && q.totalVideoFrames > 0 ? q.totalVideoFrames : -1; } catch (e) { return -1; } };
     v.iv = setInterval(() => {
-      if (++tic % 5 === 0) {
-        const bytes = chunks.reduce((n, c) => n + c.size, 0);
-        diag(seg() + ' s: arquivo ' + fmtMB(bytes) + (bytes === ultBytes ? ' — PAROU DE CRESCER (codificador?)' : ''));
-        ultBytes = bytes;
-      }
-      const m = marca();
-      if (m === v.ult) { v.parado += 1; if (v.parado >= 2) falha('nenhum quadro novo há ' + v.parado + ' s' + (vt ? ' (track ' + vt.readyState + (vt.muted ? ', mudo' : '') + ')' : '')); }
-      else v.parado = 0;
-      v.ult = m;
+      // (1) pré-visualização (requestVideoFrameCallback)
+      if (temRVFC) { if (v.quadros === v.ultQ) v.paradoQ++; else v.paradoQ = 0; v.ultQ = v.quadros; }
+      // (3) quadros decodificados
+      const d = decod();
+      if (d >= 0) { if (d === v.ultD) v.paradoD++; else v.paradoD = 0; v.ultD = d; }
+      const s1 = temRVFC && v.paradoQ >= 2;
+      const s2 = !!vt && (vt.muted || vt.readyState !== 'live');
+      const s3 = d >= 0 && v.paradoD >= 2;
+      const n = (s1 ? 1 : 0) + (s2 ? 1 : 0) + (s3 ? 1 : 0);
+      if (n >= 2) falha([s1 && 'pré-visualização sem quadro novo', s2 && ('trilha ' + (vt.muted ? 'muda' : vt.readyState)), s3 && 'quadros decodificados parados'].filter(Boolean).join(' + ') + ' aos ' + seg() + ' s');
+      else if (n === 1 && !v.prevSem) {
+        v.prevSem = true;
+        const so = s1 ? 'sem quadro novo na pré-visualização, trilha ativa' : s2 ? 'trilha ' + (vt.muted ? 'muda' : vt.readyState) + ', pré-visualização andando' : 'quadros decodificados parados, pré-visualização andando';
+        anota(so + ' aos ' + seg() + ' s'); diag('sinal isolado (sem aviso): ' + so + ' aos ' + seg() + ' s');
+      } else if (n === 0) v.prevSem = false;
     }, 1000);
     vigia = v;
   }
   function countdown() {
     sheet(null);
     setState('count');
-    if (!frase()) pTop(); // frase a frase: grava a partir da frase escolhida (↺ volta à 1ª)
-    else aParar();        // o tempo da tela começa junto com a gravação
+    pTop();               // gravação nova começa do começo do roteiro atual (frase a frase: tela 1; rolagem: topo)
+    if (frase()) aParar(); // o tempo da tela começa junto com a gravação
     logTake = []; tStart = performance.now();
     marcaAltura();
     keepAwake('gravar');
@@ -1051,6 +1083,7 @@
     el.rvName.textContent = name;
     el.dlLink.href = url; el.dlLink.download = name;
     el.rvTip.textContent = falhaTake; el.rvTip.hidden = !falhaTake;
+    el.rvMot.textContent = 'vigia: ' + (motivoTake || 'nada estranho') + ' · versão ' + VERSAO + ' · ' + iosVer();
     if (falhaTake) diag('take com imagem parada');
     enviaDiag(falhaTake ? 'fim com imagem parada' : 'fim', Math.round(take.ms / 100) / 10, blob.size);
     el.review.dataset.bytes = String(blob.size);

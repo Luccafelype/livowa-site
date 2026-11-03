@@ -171,6 +171,8 @@
       <button type="button" role="radio" data-qual="alta">Alta (1080p)</button>
     </div>
     <div class="toggles">
+      <label class="sw"><input type="checkbox" id="optLeve" checked><span>Gravação leve <small>gravando: sem sombra no texto, sem linhas-guia e sem fantasma por cima do vídeo (teste contra a imagem parada)</small></span></label>
+      <label class="sw"><input type="checkbox" id="optSemImg"><span>Esconder a imagem enquanto grava <small>a câmera continua gravando; a tela fica preta com o texto</small></span></label>
       <label class="sw"><input type="checkbox" id="optGrid"><span>Grade de terços</span></label>
       <label class="sw"><input type="checkbox" id="optEye"><span>Marca da altura dos olhos <small>arraste a linha amarela</small></span></label>
       <label class="sw"><input type="checkbox" id="optMirror" checked><span>Espelhar a câmera frontal na tela <small>o arquivo nunca sai espelhado</small></span></label>
@@ -199,6 +201,7 @@
       <p class="rv-dur" id="rvDur">0,0 s</p>
       <p class="rv-meta" id="rvMeta"></p>
       <p class="rv-name" id="rvName"></p>
+      <p class="rv-mot" id="rvMot"></p>
     </div>
     <div class="rv-actions">
       <button type="button" class="btn big" id="redoBtn">Regravar</button>
