@@ -12,6 +12,7 @@
           palavra de ligação e sem sobra de 1-2 palavras.
      Espaço não separável (U+00A0) entre duas palavras = "juntar" manual: ali nunca há corte, e um pedaço
      juntado à mão não é quebrado pelo limite.
+   - duracao(tela, ppm, próxima): segundos que a tela fica no ar no "passar sozinho".
    - juntar(corpo, telas, k) / dividir(corpo, tela, i): edições manuais, devolvem o corpo novo.
    - editar(texto, item, corpoNovo): devolve o texto inteiro com o corpo trocado. */
 (function (root) {
@@ -166,7 +167,18 @@
     return txt.slice(0, item.bStart) + corpo + txt.slice(item.bEnd);
   }
 
-  const api = { rotulo, blocos, telas, juntar, dividir, editar, palavrasDaTela, palavras: (t) => palavras(t).length };
+  // Tempo de leitura de uma tela (s): palavras ÷ ritmo (palavras/min) + pausa curta no fim:
+  // 0,6 s depois de . ? ! …; 0,35 s depois de , ; : (ou antes de um travessão na tela seguinte); 0 no corte por limite.
+  function duracao(texto, ppm, proximo) {
+    const n = palavras(texto).length;
+    const t = String(texto || '').trim();
+    let pausa = 0;
+    if (FECHA.test(t)) pausa = 0.6;
+    else if (PAUSA.test(t) || /^[—–-]\s/.test(String(proximo || '').trim())) pausa = 0.35;
+    return Math.round((n / (Math.max(30, +ppm || 150) / 60) + pausa) * 100) / 100;
+  }
+
+  const api = { rotulo, blocos, telas, juntar, dividir, editar, palavrasDaTela, duracao, palavras: (t) => palavras(t).length };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.GravarTexto = api;
 })(typeof self !== 'undefined' ? self : this);

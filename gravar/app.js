@@ -13,7 +13,7 @@
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: false,
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: false, ppm: 150, auto: true,
   };
   const S = Object.assign({}, DEF);
   try {
@@ -24,6 +24,7 @@
   S.fs = Math.min(64, Math.max(18, Math.round(+S.fs) || DEF.fs));
   S.speed = Math.min(25, Math.max(1, Math.round(+S.speed) || DEF.speed));
   S.maxPal = Math.min(20, Math.max(4, Math.round(+S.maxPal) || DEF.maxPal));
+  S.ppm = Math.min(220, Math.max(90, Math.round((+S.ppm || DEF.ppm) / 10) * 10));
   const G = window.GravarTexto; // texto.js: blocos (títulos), frases e pedaços por tela
   let saveT = 0;
   function save() {
@@ -46,9 +47,10 @@
     optGuide: $('#optGuide'), g916: $('#g916'), zoomRow: $('#zoomRow'), zoom: $('#zoom'), zoomOut: $('#zoomOut'),
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
-    toast: $('#toast'), optSeq: $('#optSeq'),
+    toast: $('#toast'), optSeq: $('#optSeq'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
     fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
-    palStep: $('#palStep'), palOut: $('#palOut'), verTelas: $('#verTelas'), telas: $('#telas'),
+    ritmoBtn: $('#ritmoBtn'), palOut: $('#palOut'), ppmOut: $('#ppmOut'), optAuto: $('#optAuto'), autoBtn: $('#autoBtn'),
+    pbar: $('#pbar'), pbarI: $('#pbarI'), verTelas: $('#verTelas'), telas: $('#telas'),
   };
 
   const fmtS = (ms) => (ms / 1000).toFixed(1).replace('.', ',') + ' s';
@@ -126,12 +128,16 @@
     if (n === 'NotReadableError') return 'A câmera está em uso por outro app. Feche o outro app e toque abaixo.';
     return 'Não consegui abrir a câmera (' + (n || 'erro') + ').';
   }
+  // Regra (02/11, câmera travou aos 17 s no iPhone): durante a contagem e a gravação NADA chama getUserMedia,
+  // applyConstraints, track.stop(), troca o srcObject ou recria o canvas. Só depois do stop.
+  const gravando = () => state === 'rec' || state === 'count';
   function stopCam() {
+    if (gravando()) { diag('stopCam bloqueado durante a gravação'); return; }
     if (stream) stream.getTracks().forEach((t) => t.stop());
     stream = null; camReady = false;
   }
   async function startCam() {
-    if (state === 'rec' || state === 'count') return;
+    if (gravando()) { diag('startCam bloqueado durante a gravação'); return; }
     stopCam();
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       showCamMsg('Este navegador não abre a câmera aqui. Use o Safari ou o Chrome, numa página https.', false);
@@ -144,9 +150,9 @@
       // 4:3 em pé costuma ser o campo cheio do sensor da frontal; depois 9:16. O iOS pode ler largura/altura
       // na orientação do sensor (deitado) e entregar um quadro deitado e cortado; por isso, com o aparelho
       // em pé, quadro deitado = tenta o próximo pedido (incluindo as medidas trocadas).
-      { video: v(1440, 1920), audio },
+      { video: v(1080, 1440), audio },
       { video: v(1080, 1920), audio },
-      { video: v(1920, 1440), audio },
+      { video: v(1440, 1080), audio },
       { video: v(1920, 1080), audio },
       { video: v(), audio },
       { video: true, audio: true },
@@ -209,13 +215,14 @@
       el.zoom.min = z.min; el.zoom.max = z.max; el.zoom.step = z.step || 0.1; el.zoom.value = z.min;
       el.zoomOut.textContent = (+z.min).toFixed(1).replace('.', ',') + '×';
       el.zoomRow.hidden = false;
-      await vt.applyConstraints({ advanced: [{ zoom: z.min }] });
+      if (!gravando()) await vt.applyConstraints({ advanced: [{ zoom: z.min }] });
     } catch (e) { /* sem zoom controlável */ }
   }
   el.zoom.addEventListener('input', () => {
     const vt = stream && stream.getVideoTracks()[0];
     const v = +el.zoom.value;
     el.zoomOut.textContent = v.toFixed(1).replace('.', ',') + '×';
+    if (gravando()) return;
     if (vt && vt.applyConstraints) vt.applyConstraints({ advanced: [{ zoom: v }] }).catch(() => {});
   });
   el.camRetry.addEventListener('click', startCam);
@@ -261,7 +268,8 @@
     if (direct()) return [w, h];
     let sw = w, sh = h;
     if (S.recorte916) { if (w / h > 9 / 16) sw = h * 9 / 16; else sh = w * 16 / 9; }
-    const k = Math.min(1, 1920 / Math.max(sw, sh));
+    // Canvas pesa no iPhone: no máximo 1080×1440 em pixels (3:4 → 1080×1440; 9:16 → 936×1664).
+    const k = Math.min(1, Math.sqrt((1080 * 1440) / (sw * sh)));
     return [Math.round(sw * k / 2) * 2, Math.round(sh * k / 2) * 2];
   }
   function updateInfo() {
@@ -345,7 +353,7 @@
   }
   el.lista.addEventListener('click', (e) => {
     const b = e.target.closest('.item'); if (!b) return;
-    S.idx = +b.dataset.i; fIdx = 0; divK = -1; save(); renderLista(); renderPrompter(); renderTelas();
+    S.idx = +b.dataset.i; fIdx = 0; divK = -1; save(); renderLista(); renderPrompter(); renderTelas(); aParar();
   });
   el.txt.value = S.texto;
   el.txt.addEventListener('input', () => {
@@ -353,7 +361,7 @@
     const n = roteiros().length;
     if (S.idx >= n) S.idx = Math.max(0, n - 1);
     divK = -1;
-    save(); renderLista(); renderPrompter(); renderTelas();
+    save(); renderLista(); renderPrompter(); renderTelas(); aParar();
   });
   document.querySelectorAll('[data-tipo]').forEach((b) => b.addEventListener('click', () => { S.tipo = b.dataset.tipo; save(); renderTipo(); }));
   function renderTipo() {
@@ -376,7 +384,8 @@
     el.app.style.setProperty('--fs', S.fs + 'px');
     el.spdOut.textContent = S.speed; el.fsOut.textContent = S.fs;
     el.spdStep.hidden = frase();
-    el.palStep.hidden = !frase(); el.palOut.textContent = S.maxPal;
+    el.ritmoBtn.hidden = !frase(); el.ritmoBtn.textContent = S.maxPal + ' pal · ' + S.ppm + '/min';
+    el.palOut.textContent = S.maxPal; el.ppmOut.textContent = S.ppm; el.optAuto.checked = !!S.auto;
     el.ptext.classList.toggle('empty', !r);
     el.ptext.classList.toggle('frase', frase() && !!r);
     el.ptext.textContent = '';
@@ -411,10 +420,10 @@
     let f = S.fs;
     el.app.style.setProperty('--fsf', f + 'px');
     el.prompter.dataset.fsf = String(f);
+    el.prompter.classList.remove('rola'); // antes do return: na rolagem a .rola (overflow) não pode ficar
     if (!frase() || !atual()) return;
     const n = el.ptext.querySelector('.fnext');
     if (n) n.hidden = false;
-    el.prompter.classList.remove('rola');
     const ph = el.prompter.clientHeight;
     if (ph < 40) return; // medição no meio de um redimensionamento: fica a letra cheia; o próximo layout() refaz
     const cabe = () => el.ptext.scrollHeight <= ph;
@@ -465,6 +474,7 @@
       else if (S.seq && d < 0 && fIdx <= 0 && S.idx > 0) { S.idx -= 1; fIdx = Math.max(0, frases().length - 1); save(); }
       else fIdx = Math.min(Math.max(0, fIdx + d), Math.max(0, n - 1));
       renderPrompter();
+      aRestartTela(); // ▲/▼ reiniciam o tempo da tela (se estiver passando sozinho, segue passando)
     } else {
       const spans = [...el.ptext.querySelectorAll('span.s')];
       if (!spans.length) return;
@@ -501,6 +511,7 @@
     else paintPrompter();
   };
   el.prompter.addEventListener('pointerup', endDrag);
+  el.prompter.addEventListener('click', () => { if (frase() && S.auto) (aRun ? aPause() : aPlay()); });
   el.prompter.addEventListener('pointercancel', () => { drag = null; paintPrompter(); });
   // Teclado (Mac): ↑/↓ frase; espaço = próxima frase (frase a frase) ou pausa/continua (rolagem).
   // Espaço nunca aciona o botão em foco (gravar), nem fora dos campos de texto.
@@ -514,7 +525,7 @@
   }, true);
   document.addEventListener('keyup', (e) => { if ((e.key === ' ' || e.code === 'Space') && teclaLivre(e)) e.preventDefault(); }, true);
   document.querySelectorAll('[data-modo]').forEach((b) => b.addEventListener('click', () => {
-    S.modo = b.dataset.modo; save(); pTop(); renderModo(); renderPrompter(); layout();
+    S.modo = b.dataset.modo; save(); pTop(); aParar(); renderModo(); renderPrompter(); layout(); paintAuto();
   }));
   function renderModo() { document.querySelectorAll('[data-modo]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.modo === (frase() ? 'frase' : 'rolagem')))); }
   el.infoBtn.addEventListener('click', (e) => {
@@ -523,7 +534,44 @@
     el.app.classList.toggle('showsel', on); el.infoBtn.setAttribute('aria-pressed', String(on));
   });
 
-  document.querySelector('.quick').addEventListener('click', (e) => {
+  /* ---------- Passar sozinho (frase a frase) ---------- */
+  // Cada tela fica no ar o tempo de leitura (texto.js: duracao) e passa para a próxima; para na última.
+  let aRun = false, aT0 = 0, aGone = 0, aDurMs = 0, aRaf = 0, aFim = false;
+  function aDurAtual() { const f = frases(); return f.length ? G.duracao(f[fIdx], S.ppm, f[fIdx + 1]) * 1000 : 0; }
+  function paintAuto() {
+    const on = frase() && !!S.auto && !!atual();
+    el.pbar.hidden = !on; el.autoBtn.hidden = !on;
+    el.autoBtn.setAttribute('aria-pressed', String(aRun));
+    el.autoBtn.textContent = aRun ? '❚❚' : '▶';
+    el.autoBtn.setAttribute('aria-label', aRun ? 'Pausar as telas' : 'Passar as telas sozinho');
+    paintBar(aDurMs ? aGone / aDurMs : 0);
+  }
+  function paintBar(p) { el.pbarI.style.width = (Math.min(1, Math.max(0, p)) * 100).toFixed(1) + '%'; }
+  // Relógio por setInterval (50 ms), não requestAnimationFrame: o rAF para quando o Safari esconde ou rola a página.
+  function aTick() {
+    if (!aRun) return;
+    const now = performance.now();
+    aGone = Math.max(0, now - aT0);
+    if (aGone >= aDurMs) {
+      if (fIdx < frases().length - 1) { fIdx += 1; renderPrompter(); aDurMs = aDurAtual(); aT0 = now; aGone = 0; }
+      else { aGone = aDurMs; aRun = false; aFim = true; clearInterval(aRaf); paintAuto(); return; } // fim do roteiro: para na última
+    }
+    paintBar(aDurMs ? aGone / aDurMs : 0);
+  }
+  function aPlay() {
+    if (!frase() || !S.auto || !atual()) return;
+    if (aFim) { fIdx = 0; aGone = 0; aFim = false; renderPrompter(); } // ▶ depois do fim: ensaia de novo do começo
+    aDurMs = aDurAtual(); aT0 = performance.now() - aGone; aRun = true;
+    clearInterval(aRaf); aRaf = setInterval(aTick, 50); paintAuto();
+  }
+  function aPause() { if (aRun) aGone = Math.min(aDurMs, performance.now() - aT0); aRun = false; clearInterval(aRaf); paintAuto(); }
+  function aRestartTela() { aGone = 0; aFim = false; aT0 = performance.now(); aDurMs = aDurAtual(); paintAuto(); }
+  function aParar() { aPause(); aRestartTela(); }
+  el.autoBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+  el.autoBtn.addEventListener('click', (e) => { e.stopPropagation(); (aRun ? aPause() : aPlay()); el.autoBtn.blur(); });
+  el.optAuto.addEventListener('change', () => { S.auto = el.optAuto.checked; save(); aParar(); });
+
+  function onAct(e) {
     const b = e.target.closest('[data-act]'); if (!b) return;
     const a = b.dataset.act;
     if (a === 'spd-') S.speed = Math.max(1, S.speed - 1);
@@ -532,9 +580,14 @@
     if (a === 'fs+') S.fs = Math.min(64, S.fs + 2);
     if (a === 'pal-') S.maxPal = Math.max(4, S.maxPal - 1);
     if (a === 'pal+') S.maxPal = Math.min(20, S.maxPal + 1);
+    if (a === 'ppm-') S.ppm = Math.max(90, S.ppm - 10);
+    if (a === 'ppm+') S.ppm = Math.min(220, S.ppm + 10);
     if (a === 'top') pTop();
     save(); renderPrompter(); layout();
-  });
+    if (/^(pal|ppm|top)/.test(a)) aRestartTela(); else paintAuto();
+  }
+  document.querySelector('.quick').addEventListener('click', onAct);
+  $('#sheet-ritmo').addEventListener('click', onAct);
 
   /* ---------- Fantasma ---------- */
   let ghostURL = '', ghostKind = '';
@@ -633,13 +686,14 @@
   /* ---------- Painéis ---------- */
   let openSheet = null;
   function sheet(name) {
+    if (name && gravando()) return; // sem folhas (nem edição) durante a contagem e a gravação
     if (openSheet) openSheet.hidden = true;
     openSheet = name ? $('#sheet-' + name) : null;
     el.scrim.hidden = !openSheet;
     if (openSheet) {
       openSheet.hidden = false;
       if (name === 'texto') renderLista();
-      if (name === 'ajustes') updateInfo();
+      if (name === 'ajustes') { updateInfo(); renderDiag(); }
     }
   }
   document.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => sheet(b.dataset.open)));
@@ -674,12 +728,16 @@
     canvas.width = ow; canvas.height = oh;
     const ctx = canvas.getContext('2d', { alpha: false });
     drawing = true;
-    const draw = () => {
-      if (!drawing) return;
-      try { ctx.drawImage(el.cam, sx, sy, sw, sh, 0, 0, ow, oh); } catch (e) { /* quadro ainda não pronto */ }
-      requestAnimationFrame(draw);
-    };
-    draw();
+    // Desenha a cada quadro novo da câmera (requestVideoFrameCallback, iOS 15.4+) ou a cada 33 ms.
+    // Nunca requestAnimationFrame: ele para quando o Safari esconde ou rola a página.
+    const pinta = () => { try { ctx.drawImage(el.cam, sx, sy, sw, sh, 0, 0, ow, oh); } catch (e) { /* quadro ainda não pronto */ } };
+    if (el.cam.requestVideoFrameCallback) {
+      const draw = () => { if (!drawing) return; pinta(); el.cam.requestVideoFrameCallback(draw); };
+      pinta(); el.cam.requestVideoFrameCallback(draw);
+    } else {
+      pinta();
+      const iv = setInterval(() => { if (!drawing) { clearInterval(iv); return; } pinta(); }, 33);
+    }
     const cs = canvas.captureStream(30);
     return new MediaStream([...cs.getVideoTracks(), ...stream.getAudioTracks()]);
   }
@@ -689,7 +747,7 @@
     let src;
     try { src = route === 'direta' ? stream : canvasStream(); } catch (e) { route = 'direta'; src = stream; }
     const mime = pickMime();
-    const opts = { videoBitsPerSecond: 8000000, audioBitsPerSecond: 128000 };
+    const opts = { videoBitsPerSecond: 6000000, audioBitsPerSecond: 128000 }; // 6 Mbps basta para 1080×1440 e alivia o encoder do iPhone
     if (mime) opts.mimeType = mime;
     try { rec = new MediaRecorder(src, opts); } catch (e) {
       try { rec = new MediaRecorder(src); } catch (e2) { drawing = false; toast('Não deu para gravar: ' + (e2.message || e2.name)); return false; }
@@ -697,18 +755,82 @@
     chunks = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
     rec.onstop = finishRecording;
-    rec.onerror = (e) => { toast('Erro na gravação: ' + ((e.error && e.error.name) || 'desconhecido')); };
+    rec.onerror = (e) => { const n = (e.error && e.error.name) || 'desconhecido'; diag('MediaRecorder erro: ' + n); toast('Erro na gravação: ' + n); };
     startedAt = new Date();
     recTermo = termo(); // nome do arquivo = roteiro do começo do take (em sequência o ▼ pode trocar no meio)
     tStart = performance.now(); tStop = 0;
     rec.onstart = () => { tStart = performance.now(); };
     try { rec.start(); } catch (e) { drawing = false; toast('Não deu para gravar: ' + (e.message || e.name)); return false; }
+    const [ow, oh] = outDims();
+    diag('gravando: rota ' + route + ', ' + ow + '×' + oh + ', ' + (rec.mimeType || mime || '?'));
+    vigiar(true);
     return true;
+  }
+
+  /* ---------- Vigia da gravação: se a imagem parar, avisa na hora e registra o motivo ---------- */
+  const LOGK = 'livowa_gravar_log';
+  function diag(msg) {
+    let l = [];
+    try { l = JSON.parse(localStorage.getItem(LOGK) || '[]'); } catch (e) { l = []; }
+    const d = new Date();
+    l.push(pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + ' ' + msg);
+    l = l.slice(-20);
+    try { localStorage.setItem(LOGK, JSON.stringify(l)); } catch (e) { /* cheio */ }
+    renderDiag(l);
+  }
+  function renderDiag(l) {
+    if (!l) { try { l = JSON.parse(localStorage.getItem(LOGK) || '[]'); } catch (e) { l = []; } }
+    el.diagLog.textContent = '';
+    (l.length ? l : ['(vazio)']).forEach((x) => { const li = document.createElement('li'); li.textContent = x; el.diagLog.append(li); });
+  }
+  el.diagClear.addEventListener('click', () => { try { localStorage.removeItem(LOGK); } catch (e) { /* ok */ } renderDiag([]); });
+  let vigia = null, falhaTake = '';
+  function vigiar(on) {
+    if (vigia) {
+      clearInterval(vigia.iv); vigia.off.forEach((f) => f()); vigia = null;
+    }
+    el.alerta.hidden = true;
+    if (!on || !stream) return;
+    falhaTake = '';
+    const vt = stream.getVideoTracks()[0];
+    const v = { quadros: 0, ult: -1, parado: 0, avisou: false, off: [] };
+    const ouve = (alvo, ev, fn) => { alvo.addEventListener(ev, fn); v.off.push(() => alvo.removeEventListener(ev, fn)); };
+    const seg = () => Math.round((performance.now() - tStart) / 1000);
+    const falha = (motivo) => {
+      diag('IMAGEM PAROU aos ' + seg() + ' s: ' + motivo);
+      if (!v.avisou) { v.avisou = true; falhaTake = 'A câmera parou aos ' + seg() + ' s neste take. Grave de novo.'; el.alerta.textContent = 'A câmera parou aos ' + seg() + ' s — pare e grave de novo'; el.alerta.hidden = false; }
+    };
+    if (vt) {
+      ouve(vt, 'ended', () => falha('track de vídeo terminou (ended)'));
+      ouve(vt, 'mute', () => { diag('track de vídeo mudo (mute) aos ' + seg() + ' s'); });
+      ouve(vt, 'unmute', () => diag('track de vídeo voltou (unmute) aos ' + seg() + ' s'));
+    }
+    ouve(el.cam, 'pause', () => { diag('<video> pausou aos ' + seg() + ' s; play() de novo'); try { const p = el.cam.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ok */ } });
+    ouve(el.cam, 'stalled', () => diag('<video> stalled aos ' + seg() + ' s'));
+    ouve(document, 'visibilitychange', () => diag('página ' + (document.visibilityState === 'visible' ? 'visível' : 'ESCONDIDA') + ' aos ' + seg() + ' s'));
+    if (el.cam.requestVideoFrameCallback) {
+      const conta = () => { if (vigia !== v) return; v.quadros++; el.cam.requestVideoFrameCallback(conta); };
+      el.cam.requestVideoFrameCallback(conta);
+    }
+    // A cada 1 s: o quadro avançou? (contador do requestVideoFrameCallback; senão quadros decodificados; senão currentTime)
+    const marca = () => {
+      if (el.cam.requestVideoFrameCallback) return v.quadros;
+      const q = el.cam.getVideoPlaybackQuality && el.cam.getVideoPlaybackQuality();
+      return q && q.totalVideoFrames ? q.totalVideoFrames : el.cam.currentTime;
+    };
+    v.iv = setInterval(() => {
+      const m = marca();
+      if (m === v.ult) { v.parado += 1; if (v.parado >= 2) falha('nenhum quadro novo há ' + v.parado + ' s' + (vt ? ' (track ' + vt.readyState + (vt.muted ? ', mudo' : '') + ')' : '')); }
+      else v.parado = 0;
+      v.ult = m;
+    }, 1000);
+    vigia = v;
   }
   function countdown() {
     sheet(null);
     setState('count');
     if (!frase()) pTop(); // frase a frase: grava a partir da frase escolhida (↺ volta à 1ª)
+    else aParar();        // o tempo da tela começa junto com a gravação
     let n = 3;
     el.countN.textContent = n; el.count.hidden = false;
     const restart = () => { el.countN.style.animation = 'none'; void el.countN.offsetWidth; el.countN.style.animation = ''; };
@@ -718,15 +840,18 @@
       clearInterval(countTimer); el.count.hidden = true;
       if (!beginRecording()) { setState('idle'); return; }
       setState('rec');
-      pStart();
+      pStart();                       // rolagem automática
+      if (frase() && S.auto) aPlay(); // frase a frase: passar sozinho
       el.recPill.hidden = false;
       el.recTime.textContent = fmtS(0);
       recTimer = setInterval(() => { el.recTime.textContent = fmtS(performance.now() - tStart); }, 100);
     }, 1000);
   }
-  function cancelCount() { clearInterval(countTimer); el.count.hidden = true; setState('idle'); paintPrompter(); }
+  function cancelCount() { clearInterval(countTimer); el.count.hidden = true; setState('idle'); aPause(); paintPrompter(); }
   function stopRecording() {
     clearInterval(recTimer);
+    vigiar(false);
+    diag('parou: ' + fmtS(performance.now() - tStart));
     tStop = performance.now();
     pPause();
     el.recPill.hidden = true;
@@ -750,6 +875,7 @@
   }
   function finishRecording() {
     drawing = false;
+    vigiar(false);
     if (!tStop) tStop = performance.now();
     const type = ((rec && rec.mimeType) || pickMime() || (isIOS ? 'video/mp4' : 'video/webm')).split(';')[0];
     const blob = new Blob(chunks, { type });
@@ -768,7 +894,8 @@
     el.rvMeta.textContent = fmtMB(blob.size) + ' · ' + extOf(type) + (ow ? ' · ' + ow + '×' + oh : '') + ' · rota ' + route;
     el.rvName.textContent = name;
     el.dlLink.href = url; el.dlLink.download = name;
-    el.rvTip.hidden = true;
+    el.rvTip.textContent = falhaTake; el.rvTip.hidden = !falhaTake;
+    if (falhaTake) diag('take com imagem parada: ' + name);
     el.review.dataset.bytes = String(blob.size);
     el.review.dataset.type = type;
     el.review.dataset.ms = String(Math.round(take.ms));
@@ -789,7 +916,7 @@
   }
   function closeReview() {
     try { el.play.pause(); } catch (e) { /* ok */ }
-    el.review.hidden = true; setState('idle'); if (!frase()) pTop(); else paintPrompter();
+    el.review.hidden = true; setState('idle'); aPause(); if (!frase()) pTop(); else paintPrompter();
   }
   el.redoBtn.addEventListener('click', () => { discardTake(); closeReview(); countdown(); });
   el.nextBtn.addEventListener('click', () => {
@@ -879,7 +1006,7 @@
   }
 
   /* ---------- Início ---------- */
-  renderTipo(); renderModo(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle');
+  renderTipo(); renderModo(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle'); paintAuto();
   keepAwake();
   startCam();
 })();

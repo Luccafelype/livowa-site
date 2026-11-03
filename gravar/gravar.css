@@ -136,6 +136,23 @@ textarea{display:block;width:100%;min-height:130px;resize:vertical;background:va
 .seg.seg5{grid-template-columns:repeat(5,1fr)}
 .item .tt{display:block;font-weight:700;font-size:13px;color:var(--accent);margin-bottom:2px}
 #optSeq+span{font-size:15px}
+.pillbtn{height:42px;border:0;border-radius:999px;background:var(--surface);padding:0 14px;font:600 13px/1 var(--mono);white-space:nowrap}
+.row2{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;border-bottom:1px solid #1f2226}
+.row2 small{display:block;color:var(--muted);font-size:12px}
+.row2 .stepper{padding-left:0}
+.row2 .stepper output{min-width:40px}
+/* Passar sozinho: barrinha do tempo da tela atual (rente ao pé do texto) e ▶/❚❚ para ensaiar. */
+.alerta{position:absolute;left:12px;right:12px;top:40%;z-index:8;background:#b3261e;color:#fff;border-radius:14px;padding:16px;
+  font:700 20px/1.3 var(--sys);text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.diag{margin-top:16px;font-size:13px}
+.diag summary{cursor:pointer;color:var(--fg);font-weight:600;min-height:40px;display:flex;align-items:center;gap:8px}
+.diag summary small{color:var(--muted);font-weight:400}
+.diag ol{margin:6px 0 10px;padding-left:20px;font:500 11px/1.5 var(--mono);color:var(--muted);-webkit-user-select:text;user-select:text}
+.pbar{position:absolute;left:0;right:0;top:calc(36% - 3px);height:3px;z-index:4;background:rgba(255,255,255,.18);pointer-events:none}
+.pbar i{display:block;height:100%;width:0;background:var(--accent)}
+.abtn{position:absolute;left:10px;top:calc(36% + 6px);z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.4);
+  background:rgba(0,0,0,.45);color:#fff;font-size:16px;line-height:1;padding:0}
+.abtn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 /* Ver telas: cada tela com "juntar com a de baixo" e "dividir" (toca na palavra que abre a tela nova). */
 #verTelas{width:100%;margin-top:12px}
 .telas{display:flex;flex-direction:column;gap:6px;margin-top:10px}

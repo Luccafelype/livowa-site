@@ -39,6 +39,8 @@
         <div class="ptext" id="ptext"></div>
       </div>
       <div class="ptag" id="ptag" aria-live="polite"></div>
+      <div class="pbar" id="pbar" hidden><i id="pbarI"></i></div>
+      <button type="button" class="abtn" id="autoBtn" hidden aria-label="Passar as telas sozinho" aria-pressed="false">▶</button>
 
       <button type="button" class="fbtn" id="fPrev" aria-label="Frase anterior"><b>▲</b><span>frase<br>anterior</span></button>
       <button type="button" class="fbtn" id="fNext" aria-label="Próxima frase"><b>▼</b><span>próxima<br>frase</span></button>
@@ -47,6 +49,7 @@
       <div class="recpill" id="recPill" hidden><b></b><span id="recTime">0,0 s</span></div>
       <div class="restag" id="resTag"></div>
       <div class="count" id="count" hidden><span id="countN">3</span></div>
+      <div class="alerta" id="alerta" role="alert" hidden></div>
 
       <div class="cammsg" id="camMsg" hidden>
         <p id="camMsgText">Abrindo a câmera…</p>
@@ -69,12 +72,8 @@
         <output id="fsOut">30</output>
         <button type="button" data-act="fs+" aria-label="Letra maior">+</button>
       </div>
-      <div class="stepper" id="palStep" aria-label="Máximo de palavras por tela">
-        <span class="lbl">Palavras</span>
-        <button type="button" data-act="pal-" aria-label="Menos palavras por tela">−</button>
-        <output id="palOut">10</output>
-        <button type="button" data-act="pal+" aria-label="Mais palavras por tela">+</button>
-      </div>
+      <!-- Palavras e Ritmo não cabem lado a lado em 390 px: um botão abre a folha "Telas e ritmo". -->
+      <button type="button" class="pillbtn" id="ritmoBtn" data-open="ritmo" aria-label="Palavras por tela, ritmo e passar sozinho">10 pal · 150/min</button>
       <button type="button" class="round" data-act="top" aria-label="Voltar ao começo do texto">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.5h4.5"/></svg>
       </button>
@@ -142,6 +141,21 @@
     <button type="button" class="btn" id="ghostClear" disabled>Tirar o fantasma</button>
   </section>
 
+  <section class="sheet" id="sheet-ritmo" hidden aria-label="Telas e ritmo">
+    <header><h2>Telas e ritmo</h2><button type="button" class="btn ghostbtn" data-close>Pronto</button></header>
+    <div class="row2">
+      <span>Palavras por tela</span>
+      <div class="stepper"><button type="button" data-act="pal-" aria-label="Menos palavras por tela">−</button><output id="palOut">10</output><button type="button" data-act="pal+" aria-label="Mais palavras por tela">+</button></div>
+    </div>
+    <div class="row2">
+      <span>Ritmo <small>palavras por minuto</small></span>
+      <div class="stepper"><button type="button" data-act="ppm-" aria-label="Mais devagar">−</button><output id="ppmOut">150</output><button type="button" data-act="ppm+" aria-label="Mais rápido">+</button></div>
+    </div>
+    <div class="toggles">
+      <label class="sw"><input type="checkbox" id="optAuto" checked><span>Passar sozinho <small>na gravação, cada tela fica o tempo de leitura dela (palavras ÷ ritmo + pausa curta na vírgula e no ponto); antes de gravar, ▶ ensaia; toque no texto pausa</small></span></label>
+    </div>
+  </section>
+
   <section class="sheet" id="sheet-ajustes" hidden aria-label="Ajustes">
     <header><h2>Ajustes</h2><button type="button" class="btn ghostbtn" data-close>Pronto</button></header>
     <p class="hint">Texto</p>
@@ -162,6 +176,11 @@
       <output id="zoomOut">1×</output>
     </div>
     <dl class="info" id="info"></dl>
+    <details class="diag">
+      <summary>Diagnóstico <small>últimos 20 eventos da câmera e da gravação</small></summary>
+      <ol id="diagLog"></ol>
+      <button type="button" class="btn" id="diagClear">Limpar</button>
+    </details>
     <p class="priv">Esta página não tem análise de uso e não envia nada pela internet. Depois de aberta uma vez, funciona sem conexão.</p>
   </section>
 
