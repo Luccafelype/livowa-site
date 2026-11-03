@@ -8,14 +8,14 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = '740efb7+1';
+  const VERSAO = '943b708+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true, leve: true, semImg: false,
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true, leve: true, semImg: false, linhas: 3,
     qual: 'segura', // modo seguro por padrão até achar a causa da imagem parada no iPhone (02/11)
   };
   const S = Object.assign({}, DEF);
@@ -30,6 +30,7 @@
   S.ppm = Math.min(220, Math.max(90, Math.round((+S.ppm || DEF.ppm) / 10) * 10));
   if (S.qual !== 'alta') S.qual = 'segura';
   if (S.auto !== false) S.auto = true;
+  if (![2, 3, 4].includes(+S.linhas)) S.linhas = 3;
   if (S.seqV !== 2) { S.seq = true; S.seqV = 2; } // 02/11: "Gravar ganchos em sequência" passa a vir ligado
   // Qualidade Segura: 720×960, 2,5 Mbps, sempre rota direta (nunca canvas). Recorte 9:16 só na Alta.
   const segura = () => S.qual !== 'alta';
@@ -453,7 +454,7 @@
       // Com "Gravar ganchos em sequência" (ou num Gancho), segue a lista: Gancho 1, Gancho 2…, Corpo, CTA, cada bloco
       // com o título pequeno antes e um espaço maior entre blocos. Cada frase num <span> para ▲/▼.
       const esp = document.createElement('div'); esp.className = 'resp';
-      esp.style.height = Math.round(el.prompter.clientHeight * 0.55) + 'px';
+      esp.style.height = Math.round(2 * S.fs * 1.25) + 'px'; // 1ª linha logo abaixo da linha de leitura
       el.ptext.append(esp);
       const l = roteiros();
       let k = 0;
@@ -473,6 +474,10 @@
       }
     }
     el.fPrev.disabled = !r; el.fNext.disabled = !r;
+    // Rolagem: janela curta no topo, perto da lente: S.linhas linhas (1 antes da linha de leitura, ela, e 0-2 depois);
+    // o resto fica fora da caixa (overflow hidden). Frase a frase volta à altura do CSS.
+    el.prompter.style.height = frase() ? '' : Math.round(S.linhas * S.fs * 1.25 + 20) + 'px';
+    el.app.classList.toggle('modo-rolagem', !frase());
     el.prompter.dataset.frase = String(fIdx);
     el.prompter.scrollTop = 0;
     fitFrase();
@@ -557,9 +562,9 @@
       const spans = [...el.ptext.querySelectorAll('span.s')];
       if (!spans.length) return;
       let cur = 0;
-      spans.forEach((sp, i) => { if (sp.offsetTop - 10 <= pOff + 2) cur = i; });
+      spans.forEach((sp, i) => { if (sp.offsetTop - linhaLeitura() <= pOff + 2) cur = i; });
       const alvo = spans[Math.min(Math.max(0, cur + d), spans.length - 1)];
-      rolaPara(alvo.offsetTop - 10); // rolagem suave até a frase ficar na linha de leitura; pausa/rolagem continuam como estavam
+      rolaPara(alvo.offsetTop - linhaLeitura()); // rolagem suave até a frase ficar na linha de leitura; pausa/rolagem continuam como estavam
     }
     const b = d < 0 ? el.fPrev : el.fNext;
     b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 160);
@@ -796,6 +801,8 @@
   el.optMirror.addEventListener('change', () => { S.mirrorFront = el.optMirror.checked; save(); applyMirror(); });
   el.optCrop.addEventListener('change', () => { S.recorte916 = el.optCrop.checked; save(); layout(); updateInfo(); });
   el.optGuide.addEventListener('change', () => { S.guia916 = el.optGuide.checked; save(); layout(); });
+  function renderLinhas() { document.querySelectorAll('[data-lin]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.lin === S.linhas))); }
+  document.querySelectorAll('[data-lin]').forEach((b) => b.addEventListener('click', () => { S.linhas = +b.dataset.lin; save(); renderLinhas(); renderPrompter(); }));
   // Experimento (02/11): "Gravação leve" tira das camadas por cima do vídeo ao vivo o que pesa na GPU durante a gravação
   // (sombra do texto, linhas-guia, fantasma, piscar do REC); "Esconder a imagem" deixa o <video> com opacity 0,01.
   el.optLeve.checked = S.leve !== false; el.optSemImg.checked = !!S.semImg;
@@ -1209,7 +1216,7 @@
   }
 
   /* ---------- Início ---------- */
-  renderTipo(); renderModo(); renderQual(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle'); paintAuto();
+  renderTipo(); renderModo(); renderQual(); renderLinhas(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle'); paintAuto();
   keepAwake();
   startCam();
 })();

@@ -215,6 +215,9 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent);margin:0}
 .rv-name{font:500 12px/1.4 var(--mono);color:var(--muted);margin-top:4px;word-break:break-all;-webkit-user-select:text;user-select:text}
 .rv-mot{font:600 15px/1.35 var(--sys);color:var(--eye);margin-top:6px;word-break:break-word;-webkit-user-select:text;user-select:text}
 .rbl{margin-bottom:1.1em}
+.seg.seg3{grid-template-columns:repeat(3,1fr)}
+/* Rolagem: caixa curta e fundo liso (sem degradê); as linhas fora da caixa não aparecem. */
+.modo-rolagem .prompter{background:rgba(0,0,0,.62)}
 .rbl:last-child{margin-bottom:0}
 .resp{display:block}
 .rv-actions{display:flex;gap:10px}
