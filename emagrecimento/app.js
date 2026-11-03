@@ -63,7 +63,7 @@ function show(s){
   if (s === 'capa') cta.textContent = 'Começar o teste';
   if (s === 'nome') cta.classList.toggle('off', nome1().length < 2);
   if (s === 'medidas') posicionar(['peso', 'altura']);
-  if (s === 'cintura'){ posicionar(['cintura']); cta.classList.toggle('off', !mexeu.cintura); }
+  if (s === 'cintura') posicionar(['cintura']);   // 03/11: sem trava; o botão diz o número ("Confirmar 95 cm") até a pessoa rolar
   if (s === 'tentou') cta.classList.toggle('off', !R.tentou.length);
   if (QUIZ.includes(s)) cta.classList.toggle('off', R[s] == null);
   if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
@@ -147,13 +147,20 @@ function posicionar(chaves){   // display:none perde a rolagem: ao mostrar a tel
     if (!RODA[k].pronta()) return;
     RODA[k].set(mexeu[k] && RODA[k].valor != null ? RODA[k].valor : p[k]);   // sem mexer: segue o sexo marcado
     if (k !== 'cintura') R[k] = RODA[k].valor;
+    else atualizarCintura();
   }));
 }
+// 03/11 (auditoria): o Continuar da cintura ficava APAGADO até a pessoa rolar; quem tinha a cintura igual ao número de
+// partida (85 mulher, 95 homem) não conseguia seguir (sessão real de 03/11 parada 2,5 min nesta tela). Agora o botão
+// fica sempre aceso: sem rolar, ele diz o número ("Confirmar 95 cm") e confirmar vale como escolha ('confirmou');
+// rolando, volta a "Continuar". Quem está sem fita segue pelo "Pular" (resultado só com o IMC).
 function atualizarCintura(){
   if (cur !== 'cintura') return;
-  $('cta').classList.toggle('off', !mexeu.cintura);
+  const cta = $('cta'), v = RODA.cintura.valor;
+  cta.classList.remove('off');
+  cta.textContent = mexeu.cintura || v == null ? 'Continuar' : `Confirmar ${v} cm`;
   const d = $('dica-cintura'); d.classList.remove('erro');
-  d.textContent = mexeu.cintura ? `Cintura: ${RODA.cintura.valor} cm` : 'Arraste até a sua medida.';
+  d.textContent = mexeu.cintura ? `Cintura: ${v} cm` : 'Arraste até a sua medida, ou confirme se já for esta.';
 }
 $('pular-cintura').addEventListener('click', () => {
   R.cintura = 'sem_fita'; delete R.cinturaCm;
@@ -187,7 +194,6 @@ function ligarOpcoes(box){
 $('cta').addEventListener('click', () => {
   if ($('cta').classList.contains('off')){
     if (cur === 'nome') return $('nome').focus();
-    if (cur === 'cintura'){ const d = $('dica-cintura'); d.textContent = 'Arraste a roda até a sua medida, ou toque em Pular.'; d.classList.add('erro'); return $('w-cintura').focus(); }
     return;
   }
   if (cur === 'capa') return proxima();
@@ -198,6 +204,8 @@ $('cta').addEventListener('click', () => {
     return proxima();
   }
   if (cur === 'cintura'){
+    if (RODA.cintura.valor == null) return;
+    if (!mexeu.cintura) mexeu.cintura = 'confirmou';
     R.cintura = 'sei'; R.cinturaCm = RODA.cintura.valor;
     Analytics.track('answer', { stepId:'cintura', valueText:'mediu', props:{ cintura:R.cinturaCm, como:mexeu.cintura } });
     return proxima();

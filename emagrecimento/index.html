@@ -76,8 +76,8 @@
   </section>
 
   <!-- 6 · cintura (opcional; 03/11, Lucca: a pergunta sim/não "parece muito ruim, pouco prático"): a roda já aberta e
-       "Pular" discreto. Continuar só depois de mexer na roda: sem isso o número não é dela e a razão cintura/altura sairia
-       inventada. Razão cintura/altura: NICE NG246. -->
+       "Pular" discreto. Botão sempre aceso: sem rolar, diz "Confirmar 95 cm" (a pessoa confirma o número); rolando,
+       "Continuar". Razão cintura/altura: NICE NG246. -->
   <section class="screen" data-s="cintura" hidden>
     <h2>E a sua cintura, quantos centímetros?</h2>
     <p class="sub">Com ela, o resultado mostra a cintura em relação à altura, que diz mais que o peso sozinho.</p>
@@ -86,7 +86,7 @@
     <div class="wheels uma">
       <div class="wheelbox"><label id="l-cintura">Cintura</label><div class="wheel-wrap"><div class="wheel" id="w-cintura" tabindex="0" role="listbox" aria-labelledby="l-cintura" aria-describedby="un-cintura dica-cintura"></div><span class="un" id="un-cintura" aria-label="centímetros">cm</span></div></div>
     </div>
-    <p class="dica-campo" id="dica-cintura" aria-live="polite">Arraste até a sua medida.</p>
+    <p class="dica-campo" id="dica-cintura" aria-live="polite">Arraste até a sua medida, ou confirme se já for esta.</p>
     <button type="button" class="pular" id="pular-cintura"><span>Pular: estou sem fita agora</span><small>o resultado usa só o IMC</small></button>
   </section>
 
@@ -232,6 +232,6 @@
   </div></div>
 </div>
 <script defer src="/assets/js/ponte.js?v=1"></script>
-<script type="module" src="app.js?v=3"></script>
+<script type="module" src="app.js?v=4"></script>
 </body>
 </html>
