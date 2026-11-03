@@ -8,14 +8,14 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = 'f27a5eb+1';
+  const VERSAO = 'f98633e+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true, leve: true, semImg: false, linhas: 3,
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true, leve: true, semImg: false, linhas: 3, motor: 'canvas',
     qual: 'segura', // modo seguro por padrão até achar a causa da imagem parada no iPhone (02/11)
   };
   const S = Object.assign({}, DEF);
@@ -32,6 +32,8 @@
   if (S.qualV !== 2) { S.qual = 'segura'; S.qualV = 2; } // 02/11: diagnóstico mostrou o iOS emudecendo a câmera em Alta
   if (S.auto !== false) S.auto = true;
   if (![2, 3, 4].includes(+S.linhas)) S.linhas = 3;
+  // 02/11: o arquivo da rota direta congela no iOS 26 com a câmera viva → motor padrão Canvas
+  if (S.motorV !== 1 || !['canvas', 'direta', 'simples'].includes(S.motor)) { S.motor = 'canvas'; S.motorV = 1; }
   if (S.seqV !== 2) { S.seq = true; S.seqV = 2; } // 02/11: "Gravar ganchos em sequência" passa a vir ligado
   // Qualidade Segura: 720×960, 2,5 Mbps, sempre rota direta (nunca canvas). Recorte 9:16 só na Alta.
   const segura = () => S.qual !== 'alta';
@@ -58,7 +60,7 @@
     optGuide: $('#optGuide'), g916: $('#g916'), zoomRow: $('#zoomRow'), zoom: $('#zoom'), zoomOut: $('#zoomOut'),
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
-    toast: $('#toast'), optSeq: $('#optSeq'), rvPend: $('#rvPend'), rvMot: $('#rvMot'), optLeve: $('#optLeve'), optSemImg: $('#optSemImg'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
+    toast: $('#toast'), optSeq: $('#optSeq'), rvArq: $('#rvArq'), rvPend: $('#rvPend'), rvMot: $('#rvMot'), optLeve: $('#optLeve'), optSemImg: $('#optSemImg'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
     fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
     ritmoBtn: $('#ritmoBtn'), palOut: $('#palOut'), ppmOut: $('#ppmOut'), optAuto: $('#optAuto'), autoBtn: $('#autoBtn'),
     pbar: $('#pbar'), pbarI: $('#pbarI'), verTelas: $('#verTelas'), telas: $('#telas'),
@@ -143,7 +145,7 @@
     // Na gravação: Ajustes e "Telas e ritmo" continuam (não tocam na câmera); Texto, Fantasma e Câmera travam,
     // e em Ajustes travam só Qualidade, Recorte, Zoom e Atualizar (os que mexem na câmera/página).
     document.querySelectorAll('.tool').forEach((b) => { b.disabled = trava && b.dataset.open !== 'ajustes'; });
-    document.querySelectorAll('[data-qual], #optCrop, #zoom, #atualizar').forEach((x) => { x.disabled = trava; });
+    document.querySelectorAll('[data-qual], [data-motor], #optCrop, #zoom, #atualizar').forEach((x) => { x.disabled = trava; });
     el.app.dataset.state = s;
     el.app.classList.toggle('leve', S.leve !== false);
     el.app.classList.toggle('semimg', !!S.semImg);
@@ -293,6 +295,7 @@
   // Direta = MediaRecorder no stream da câmera. Canvas quando há recorte 9:16 ou quando o track está
   // girado em relação ao <video> (caso do iPhone em pé): o canvas desenha o <video> em pé.
   function direct() {
+    if (S.motor === 'canvas') return false; // motor Canvas: sempre pelo canvas
     if (segura()) return true; // modo seguro: nunca canvas
     if (rotated()) return false;
     if (!recorte()) return true;
@@ -310,8 +313,9 @@
     if (direct()) return [w, h];
     let sw = w, sh = h;
     if (recorte()) { if (w / h > 9 / 16) sw = h * 9 / 16; else sh = w * 16 / 9; }
-    // Canvas pesa no iPhone: no máximo 1080×1440 em pixels (3:4 → 1080×1440; 9:16 → 936×1664).
-    const k = Math.min(1, Math.sqrt((1080 * 1440) / (sw * sh)));
+    // Canvas pesa no iPhone: motor Canvas no máximo 720×960 em pixels; nos outros casos 1080×1440.
+    const px = S.motor === 'canvas' ? 720 * 960 : 1080 * 1440;
+    const k = Math.min(1, Math.sqrt(px / (sw * sh)));
     return [Math.round(sw * k / 2) * 2, Math.round(sh * k / 2) * 2];
   }
   function updateInfo() {
@@ -332,7 +336,8 @@
       ['Câmera', w ? w + '×' + h + (facingNow === 'environment' ? ' (traseira)' : ' (frontal)') : '—'],
       ['Arquivo', ow ? ow + '×' + oh : '—'],
       ['Versão', VERSAO],
-      ['Qualidade', segura() ? 'Segura (720p, 2,5 Mbps, rota direta)' : 'Alta (1080p, 6 Mbps)'],
+      ['Qualidade', segura() ? 'Segura (720p)' : 'Alta (1080p)'],
+      ['Motor', S.motor === 'canvas' ? 'Canvas (720×960, 2,5 Mbps, tipo do Safari)' : S.motor === 'simples' ? 'Direta simples (tudo do Safari)' : 'Direta (tipo e taxa forçados)'],
       ['Rota', w ? (direct() ? 'quadro inteiro, direto da câmera' : recorte() ? 'recorte 9:16 do centro (canvas)' : 'quadro inteiro pelo canvas (track girado)') : '—'],
       ['Formato', mime || (window.MediaRecorder ? 'padrão do navegador' : 'este navegador não grava')],
       ['Selo', selo || '—'],
@@ -805,6 +810,11 @@
   el.optMirror.addEventListener('change', () => { S.mirrorFront = el.optMirror.checked; save(); applyMirror(); });
   el.optCrop.addEventListener('change', () => { S.recorte916 = el.optCrop.checked; save(); layout(); updateInfo(); });
   el.optGuide.addEventListener('change', () => { S.guia916 = el.optGuide.checked; save(); layout(); });
+  function renderMotor() { document.querySelectorAll('[data-motor]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.motor === S.motor))); }
+  document.querySelectorAll('[data-motor]').forEach((b) => b.addEventListener('click', () => {
+    if (gravando()) return;
+    S.motor = b.dataset.motor; save(); renderMotor(); updateInfo(); diag('motor de gravação: ' + S.motor);
+  }));
   function renderLinhas() { document.querySelectorAll('[data-lin]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.lin === S.linhas))); }
   document.querySelectorAll('[data-lin]').forEach((b) => b.addEventListener('click', () => { S.linhas = +b.dataset.lin; save(); renderLinhas(); renderPrompter(); }));
   // Experimento (02/11): "Gravação leve" tira das camadas por cima do vídeo ao vivo o que pesa na GPU durante a gravação
@@ -899,12 +909,14 @@
   }
   function beginRecording() {
     if (!window.MediaRecorder) { toast('Este navegador não grava vídeo. Atualize o iOS ou use o Chrome.'); return false; }
-    route = direct() ? 'direta' : recorte() ? 'recorte 9:16' : 'canvas em pé';
+    // Motor (Ajustes): Canvas (padrão: câmera desenhada num canvas 720×960, captureStream(30) + áudio, tipo escolhido
+    // pelo Safari, 2,5 Mbps) / Direta (stream da câmera, tipo e taxa forçados) / Direta simples (sem opções).
+    route = S.motor === 'canvas' ? 'canvas' : direct() ? 'direta' : recorte() ? 'recorte 9:16' : 'canvas em pé';
     let src;
     try { src = route === 'direta' ? stream : canvasStream(); } catch (e) { route = 'direta'; src = stream; }
-    const mime = pickMime();
-    const vbps = segura() ? 2500000 : 6000000; // Segura: 2,5 Mbps (720×960); Alta: 6 Mbps (1080×1440)
-    const opts = { videoBitsPerSecond: vbps, audioBitsPerSecond: 128000 };
+    const mime = S.motor === 'direta' ? pickMime() : '';
+    const vbps = S.motor === 'simples' ? 0 : S.motor === 'canvas' ? 2500000 : segura() ? 2500000 : 6000000;
+    const opts = S.motor === 'simples' ? {} : { videoBitsPerSecond: vbps, audioBitsPerSecond: 128000 };
     if (mime) opts.mimeType = mime;
     try { rec = new MediaRecorder(src, opts); } catch (e) {
       try { rec = new MediaRecorder(src); } catch (e2) { drawing = false; toast('Não deu para gravar: ' + (e2.message || e2.name)); return false; }
@@ -923,7 +935,7 @@
     const [ow, oh] = outDims();
     const vtS = (stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings && stream.getVideoTracks()[0].getSettings()) || {};
     diag('início · versão ' + VERSAO + ' · qualidade ' + S.qual + ' · track ' + vtS.width + '×' + vtS.height + '@' + (vtS.frameRate ? Math.round(vtS.frameRate) : '?') +
-      ' · arquivo ' + ow + '×' + oh + ' · rota ' + route + ' · ' + (rec.mimeType || mime || '?') + ' · ' + (vbps / 1e6).toFixed(1) + ' Mbps · sem timeslice');
+      ' · arquivo ' + ow + '×' + oh + ' · motor ' + S.motor + ' · rota ' + route + ' · ' + (rec.mimeType || mime || '?') + ' · ' + (vbps ? (vbps / 1e6).toFixed(1) + ' Mbps' : 'taxa do Safari') + ' · sem timeslice');
     vigiar(true);
     return true;
   }
@@ -939,12 +951,13 @@
   const uuid = () => { try { if (crypto.randomUUID) return crypto.randomUUID(); } catch (e) { /* ok */ } return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); };
   const SID = uuid();
   let logTake = [];
-  function enviaDiag(motivo, seg, bytes) {
+  function enviaDiag(motivo, seg, bytes, extra) {
     try {
       const h = location.hostname;
       if (h === 'localhost' || h === '127.0.0.1' || location.protocol === 'file:') return;
       const props = { versao: VERSAO, qualidade: S.qual, rota: route, motivo, duracao_s: seg === undefined ? null : seg,
-        bytes: bytes === undefined ? null : bytes, user_agent: navigator.userAgent, log: logTake.slice() };
+        bytes: bytes === undefined ? null : bytes, motor: S.motor, user_agent: navigator.userAgent, log: logTake.slice() };
+      if (extra) Object.assign(props, extra);
       while (JSON.stringify(props).length > 3500 && props.log.length > 1) props.log.shift(); // limite de 4 KB do RPC
       fetch(SB_URL + '/rest/v1/rpc/log_funnel_event', {
         method: 'POST', keepalive: true,
@@ -1123,6 +1136,56 @@
     recomecar = true;
     stopRecording();
   }
+  // Conferência do arquivo (verdade de chão, 02/11): o arquivo gerado é aberto num <video> oculto e mudo; a cada ~1 s
+  // (no máximo 40 amostras) um quadro vai para um canvas 64×85 e é comparado com o anterior (diferença média por pixel).
+  // Acha o 1º segundo a partir do qual o arquivo fica estático até o fim e trechos estáticos de 2 s ou mais.
+  let confTok = 0;
+  async function confereArquivo(t, durMs, bytes) {
+    const tok = ++confTok;
+    const v = document.createElement('video');
+    v.muted = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'auto'; v.className = 'rec-canvas';
+    document.body.append(v);
+    const fim = (txt, extra) => {
+      v.removeAttribute('src'); try { v.load(); } catch (e) { /* ok */ } v.remove();
+      if (tok !== confTok) return;
+      el.rvArq.textContent = txt;
+      diag('conferência do arquivo: ' + txt);
+      enviaDiag('conferência: ' + txt, Math.round(durMs * 10) / 10, bytes, extra);
+    };
+    const espera = (ev, ms) => new Promise((res) => { const f = () => { v.removeEventListener(ev, f); res(true); }; v.addEventListener(ev, f); setTimeout(() => { v.removeEventListener(ev, f); res(false); }, ms); });
+    v.src = t.url;
+    try { v.load(); } catch (e) { /* ok */ }
+    if (!(await espera('loadeddata', 6000))) return fim('arquivo: não deu para conferir (não abriu)', { arquivo_congela_s: null });
+    let dur = isFinite(v.duration) && v.duration > 0 ? v.duration : durMs;
+    const passo = Math.max(1, dur / 40);
+    const c = document.createElement('canvas'); c.width = 64; c.height = 85;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    let ant = null; const est = []; // est[i] = amostra i igual à anterior
+    const tempos = [];
+    for (let tt = 0.5; tt < dur - 0.05; tt += passo) tempos.push(Math.round(tt * 100) / 100);
+    for (const tt of tempos) {
+      if (tok !== confTok) { v.remove(); return; }
+      try { v.currentTime = tt; } catch (e) { break; }
+      if (!(await espera('seeked', 3000))) break;
+      try { x.drawImage(v, 0, 0, 64, 85); } catch (e) { break; }
+      const d = x.getImageData(0, 0, 64, 85).data;
+      if (ant) { let s = 0; for (let i = 0; i < d.length; i += 4) s += Math.abs(d[i] - ant[i]) + Math.abs(d[i + 1] - ant[i + 1]) + Math.abs(d[i + 2] - ant[i + 2]); est.push(s / (d.length / 4 * 3) < 0.2); }
+      else est.push(false);
+      ant = d;
+    }
+    if (est.length < 3) return fim('arquivo: não deu para conferir (poucas amostras)', { arquivo_congela_s: null });
+    // a partir de quando fica estático até o fim
+    let k = est.length; while (k > 1 && est[k - 1]) k--;
+    const congela = k < est.length && est.length - k >= 2 ? Math.round(tempos[k - 1]) : null;
+    // trechos estáticos no meio (≥ 2 s)
+    const trechos = []; let ini = -1;
+    for (let i = 0; i < k; i++) {
+      if (est[i] && ini < 0) ini = i - 1;
+      if ((!est[i] || i === k - 1) && ini >= 0) { const f = est[i] ? i : i - 1; if (tempos[f] - tempos[ini] >= 2) trechos.push(Math.round(tempos[ini]) + '–' + Math.round(tempos[f]) + ' s'); ini = -1; }
+    }
+    const txt = congela !== null ? 'arquivo congelado a partir de ' + congela + ' s' : trechos.length ? 'arquivo com imagem parada em ' + trechos.join(', ') : 'arquivo ok';
+    fim(txt + ' (' + tempos.length + ' amostras)', { arquivo_congela_s: congela, arquivo_parado: trechos.join(', ') || null });
+  }
   function finishRecording() {
     drawing = false;
     vigiar(false);
@@ -1166,6 +1229,8 @@
     el.review.dataset.name = name;
     el.review.dataset.route = route;
     renderGuardados();
+    el.rvArq.textContent = 'conferindo o arquivo…';
+    confereArquivo(take, take.ms / 1000, blob.size);
     el.review.hidden = false;
     // Duração real do arquivo, quando o navegador informa (o webm do Chrome às vezes não traz).
     el.play.onloadedmetadata = () => {
@@ -1287,7 +1352,7 @@
   }
 
   /* ---------- Início ---------- */
-  renderTipo(); renderModo(); renderQual(); renderLinhas(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle'); paintAuto();
+  renderTipo(); renderModo(); renderQual(); renderLinhas(); renderMotor(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle'); paintAuto();
   keepAwake();
   startCam();
 })();
