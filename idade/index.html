@@ -437,6 +437,7 @@ const LOCAL = ['localhost','127.0.0.1'].includes(location.hostname), PELE_Q = ne
 // 03/11: ponte da bio na 1ª tela (a da pele quando o link abre direto na pele; senão a das pernas)
 window.lvPonte?.pintar(document.querySelector((PELE_Q === '1' || PELE_Q === 'teste') ? '#pele-ini-sub' : '[data-s="inicio"] .sub'), (PELE_Q === '1' || PELE_Q === 'teste') ? 'pele' : 'pernas');
 const PELE_ENDPOINT = (LOCAL && PELE_Q && PELE_Q !== 'teste' && PELE_Q) || (PELE_Q === 'teste' && PELE_TESTE) || PELE_PRODUCAO;
+const PELE_DIRETA = (PELE_Q === 'teste' || PELE_Q === '1') && !!PELE_ENDPOINT;   // link da pele sem passar pelas pernas
 // A/B da pele (28/10): 1 foto (rosto parado) × 3 fotos (parado, sorriso forte, sobrancelhas levantadas).
 // Sorteio 50/50 por pessoa, guardado no navegador; ?fotos=1 ou ?fotos=3 força (sem gravar). Vai no analytics como props.fotos.
 const FOTOS = (() => {
@@ -538,7 +539,7 @@ let cur = 'inicio';
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
   cur = s; const el = document.querySelector(`[data-s="${s}"]`); Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s), ...(s.startsWith('pele') ? { props:{ fotos:FOTOS } } : {}) });
-  $('top').hidden = s === 'inicio' || s === 'resultado';
+  $('top').hidden = s === 'inicio' || s === 'resultado' || (PELE_DIRETA && s === 'pele-inicio');   // 03/11: quem abriu direto na pele não tem tela antes (voltar caía num resultado vazio das pernas, "5 levantadas em 0,0 s")
   $('progress').style.width = (el.dataset.p || 0) + '%';
   const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true; $('cta-dm').hidden = true;
   $('cta-bar').hidden = s === 'fechar';   // tela final: o botão mora na própria tela
@@ -1364,7 +1365,7 @@ if (FOTOS === 3){
 
 // link da pele: livowa.com/idade/?pele=teste abre direto na pele (sem passar pelas pernas)
 // ?pele=1 (link público da face, usado pelo /comece) também abre direto na pele
-if ((PELE_Q === 'teste' || PELE_Q === '1') && PELE_ENDPOINT) show('pele-inicio');
+if (PELE_DIRETA){ VOLTA['pele-resultado'] = 'pele-inicio'; VOLTA['pele-erro'] = 'pele-inicio'; show('pele-inicio'); }
 document.documentElement.classList.remove('vai-pele');
 // teste da tela de resultado sem câmera (desenvolvimento)
 window.__testarResultado = (c, d, s) => { Object.assign(dados, d); sexo = s || sexo || 'm'; voz = false; resultado(c); };
