@@ -8,14 +8,14 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = '87079ce+1';
+  const VERSAO = 'a003992+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
     texto: '', idx: 0, tipo: 'chamada', speed: 6, fs: 30,
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
-    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: false, ppm: 150, auto: true,
+    facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: true, ppm: 150, auto: true,
     qual: 'segura', // modo seguro por padrão até achar a causa da imagem parada no iPhone (02/11)
   };
   const S = Object.assign({}, DEF);
@@ -30,6 +30,7 @@
   S.ppm = Math.min(220, Math.max(90, Math.round((+S.ppm || DEF.ppm) / 10) * 10));
   if (S.qual !== 'alta') S.qual = 'segura';
   if (S.auto !== false) S.auto = true;
+  if (S.seqV !== 2) { S.seq = true; S.seqV = 2; } // 02/11: "Gravar ganchos em sequência" passa a vir ligado
   // Qualidade Segura: 720×960, 2,5 Mbps, sempre rota direta (nunca canvas). Recorte 9:16 só na Alta.
   const segura = () => S.qual !== 'alta';
   const recorte = () => !!S.recorte916 && !segura();
@@ -441,6 +442,7 @@
     if (!r) el.ptext.textContent = 'Toque em Texto e cole o roteiro.';
     else if (frase()) {
       pPause(); pOff = 0;
+      if (r.titulo) { const tt = document.createElement('div'); tt.className = 'ftit'; tt.textContent = r.titulo; el.ptext.append(tt); }
       const c = document.createElement('div'); c.className = 'fcur'; c.textContent = f[fIdx] || '';
       el.ptext.append(c);
       if (f[fIdx + 1]) { const n = document.createElement('div'); n.className = 'fnext'; n.textContent = f[fIdx + 1]; el.ptext.append(n); }
@@ -518,7 +520,7 @@
       const n = frases().length;
       const tot = roteiros().length;
       // Em sequência: passar do fim (ou do começo) de um roteiro vai para o seguinte (ou o anterior).
-      if (S.seq && d > 0 && fIdx >= n - 1 && S.idx < tot - 1) { S.idx += 1; fIdx = 0; save(); }
+      if (d > 0 && fIdx >= n - 1 && G.continua(roteiros(), atual().i, S.seq)) { S.idx = atual().i + 1; fIdx = 0; save(); }
       else if (S.seq && d < 0 && fIdx <= 0 && S.idx > 0) { S.idx -= 1; fIdx = Math.max(0, frases().length - 1); save(); }
       else fIdx = Math.min(Math.max(0, fIdx + d), Math.max(0, n - 1));
       renderPrompter();
@@ -584,7 +586,7 @@
 
   /* ---------- Passar sozinho (frase a frase) ---------- */
   // Cada tela fica no ar o tempo de leitura (texto.js: duracao) e passa para a próxima; para na última.
-  let aRun = false, aT0 = 0, aGone = 0, aDurMs = 0, aRaf = 0, aFim = false;
+  let aRun = false, aT0 = 0, aGone = 0, aDurMs = 0, aRaf = 0, aFim = false, aEntre = false; // aEntre: pausa de 1,5 s entre roteiros
   function aDurAtual() { const f = frases(); return f.length ? G.duracao(f[fIdx], S.ppm, f[fIdx + 1]) * 1000 : 0; }
   function paintAuto() {
     const on = frase() && !!S.auto && !!atual();
@@ -601,10 +603,18 @@
     const now = performance.now();
     aGone = Math.max(0, now - aT0);
     if (aGone >= aDurMs) {
-      if (fIdx < frases().length - 1) { fIdx += 1; renderPrompter(); aDurMs = aDurAtual(); aT0 = now; aGone = 0; }
+      if (aEntre) { aEntre = false; aDurMs = aDurAtual(); aT0 = now; aGone = 0; } // fim da pausa entre roteiros
+      else if (fIdx < frases().length - 1) { fIdx += 1; renderPrompter(); aDurMs = aDurAtual(); aT0 = now; aGone = 0; }
+      else if (G.continua(roteiros(), atual().i, S.seq)) { // Gancho (ou sequência ligada): segue para o próximo roteiro
+        const l = roteiros(), de = atual().i;
+        S.idx = de + 1; fIdx = 0; save(); renderPrompter();
+        diag('passar sozinho: roteiro ' + (de + 1) + ' → ' + (de + 2) + (l[de + 1].titulo ? ' (' + l[de + 1].titulo + ')' : ''));
+        aEntre = true; aDurMs = G.PAUSA_ENTRE * 1000; aT0 = now; aGone = 0;
+      }
       else { aGone = aDurMs; aRun = false; aFim = true; clearInterval(aRaf); paintAuto(); if (state === 'rec') diag('passar sozinho: parado (fim do roteiro)'); return; } // para na última
     }
     paintBar(aDurMs ? aGone / aDurMs : 0);
+    el.pbar.classList.toggle('pausa', aEntre); // barrinha amarela = pausa de 1,5 s antes do próximo roteiro
   }
   function aPlay(origem) {
     if (!frase() || !S.auto || !atual()) {
@@ -613,14 +623,14 @@
     }
     if (origem) diag('passar sozinho: iniciado (' + origem + ') na tela ' + (fIdx + 1) + '/' + frases().length + ', ' + S.ppm + '/min');
     if (aFim) { fIdx = 0; aGone = 0; aFim = false; renderPrompter(); } // ▶ depois do fim: ensaia de novo do começo
-    aDurMs = aDurAtual(); aT0 = performance.now() - aGone; aRun = true;
+    aDurMs = aEntre ? G.PAUSA_ENTRE * 1000 : aDurAtual(); aT0 = performance.now() - aGone; aRun = true;
     clearInterval(aRaf); aRaf = setInterval(aTick, 50); paintAuto();
   }
   function aPause(motivo) {
     if (aRun) { aGone = Math.min(aDurMs, performance.now() - aT0); if (motivo) diag('passar sozinho: parado (' + motivo + ') na tela ' + (fIdx + 1)); }
     aRun = false; clearInterval(aRaf); paintAuto();
   }
-  function aRestartTela() { aGone = 0; aFim = false; aT0 = performance.now(); aDurMs = aDurAtual(); paintAuto(); }
+  function aRestartTela() { aEntre = false; el.pbar.classList.remove('pausa'); aGone = 0; aFim = false; aT0 = performance.now(); aDurMs = aDurAtual(); paintAuto(); }
   function aParar() { aPause(); aRestartTela(); }
   el.autoBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
   el.autoBtn.addEventListener('click', (e) => { e.stopPropagation(); (aRun ? aPause('botão ❚❚') : aPlay('botão ▶')); el.autoBtn.blur(); });
@@ -643,6 +653,7 @@
   }
   // Ritmo mudou no meio de uma tela: mantém a fração já passada dela.
   function aRitmoMudou() {
+    if (aEntre) { paintAuto(); return; } // na pausa entre roteiros o ritmo não muda nada
     const now = performance.now(), g = aRun ? now - aT0 : aGone, frac = aDurMs ? Math.min(1, g / aDurMs) : 0;
     aDurMs = aDurAtual(); aGone = frac * aDurMs; if (aRun) aT0 = now - aGone; paintAuto();
   }

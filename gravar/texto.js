@@ -208,7 +208,24 @@
     return Math.round((n / (Math.max(30, +ppm || 150) / 60) + pausa) * 100) / 100;
   }
 
-  const api = { rotulo, blocos, telas, juntar, dividir, editar, palavrasDaTela, duracao, palavras: (t) => palavras(t).length };
+  // Sequência do "passar sozinho": no fim da última tela de um roteiro, segue para o próximo quando ele é um
+  // Gancho (Gancho, Gancho 2, G1, Hook) ou quando "Gravar ganchos em sequência" está ligado; entre um e outro,
+  // pausa de 1,5 s. Devolve as telas na ordem, com tempos, e as pausas.
+  const ehGancho = (b) => /^(gancho|hook|g\s*\d)/i.test((b && b.titulo) || '');
+  const continua = (bl, i, seq) => i < bl.length - 1 && (!!seq || ehGancho(bl[i]));
+  const PAUSA_ENTRE = 1.5;
+  function sequencia(bl, i0, max, ppm, seq) {
+    const out = [];
+    for (let i = i0; i < bl.length; i++) {
+      const ts = telas(bl[i].body, max).map((t) => t.texto);
+      ts.forEach((t, k) => out.push({ roteiro: i, titulo: bl[i].titulo, tela: k + 1, de: ts.length, texto: t, dur: duracao(t, ppm, ts[k + 1]) }));
+      if (!continua(bl, i, seq)) break;
+      out.push({ pausa: PAUSA_ENTRE });
+    }
+    return out;
+  }
+
+  const api = { rotulo, blocos, telas, juntar, dividir, editar, palavrasDaTela, duracao, ehGancho, continua, sequencia, PAUSA_ENTRE, palavras: (t) => palavras(t).length };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.GravarTexto = api;
 })(typeof self !== 'undefined' ? self : this);
