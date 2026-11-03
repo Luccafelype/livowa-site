@@ -8,7 +8,7 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = '3f67c43+1';
+  const VERSAO = '87079ce+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
@@ -78,6 +78,10 @@
   // O quadro (proporção do arquivo, contain) fica centralizado na área livre entre o topo seguro e os controles.
   // O texto mora dentro do quadro, com posição e altura em CSS: nenhum resize mexe nele além do tamanho do quadro.
   function layout() {
+    // Na contagem e na gravação o quadro não muda de tamanho (o <video> da câmera fica congelado): o toque perto
+    // da base pode fazer a barra do Safari aparecer, e redimensionar o <video> do mesmo stream travava a imagem.
+    // Roda de novo uma vez depois de parar (finishRecording / cancelCount).
+    if (gravando()) return;
     const r = el.area.getBoundingClientRect();
     if (r.width < 20 || r.height < 20) return; // medição no meio do redimensionamento: fica o último quadro
     const a = stageAspect();
@@ -101,12 +105,29 @@
   // Barra do Safari some/aparece, giro, teclado: recalcula num quadro de animação (sem pulo intermediário).
   // O enquadramento não muda com o tamanho: o quadro tem a proporção do arquivo e a câmera usa contain
   // (cover só no modo recorte, onde o quadro já é 9:16 e cover mostra exatamente o centro que vai para o arquivo).
-  let layRaf = 0;
-  function relayout() { if (!layRaf) layRaf = requestAnimationFrame(() => { layRaf = 0; layout(); }); }
-  window.addEventListener('resize', relayout);
-  window.addEventListener('orientationchange', () => { relayout(); setTimeout(relayout, 300); });
-  if (window.visualViewport) { window.visualViewport.addEventListener('resize', relayout); window.visualViewport.addEventListener('scroll', relayout); }
-  if (window.ResizeObserver) new ResizeObserver(relayout).observe(el.area);
+  let layRaf = 0, altRef = { area: 0, vv: 0 };
+  const alturas = () => ({ area: Math.round(el.area.getBoundingClientRect().height), vv: window.visualViewport ? Math.round(window.visualViewport.height) : 0 });
+  function marcaAltura() { altRef = alturas(); }
+  function relayout(origem) {
+    if (gravando()) { // não mexe no quadro; só registra a mudança de altura (antes → depois) e o segundo do take
+      const a = alturas();
+      if (a.area !== altRef.area || a.vv !== altRef.vv) {
+        diag('resize na gravação aos ' + Math.round((performance.now() - tStart) / 1000) + ' s (' + origem + '): área ' + altRef.area + '→' + a.area + ' px, tela ' + altRef.vv + '→' + a.vv + ' px');
+        altRef = a;
+      }
+      // o texto ainda é refeito (só DOM do texto; o <video> não muda): a frase não some quando a barra mexe
+      if (!layRaf) layRaf = requestAnimationFrame(() => { layRaf = 0; renderPrompter(); });
+      return;
+    }
+    if (!layRaf) layRaf = requestAnimationFrame(() => { layRaf = 0; layout(); });
+  }
+  window.addEventListener('resize', () => relayout('janela'));
+  window.addEventListener('orientationchange', () => { relayout('giro'); setTimeout(() => relayout('giro'), 300); });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => relayout('visualViewport'));
+    window.visualViewport.addEventListener('scroll', () => relayout('visualViewport scroll'));
+  }
+  if (window.ResizeObserver) new ResizeObserver(() => relayout('área')).observe(el.area);
 
   /* ---------- Estado geral ---------- */
   let state = 'idle'; // idle | count | rec | review
@@ -213,7 +234,11 @@
       setTimeout(res, 4000);
     });
   }
-  el.cam.addEventListener('resize', () => { layout(); updateInfo(); });
+  el.cam.addEventListener('resize', () => {
+    if (gravando()) diag('vídeo da câmera mudou de medida na gravação aos ' + Math.round((performance.now() - tStart) / 1000) + ' s: ' + el.cam.videoWidth + '×' + el.cam.videoHeight);
+    else layout();
+    updateInfo();
+  });
   /* Zoom: se a câmera expõe zoom, começa no mínimo (campo mais aberto) e vira controle em Ajustes. */
   let zoomCap = null;
   async function setupZoom(vt) {
@@ -945,6 +970,7 @@
     if (!frase()) pTop(); // frase a frase: grava a partir da frase escolhida (↺ volta à 1ª)
     else aParar();        // o tempo da tela começa junto com a gravação
     logTake = []; tStart = performance.now();
+    marcaAltura();
     keepAwake('gravar');
     congelaFantasma(true); // fantasma de vídeo vira foto durante a gravação (libera o decodificador)
     let n = 3;
@@ -954,7 +980,7 @@
       n -= 1;
       if (n > 0) { el.countN.textContent = n; restart(); return; }
       clearInterval(countTimer); el.count.hidden = true;
-      if (!beginRecording()) { setState('idle'); congelaFantasma(false); return; }
+      if (!beginRecording()) { setState('idle'); congelaFantasma(false); layout(); return; }
       setState('rec');
       pStart();                       // rolagem automática
       if (frase()) aPlay('gravação');   // frase a frase: passar sozinho (registra se não iniciar e por quê)
@@ -963,7 +989,7 @@
       recTimer = setInterval(() => { el.recTime.textContent = fmtS(performance.now() - tStart); }, 100);
     }, 1000);
   }
-  function cancelCount() { clearInterval(countTimer); el.count.hidden = true; setState('idle'); aPause('contagem cancelada'); congelaFantasma(false); paintPrompter(); }
+  function cancelCount() { clearInterval(countTimer); el.count.hidden = true; setState('idle'); aPause('contagem cancelada'); congelaFantasma(false); layout(); paintPrompter(); }
   function stopRecording() {
     clearInterval(recTimer);
     aPause('fim da gravação');
@@ -999,6 +1025,7 @@
     const blob = new Blob(chunks, { type });
     chunks = [];
     setState('review');
+    layout(); // o quadro volta a acompanhar a janela (ficou congelado durante a gravação)
     if (!blob.size) { setState('idle'); toast('A gravação saiu vazia. Tente de novo.'); return; }
     discardTake();
     const name = fileName(extOf(type));
