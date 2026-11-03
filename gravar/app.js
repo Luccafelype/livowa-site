@@ -7,6 +7,8 @@
    Nas duas, o arquivo sai sem espelho e sem fantasma/grade/texto (tudo isso é só DOM por cima). */
 (() => {
   'use strict';
+  // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
+  const VERSAO = '794f5d6+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
@@ -14,6 +16,7 @@
     op: 35, ghostOn: true, ghostFlip: false,
     grid: false, eye: false, eyePos: 33,
     facing: 'user', mirrorFront: true, recorte916: false, guia916: true, modo: 'frase', maxPal: 10, seq: false, ppm: 150, auto: true,
+    qual: 'segura', // modo seguro por padrão até achar a causa da imagem parada no iPhone (02/11)
   };
   const S = Object.assign({}, DEF);
   try {
@@ -25,6 +28,11 @@
   S.speed = Math.min(25, Math.max(1, Math.round(+S.speed) || DEF.speed));
   S.maxPal = Math.min(20, Math.max(4, Math.round(+S.maxPal) || DEF.maxPal));
   S.ppm = Math.min(220, Math.max(90, Math.round((+S.ppm || DEF.ppm) / 10) * 10));
+  if (S.qual !== 'alta') S.qual = 'segura';
+  if (S.auto !== false) S.auto = true;
+  // Qualidade Segura: 720×960, 2,5 Mbps, sempre rota direta (nunca canvas). Recorte 9:16 só na Alta.
+  const segura = () => S.qual !== 'alta';
+  const recorte = () => !!S.recorte916 && !segura();
   const G = window.GravarTexto; // texto.js: blocos (títulos), frases e pedaços por tela
   let saveT = 0;
   function save() {
@@ -65,7 +73,7 @@
   /* ---------- Quadro inteiro na tela, na proporção do que vai para o arquivo ---------- */
   function stageAspect() {
     const [w, h] = camDims();
-    return (S.recorte916 || !w || !h) ? 9 / 16 : w / h;
+    return (recorte() || !w || !h) ? 9 / 16 : w / h;
   }
   // O quadro (proporção do arquivo, contain) fica centralizado na área livre entre o topo seguro e os controles.
   // O texto mora dentro do quadro, com posição e altura em CSS: nenhum resize mexe nele além do tamanho do quadro.
@@ -77,10 +85,10 @@
     if (h > r.height) { h = r.height; w = h * a; }
     // Sem arredondar: no modo recorte (cover) um pixel a menos já tiraria uma lasca do 9:16.
     Object.assign(el.stage.style, { left: ((r.width - w) / 2) + 'px', top: ((r.height - h) / 2) + 'px', width: w + 'px', height: h + 'px' });
-    el.cam.classList.toggle('crop916', !!S.recorte916);
+    el.cam.classList.toggle('crop916', recorte());
     // Guia 9:16: linhas finas mostrando o que sobra num corte 9:16 (o vídeo do Instagram).
     const g = el.g916, t = 9 / 16;
-    const show = S.guia916 && !S.recorte916 && Math.abs(a - t) > 0.01;
+    const show = S.guia916 && !recorte() && Math.abs(a - t) > 0.01;
     g.hidden = !show;
     if (show) {
       g.classList.toggle('wide', a > t);
@@ -150,10 +158,9 @@
       // 4:3 em pé costuma ser o campo cheio do sensor da frontal; depois 9:16. O iOS pode ler largura/altura
       // na orientação do sensor (deitado) e entregar um quadro deitado e cortado; por isso, com o aparelho
       // em pé, quadro deitado = tenta o próximo pedido (incluindo as medidas trocadas).
-      { video: v(1080, 1440), audio },
-      { video: v(1080, 1920), audio },
-      { video: v(1440, 1080), audio },
-      { video: v(1920, 1080), audio },
+      ...(segura()
+        ? [{ video: v(720, 960), audio }, { video: v(720, 1280), audio }, { video: v(960, 720), audio }, { video: v(1280, 720), audio }]
+        : [{ video: v(1080, 1440), audio }, { video: v(1080, 1920), audio }, { video: v(1440, 1080), audio }, { video: v(1920, 1080), audio }]),
       { video: v(), audio },
       { video: true, audio: true },
     ];
@@ -252,8 +259,9 @@
   // Direta = MediaRecorder no stream da câmera. Canvas quando há recorte 9:16 ou quando o track está
   // girado em relação ao <video> (caso do iPhone em pé): o canvas desenha o <video> em pé.
   function direct() {
+    if (segura()) return true; // modo seguro: nunca canvas
     if (rotated()) return false;
-    if (!S.recorte916) return true;
+    if (!recorte()) return true;
     const [w, h] = camDims();
     return !!(w && h && Math.abs(w / h - 9 / 16) < 0.02);
   }
@@ -267,7 +275,7 @@
     if (!w || !h) return [0, 0];
     if (direct()) return [w, h];
     let sw = w, sh = h;
-    if (S.recorte916) { if (w / h > 9 / 16) sw = h * 9 / 16; else sh = w * 16 / 9; }
+    if (recorte()) { if (w / h > 9 / 16) sw = h * 9 / 16; else sh = w * 16 / 9; }
     // Canvas pesa no iPhone: no máximo 1080×1440 em pixels (3:4 → 1080×1440; 9:16 → 936×1664).
     const k = Math.min(1, Math.sqrt((1080 * 1440) / (sw * sh)));
     return [Math.round(sw * k / 2) * 2, Math.round(sh * k / 2) * 2];
@@ -289,7 +297,9 @@
     const rows = [
       ['Câmera', w ? w + '×' + h + (facingNow === 'environment' ? ' (traseira)' : ' (frontal)') : '—'],
       ['Arquivo', ow ? ow + '×' + oh : '—'],
-      ['Rota', w ? (direct() ? 'quadro inteiro, direto da câmera' : S.recorte916 ? 'recorte 9:16 do centro (canvas)' : 'quadro inteiro pelo canvas (track girado)') : '—'],
+      ['Versão', VERSAO],
+      ['Qualidade', segura() ? 'Segura (720p, 2,5 Mbps, rota direta)' : 'Alta (1080p, 6 Mbps)'],
+      ['Rota', w ? (direct() ? 'quadro inteiro, direto da câmera' : recorte() ? 'recorte 9:16 do centro (canvas)' : 'quadro inteiro pelo canvas (track girado)') : '—'],
       ['Formato', mime || (window.MediaRecorder ? 'padrão do navegador' : 'este navegador não grava')],
       ['Selo', selo || '—'],
     ];
@@ -511,7 +521,7 @@
     else paintPrompter();
   };
   el.prompter.addEventListener('pointerup', endDrag);
-  el.prompter.addEventListener('click', () => { if (frase() && S.auto) (aRun ? aPause() : aPlay()); });
+  el.prompter.addEventListener('click', () => { if (frase() && S.auto) (aRun ? aPause('toque no texto') : aPlay('toque no texto')); });
   el.prompter.addEventListener('pointercancel', () => { drag = null; paintPrompter(); });
   // Teclado (Mac): ↑/↓ frase; espaço = próxima frase (frase a frase) ou pausa/continua (rolagem).
   // Espaço nunca aciona o botão em foco (gravar), nem fora dos campos de texto.
@@ -554,22 +564,29 @@
     aGone = Math.max(0, now - aT0);
     if (aGone >= aDurMs) {
       if (fIdx < frases().length - 1) { fIdx += 1; renderPrompter(); aDurMs = aDurAtual(); aT0 = now; aGone = 0; }
-      else { aGone = aDurMs; aRun = false; aFim = true; clearInterval(aRaf); paintAuto(); return; } // fim do roteiro: para na última
+      else { aGone = aDurMs; aRun = false; aFim = true; clearInterval(aRaf); paintAuto(); if (state === 'rec') diag('passar sozinho: parado (fim do roteiro)'); return; } // para na última
     }
     paintBar(aDurMs ? aGone / aDurMs : 0);
   }
-  function aPlay() {
-    if (!frase() || !S.auto || !atual()) return;
+  function aPlay(origem) {
+    if (!frase() || !S.auto || !atual()) {
+      if (origem) diag('passar sozinho: não iniciou (' + origem + ') — ' + (!frase() ? 'modo rolagem' : !S.auto ? 'desligado em Telas e ritmo' : 'sem roteiro'));
+      return;
+    }
+    if (origem) diag('passar sozinho: iniciado (' + origem + ') na tela ' + (fIdx + 1) + '/' + frases().length + ', ' + S.ppm + '/min');
     if (aFim) { fIdx = 0; aGone = 0; aFim = false; renderPrompter(); } // ▶ depois do fim: ensaia de novo do começo
     aDurMs = aDurAtual(); aT0 = performance.now() - aGone; aRun = true;
     clearInterval(aRaf); aRaf = setInterval(aTick, 50); paintAuto();
   }
-  function aPause() { if (aRun) aGone = Math.min(aDurMs, performance.now() - aT0); aRun = false; clearInterval(aRaf); paintAuto(); }
+  function aPause(motivo) {
+    if (aRun) { aGone = Math.min(aDurMs, performance.now() - aT0); if (motivo) diag('passar sozinho: parado (' + motivo + ') na tela ' + (fIdx + 1)); }
+    aRun = false; clearInterval(aRaf); paintAuto();
+  }
   function aRestartTela() { aGone = 0; aFim = false; aT0 = performance.now(); aDurMs = aDurAtual(); paintAuto(); }
   function aParar() { aPause(); aRestartTela(); }
   el.autoBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
-  el.autoBtn.addEventListener('click', (e) => { e.stopPropagation(); (aRun ? aPause() : aPlay()); el.autoBtn.blur(); });
-  el.optAuto.addEventListener('change', () => { S.auto = el.optAuto.checked; save(); aParar(); });
+  el.autoBtn.addEventListener('click', (e) => { e.stopPropagation(); (aRun ? aPause('botão ❚❚') : aPlay('botão ▶')); el.autoBtn.blur(); });
+  el.optAuto.addEventListener('change', () => { S.auto = el.optAuto.checked; save(); diag('passar sozinho: ' + (S.auto ? 'ligado' : 'desligado') + ' em Telas e ritmo'); aParar(); });
 
   function onAct(e) {
     const b = e.target.closest('[data-act]'); if (!b) return;
@@ -671,6 +688,20 @@
   el.optMirror.addEventListener('change', () => { S.mirrorFront = el.optMirror.checked; save(); applyMirror(); });
   el.optCrop.addEventListener('change', () => { S.recorte916 = el.optCrop.checked; save(); layout(); updateInfo(); });
   el.optGuide.addEventListener('change', () => { S.guia916 = el.optGuide.checked; save(); layout(); });
+  function renderQual() { document.querySelectorAll('[data-qual]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.qual === S.qual))); }
+  document.querySelectorAll('[data-qual]').forEach((b) => b.addEventListener('click', () => {
+    if (gravando() || S.qual === b.dataset.qual) return;
+    S.qual = b.dataset.qual; save(); renderQual(); diag('qualidade: ' + S.qual);
+    startCam().then(() => { layout(); updateInfo(); }); // reabre a câmera com o tamanho novo (fora da gravação)
+  }));
+  document.querySelectorAll('.ver').forEach((x) => { x.textContent = 'versão ' + VERSAO; });
+  // Atualizar: apaga a cópia guardada, desliga o service worker e recarrega da rede.
+  $('#atualizar').addEventListener('click', async () => {
+    if (gravando()) return;
+    try { const ks = await caches.keys(); await Promise.all(ks.filter((k) => k.startsWith('gravar-')).map((k) => caches.delete(k))); } catch (e) { /* ok */ }
+    try { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map((r) => r.unregister())); } catch (e) { /* ok */ }
+    location.replace(location.pathname + '?v=' + Date.now());
+  });
   let eyeDrag = false;
   el.eyeHandle.addEventListener('pointerdown', (e) => { eyeDrag = true; try { el.eyeHandle.setPointerCapture(e.pointerId); } catch (err) { /* ok */ } e.stopPropagation(); });
   el.eyeHandle.addEventListener('pointermove', (e) => {
@@ -721,7 +752,7 @@
   function canvasStream() {
     const [w, h] = camDims();
     let sw = w, sh = h;
-    if (S.recorte916) { if (w / h > 9 / 16) sw = Math.round(h * 9 / 16); else sh = Math.round(w * 16 / 9); }
+    if (recorte()) { if (w / h > 9 / 16) sw = Math.round(h * 9 / 16); else sh = Math.round(w * 16 / 9); }
     const sx = Math.round((w - sw) / 2), sy = Math.round((h - sh) / 2);
     const [ow, oh] = outDims();
     if (!canvas) { canvas = document.createElement('canvas'); canvas.className = 'rec-canvas'; canvas.setAttribute('aria-hidden', 'true'); document.body.append(canvas); }
@@ -743,11 +774,12 @@
   }
   function beginRecording() {
     if (!window.MediaRecorder) { toast('Este navegador não grava vídeo. Atualize o iOS ou use o Chrome.'); return false; }
-    route = direct() ? 'direta' : S.recorte916 ? 'recorte 9:16' : 'canvas em pé';
+    route = direct() ? 'direta' : recorte() ? 'recorte 9:16' : 'canvas em pé';
     let src;
     try { src = route === 'direta' ? stream : canvasStream(); } catch (e) { route = 'direta'; src = stream; }
     const mime = pickMime();
-    const opts = { videoBitsPerSecond: 6000000, audioBitsPerSecond: 128000 }; // 6 Mbps basta para 1080×1440 e alivia o encoder do iPhone
+    const vbps = segura() ? 2500000 : 6000000; // Segura: 2,5 Mbps (720×960); Alta: 6 Mbps (1080×1440)
+    const opts = { videoBitsPerSecond: vbps, audioBitsPerSecond: 128000 };
     if (mime) opts.mimeType = mime;
     try { rec = new MediaRecorder(src, opts); } catch (e) {
       try { rec = new MediaRecorder(src); } catch (e2) { drawing = false; toast('Não deu para gravar: ' + (e2.message || e2.name)); return false; }
@@ -760,9 +792,13 @@
     recTermo = termo(); // nome do arquivo = roteiro do começo do take (em sequência o ▼ pode trocar no meio)
     tStart = performance.now(); tStop = 0;
     rec.onstart = () => { tStart = performance.now(); };
-    try { rec.start(); } catch (e) { drawing = false; toast('Não deu para gravar: ' + (e.message || e.name)); return false; }
+    // Timeslice de 1000 ms (antes: nenhum, um pedaço só no stop): o arquivo vem em pedaços de 1 s e o vigia
+    // vê a cada 5 s se o tamanho cresce; se parar de crescer com o áudio ligado, é o codificador.
+    try { rec.start(1000); } catch (e) { drawing = false; toast('Não deu para gravar: ' + (e.message || e.name)); return false; }
     const [ow, oh] = outDims();
-    diag('gravando: rota ' + route + ', ' + ow + '×' + oh + ', ' + (rec.mimeType || mime || '?'));
+    const vtS = (stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings && stream.getVideoTracks()[0].getSettings()) || {};
+    diag('início · versão ' + VERSAO + ' · qualidade ' + S.qual + ' · track ' + vtS.width + '×' + vtS.height + '@' + (vtS.frameRate ? Math.round(vtS.frameRate) : '?') +
+      ' · arquivo ' + ow + '×' + oh + ' · rota ' + route + ' · ' + (rec.mimeType || mime || '?') + ' · ' + (vbps / 1e6).toFixed(1) + ' Mbps · timeslice 1 s');
     vigiar(true);
     return true;
   }
@@ -818,7 +854,13 @@
       const q = el.cam.getVideoPlaybackQuality && el.cam.getVideoPlaybackQuality();
       return q && q.totalVideoFrames ? q.totalVideoFrames : el.cam.currentTime;
     };
+    let tic = 0, ultBytes = -1;
     v.iv = setInterval(() => {
+      if (++tic % 5 === 0) {
+        const bytes = chunks.reduce((n, c) => n + c.size, 0);
+        diag(seg() + ' s: arquivo ' + fmtMB(bytes) + (bytes === ultBytes ? ' — PAROU DE CRESCER (codificador?)' : ''));
+        ultBytes = bytes;
+      }
       const m = marca();
       if (m === v.ult) { v.parado += 1; if (v.parado >= 2) falha('nenhum quadro novo há ' + v.parado + ' s' + (vt ? ' (track ' + vt.readyState + (vt.muted ? ', mudo' : '') + ')' : '')); }
       else v.parado = 0;
@@ -841,15 +883,16 @@
       if (!beginRecording()) { setState('idle'); return; }
       setState('rec');
       pStart();                       // rolagem automática
-      if (frase() && S.auto) aPlay(); // frase a frase: passar sozinho
+      if (frase()) aPlay('gravação');   // frase a frase: passar sozinho (registra se não iniciar e por quê)
       el.recPill.hidden = false;
       el.recTime.textContent = fmtS(0);
       recTimer = setInterval(() => { el.recTime.textContent = fmtS(performance.now() - tStart); }, 100);
     }, 1000);
   }
-  function cancelCount() { clearInterval(countTimer); el.count.hidden = true; setState('idle'); aPause(); paintPrompter(); }
+  function cancelCount() { clearInterval(countTimer); el.count.hidden = true; setState('idle'); aPause('contagem cancelada'); paintPrompter(); }
   function stopRecording() {
     clearInterval(recTimer);
+    aPause('fim da gravação');
     vigiar(false);
     diag('parou: ' + fmtS(performance.now() - tStart));
     tStop = performance.now();
@@ -1006,7 +1049,7 @@
   }
 
   /* ---------- Início ---------- */
-  renderTipo(); renderModo(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle'); paintAuto();
+  renderTipo(); renderModo(); renderQual(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle'); paintAuto();
   keepAwake();
   startCam();
 })();

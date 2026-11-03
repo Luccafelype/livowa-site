@@ -113,7 +113,7 @@
     <div class="lista" id="lista"></div>
     <button type="button" class="btn" id="verTelas" aria-expanded="false">Ver telas</button>
     <div class="telas" id="telas" hidden></div>
-    <p class="priv">Sem análise de uso. Texto, ajustes e vídeos ficam só neste aparelho.</p>
+    <p class="priv">Sem análise de uso. Texto, ajustes e vídeos ficam só neste aparelho. <span class="ver"></span></p>
   </section>
 
   <section class="sheet" id="sheet-fantasma" hidden aria-label="Fantasma de enquadramento">
@@ -163,12 +163,17 @@
       <button type="button" role="radio" data-modo="frase">Frase a frase</button>
       <button type="button" role="radio" data-modo="rolagem">Rolagem automática</button>
     </div>
+    <p class="hint">Qualidade</p>
+    <div class="seg" role="radiogroup" aria-label="Qualidade da gravação">
+      <button type="button" role="radio" data-qual="segura">Segura (720p)</button>
+      <button type="button" role="radio" data-qual="alta">Alta (1080p)</button>
+    </div>
     <div class="toggles">
       <label class="sw"><input type="checkbox" id="optGrid"><span>Grade de terços</span></label>
       <label class="sw"><input type="checkbox" id="optEye"><span>Marca da altura dos olhos <small>arraste a linha amarela</small></span></label>
       <label class="sw"><input type="checkbox" id="optMirror" checked><span>Espelhar a câmera frontal na tela <small>o arquivo nunca sai espelhado</small></span></label>
       <label class="sw"><input type="checkbox" id="optGuide" checked><span>Linhas do 9:16 <small>mostram o que fica num corte para o Reels</small></span></label>
-      <label class="sw"><input type="checkbox" id="optCrop"><span>Recortar o arquivo em 9:16 <small>desligado: grava o quadro inteiro da câmera</small></span></label>
+      <label class="sw"><input type="checkbox" id="optCrop"><span>Recortar o arquivo em 9:16 <small>só na qualidade Alta; desligado: grava o quadro inteiro da câmera</small></span></label>
     </div>
     <div class="row" id="zoomRow" hidden>
       <label for="zoom">Zoom</label>
@@ -182,6 +187,8 @@
       <button type="button" class="btn" id="diagClear">Limpar</button>
     </details>
     <p class="priv">Esta página não tem análise de uso e não envia nada pela internet. Depois de aberta uma vez, funciona sem conexão.</p>
+    <p class="priv"><span class="ver"></span></p>
+    <button type="button" class="btn" id="atualizar">Atualizar a página (limpa a cópia guardada)</button>
   </section>
 
   <section class="review" id="review" hidden aria-label="Revisar gravação">
