@@ -220,6 +220,12 @@ input[type=range]{width:100%;height:36px;accent-color:var(--accent);margin:0}
 .modo-rolagem .prompter{background:rgba(0,0,0,.62)}
 .rbl:last-child{margin-bottom:0}
 .resp{display:block}
+.rv-pend{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.rv-pend .pend{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);text-align:left}
+.rv-pend .btn{min-height:38px;font-size:14px}
+.alerta p{margin:0 0 10px}
+.alerta p:last-child{margin:0}
+.alerta .btn{width:100%;font-size:16px}
 .rv-actions{display:flex;gap:10px}
 /* Gravação leve (experimento 02/11): nada pesado por cima do vídeo ao vivo durante a gravação. */
 .leve.recording .ptext{text-shadow:none}

@@ -8,7 +8,7 @@
 (() => {
   'use strict';
   // Versão à vista (Ajustes e folha Texto): "<último commit>+1"; atualizar a cada commit.
-  const VERSAO = '943b708+1';
+  const VERSAO = 'f27a5eb+1';
   const $ = (s) => document.querySelector(s);
   const KEY = 'livowa_gravar_v1';
   const DEF = {
@@ -29,6 +29,7 @@
   S.maxPal = Math.min(20, Math.max(4, Math.round(+S.maxPal) || DEF.maxPal));
   S.ppm = Math.min(220, Math.max(90, Math.round((+S.ppm || DEF.ppm) / 10) * 10));
   if (S.qual !== 'alta') S.qual = 'segura';
+  if (S.qualV !== 2) { S.qual = 'segura'; S.qualV = 2; } // 02/11: diagnóstico mostrou o iOS emudecendo a câmera em Alta
   if (S.auto !== false) S.auto = true;
   if (![2, 3, 4].includes(+S.linhas)) S.linhas = 3;
   if (S.seqV !== 2) { S.seq = true; S.seqV = 2; } // 02/11: "Gravar ganchos em sequência" passa a vir ligado
@@ -57,7 +58,7 @@
     optGuide: $('#optGuide'), g916: $('#g916'), zoomRow: $('#zoomRow'), zoom: $('#zoom'), zoomOut: $('#zoomOut'),
     review: $('#review'), play: $('#play'), rvDur: $('#rvDur'), rvMeta: $('#rvMeta'), rvName: $('#rvName'),
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
-    toast: $('#toast'), optSeq: $('#optSeq'), rvMot: $('#rvMot'), optLeve: $('#optLeve'), optSemImg: $('#optSemImg'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
+    toast: $('#toast'), optSeq: $('#optSeq'), rvPend: $('#rvPend'), rvMot: $('#rvMot'), optLeve: $('#optLeve'), optSemImg: $('#optSemImg'), rmini: $('#rmini'), ppmMini: $('#ppmMini'), alerta: $('#alerta'), diagLog: $('#diagLog'), diagClear: $('#diagClear'),
     fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
     ritmoBtn: $('#ritmoBtn'), palOut: $('#palOut'), ppmOut: $('#ppmOut'), optAuto: $('#optAuto'), autoBtn: $('#autoBtn'),
     pbar: $('#pbar'), pbarI: $('#pbarI'), verTelas: $('#verTelas'), telas: $('#telas'),
@@ -345,7 +346,7 @@
   }
 
   /* Tela acesa enquanto a página está aberta (Safari 16.4+, Chrome). */
-  let wake = null;
+  let wake = null, wakeUlt = 'ativo';
   // Pedido de novo no toque de gravar (gesto do usuário) e registrado: sem ele, com Bloqueio Automático de 30 s
   // (Modo de Pouca Energia), o iPhone escurece a tela ~20 s depois do último toque — a janela das paradas de 14-20 s.
   async function keepAwake(origem) {
@@ -355,7 +356,10 @@
       if (wake && !wake.released) { if (origem) diag('tela acesa: ativo'); return; }
       wake = await navigator.wakeLock.request('screen');
       if (origem) diag('tela acesa: ativo (' + origem + ')');
-      wake.addEventListener('release', () => { if (gravando()) diag('tela acesa: LIBERADO durante a gravação'); });
+      wake.addEventListener('release', () => {
+        wakeUlt = 'liberado aos ' + Math.round((performance.now() - tStart) / 1000) + ' s (página ' + document.visibilityState + ', foco ' + (document.hasFocus() ? 'sim' : 'não') + ')';
+        if (gravando()) diag('tela acesa: LIBERADO durante a gravação, ' + wakeUlt);
+      });
     } catch (e) { if (origem) diag('tela acesa: negado (' + ((e && e.name) || e) + ')'); }
   }
   document.addEventListener('visibilitychange', () => {
@@ -812,6 +816,7 @@
   document.querySelectorAll('[data-qual]').forEach((b) => b.addEventListener('click', () => {
     if (gravando() || S.qual === b.dataset.qual) return;
     S.qual = b.dataset.qual; save(); renderQual(); diag('qualidade: ' + S.qual);
+    if (S.qual === 'alta') toast('Alta esquenta o iPhone: o sistema pode pausar a câmera no meio do take.', 4000);
     startCam().then(() => { layout(); updateInfo(); }); // reabre a câmera com o tamanho novo (fora da gravação)
   }));
   document.querySelectorAll('.ver').forEach((x) => { x.textContent = 'versão ' + VERSAO; });
@@ -973,13 +978,15 @@
   // 'ended' da trilha basta sozinho. O motivo vai para a revisão (linha curta) e para o diagnóstico.
   let vigia = null, falhaTake = '', motivoTake = '';
   const iosVer = () => { const m = navigator.userAgent.match(/OS (\d+)[_.](\d+)/); return m ? 'iOS ' + m[1] + '.' + m[2] : (navigator.platform || 'aparelho'); };
+  let semImagem = []; // trechos [ini, fim] em s com a trilha muda (pausa do iOS)
   function vigiar(on) {
     if (vigia) {
+      if (vigia.muteIni != null) { semImagem.push([vigia.muteIni, Math.round((performance.now() - tStart) / 1000)]); vigia.muteIni = null; }
       clearInterval(vigia.iv); vigia.off.forEach((f) => f()); vigia = null;
     }
     el.alerta.hidden = true;
     if (!on || !stream) return;
-    falhaTake = ''; motivoTake = '';
+    falhaTake = ''; motivoTake = ''; semImagem = [];
     const vt = stream.getVideoTracks()[0];
     const v = { quadros: 0, ultQ: -1, paradoQ: 0, ultD: -1, paradoD: 0, avisou: false, off: [], prevSem: false };
     const ouve = (alvo, ev, fn) => { alvo.addEventListener(ev, fn); v.off.push(() => alvo.removeEventListener(ev, fn)); };
@@ -991,14 +998,26 @@
       if (!v.avisou) {
         v.avisou = true; enviaDiag('imagem parada aos ' + seg() + ' s: ' + motivo);
         falhaTake = 'A câmera parou aos ' + seg() + ' s neste take. Grave de novo.';
-        el.alerta.textContent = 'A câmera parou aos ' + seg() + ' s — pare e grave de novo'; el.alerta.hidden = false;
+        mostraAlerta('A câmera parou aos ' + seg() + ' s — pare e grave de novo', true);
       }
     };
     if (vt) {
       ouve(vt, 'ended', () => falha('trilha encerrada aos ' + seg() + ' s'));
-      ouve(vt, 'mute', () => { anota('trilha de vídeo muda aos ' + seg() + ' s'); diag('trilha de vídeo muda (mute) aos ' + seg() + ' s'); });
-      ouve(vt, 'unmute', () => diag('trilha de vídeo voltou (unmute) aos ' + seg() + ' s'));
+      // O iOS emudece a trilha (interrupção do sistema) e depois devolve: a gravação segue; o trecho sem imagem é anotado.
+      ouve(vt, 'mute', () => {
+        v.muteIni = seg(); v.ofereceu = false;
+        anota('trilha de vídeo muda aos ' + v.muteIni + ' s');
+        diag('trilha de vídeo muda (mute) aos ' + v.muteIni + ' s · página ' + document.visibilityState + ' · foco ' + (document.hasFocus() ? 'sim' : 'não') + ' · tela acesa: ' + (wake && !wake.released ? 'ativo' : wakeUlt));
+        mostraAlerta('O iPhone pausou a câmera aos ' + v.muteIni + ' s', false);
+      });
+      ouve(vt, 'unmute', () => {
+        if (v.muteIni != null) { semImagem.push([v.muteIni, seg()]); v.muteIni = null; }
+        diag('trilha de vídeo voltou (unmute) aos ' + seg() + ' s');
+        if (!v.avisou) el.alerta.hidden = true;
+      });
     }
+    ouve(window, 'blur', () => diag('página perdeu o foco aos ' + seg() + ' s'));
+    ouve(window, 'focus', () => diag('página voltou ao foco aos ' + seg() + ' s'));
     ouve(el.cam, 'pause', () => { anota('<video> pausado aos ' + seg() + ' s'); diag('<video> pausou aos ' + seg() + ' s; play() de novo'); try { const p = el.cam.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ok */ } });
     ouve(el.cam, 'stalled', () => diag('<video> stalled aos ' + seg() + ' s'));
     ouve(document, 'visibilitychange', () => diag('página ' + (document.visibilityState === 'visible' ? 'visível' : 'ESCONDIDA') + ' aos ' + seg() + ' s'));
@@ -1015,22 +1034,26 @@
       const d = decod();
       if (d >= 0) { if (d === v.ultD) v.paradoD++; else v.paradoD = 0; v.ultD = d; }
       const s1 = temRVFC && v.paradoQ >= 2;
-      const s2 = !!vt && (vt.muted || vt.readyState !== 'live');
+      // trilha muda (pausa do iOS) não é falha: tem aviso e oferta próprios; aqui só 'ended'
+      const s2 = !!vt && vt.readyState !== 'live';
+      if (vt && vt.muted && v.muteIni != null && !v.ofereceu && seg() - v.muteIni >= 3) { v.ofereceu = true; mostraAlerta('O iPhone pausou a câmera aos ' + v.muteIni + ' s', true); }
       const s3 = d >= 0 && v.paradoD >= 2;
       const n = (s1 ? 1 : 0) + (s2 ? 1 : 0) + (s3 ? 1 : 0);
-      if (n >= 2) falha([s1 && 'pré-visualização sem quadro novo', s2 && ('trilha ' + (vt.muted ? 'muda' : vt.readyState)), s3 && 'quadros decodificados parados'].filter(Boolean).join(' + ') + ' aos ' + seg() + ' s');
+      if (n >= 2 && !(vt && vt.muted)) falha([s1 && 'pré-visualização sem quadro novo', s2 && ('trilha ' + vt.readyState), s3 && 'quadros decodificados parados'].filter(Boolean).join(' + ') + ' aos ' + seg() + ' s');
       else if (n === 1 && !v.prevSem) {
         v.prevSem = true;
-        const so = s1 ? 'sem quadro novo na pré-visualização, trilha ativa' : s2 ? 'trilha ' + (vt.muted ? 'muda' : vt.readyState) + ', pré-visualização andando' : 'quadros decodificados parados, pré-visualização andando';
+        const so = s1 ? 'sem quadro novo na pré-visualização, trilha ' + (vt && vt.muted ? 'muda' : 'ativa') : s2 ? 'trilha ' + vt.readyState + ', pré-visualização andando' : 'quadros decodificados parados, pré-visualização andando';
         anota(so + ' aos ' + seg() + ' s'); diag('sinal isolado (sem aviso): ' + so + ' aos ' + seg() + ' s');
       } else if (n === 0) v.prevSem = false;
     }, 1000);
     vigia = v;
   }
-  function countdown() {
+  function countdown(mesmoPonto) {
     sheet(null);
     setState('count');
-    pTop();               // gravação nova começa do começo do roteiro atual (frase a frase: tela 1; rolagem: topo)
+    // gravação nova começa do começo do roteiro atual (frase a frase: tela 1; rolagem: topo);
+    // "Salvar até aqui e recomeçar" segue do mesmo ponto do texto
+    if (!mesmoPonto) pTop(); else pPause();
     if (frase()) aParar(); // o tempo da tela começa junto com a gravação
     logTake = []; tStart = performance.now();
     marcaAltura();
@@ -1079,6 +1102,27 @@
     usados[base] = (usados[base] || 0) + 1;
     return base + (usados[base] > 1 ? '-' + usados[base] : '') + '.' + ext;
   }
+  // Aviso grande no quadro; com botão "Salvar até aqui e recomeçar" quando faz sentido.
+  function mostraAlerta(txt, comBotao) {
+    el.alerta.textContent = '';
+    const p = document.createElement('p'); p.textContent = txt; el.alerta.append(p);
+    if (comBotao) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn primary'; b.textContent = 'Salvar até aqui e recomeçar';
+      b.addEventListener('click', (e) => { e.stopPropagation(); salvarERecomecar(); });
+      el.alerta.append(b);
+    }
+    el.alerta.hidden = false;
+  }
+  // Para o take, guarda o arquivo (lista "guardados" na próxima revisão) e já abre a contagem do próximo,
+  // do mesmo ponto do texto.
+  let recomecar = false;
+  const guardados = [];
+  function salvarERecomecar() {
+    if (state !== 'rec') return;
+    diag('salvar até aqui e recomeçar');
+    recomecar = true;
+    stopRecording();
+  }
   function finishRecording() {
     drawing = false;
     vigiar(false);
@@ -1096,6 +1140,14 @@
     let file = null;
     try { file = new File([blob], name, { type }); } catch (e) { /* Safari antigo */ }
     take = { blob, url, name, ms: Math.max(0, tStop - tStart), file, type };
+    if (recomecar) { // guarda e recomeça do mesmo ponto, sem passar pela revisão
+      recomecar = false;
+      guardados.push(take); take = null;
+      enviaDiag('salvo até aqui', Math.round(guardados[guardados.length - 1].ms / 100) / 10, blob.size);
+      setState('idle');
+      countdown(true);
+      return;
+    }
     const [ow, oh] = outDims();
     el.play.src = url;
     el.rvDur.textContent = fmtS(take.ms);
@@ -1103,7 +1155,9 @@
     el.rvName.textContent = name;
     el.dlLink.href = url; el.dlLink.download = name;
     el.rvTip.textContent = falhaTake; el.rvTip.hidden = !falhaTake;
-    el.rvMot.textContent = 'vigia: ' + (motivoTake || 'nada estranho') + ' · versão ' + VERSAO + ' · ' + iosVer();
+    const gaps = semImagem.map(([a, b]) => 'de ' + a + ' s a ' + b + ' s').join('; ');
+    el.rvMot.textContent = (gaps ? 'sem imagem ' + gaps + ' · ' : '') + 'vigia: ' + (motivoTake || 'nada estranho') + ' · versão ' + VERSAO + ' · ' + iosVer();
+    if (gaps) diag('trechos sem imagem: ' + gaps);
     if (falhaTake) diag('take com imagem parada');
     enviaDiag(falhaTake ? 'fim com imagem parada' : 'fim', Math.round(take.ms / 100) / 10, blob.size);
     el.review.dataset.bytes = String(blob.size);
@@ -1111,6 +1165,7 @@
     el.review.dataset.ms = String(Math.round(take.ms));
     el.review.dataset.name = name;
     el.review.dataset.route = route;
+    renderGuardados();
     el.review.hidden = false;
     // Duração real do arquivo, quando o navegador informa (o webm do Chrome às vezes não traz).
     el.play.onloadedmetadata = () => {
@@ -1193,22 +1248,38 @@
     el.verTelas.setAttribute('aria-expanded', String(!el.telas.hidden));
     renderTelas();
   });
+  // Salvar um take: folha de compartilhar no iPhone ("Salvar Vídeo" / "Salvar em Arquivos"); download no Mac.
+  async function salvar(t) {
+    if (!t) return false;
+    if (isIOS && t.file && navigator.canShare && navigator.canShare({ files: [t.file] })) {
+      try { await navigator.share({ files: [t.file], title: t.name }); return true; } catch (e) { if (e && e.name === 'AbortError') return false; }
+    }
+    const a = document.createElement('a'); a.href = t.url; a.download = t.name; document.body.append(a); a.click(); a.remove();
+    return true;
+  }
   el.saveBtn.addEventListener('click', async () => {
     if (!take) return;
-    // iPhone/iPad: folha de compartilhar → "Salvar Vídeo" (Fotos) ou "Salvar em Arquivos".
-    if (isIOS && take.file && navigator.canShare && navigator.canShare({ files: [take.file] })) {
-      try {
-        await navigator.share({ files: [take.file], title: take.name });
-        el.rvTip.textContent = 'Pronto. Toque em "Gravar o próximo" ou regrave.'; el.rvTip.hidden = false;
-        return;
-      } catch (e) {
-        if (e && e.name === 'AbortError') return;
-      }
-    }
-    el.dlLink.click();
-    el.rvTip.textContent = isIOS ? 'No iPhone o arquivo vai para Arquivos › Downloads.' : 'Baixado: ' + take.name;
+    if (!(await salvar(take))) return;
+    el.rvTip.textContent = isIOS ? 'Pronto. Se foi para Arquivos, está em Downloads.' : 'Baixado: ' + take.name;
     el.rvTip.hidden = false;
   });
+  // Takes guardados pelo "Salvar até aqui e recomeçar": aparecem na revisão até serem salvos.
+  function renderGuardados() {
+    el.rvPend.textContent = '';
+    el.rvPend.hidden = !guardados.length;
+    guardados.forEach((t) => {
+      const row = document.createElement('div'); row.className = 'pend';
+      const nm = document.createElement('span'); nm.textContent = 'Guardado: ' + t.name + ' (' + fmtS(t.ms) + ')';
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = 'Salvar';
+      b.addEventListener('click', async () => {
+        if (!(await salvar(t))) return;
+        guardados.splice(guardados.indexOf(t), 1);
+        setTimeout(() => URL.revokeObjectURL(t.url), 60000);
+        renderGuardados();
+      });
+      row.append(nm, b); el.rvPend.append(row);
+    });
+  }
 
   /* ---------- Sem internet depois de carregar ---------- */
   if ('serviceWorker' in navigator && window.isSecureContext) {
