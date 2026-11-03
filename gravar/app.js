@@ -23,7 +23,7 @@
   // Valor estragado no localStorage nunca vira letra 0/NaN (o texto sumiria).
   S.fs = Math.min(64, Math.max(18, Math.round(+S.fs) || DEF.fs));
   S.speed = Math.min(25, Math.max(1, Math.round(+S.speed) || DEF.speed));
-  if (![6, 8, 10, 12, 15].includes(+S.maxPal)) S.maxPal = DEF.maxPal;
+  S.maxPal = Math.min(20, Math.max(4, Math.round(+S.maxPal) || DEF.maxPal));
   const G = window.GravarTexto; // texto.js: blocos (títulos), frases e pedaços por tela
   let saveT = 0;
   function save() {
@@ -48,6 +48,7 @@
     redoBtn: $('#redoBtn'), saveBtn: $('#saveBtn'), dlLink: $('#dlLink'), nextBtn: $('#nextBtn'), rvTip: $('#rvTip'),
     toast: $('#toast'), optSeq: $('#optSeq'),
     fPrev: $('#fPrev'), fNext: $('#fNext'), infoBtn: $('#infoBtn'), spdStep: $('#spdStep'),
+    palStep: $('#palStep'), palOut: $('#palOut'), verTelas: $('#verTelas'), telas: $('#telas'),
   };
 
   const fmtS = (ms) => (ms / 1000).toFixed(1).replace('.', ',') + ' s';
@@ -344,14 +345,15 @@
   }
   el.lista.addEventListener('click', (e) => {
     const b = e.target.closest('.item'); if (!b) return;
-    S.idx = +b.dataset.i; fIdx = 0; save(); renderLista(); renderPrompter();
+    S.idx = +b.dataset.i; fIdx = 0; divK = -1; save(); renderLista(); renderPrompter(); renderTelas();
   });
   el.txt.value = S.texto;
   el.txt.addEventListener('input', () => {
     S.texto = el.txt.value;
     const n = roteiros().length;
     if (S.idx >= n) S.idx = Math.max(0, n - 1);
-    save(); renderLista(); renderPrompter();
+    divK = -1;
+    save(); renderLista(); renderPrompter(); renderTelas();
   });
   document.querySelectorAll('[data-tipo]').forEach((b) => b.addEventListener('click', () => { S.tipo = b.dataset.tipo; save(); renderTipo(); }));
   function renderTipo() {
@@ -364,8 +366,9 @@
   let pOff = 0, pPlay = false, pLast = 0, pRaf = 0, fIdx = 0;
   const pps = () => S.speed * 3.5 * (S.fs / 30); // px por segundo
   const frase = () => S.modo !== 'rolagem';
-  // Frase a frase: frases quebradas em pedaços de no máximo S.maxPal palavras (texto.js).
-  function frases() { const r = atual(); return r ? G.telas(r.body, S.maxPal) : []; }
+  // Frase a frase: telas (ponto fecha, vírgula abre, quebra de linha manda; no máximo S.maxPal palavras) — texto.js.
+  function telasAtual() { const r = atual(); return r ? G.telas(r.body, S.maxPal) : []; }
+  function frases() { return telasAtual().map((t) => t.texto); }
   function renderPrompter() {
     const r = atual();
     const f = frases();
@@ -373,6 +376,7 @@
     el.app.style.setProperty('--fs', S.fs + 'px');
     el.spdOut.textContent = S.speed; el.fsOut.textContent = S.fs;
     el.spdStep.hidden = frase();
+    el.palStep.hidden = !frase(); el.palOut.textContent = S.maxPal;
     el.ptext.classList.toggle('empty', !r);
     el.ptext.classList.toggle('frase', frase() && !!r);
     el.ptext.textContent = '';
@@ -526,6 +530,8 @@
     if (a === 'spd+') S.speed = Math.min(25, S.speed + 1);
     if (a === 'fs-') S.fs = Math.max(18, S.fs - 2);
     if (a === 'fs+') S.fs = Math.min(64, S.fs + 2);
+    if (a === 'pal-') S.maxPal = Math.max(4, S.maxPal - 1);
+    if (a === 'pal+') S.maxPal = Math.min(20, S.maxPal + 1);
     if (a === 'top') pTop();
     save(); renderPrompter(); layout();
   });
@@ -793,10 +799,63 @@
   });
   el.optSeq.checked = !!S.seq;
   el.optSeq.addEventListener('change', () => { S.seq = el.optSeq.checked; save(); });
-  document.querySelectorAll('[data-max]').forEach((b) => b.addEventListener('click', () => {
-    S.maxPal = +b.dataset.max; fIdx = 0; save(); renderMax(); renderPrompter();
-  }));
-  function renderMax() { document.querySelectorAll('[data-max]').forEach((b) => b.setAttribute('aria-checked', String(+b.dataset.max === S.maxPal))); }
+  /* ---------- Ver telas: juntar / dividir à mão (vira quebra de linha ou espaço colado no texto guardado) ---------- */
+  let divK = -1;
+  function renderTelas() {
+    if (el.telas.hidden) return;
+    el.telas.textContent = '';
+    const it = atual();
+    const ts = telasAtual();
+    if (!it || !ts.length) { el.telas.textContent = 'Escolha um roteiro acima.'; return; }
+    ts.forEach((t, k) => {
+      const row = document.createElement('div'); row.className = 'tl';
+      const tx = document.createElement('span'); tx.className = 'tx';
+      const tn = document.createElement('span'); tn.className = 'tn'; tn.textContent = (k + 1) + '/' + ts.length;
+      tx.append(tn, document.createTextNode(t.texto.replace(/\u00A0/g, ' ')));
+      row.append(tx);
+      if (divK === k) {
+        const ws = document.createElement('div'); ws.className = 'ws';
+        G.palavrasDaTela(t).forEach((w, i) => {
+          const b = document.createElement('button'); b.type = 'button'; b.textContent = w; b.disabled = i === 0;
+          b.addEventListener('click', () => { divK = -1; aplicarCorpo(G.dividir(it.body, t, i)); });
+          ws.append(b);
+        });
+        const aj = document.createElement('small'); aj.className = 'ajuda'; aj.textContent = 'Toque na palavra que começa a tela nova.';
+        const ac = document.createElement('div'); ac.className = 'ac';
+        const cx = document.createElement('button'); cx.type = 'button'; cx.textContent = 'Cancelar';
+        cx.addEventListener('click', () => { divK = -1; renderTelas(); });
+        ac.append(cx); row.append(ws, aj, ac);
+      } else {
+        const ac = document.createElement('div'); ac.className = 'ac';
+        if (k < ts.length - 1) {
+          const j = document.createElement('button'); j.type = 'button'; j.textContent = 'juntar com a de baixo';
+          j.addEventListener('click', () => aplicarCorpo(G.juntar(it.body, ts, k)));
+          ac.append(j);
+        }
+        if (G.palavrasDaTela(t).length > 1) {
+          const d = document.createElement('button'); d.type = 'button'; d.textContent = 'dividir';
+          d.addEventListener('click', () => { divK = k; renderTelas(); });
+          ac.append(d);
+        }
+        row.append(ac);
+      }
+      el.telas.append(row);
+    });
+  }
+  // Grava a edição no texto (permanente) e redesenha tudo. Nunca durante a gravação.
+  function aplicarCorpo(corpo) {
+    if (state === 'rec' || state === 'count') return;
+    const it = atual(); if (!it) return;
+    S.texto = G.editar(S.texto, it, corpo);
+    el.txt.value = S.texto;
+    save(); renderLista(); renderPrompter(); renderTelas();
+  }
+  el.verTelas.addEventListener('click', () => {
+    el.telas.hidden = !el.telas.hidden; divK = -1;
+    el.verTelas.textContent = el.telas.hidden ? 'Ver telas' : 'Fechar telas';
+    el.verTelas.setAttribute('aria-expanded', String(!el.telas.hidden));
+    renderTelas();
+  });
   el.saveBtn.addEventListener('click', async () => {
     if (!take) return;
     // iPhone/iPad: folha de compartilhar → "Salvar Vídeo" (Fotos) ou "Salvar em Arquivos".
@@ -820,7 +879,7 @@
   }
 
   /* ---------- Início ---------- */
-  renderTipo(); renderModo(); renderMax(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle');
+  renderTipo(); renderModo(); applyGuides(); applyGhost(); layout(); renderPrompter(); setState('idle');
   keepAwake();
   startCam();
 })();
