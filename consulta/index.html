@@ -326,7 +326,7 @@ const post = corpo => fetch(API, { method:'POST', headers:{ 'content-type':'appl
 const TZ = 'America/Sao_Paulo';
 
 // ---------- Caixa ----------
-const STATUS = [['novo','Novo'],['respondi','Respondi'],['consulta','Consulta marcada'],['nao_quis','Não quis']];
+const STATUS = [['novo','Novo'],['respondi','Respondi'],['consulta','Em conversa'],['nao_quis','Não quis']];
 const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
 let LEADS = [], filtro = 'abertos';
 const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '');
