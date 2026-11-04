@@ -23,7 +23,7 @@
     }
   }
   var TEXTO = {
-    pele:  ['A pele mostra a idade por fora. Em gêmeos de 70 anos ou mais, o irmão que parecia mais velho na foto tendia a viver menos. Veja o que a sua foto mostra.',
+    pele:  ['A pele pode mostrar por fora como o corpo envelhece por dentro. Em gêmeos de 70 anos ou mais, quem parecia mais velho na foto tinha menos força e memória e tendia a viver menos.',
             'Christensen 2009, BMJ', 'https://doi.org/10.1136/bmj.b5262'],
     pernas:['A força das pernas é um dos sinais da idade do corpo.',
             'Cooper 2010, BMJ', 'https://doi.org/10.1136/bmj.c4467'],

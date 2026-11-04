@@ -5,7 +5,7 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f2f4f1">
-<title>Análise da pele · Dr. Lucca</title>
+<title>Que idade a sua pele mostra · Dr. Lucca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="pele2.css?v=7">
@@ -18,13 +18,13 @@
   <section class="screen capa" data-s="capa">
     <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="72" height="72">
       <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
-    <h1>Análise da sua pele pela foto, com a <em>leitura de um médico</em></h1>
-    <p class="sub">Responda algumas perguntas, tire uma foto e veja o que ela mostra, região por região. Leva poucos minutos.</p>
+    <h1>Que idade a sua pele mostra? Veja pela foto, com a <em>leitura de um médico</em></h1>
+    <p class="sub">Responda algumas perguntas, tire uma foto e veja a idade que o seu rosto aparenta e o que mais pesa nela, região por região. Leva poucos minutos.</p>
   </section>
 
   <!-- 0b · sexo (só a mulher vê a pergunta de gestação) -->
   <section class="screen" data-s="sexo" hidden>
-    <h2>Para ajustar os cuidados à sua pele, você é:</h2>
+    <h2>A pele do homem e a da mulher envelhecem de jeitos diferentes. Você é:</h2>
     <div class="opts" data-q="sexo" data-tipo="um">
       <button type="button" class="opt" data-v="f"><span class="txt">Mulher</span><span class="box"></span></button>
       <button type="button" class="opt" data-v="m"><span class="txt">Homem</span><span class="box"></span></button>
@@ -143,7 +143,7 @@
 
   <!-- 12 · instrução da câmera + aceite: cabe numa tela de iPhone (390×664) sem rolar -->
   <section class="screen instr" data-s="instrucao" hidden>
-    <h2>Agora vamos analisar a sua pele</h2>
+    <h2>Agora, a foto: vamos ver a idade que o seu rosto mostra</h2>
     <div class="anim-rosto" aria-hidden="true"><svg viewBox="0 0 200 200" id="rosto-ill"></svg></div>
     <ol class="passos">
       <li><em>1</em>Rosto dentro do oval, olhando reto</li>
@@ -194,7 +194,7 @@
 
   <!-- 14 · carregamento -->
   <section class="screen c" data-s="carregando" hidden>
-    <p class="kicker">Análise da pele</p>
+    <p class="kicker">Idade da pele</p>
     <div class="prog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="tr"/><circle cx="60" cy="60" r="52" class="pr" id="prog-c"/></svg><b id="prog-pct">0<small>%</small></b></div>
     <h2 id="prog-etapa">Lendo suas fotos</h2>
     <p class="sub">Isso leva alguns segundos. Não feche a página.</p>
@@ -261,7 +261,7 @@
     <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
   </div></div>
 </div>
-<script defer src="/assets/js/ponte.js?v=1"></script>
+<script defer src="/assets/js/ponte.js?v=2"></script>
 <script type="module" src="app.js?v=13"></script>
 </body>
 </html>
