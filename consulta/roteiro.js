@@ -1,9 +1,11 @@
 /* Roteiro do react por lead e "Parecido com isto" (03/11/2026). Carregado depois de kits.js, só na Caixa privada.
-   1. Botão "Gerar roteiro" em cada resultado (pele, pele2, pernas, braço, quiz da longevidade, emagrecimento): manda à
-      edge gerar-roteiro só o necessário (respostas com o texto da opção, números do resultado, classificação do kit).
-      NÃO vão: nome, telefone, @, código LV (vai à parte, para gravar no nosso banco), foto. A edge chama o Claude e grava;
-      abrir de novo mostra o gravado sem pagar. "Gerar de novo" pede um segundo toque.
-   2. "Parecido com isto" ao lado das fotos da pele: lê comparativas/indice.json; sem o arquivo, o espaço some. */
+   1. Roteiro MONTADO NA HORA a partir do estoque (roteiros-estoque.json, blocos escritos pelas regras-roteiro-v1), sem API e
+      sem custo: abertura, o que o resultado mostra (com onde circular), mecanismo, ponte e pergunta de 1 toque. Cada bloco
+      tem 2 ou 3 variações (botão Trocar; a escolha fica neste aparelho). O nome digitado no kit entra no texto, só na tela.
+   2. "Ajustar com o Claude" (opcional, caso fora do estoque): manda à edge gerar-roteiro o roteiro montado (com {nome}),
+      o pedido dele e a entrada mínima (respostas, números, classificação do kit). NÃO vão: nome, telefone, @, código LV
+      (vai à parte, para gravar no nosso banco), foto.
+   3. "Parecido com isto" ao lado das fotos da pele: lê comparativas/indice.json; sem o arquivo, o espaço some. */
 window.ROTEIRO = (() => {
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/gerar-roteiro';
 const chaveCaixa = () => new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -149,58 +151,232 @@ function montar(e){
   return { teste:t, chave:`${String(e.funil || t).toLowerCase().replace(/[^a-z0-9-]/g, '')}|${e.quando}`, entrada:tira(ENTRADA[t](d, c)) };
 }
 
+// ---------- roteiro montado pelo ESTOQUE (roteiros-estoque.json): na hora, sem API e sem custo ----------
+let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o botão do Claude)
+async function carregaEstoque(){
+  if (EST) return EST;
+  try { const r = await fetch('roteiros-estoque.json?v=20261103b', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
+  return EST;
+}
+const TEMPO = ['0-8 s', '8-30 s', '30-45 s', '45-52 s', '52-60 s'];
+const listaE = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1] : (a[0] || '');
+const n1 = v => v == null || v === '' || isNaN(+v) ? null : (+v).toLocaleString('pt-BR', { maximumFractionDigits:1 });
+const REG_ACNE_TXT = { testa:'na testa', nariz:'no nariz', bochechas:'nas bochechas', queixo:'no queixo', mandibula:'na mandíbula' };
+const REG_CURTA = { linhas_testa:'testa', olhos:'canto do olho', manchas:'bochechas', textura_poros:'zona T e nariz', sulco_nasolabial:'do nariz à boca', flacidez:'borda da mandíbula' };
+const OBJ_CURTO = { escada:'subir escada e carregar peso sem pensar', familia:'ter disposição com filhos e netos', trabalho:'trabalhar sem chegar no limite no fim do dia',
+  viajar:'viajar e andar o dia inteiro', esporte:'continuar no esporte', independente:'não depender de ninguém' };
+/** Preenche {chave} com V; devolve null se faltar algum valor (a variação não serve para este lead). {nome} fica. */
+function preenche(t, V){
+  let falta = false;
+  const s = String(t).replace(/\{(\w+)\}/g, (m, k) => { if (k === 'nome') return m; const v = V[k]; if (v == null || v === '') { falta = true; return m; } return v; });
+  return falta ? null : s;
+}
+/** Um bloco: as variações que servem para o lead, o tempo, onde circular e de onde veio. */
+function blocoE(id, tempo, textos, V, o = {}){
+  const opc = (Array.isArray(textos) ? textos : [textos]).map(t => preenche(t, V)).filter(Boolean).map(t => o.junta ? t + ' ' + o.junta : t);
+  return opc.length ? { id, tempo, opcoes:opc, circular:o.circular ? preenche(o.circular, V) || o.circular : null, fonte:o.f || '', fixo:!!o.fixo } : null;
+}
+function rotPele(d, t, c, E){
+  const P = E.pele, C = E.comum, p2 = t === 'pele2', V = {}, out = [], avisos = [];
+  if (c?.refazer){
+    const mot = /ruim/.test(c.motivo) ? 'ruim' : /cobert/.test(c.motivo) ? 'coberta' : 'padrao';
+    V.motivo = P.refazer.motivo[mot];
+    out.push(blocoE('refazer', TEMPO[0] + ' a ' + TEMPO[2].split('-')[1], P.refazer.texto, V, { f:P.refazer.f }));
+    out.push(blocoE('refazer-pergunta', TEMPO[4], C.refazer_pergunta, V, { f:P.refazer.f, fixo:true }));
+    avisos.push('Foto duvidosa: ' + (c.motivo || '') + ' Nenhum achado no vídeo (regra 16).');
+    return { blocos:out.filter(Boolean), avisos };
+  }
+  const sin = sinaisPele(d, p2), com = sin.filter(s => s.grau >= 1 && P.achados[s.id]);
+  const resp = d.respostas || {};
+  const qs = String(resp.incomoda || '').split('+').filter(Boolean).map(q => P.queixa[q]).filter(q => q && q[0]);
+  V.queixa = qs.length ? listaE(qs.slice(0, 2).map(q => q[0])) : null;
+  const principal = qs.map(q => com.find(s => s.id === q[1])).find(Boolean) || [...com].sort((a, b) => b.grau - a.grau)[0];
+  const ordem = principal ? [principal, ...com.filter(s => s !== principal).sort((a, b) => b.grau - a.grau)] : [];
+  out.push(blocoE('abertura', TEMPO[0], V.queixa ? P.abertura.com_queixa : P.abertura.sem_queixa, V, { f:P.abertura.f }));
+  const bem = sin.filter(s => s.grau === 0 && P.achados[s.id]).map(s => P.achados[s.id].nome);
+  V.bem = bem.length ? listaE(bem.slice(0, 2)) : null;
+  out.push(blocoE('bem', TEMPO[1], V.bem ? P.bem.com_lista : P.bem.sem_lista, V, { f:P.bem.f }));
+  for (const s of ordem.slice(0, 3)){
+    const A = P.achados[s.id];
+    const W = { ...V, onde:A.onde_fixo || listaE(s.regioes.map(r => REG_ACNE_TXT[Object.keys(REG_ACNE).find(k => REG_ACNE[k] === r)] || r)) || 'no rosto' };
+    const reg = REG_CURTA[s.id] || s.regioes.join(' e ') || 'rosto';
+    out.push(blocoE('achado-' + s.id, TEMPO[1], s.grau >= 2 ? A.forte : A.leve, W, { f:A.f, circular:`${s.foto}, ${reg}`, junta:s.id === 'cicatriz_acne' && s.tipo === 'marca de cor' ? A.cor : '' }));
+  }
+  if (ordem.length > 3) avisos.push('Também apareceram (fora do vídeo, para 1 ideia só): ' + ordem.slice(3).map(s => P.achados[s.id].nome).join(', ') + '.');
+  if (com.some(s => s.id === 'manchas' && s.grau >= 2)) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.pele, V, { f:C.seguranca.f, fixo:true }));
+  if (c?.idadeFaixa?.dizer){ const m = String(d.faixa || '').match(/(\d+)\D+(\d+)/); if (m) out.push(blocoE('faixa', TEMPO[1], P.faixa_idade.texto, { ...V, min:m[1], max:m[2] }, { f:P.faixa_idade.f, circular:'a faixa de idade na tela' })); }
+  else if (d.faixa) avisos.push('Faixa de idade fora do vídeo: ' + (c?.idadeFaixa?.txt || 'regra do kit.'));
+  if (principal) out.push(blocoE('mecanismo', TEMPO[2], P.achados[principal.id].mecanismo, V, { f:P.achados[principal.id].f }));
+  out.push(blocoE('ponte', TEMPO[3], C.ponte.foto, V, { f:C.ponte.f }));
+  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  if (['gravida', 'amamentando', 'tentando'].includes(resp.seguranca)) avisos.push(`Ela marcou "${P2.seguranca[1][resp.seguranca]}": nada de produto, remédio ou procedimento, nem por escrito.`);
+  if (['sensivel', 'reacao'].includes(resp.alergia)) avisos.push(`Alergia: "${P2.alergia[1][resp.alergia]}". Nada de nome de produto.`);
+  if (c?.notaAcne) avisos.push(c.notaAcne);
+  if (!principal) avisos.push('Nenhum achado com grau 1 ou mais: o vídeo pode ficar curto (70 a 130 palavras, regra 8).');
+  return { blocos:out.filter(Boolean), avisos };
+}
+function rotMov(t, d, c, E){
+  const M = E[t], C = E.comum, out = [], avisos = [], V = {};
+  const m = c?.medida || {};
+  if (t === 'pernas') Object.assign(V, { tempo:n1(d.t), pc:d.pc != null ? String(d.pc) : null, faixa_idade:d.faixa || null });
+  else Object.assign(V, { roscas:m.roscas != null ? String(m.roscas) : null, idade_m:m.faixaTxt || null });
+  if (c?.refazer){
+    const k = t === 'pernas' ? (/mais rápido/.test(c.motivo) ? 'rapido' : /Contou/.test(c.motivo) ? 'reps' : 'padrao')
+      : (/curta/.test(c.motivo) ? 'curto' : /Só \d+ movimentos/.test(c.motivo) ? 'poucas' : /não combinam|rara/.test(c.motivo) ? 'estranho' : 'padrao');
+    V.motivo = M.refazer.motivo[k];
+    out.push(blocoE('refazer', '0-45 s', M.refazer.texto, V, { f:M.refazer.f }));
+    out.push(blocoE('seguranca', '45-52 s', C.seguranca.movimento, V, { f:C.seguranca.f, fixo:true }));
+    out.push(blocoE('refazer-pergunta', TEMPO[4], C.refazer_pergunta, V, { f:M.refazer.f, fixo:true }));
+    avisos.push('Medição duvidosa: ' + (c.motivo || '') + ' Nenhuma faixa no vídeo (regra 16).');
+    return { blocos:out.filter(Boolean), avisos };
+  }
+  out.push(blocoE('abertura', TEMPO[0], M.abertura.texto, V, { f:M.abertura.f, circular:t === 'pernas' ? 'o tempo das 5 levantadas' : 'as roscas em 10 s' }));
+  if (c?.faixa) out.push(blocoE('faixa', TEMPO[1], M.faixa[c.faixa], V, { f:M.faixa.f, circular:t === 'pernas' ? 'o percentil e o quadril no vídeo' : 'a idade muscular estimada' }));
+  if (t === 'pernas' && V.faixa_idade && c?.faixa && c.faixa < 4) out.push(blocoE('parecida', TEMPO[1], M.faixa.parecida, V, { f:M.faixa.f, circular:'a faixa de idade na tela' }));
+  if (c?.faixa === 4) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.movimento, V, { f:C.seguranca.f, fixo:true }));
+  out.push(blocoE('mecanismo', TEMPO[2], M.mecanismo.texto, V, { f:M.mecanismo.f }));
+  out.push(blocoE('ponte', TEMPO[3], C.ponte.medida, V, { f:C.ponte.f }));
+  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  if (c?.simples) avisos.push('Leitura do kit: ' + c.simples);
+  if (c?.faixa === 4) avisos.push('Faixa 4: fale com ela também por escrito (regra 17).');
+  return { blocos:out.filter(Boolean), avisos };
+}
+function rotEmag(d, E){
+  const Q = E['quiz-emagrecimento'], C = E.comum, r = d.respostas || {}, out = [], avisos = [];
+  const lst = k => String(r[k] || '').split('+').filter(x => x && !['nenhum', 'nada'].includes(x));
+  const rot = (k, x) => (EMAG[k][1][x] || x).toLowerCase();
+  const V = { acontece:EMAG.acontece[1][r.acontece || d.perfil] || null, sono:EMAG.sono[1][r.sono] || null,
+    forca:{ '1':'1 vez por semana', '2mais':'2 vezes ou mais por semana' }[r.forca] || null, cansada:r.sexo === 'm' ? 'cansado' : 'cansada' };
+  const cp = [r.ciclo === 'irregular' ? 'a menstruação falhando ou atrasando' : null, lst('pele').includes('pelos') ? 'pelos grossos no rosto, no queixo ou na barriga' : null].filter(Boolean);
+  V.ciclo_pelos = cp.length ? listaE(cp) : null;
+  V.sintomas = lst('tireoide').length ? listaE(lst('tireoide').map(x => rot('tireoide', x))) : null;
+  V.exames = lst('exames').filter(x => x !== 'sem_exames').length ? listaE(lst('exames').filter(x => x !== 'sem_exames').map(x => rot('exames', x))) : null;
+  out.push(blocoE('abertura', TEMPO[0], Q.abertura.texto, V, { f:Q.abertura.f, circular:'a resposta "o que mais acontece"' }));
+  const bemK = r.exames === 'nada' ? 'exames_ok' : ['7', '8', '9mais'].includes(r.sono) ? 'sono_ok' : ['1', '2mais'].includes(r.forca) ? 'forca_ok' : 'geral';
+  out.push(blocoE('bem', TEMPO[1], Q.bem[bemK], V, { f:Q.bem.f, circular:bemK === 'geral' ? null : 'essa resposta na tela' }));
+  let sin = String(d.sinais || '').split('+').filter(s => s && Q.sinais[s]);
+  sin = [...sin.filter(s => s === 'remedio'), ...sin.filter(s => s !== 'remedio')];   // remédio sempre entra (regra 23)
+  for (const s of sin.slice(0, 2)) out.push(blocoE('sinal-' + s, TEMPO[1], Q.sinais[s], V, { f:Q.sinais.f, circular:'as respostas que ela marcou sobre isso' }));
+  if (sin.length > 2) avisos.push('Outros sinais do resultado (fale por escrito, 1 ideia por vídeo): ' + sin.slice(2).map(s => SINAL_EMAG[s] || s).join('; ') + '.');
+  const perfil = r.acontece || d.perfil;
+  if (Q.mecanismo[perfil]) out.push(blocoE('mecanismo', TEMPO[2], Q.mecanismo[perfil], V, { f:Q.mecanismo.f }));
+  out.push(blocoE('ponte', TEMPO[3], C.ponte.respostas, V, { f:C.ponte.f }));
+  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  if (d.imc) avisos.push(`IMC ${n1(d.imc)} (${d.faixa || 'sem faixa'}) fica fora da fala; só por escrito se ela perguntar (regra 22).`);
+  if (r.fase === 'gravida') avisos.push('Grávida: peso não é meta agora; nada de dieta, nem por escrito.');
+  return { blocos:out.filter(Boolean), avisos };
+}
+function rotLong(d, E){
+  const Q = E['quiz-longevidade'], C = E.comum, r = d.respostas || {}, out = [], avisos = [];
+  const arr = v => Array.isArray(v) ? v : v ? String(v).split('+') : [];
+  const V = { objetivo:arr(r.objetivo).length ? listaE(arr(r.objetivo).slice(0, 2).map(x => OBJ_CURTO[x] || x)) : null };
+  out.push(blocoE('abertura', TEMPO[0], V.objetivo ? Q.abertura.texto : ['{nome}, aqui é o Lucca. Li todas as suas respostas com calma. Vou te contar o que eu vi.'], V, { f:Q.abertura.f, circular:'a resposta "daqui a 10 anos"' }));
+  const inc = arr(r.incomoda).filter(x => Q.incomoda[x]);
+  for (const x of inc.slice(0, 2)) out.push(blocoE('incomoda-' + x, TEMPO[1], Q.incomoda[x], V, { f:Q.incomoda.f, circular:'essa resposta na tela' }));
+  const at = arr(r.atrapalha).find(x => Q.atrapalha[x]);
+  if (at) out.push(blocoE('atrapalha-' + at, TEMPO[1], Q.atrapalha[at], V, { f:Q.atrapalha.f, circular:'essa resposta na tela' }));
+  out.push(blocoE('mecanismo', TEMPO[2], Q.mecanismo.texto, V, { f:Q.mecanismo.f }));
+  out.push(blocoE('ponte', TEMPO[3], C.ponte.respostas, V, { f:C.ponte.f }));
+  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  if (inc.length > 2) avisos.push('Também marcou: ' + inc.slice(2).map(x => LONG.incomoda[1][x]).join('; ') + '.');
+  if (r.ajuda) avisos.push(`Prefere fazer: ${LONG.ajuda[1][r.ajuda] || r.ajuda}.`);
+  if (r.idade) avisos.push(`Idade: ${LONG.idade[1][r.idade] || r.idade}.`);
+  return { blocos:out.filter(Boolean), avisos };
+}
+/** O roteiro de um resultado montado pelo estoque: {blocos, avisos}, ou null sem estoque. */
+function doEstoque(e){
+  if (!EST) return null;
+  const t = testeDe(e); if (!t) return null;
+  const d = e.dados || {};
+  let c = null; try { if (KIT_DE[t] && window.KITS) c = KITS[KIT_DE[t]].classifica(d); } catch (err) { console.error(err); }
+  if (t === 'pele' || t === 'pele2') return rotPele(t === 'pele2' ? (window.KITS ? KITS.pele2.norm(d) : d) : d, t, c, EST);
+  if (t === 'pernas' || t === 'braco') return rotMov(t, d, c, EST);
+  if (t === 'quiz-emagrecimento') return rotEmag(d, EST);
+  return rotLong(d, EST);
+}
+
 // ---------- bloco na tela ----------
-let B = [], CODIGO = '', USO = null;   // B = blocos da tela (um por resultado)
-const NOME = { pele:'Pele', pele2:'Pele 2', pernas:'Pernas', braco:'Idade muscular', 'quiz-longevidade':'Quiz da longevidade', 'quiz-emagrecimento':'Emagrecimento' };
+let B = [], CODIGO = '', USO = null;   // B = um por resultado da tela
+const VAR_KEY = ch => 'livowa-rot-var:' + ch;
+const lerVar = ch => { try { return JSON.parse(localStorage.getItem(VAR_KEY(ch)) || '{}'); } catch { return {}; } };
+const gravaVar = (ch, v) => { try { localStorage.setItem(VAR_KEY(ch), JSON.stringify(v)); } catch { /* sem armazenamento: só nesta tela */ } };
+/** Variação inicial: muda de lead para lead (não soa repetido) e fica igual para o mesmo lead. */
+const semente = s => { let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+const nomeAtual = () => { try { return (typeof KIT_NOME === 'string' ? KIT_NOME : '').trim(); } catch { return ''; } };
 function bloco(e){
   let m = null; try { m = montar(e); } catch (err) { console.error(err); }
   if (!m) return '';
-  const i = B.push({ ...m, roteiro:null, estado:'' }) - 1;
+  const i = B.push({ ...m, e, est:null, vars:lerVar(m.chave), roteiro:null, estado:'' }) - 1;
   return `<section class="rot" data-rot="${i}" aria-label="Roteiro do react">${corpo(i)}</section>`;
 }
-/** Texto do roteiro com marcações: tempos em negrito, [CIRCULAR] destacado, avisos separados. */
+const idx = (b, bl) => { const n = bl.opcoes.length; const v = b.vars[bl.id]; return ((v != null ? v : semente(b.chave + bl.id)) % n + n) % n; };
+/** O roteiro em texto (formato da regra 26), com {nome} ou o nome digitado na tela. */
+function textoEstoque(b, nome){
+  const R = b.est; if (!R) return '';
+  const linhas = R.blocos.map(bl => `[${bl.tempo}] ${bl.opcoes[idx(b, bl)]}${bl.circular ? ` [CIRCULAR: ${bl.circular}]` : ''}`);
+  const t = `TESTE: ${b.teste} · ${palavras(b)} palavras faladas\nROTEIRO\n${linhas.join('\n')}\nAVISOS PARA O LUCCA\n${(R.avisos.length ? R.avisos : ['nenhum']).map(a => '- ' + a).join('\n')}`;
+  return nome ? t.replace(/\{nome\}/g, nome) : t;
+}
+const palavras = b => (b.est?.blocos || []).reduce((s, bl) => s + (bl.opcoes[idx(b, bl)].replace(/\{nome\}/g, 'nome').match(/[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*/gu) || []).length, 0);
+const destaca = s => esc(s).replace(/\{nome\}/g, '<b class="rot-n">{nome}</b>');
+function htmlEstoque(i){
+  const b = B[i], R = b.est, nome = nomeAtual();
+  const linhas = R.blocos.map((bl, k) => {
+    const n = bl.opcoes.length, j = idx(b, bl), txt = nome ? esc(bl.opcoes[j].replace(/\{nome\}/g, nome)) : destaca(bl.opcoes[j]);
+    return `<div class="rot-l${bl.fixo ? ' fixo' : ''}"><span class="rot-t">${esc(bl.tempo)}</span><span class="rot-f">${txt}${bl.circular ? ` <mark class="rot-c">circular: ${esc(bl.circular)}</mark>` : ''}${bl.fixo ? ' <small class="rot-fix">frase fixa</small>' : ''}</span>${n > 1 ? `<button type="button" class="rot-trocar" data-rot="${i}" data-k="${k}" aria-label="Trocar variação (${j + 1} de ${n})">Trocar <small>${j + 1}/${n}</small></button>` : '<span></span>'}</div>`;
+  }).join('');
+  const p = palavras(b), alvo = R.blocos.some(bl => /^refazer/.test(bl.id)) ? '' : p < 70 ? ' (curto)' : p > 160 ? ' (passa de 160)' : '';
+  return `<div class="rot-txt">${linhas}</div><p class="rot-info">${p} palavras faladas${alvo} · montado do estoque, sem custo</p>
+    ${R.avisos.length ? `<div class="rot-av"><b>Avisos para você</b><ul>${R.avisos.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : ''}`;
+}
+/** Texto do roteiro vindo do Claude: tempos, [CIRCULAR] destacado, avisos separados. */
 function formata(txt){
   const [fala, avisos] = String(txt).split(/^AVISOS PARA O LUCCA\s*$/m);
-  const linhas = fala.split('\n').filter(l => l.trim() && !/^ROTEIRO\s*$/.test(l.trim()));
+  const linhas = fala.split('\n').filter(l => l.trim() && !/^ROTEIRO\s*$/.test(l.trim()) && !/^TESTE:/.test(l));
   const h = linhas.map(l => {
-    if (/^TESTE:/.test(l)) return `<p class="rot-meta">${esc(l.replace(/^TESTE:\s*/, ''))}</p>`;
     const m = l.match(/^\s*\[(\d+-\d+ s)\]\s*(.*)$/);
-    const corpoL = esc(m ? m[2] : l).replace(/\[CIRCULAR:([^\]]*)\]/g, '<mark class="rot-c">circular:$1</mark>').replace(/\{nome\}/g, '<b class="rot-n">{nome}</b>');
-    return m ? `<p class="rot-l"><span class="rot-t">${esc(m[1])}</span><span>${corpoL}</span></p>` : `<p class="rot-l"><span></span><span>${corpoL}</span></p>`;
+    const corpoL = destaca(m ? m[2] : l).replace(/\[CIRCULAR:([^\]]*)\]/g, '<mark class="rot-c">circular:$1</mark>');
+    return `<div class="rot-l"><span class="rot-t">${m ? esc(m[1]) : ''}</span><span class="rot-f">${corpoL}</span><span></span></div>`;
   }).join('');
   const av = (avisos || '').split('\n').map(l => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean);
-  return h + (av.length ? `<div class="rot-av"><b>Avisos para você</b><ul>${av.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '');
+  return `<div class="rot-txt">${h}</div>` + (av.length ? `<div class="rot-av"><b>Avisos do Claude</b><ul>${av.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '');
 }
-const dinheiro = v => v == null ? '' : 'US$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits:3, maximumFractionDigits:3 });
+const dinheiro = v => v == null ? '' : 'US$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits:4, maximumFractionDigits:4 });
 const quandoCurto = d => new Date(d).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
 function corpo(i){
   const b = B[i], r = b.roteiro;
-  let h = `<div class="rot-h"><h3>Roteiro do react</h3><small>escrito pelo Claude para você conferir e falar do seu jeito</small></div>`;
-  if (r){
-    h += `<div class="rot-txt" id="rot-txt-${i}">${formata(r.roteiro)}</div>`;
-    if (r.avisos?.length) h += `<div class="rot-conf"><b>Conferir antes de gravar</b><ul>${r.avisos.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>`;
-    h += `<p class="rot-info">${esc(r.modelo || '')}${r.custo_usd != null ? ' · ' + esc(dinheiro(r.custo_usd)) : ''} · ${esc(quandoCurto(r.criado_em))}${r.palavras ? ` · ${r.palavras} palavras faladas` : ''}</p>`;
-  } else if (b.estado !== 'gerando') h += `<p class="rot-vazio">${b.estado === 'lendo' ? 'Procurando roteiro já feito…' : 'Ainda sem roteiro. O Claude lê as respostas e o resultado (sem nome, telefone nem foto) e escreve o react de 1 minuto.'}</p>`;
-  if (b.estado === 'gerando') h += '<p class="rot-vazio rot-espera">Escrevendo o roteiro… (uns 20 a 60 s)</p>';
+  let h = `<div class="rot-h"><h3>Roteiro do react</h3><small>montado das suas regras; troque o bloco que não soar bem</small></div>`;
+  h += b.est ? htmlEstoque(i) : `<p class="rot-vazio">${EST === null && b.estado === 'lendo' ? 'Montando o roteiro…' : 'Estoque de roteiros não carregou. Use o Claude abaixo.'}</p>`;
+  if (b.est) h += `<div class="rot-acoes"><button type="button" class="rot-copiar" data-rot="${i}" data-de="estoque">Copiar roteiro</button></div>`;
+  // Claude, opcional e barato
+  const ocupado = b.estado === 'gerando';
+  h += `<details class="rot-aj"${r || b.erro || ocupado || b.aberto ? ' open' : ''}><summary>Ajustar com o Claude <small>opcional, caso fora do estoque · menos de 1 centavo</small></summary>
+    <label class="rot-pedido"><span>O que mudar (opcional, sem nome nem telefone)</span><input type="text" maxlength="300" data-rot="${i}" value="${esc(b.pedido || '')}" placeholder="ex.: ela disse que a mancha apareceu depois da gravidez"></label>
+    <div class="rot-acoes"><button type="button" class="rot-gerar sec" data-rot="${i}" ${ocupado ? 'disabled' : ''}>${ocupado ? 'Ajustando…' : r ? 'Ajustar de novo' : 'Ajustar com o Claude'}</button></div>`;
+  if (ocupado) h += '<p class="rot-vazio rot-espera">O Claude está ajustando (uns 5 a 20 s)</p>';
   if (b.erro) h += `<p class="rot-erro" role="alert">${esc(b.erro)}</p>`;
-  const ocupado = b.estado === 'gerando' || b.estado === 'lendo';
-  h += `<div class="rot-acoes">${r ? `<button type="button" class="rot-copiar" data-rot="${i}">Copiar roteiro</button><button type="button" class="rot-gerar sec${b.conf ? ' conf' : ''}" data-rot="${i}" ${ocupado ? 'disabled' : ''}>${b.conf ? 'Toque de novo: gasta 1 chamada' : 'Gerar de novo'}</button>`
-    : `<button type="button" class="rot-gerar" data-rot="${i}" ${ocupado ? 'disabled' : ''}>${b.estado === 'gerando' ? 'Gerando…' : 'Gerar roteiro'}</button>`}</div>`;
-  if (USO) h += `<p class="rot-info">Hoje: ${USO.hoje} de ${USO.teto} roteiros pagos</p>`;
-  return h;
+  if (r){
+    h += `<div class="rot-claude"><b>Versão do Claude</b>${formata(r.roteiro)}`;
+    if (r.avisos?.length) h += `<div class="rot-conf"><b>Conferir antes de gravar</b><ul>${r.avisos.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>`;
+    h += `<p class="rot-info">${esc(r.modelo || '')}${r.custo_usd != null ? ' · ' + esc(dinheiro(r.custo_usd)) : ''} · ${esc(quandoCurto(r.criado_em))}${r.palavras ? ` · ${r.palavras} palavras faladas` : ''}</p>
+      <div class="rot-acoes"><button type="button" class="rot-copiar" data-rot="${i}" data-de="claude">Copiar versão do Claude</button></div></div>`;
+  }
+  if (USO) h += `<p class="rot-info">Hoje: ${USO.hoje} de ${USO.teto} ajustes pagos</p>`;
+  return h + '</details>';
 }
 const redesenha = i => { const s = document.querySelector(`.rot[data-rot="${i}"]`); if (s) s.innerHTML = corpo(i); };
 const redesenhaTodos = () => B.forEach((_, i) => redesenha(i));
-const ERRO = { teto:'Chegou no teto de roteiros de hoje. Amanhã libera de novo (ou peça para subir o teto).', recusa:'O Claude recusou este pedido. Tente "Gerar de novo" mais tarde ou escreva à mão.',
-  ocupado:'A API está ocupada agora. Tente de novo em 1 minuto.', sem_chave:'A função ainda está sem a chave da Anthropic (falta rodar o script de ligar).', grande:'Resultado grande demais para mandar.',
+const ERRO = { teto:'Chegou no teto de ajustes de hoje. Amanhã libera de novo.', recusa:'O Claude recusou este pedido. Use o roteiro do estoque.',
+  ocupado:'A API está ocupada agora. Tente de novo em 1 minuto.', sem_chave:'A função está sem a chave da Anthropic.', grande:'Resultado grande demais para mandar.',
   vazio:'O Claude não devolveu texto. Tente de novo.', banco:'Não consegui gravar no banco. Tente de novo.' };
-async function gerar(i, novo){
-  const b = B[i]; b.estado = 'gerando'; b.erro = ''; b.conf = false; redesenha(i);
+async function gerar(i){
+  const b = B[i]; b.estado = 'gerando'; b.erro = ''; redesenha(i);
   try {
-    const r = await post({ acao:'gerar', c:CODIGO, chave:b.chave, teste:b.teste, entrada:b.entrada, novo:!!novo });
+    const base = textoEstoque(b, '');   // vai com {nome}, nunca com o nome digitado
+    const r = await post({ acao:'gerar', c:CODIGO, chave:b.chave, teste:b.teste, entrada:b.entrada, base, pedido:(b.pedido || '').trim(), novo:true });
     const j = await r.json().catch(() => ({}));
     if (r.status === 404) throw new Error('Link sem acesso. Use o link do arquivo privado.');
-    if (!j.ok) throw new Error(ERRO[j.erro] || `Não gerou (${j.erro || r.status}).`);
+    if (!j.ok) throw new Error(ERRO[j.erro] || `Não ajustou (${j.erro || r.status}).`);
     b.roteiro = j.roteiro;
     if (j.hoje != null) USO = { hoje:j.hoje, teto:j.teto };
   } catch (err) { b.erro = err.message || 'Sem conexão.'; }
@@ -208,30 +384,41 @@ async function gerar(i, novo){
 }
 async function lerGravados(c){
   if (!B.length) return;
-  B.forEach(b => b.estado = 'lendo'); redesenhaTodos();
   try {
     const r = await post({ acao:'ler', c });
     const j = await r.json().catch(() => ({}));
-    if (c !== CODIGO) return;   // trocou de código no meio
-    if (j.ok){
-      USO = { hoje:j.hoje, teto:j.teto };
-      for (const b of B){ const g = (j.roteiros || []).find(x => x.chave === b.chave); if (g) b.roteiro = g; }
-    }
-  } catch { /* sem conexão: segue com o botão */ }
-  B.forEach(b => { if (b.estado === 'lendo') b.estado = ''; }); redesenhaTodos();
+    if (c !== CODIGO || !j.ok) return;
+    USO = { hoje:j.hoje, teto:j.teto };
+    for (const b of B){ const g = (j.roteiros || []).find(x => x.chave === b.chave); if (g) b.roteiro = g; }
+    redesenhaTodos();
+  } catch { /* sem conexão: segue com o estoque */ }
+}
+async function montarTodos(){
+  B.forEach(b => { if (!b.est) b.estado = 'lendo'; }); redesenhaTodos();
+  await carregaEstoque();
+  B.forEach(b => { try { b.est = doEstoque(b.e); } catch (err) { console.error(err); b.est = null; } if (b.estado === 'lendo') b.estado = ''; });
+  redesenhaTodos();
 }
 function copiar(btn){
-  const i = +btn.dataset.rot, txt = B[i]?.roteiro?.roteiro || '';
-  const feito = m => { btn.textContent = m; clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = 'Copiar roteiro'; }, 1500); };
+  const i = +btn.dataset.rot, b = B[i]; if (!b) return;
+  const txt = btn.dataset.de === 'claude' ? (b.roteiro?.roteiro || '').replace(/\{nome\}/g, nomeAtual() || '{nome}') : textoEstoque(b, nomeAtual());
+  const volta = btn.textContent;
+  const feito = m => { btn.textContent = m; clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = volta; }, 1500); };
   try { navigator.clipboard.writeText(txt).then(() => feito('Copiado'), () => feito('Não copiou')); } catch { feito('Não copiou'); }
 }
 document.addEventListener('click', ev => {
   const cp = ev.target.closest('.rot-copiar'); if (cp){ copiar(cp); return; }
+  const tr = ev.target.closest('.rot-trocar');
+  if (tr){ const i = +tr.dataset.rot, b = B[i], bl = b?.est?.blocos[+tr.dataset.k]; if (!bl) return;
+    b.vars[bl.id] = idx(b, bl) + 1; gravaVar(b.chave, b.vars); redesenha(i);
+    document.querySelector(`.rot[data-rot="${i}"] .rot-trocar[data-k="${tr.dataset.k}"]`)?.focus(); return; }
   const g = ev.target.closest('.rot-gerar'); if (!g || g.disabled) return;
-  const i = +g.dataset.rot, b = B[i]; if (!b) return;
-  if (!b.roteiro){ gerar(i, false); return; }
-  if (!b.conf){ b.conf = true; redesenha(i); setTimeout(() => { if (b.conf){ b.conf = false; redesenha(i); } }, 4000); return; }
-  gerar(i, true);
+  gerar(+g.dataset.rot);
+});
+document.addEventListener('toggle', ev => { const d = ev.target; if (d.classList?.contains('rot-aj')){ const i = +d.closest('.rot')?.dataset.rot; if (B[i]) B[i].aberto = d.open; } }, true);
+document.addEventListener('input', ev => {
+  if (ev.target.matches('.rot-pedido input')){ const b = B[+ev.target.dataset.rot]; if (b) b.pedido = ev.target.value; return; }
+  if (ev.target.classList.contains('kit-nome')) redesenhaTodos();   // o nome digitado entra no roteiro (só nesta tela)
 });
 
 // ---------- "Parecido com isto" (comparativas/indice.json; sem o arquivo, some) ----------
@@ -280,16 +467,28 @@ async function preencheParecidos(){
 }
 
 /** Chamado pela Caixa depois de desenhar os cartões de um código. */
-function depois(c){ CODIGO = c; lerGravados(c); preencheParecidos(); }
+function depois(c){ CODIGO = c; montarTodos(); lerGravados(c); preencheParecidos(); }
 /** Chamado pela Caixa antes de desenhar um código novo. */
 function zerar(c){ B = []; CODIGO = c; USO = null; }
 
 const css = document.createElement('style');
 css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid var(--l);display:flex;flex-direction:column;gap:8px}
 .rot-h h3{margin:0;font-size:1.05rem}.rot-h small{color:var(--m);font-size:.82rem}
-.rot-txt{background:var(--bg);border:1px solid var(--l);border-radius:12px;padding:10px 12px;font-size:1rem;line-height:1.5}
+.rot-txt{background:var(--bg);border:1px solid var(--l);border-radius:12px;padding:4px 10px;font-size:1rem;line-height:1.45}
 .rot-meta{margin:0 0 6px;color:var(--m);font-size:.82rem}
-.rot-l{display:grid;grid-template-columns:4.6em 1fr;gap:8px;margin:0 0 8px}
+.rot-l{display:grid;grid-template-columns:4.4em 1fr auto;gap:8px;align-items:start;padding:6px 0;border-bottom:1px solid var(--l)}
+.rot-l:last-child{border-bottom:0}
+.rot-l.fixo .rot-f{font-weight:600}
+.rot-fix{color:var(--m);font-weight:500;font-size:.75rem}
+.rot-trocar{background:var(--s);color:var(--a);border:1.5px solid var(--l);padding:6px 9px;font-size:.8rem;border-radius:9px;white-space:nowrap}
+.rot-trocar small{color:var(--m);font-weight:500}
+.rot-aj{border:1px solid var(--l);border-radius:12px;padding:8px 12px}
+.rot-aj summary{cursor:pointer;font-weight:600;color:var(--a);font-size:.92rem}
+.rot-aj summary small{color:var(--m);font-weight:500}
+.rot-aj[open]{display:flex;flex-direction:column;gap:8px}
+.rot-pedido{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--m)}
+.rot-pedido input{font:15px/1.4 system-ui;letter-spacing:0;text-transform:none;padding:9px 11px;border-radius:10px}
+.rot-claude{display:flex;flex-direction:column;gap:6px;border-top:1px dashed var(--l);padding-top:8px}
 .rot-t{font:700 .78rem ui-monospace,monospace;color:var(--a);padding-top:.25em}
 .rot-c{background:#ffe1dc;color:#8a1c0c;border-radius:6px;padding:0 4px;font-size:.9em;font-weight:600}
 .rot-n{color:var(--a)}
@@ -316,5 +515,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { montar, bloco, parecido, depois, zerar, testeDe, _indice:() => INDICE };
+return { montar, bloco, parecido, depois, zerar, testeDe, doEstoque, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
 })();
