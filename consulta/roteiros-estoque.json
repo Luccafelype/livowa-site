@@ -143,6 +143,18 @@
    "f": "regra 25 pele (faixa: só se a regra do kit deixa dizer; 'é estimativa, erra uns 4 a 5 anos para cada lado'); kit-pele §2.3",
    "texto": ["A estimativa da sua pele ficou entre {min} e {max}. É estimativa, erra uns 4 a 5 anos para cada lado.", "A ferramenta estimou a pele entre {min} e {max} anos. É estimativa: erra uns 4 a 5 anos."]
   },
+  "idade_aparente": {
+   "f": "pele2 (03/11): a página abre com a idade aparente do rosto; regra 25 ('é estimativa, erra uns 4 a 5 anos'; confiança baixa ou foto regular: sem número; sem idade real, sem comparar); kit-pele §2.3; vitalidade: Christensen 2009, BMJ (PMID 20008378), sem número do estudo no vídeo (regra 15)",
+   "texto": [
+    "Pela foto, o seu rosto aparenta entre {min} e {max} anos. É estimativa: erra uns 4 a 5 anos para cada lado.",
+    "A idade aparente do seu rosto ficou entre {min} e {max} anos. É uma estimativa pela foto, com erro de uns 4 a 5 anos.",
+    "O rosto aparenta entre {min} e {max} anos na foto. É estimativa, e o rosto é só uma parte da vitalidade."
+   ],
+   "ponte": [
+    "O rosto mostra uma parte da idade do corpo. O resto eu só sei medindo.",
+    "A foto mostra a parte de fora. O resto da idade do corpo eu só sei medindo com calma."
+   ]
+  },
   "refazer": {
    "f": "regra 16 (dado fraco: o roteiro inteiro vira pedido para refazer, sem achado); kit-pele §3.5 (atalho pelerefazer)",
    "texto": [

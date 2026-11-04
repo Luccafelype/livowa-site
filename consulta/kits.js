@@ -568,6 +568,8 @@ function regraIdade(d){
   const { min, max } = faixaPele(d), idade = temValor(d.idade) ? +d.idade : null;
   if (min == null) return { dizer:false, txt:'Sem faixa de idade no resultado.' };
   if (d.confianca === 'baixa' || d.qualidade === 'regular') return { dizer:false, txt:'Não diga o número no vídeo: confiança baixa ou foto regular. Se ela perguntar, responda por escrito com a faixa e o erro.' };
+  // 03/11: a pele2 mostra a "idade aparente do rosto" no topo do resultado (sem pedir a idade real): ela já viu o número
+  if (idade == null && d.angulos) return { dizer:true, aparente:true, txt:'Pode dizer como "idade aparente do rosto" (ela já viu na página): é estimativa, erra uns 4 a 5 anos; sem a idade real, não compare.' };
   if (idade == null) return { dizer:false, txt:'Sem a idade real: não dá para comparar. Melhor não dizer o número no vídeo.' };
   const acima = (min + max) / 2 - idade;
   if (min <= idade || acima <= 0) return { dizer:true, txt:`Pode dizer: a faixa (${min} a ${max}) contém a idade real (${idade}) ou fica abaixo. É alívio de verdade.` };

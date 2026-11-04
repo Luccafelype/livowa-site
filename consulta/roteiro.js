@@ -155,7 +155,7 @@ function montar(e){
 let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o botão do Claude)
 async function carregaEstoque(){
   if (EST) return EST;
-  try { const r = await fetch('roteiros-estoque.json?v=20261103b', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
+  try { const r = await fetch('roteiros-estoque.json?v=20261103c', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
   return EST;
 }
 const TEMPO = ['0-8 s', '8-30 s', '30-45 s', '45-52 s', '52-60 s'];
@@ -196,18 +196,25 @@ function rotPele(d, t, c, E){
   const bem = sin.filter(s => s.grau === 0 && P.achados[s.id]).map(s => P.achados[s.id].nome);
   V.bem = bem.length ? listaE(bem.slice(0, 2)) : null;
   out.push(blocoE('bem', TEMPO[1], V.bem ? P.bem.com_lista : P.bem.sem_lista, V, { f:P.bem.f }));
-  for (const s of ordem.slice(0, 3)){
+  const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), aparente = c?.idadeFaixa?.aparente;
+  const nAch = aparente && c?.idadeFaixa?.dizer && mF ? 2 : 3;   // com a idade aparente no vídeo, 2 achados (cabe em 1 min)
+  for (const s of ordem.slice(0, nAch)){
     const A = P.achados[s.id];
     const W = { ...V, onde:A.onde_fixo || listaE(s.regioes.map(r => REG_ACNE_TXT[Object.keys(REG_ACNE).find(k => REG_ACNE[k] === r)] || r)) || 'no rosto' };
     const reg = REG_CURTA[s.id] || s.regioes.join(' e ') || 'rosto';
     out.push(blocoE('achado-' + s.id, TEMPO[1], s.grau >= 2 ? A.forte : A.leve, W, { f:A.f, circular:`${s.foto}, ${reg}`, junta:s.id === 'cicatriz_acne' && s.tipo === 'marca de cor' ? A.cor : '' }));
   }
-  if (ordem.length > 3) avisos.push('Também apareceram (fora do vídeo, para 1 ideia só): ' + ordem.slice(3).map(s => P.achados[s.id].nome).join(', ') + '.');
+  if (ordem.length > nAch) avisos.push('Também apareceram (fora do vídeo, para 1 ideia só): ' + ordem.slice(nAch).map(s => P.achados[s.id].nome).join(', ') + '.');
   if (com.some(s => s.id === 'manchas' && s.grau >= 2)) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.pele, V, { f:C.seguranca.f, fixo:true }));
-  if (c?.idadeFaixa?.dizer){ const m = String(d.faixa || '').match(/(\d+)\D+(\d+)/); if (m) out.push(blocoE('faixa', TEMPO[1], P.faixa_idade.texto, { ...V, min:m[1], max:m[2] }, { f:P.faixa_idade.f, circular:'a faixa de idade na tela' })); }
-  else if (d.faixa) avisos.push('Faixa de idade fora do vídeo: ' + (c?.idadeFaixa?.txt || 'regra do kit.'));
+  // a faixa: pele antiga só quando a regra do kit deixa (compara com a idade real); pele2 = "idade aparente do rosto",
+  // que ela já viu no topo do resultado (03/11), e entra PRIMEIRO no que o resultado mostra
+  if (c?.idadeFaixa?.dizer && mF){
+    const bl = aparente ? blocoE('idade', TEMPO[1], P.idade_aparente.texto, { ...V, min:mF[1], max:mF[2] }, { f:P.idade_aparente.f, circular:'a idade aparente no topo do resultado' })
+      : blocoE('faixa', TEMPO[1], P.faixa_idade.texto, { ...V, min:mF[1], max:mF[2] }, { f:P.faixa_idade.f, circular:'a faixa de idade na tela' });
+    if (aparente) out.splice(out.findIndex(b => b && b.id === 'bem'), 0, bl); else out.push(bl);
+  } else if (d.faixa) avisos.push('Faixa de idade fora do vídeo: ' + (c?.idadeFaixa?.txt || 'regra do kit.'));
   if (principal) out.push(blocoE('mecanismo', TEMPO[2], P.achados[principal.id].mecanismo, V, { f:P.achados[principal.id].f }));
-  out.push(blocoE('ponte', TEMPO[3], C.ponte.foto, V, { f:C.ponte.f }));
+  out.push(blocoE('ponte', TEMPO[3], aparente && c?.idadeFaixa?.dizer && mF ? P.idade_aparente.ponte : C.ponte.foto, V, { f:C.ponte.f }));
   out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
   if (['gravida', 'amamentando', 'tentando'].includes(resp.seguranca)) avisos.push(`Ela marcou "${P2.seguranca[1][resp.seguranca]}": nada de produto, remédio ou procedimento, nem por escrito.`);
   if (['sensivel', 'reacao'].includes(resp.alergia)) avisos.push(`Alergia: "${P2.alergia[1][resp.alergia]}". Nada de nome de produto.`);

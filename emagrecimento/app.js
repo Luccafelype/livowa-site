@@ -69,7 +69,7 @@ function show(s){
   if (s === 'medidas') posicionar(['peso', 'altura']);
   if (VARIAS.includes(s)) cta.classList.toggle('off', !R[s].length);
   if (UM.includes(s)) cta.classList.toggle('off', R[s] == null);
-  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11)
+  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca olhe o meu caso';   // um botão só (02/11); sem "explique em vídeo" (03/11)
   if (s === 'fechar') prepararFechamento();
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nomeBonito() + ', ' : ''; });
   document.querySelectorAll('[data-g]').forEach(el => { const [f, m] = el.dataset.g.split('|'); el.textContent = g(f, m); });
@@ -308,21 +308,33 @@ async function calcular(){
 
 // =====================================================================
 // RESULTADO (v2, pesquisa-v2.md §3). Ordem da mini VSL de fim de quiz (VT p.91 e p.143): o que apareceu nas respostas
-// → por que o que você tentou não segurou → o que o teste não alcança → o que acontece quando você toca no botão
-// (GA p.23-24) com o motivo para agir agora (L p.52-53: escassez real, ele grava um por um). Linguagem de conversa;
-// nada de "Fonte:" no meio do texto: as fontes ficam no rodapé recolhido.
+// → por que o que você tentou não segurou → a GUIA (03/11 ~23h, pedido do Lucca: sem promessa de vídeo nem "como ele
+// trabalha"; o vídeo vira surpresa): o que está entre ela e o objetivo, o que isso costuma pedir (exame, hormônio, sono)
+// e o custo de seguir no escuro → "é isso que você quer resolver?" (João Menna 28:57, vsl-joao-menna.md §5.1) → perguntas
+// por objeção (42:04, §5.4). A urgência vem do problema dela; nenhuma escassez (§5.3: urgência inventada fica fora).
+// Linguagem de conversa; nada de "Fonte:" no meio do texto: as fontes ficam no rodapé recolhido.
 // =====================================================================
 const PERFIL = {
   volta:'o peso que volta', vontade:'a vontade de comer', balanca:'a balança que não mostra tudo',
   constancia:'manter por mais de algumas semanas', comeco:'saber por onde começar',
 };
 const sonoCurto = () => ['5menos','6'].includes(R.sono);
+// o que cada ponto costuma pedir (sem nome de doença, sem promessa); e, sem ponto de saúde, o que o perfil pede
+const PEDE = { sop:'exame de hormônios', menopausa:'olhar a fase e o músculo, e não só o peso', tireoide:'exame de sangue',
+  metabolica:'olhar glicose, pressão e gordura no sangue junto com o peso', sem_exames:'exames de rotina',
+  remedio:'rever os remédios com o médico, sem parar nenhum por conta própria', ronco:'olhar o sono' };
+const PEDE_PERFIL = { volta:'Isso pede um plano que conte com o corpo se defendendo, e não mais uma dieta.',
+  vontade:'Isso pede olhar o sono e a hora em que a vontade aparece, antes de cortar comida.',
+  balanca:'Isso pede medir o que a balança não mostra, em vez de olhar só o número.',
+  constancia:'Isso pede um plano que caiba na sua rotina, e não o contrário.',
+  comeco:'Isso pede começar pelo que está por trás do peso, e não pela dieta.' };
+let ULT = { n:0, perfil:null };   // para a tela final
 const NUM_TXT = ['nenhum', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis'];
 function montarResultado(){
   usadas.clear();
   const m = medidas(), nome = nomeBonito(), tent = sem('tentou', 'nenhum'), S = sinais();
   $('r-data').textContent = new Date().toLocaleDateString('pt-BR', { day:'numeric', month:'long', year:'numeric' });
-  const n = S.length;
+  const n = S.length; ULT = { n, perfil:R.acontece };
   $('r-tit').innerHTML = n
     ? `${nome ? esc(nome) + ', as' : 'As'} suas respostas mostram <em>${NUM_TXT[n] || n} ${n === 1 ? 'ponto' : 'pontos'}</em> que merecem o olhar de um médico`
     : `${nome ? esc(nome) + ', o' : 'O'} que mais pesa no seu caso: <em>${esc(PERFIL[R.acontece])}</em>`;
@@ -370,19 +382,27 @@ function montarResultado(){
   } else t = fora.length ? `Você ainda não tentou nada para emagrecer. É a melhor hora para olhar ${lista(fora)} antes de escolher a dieta.` : 'Você ainda não tentou nada para emagrecer: dá para começar pelo caminho certo, sem tentativa frustrada pelo meio.';
   $('r-tentou').innerHTML = `<h3>Por que o que você tentou não segurou</h3><p>${esc(t)}</p>`;
 
-  // o que o teste não alcança + o que acontece ao tocar no botão (GA p.23-24) + o motivo para agir agora (L p.52-53)
+  // a guia: o que está no caminho, o que pede, o custo do escuro, o que o teste não alcança e a pergunta (sem vídeo)
   const passo = (S.find(s => s.passo) || {}).passo || (sonoCurto() ? 'Deite 1 hora mais cedo nas próximas noites e repare na vontade de comer no dia seguinte.'
     : R.forca === '0' ? 'Comece com 2 treinos de força curtos por semana: é o que a OMS recomenda.' : 'Anote por uma semana a hora em que a vontade de comer aparece e o que veio antes.');
   if (!S.find(s => s.passo)){ if (sonoCurto()) usa('watson'); else if (R.forca === '0') usa('bull'); }
-  const obj = R.objetivo && R.objetivo !== 'outro' ? ` e chegar ao seu objetivo (“${ROT.objetivo[R.objetivo].replace(/^./, c => c.toLowerCase())}”)` : '';
-  $('r-proximo').innerHTML = `<h3>O que este teste não consegue fazer</h3>
+  const objTxt = R.objetivo && R.objetivo !== 'outro' ? ROT.objetivo[R.objetivo].replace(/^./, c => c.toLowerCase()) : '';
+  const obj = objTxt ? ` e chegar ao seu objetivo (“${objTxt}”)` : '';
+  const isso = n ? lista(fora) : 'isso';
+  const caminho = n ? `Pelas suas respostas, o que pesa no seu caso ${n === 1 ? 'é' : 'são'} ${lista(fora)}. Nenhuma dieta enxerga isso: pede ${lista([...new Set(S.map(s => PEDE[s.id]).filter(Boolean))])}.`
+    : `Pelas suas respostas, o que mais pesa é ${PERFIL[R.acontece]}. ${PEDE_PERFIL[R.acontece]}`;
+  const escuro = tent.length ? `Cada nova tentativa sem olhar ${isso} tende a terminar como as outras.` : `Começar sem olhar ${isso} é escolher a dieta no escuro.`;
+  $('r-proximo').innerHTML = `<h3>${objTxt ? `O que está entre você e “${esc(objTxt)}”` : 'O que está no seu caminho'}</h3>
+    <p>${esc(caminho)}</p>
+    <p class="escuro">${esc(escuro)} A boa notícia: isso se olha com calma, com exame e conversa, sem adivinhar.</p>
+    <h3>O que este teste não consegue fazer</h3>
     <p>Um teste não pede exame, não examina você e não conhece a sua história. ${n ? `Para saber se ${n === 1 ? 'esse ponto pesa' : 'esses pontos pesam'} no seu caso` : 'Para saber o que pesa no seu caso'}${obj}, alguém precisa olhar as suas respostas com você.</p>
-    <h3>O próximo passo</h3>
-    <ol class="passos">
-      <li><b>Você manda o seu código</b><span>A mensagem já vai pronta. É só enviar.</span></li>
-      <li><b>O Dr. Lucca lê as suas respostas</b><span>${n ? `Começando ${n === 1 ? 'pelo ponto' : 'pelos pontos'} acima.` : 'Uma por uma.'}</span></li>
-      <li><b>Você recebe um vídeo dele sobre o seu caso</b><span>De 1 minuto, em até 24 horas. Ele grava um por um, na ordem em que os códigos chegam.</span></li>
-    </ol>
+    <div class="quer"><b>É isso que você quer resolver?</b><p>Se for, mande o seu código para o Dr. Lucca. Ele lê as suas respostas${n ? `, começando ${n === 1 ? 'pelo ponto' : 'pelos pontos'} acima,` : ''} e responde você.</p></div>
+    <details class="duvidas"><summary>Antes de mandar</summary>
+      <p><b>Já tentei de tudo. Vale a pena?</b>${tent.length ? ` Você já tentou ${esc(lista(tent.map(x => ROT.tentou[x])))}.` : ''} As perguntas de saúde vieram antes justamente para mostrar o que as dietas deixam de fora.</p>
+      <p><b>Preciso ter exames em mãos?</b> Não. Se tiver exames do último ano, separe uma foto: ajuda na conversa.</p>
+      <p><b>Mandar o código me compromete?</b> Não. É uma mensagem com o seu código. O que fazer depois, você decide.</p>
+    </details>
     <p class="enquanto"><b>Enquanto isso:</b> ${esc(passo)}</p>`;
 
   $('r-fontes').innerHTML = `<ol class="fontes">${[...usadas].map(k => `<li><a href="${esc(F[k][1])}" target="_blank" rel="noopener">${esc(F[k][0])}</a></li>`).join('')}</ol>`;
@@ -401,13 +421,15 @@ function respostasLimpa(){ const { nome, faseAuto, ...r } = R; const o = { ...r 
 // Tela final de um passo só, em 3ª pessoa. Medição igual: cta_click com props.canal whatsapp/direct + props.escolha ('explicar').
 // =====================================================================
 const sou = () => nomeBonito() ? `Sou ${g('a', 'o')} ${nomeBonito()}` : '';
-function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste do emagrecimento, código ${meuCodigo()}. Quero que você me explique o meu resultado.`; }
+function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste do emagrecimento, código ${meuCodigo()}. Quero que você olhe o meu caso.`; }
 const escolha = () => 'explicar';
 function prepararFechamento(){
   const nome = nomeBonito();
   $('cod').textContent = meuCodigo();
-  $('f-tit').textContent = nome ? `${nome}, o Dr. Lucca vai explicar o seu resultado em vídeo` : 'O Dr. Lucca vai explicar o seu resultado em vídeo';
-  $('f-sub').textContent = `Um vídeo de 1 minuto sobre as suas respostas, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`;
+  // 03/11 ~23h (Lucca): sem promessa de vídeo nem de prazo; o título é o passo, a frase é o problema dela
+  $('f-tit').textContent = nome ? `${nome}, mande o seu código para o Dr. Lucca` : 'Mande o seu código para o Dr. Lucca';
+  $('f-sub').textContent = ULT.n ? `${NUM_TXT[ULT.n] ? NUM_TXT[ULT.n][0].toUpperCase() + NUM_TXT[ULT.n].slice(1) : ULT.n} ${ULT.n === 1 ? 'ponto das suas respostas merece' : 'pontos das suas respostas merecem'} o olhar de um médico.`
+    : `O que mais pesa no seu caso, ${PERFIL[ULT.perfil] || 'o seu resultado'}, merece o olhar de um médico.`;
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   if (LV) return fimDirect();
   $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';

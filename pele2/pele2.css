@@ -276,3 +276,13 @@ details.completo .bloco{margin-bottom:12px}
 .aviso-dm b{font:800 1.4rem/1.15 var(--display)}
 .aviso-dm q{font:600 1.05rem/1.35 var(--body);color:var(--accent);-webkit-user-select:all;user-select:all}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* 03/11: idade aparente do rosto no topo do resultado (vitalidade e longevidade) */
+.idade-ap{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:16px;background:var(--accent-2);margin-bottom:12px}
+.idade-ap small{font:600 .8rem var(--body);color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+.idade-ap > b{font-size:1.9rem;line-height:1.1;color:var(--fg)}
+.idade-ap p{margin:0;font-size:.93rem;line-height:1.45;color:var(--fg)}
+.idade-ap .por{font-size:.88rem;color:var(--muted)}.idade-ap .por b{color:var(--fg)}
+.idade-ap .por a{color:inherit}
+.idade-ap .liga{display:block;margin-top:2px;padding:10px 12px;border-radius:12px;background:var(--surface);color:var(--accent);font-weight:700;font-size:.93rem;text-decoration:none;border:1.5px solid var(--accent)}
+.idade-ap .liga::after{content:' →'}

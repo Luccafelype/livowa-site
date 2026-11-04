@@ -255,4 +255,10 @@ details.completo .bloco{margin-bottom:12px}
 .passos b{font-size:.96rem}
 .passos span{font-size:.88rem;color:var(--muted)}
 .enquanto{background:var(--accent-2);border-radius:14px;padding:10px 12px;font-size:.92rem;color:var(--fg)!important}
+.escuro{font-size:.95rem}
+.quer{border:2px solid var(--accent);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.quer b{font-size:1.08rem}.quer p{margin:0;font-size:.95rem}
+.duvidas{border:1px solid var(--line, #dbe1dc);border-radius:14px;padding:10px 12px}
+.duvidas summary{cursor:pointer;font-weight:700}
+.duvidas p{margin:8px 0 0;font-size:.92rem;line-height:1.45}.duvidas p b{display:block}
 .enquanto b{color:var(--accent)}

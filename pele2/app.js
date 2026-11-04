@@ -396,6 +396,23 @@ function montarResultado(j, f){
   $('r-lat').innerHTML = '';
   for (const a of ['esquerda','direita']) if (f[a]){ const al2 = alinhar(f[a].src, f[a].g), c = fotoTopo(al2, f[a].g, 160); const im = new Image(); im.alt = `Foto de lado (${a})`; im.src = c.toDataURL('image/jpeg', .8); $('r-lat').appendChild(im); c.width = al2.width = 0; }
 
+  // 03/11 ~23h (Lucca): o resultado abre com a IDADE APARENTE do rosto (vitalidade e longevidade), que a edge já devolvia
+  // e a página não mostrava; espinha e mancha vêm depois, como "o que pesa na foto". Âncora: Christensen 2009, BMJ
+  // (PMID 20008378, conferido no PubMed em 03/11, resumo): em 1.826 gêmeos dinamarqueses de 70 anos ou mais, a idade
+  // percebida pela foto acompanhou a sobrevida, mesmo descontando a idade real, e também a força e a memória.
+  // Confiança baixa ou foto ruim: sem número (mesma regra do kit da pele, §2.3).
+  const fx = j.faixa && j.faixa.min != null && j.faixa.max != null ? j.faixa : null;
+  const daParaDizer = fx && j.confianca !== 'baixa' && j.qualidade?.nota !== 'ruim';
+  const qLong = new URLSearchParams({ utm_source:'pele2', utm_medium:'resultado', utm_campaign:'idade-rosto', ...(LV ? { lv:LV } : {}) });
+  $('r-idade').innerHTML = !fx ? '' : daParaDizer
+    ? `<small>Idade aparente do rosto</small><b>${fx.min} a ${fx.max} anos</b>
+      <p>É quanto o seu rosto aparenta na foto: uma estimativa, que erra uns 4 a 5 anos para cada lado. Não é a sua idade nem um diagnóstico.${j.qualidade?.nota === 'regular' ? ' Com a foto regular, ela fica menos precisa.' : ''}</p>
+      <p class="por"><b>Por que isso importa.</b> Num estudo com 1.826 gêmeos dinamarqueses de 70 anos ou mais, a idade que outras pessoas davam olhando a foto acompanhou a força, a memória e o tempo de vida, mesmo descontando a idade real. <a href="https://doi.org/10.1136/bmj.b5262" target="_blank" rel="noopener">Christensen 2009, BMJ</a></p>
+      <a class="liga" href="/longevidade/?${qLong}">O rosto é uma parte da sua vitalidade. Veja o que mais pesa para chegar bem aos 70</a>`
+    : `<small>Idade aparente do rosto</small><b>Não deu para estimar</b><p>A foto não deu segurança para estimar a idade do rosto. Com a luz de uma janela na frente, a estimativa sai melhor.</p>`;
+  $('r-idade').hidden = !fx;
+  $('r-idade').querySelector('.liga')?.addEventListener('click', () => track('answer', { stepId:'resultado-longevidade', valueText:'abriu' }));
+
   // achados por região: grau ≥ 1, os que ela marcou primeiro entre os de mesmo grau
   const marcados = new Set(R.incomoda.flatMap(q => MAPA[q]?.sinais || []).map(id => id === 'comedoes' ? 'acne_ativa' : id));
   const ids = Object.keys(B).filter(id => sinais[id]);
@@ -464,10 +481,11 @@ function montarResultado(j, f){
   const fazer = [
     juntar('Protetor solar todo dia, no rosto inteiro.', comCor ? `${porqueCor}, de preferência com cor.` : '', solMuito ? `Como você fica ${ROT.sol[R.sol].replace(' de sol', '')} no sol por dia, reaplique enquanto estiver nele.` : ''),
     juntar(comoTipo() ? `${comoTipo()}: limpador suave e hidratante ${hidr}, de manhã e à noite.` : `Limpador suave e hidratante ${hidr}, de manhã e à noite.`, sens ? `${SENS[R.alergia]}, um produto novo por vez.` : ''),
-    espinha || qx.has('cravos') ? juntar(`Para ${quais}: um ativo que desobstrui o poro, escolhido com o médico. Sem espremer.`, grav ? `${G[0]}, sem retinoide: o médico escolhe um ativo seguro ${G[1]}.` : '')
-    : qx.has('manchas') || nivel('manchas') >= 2 ? juntar('Para as manchas: clareador só com orientação médica, depois do protetor.', grav ? `${G[0]}, o médico escolhe um clareador seguro ${G[1]}.` : '')
-    : qx.has('rugas') || ['linhas_testa','olhos'].some(id => nivel(id) >= 2) ? juntar('Para as linhas finas: retinoide tópico é a classe com melhor evidência, com orientação.', grav ? `${G[0]}, ele ${G[2]}.` : '')
-    : ['poros','oleosidade'].some(x => qx.has(x)) ? juntar(`${marcou(['poros','oleosidade'])}: um ativo que desobstrui o poro, escolhido com o médico, depois que a base estiver em dia.`, grav ? `${G[0]}, sem retinoide: o médico escolhe um ativo seguro ${G[1]}.` : '')
+    // 03/11 (Lucca: não quer ser confundido com dermatologista): nada de classe de ativo na tela; o passo além da base é do médico
+    espinha || qx.has('cravos') ? juntar(`Para ${quais}: sem espremer. O que entra além da base, o médico escolhe com você.`, grav ? `${G[0]}, a escolha leva isso em conta.` : '')
+    : qx.has('manchas') || nivel('manchas') >= 2 ? juntar('Para as manchas: protetor com cor todo dia. O que entra além disso, o médico escolhe com você.', grav ? `${G[0]}, a escolha leva isso em conta.` : '')
+    : qx.has('rugas') || ['linhas_testa','olhos'].some(id => nivel(id) >= 2) ? juntar('Para as linhas finas: protetor todo dia. O que entra além disso, o médico escolhe com você.', grav ? `${G[0]}, a escolha leva isso em conta.` : '')
+    : ['poros','oleosidade'].some(x => qx.has(x)) ? juntar(`${marcou(['poros','oleosidade'])}: a base em dia primeiro. O que entra além dela, o médico escolhe com você.`, grav ? `${G[0]}, a escolha leva isso em conta.` : '')
     : 'Nova foto em 4 semanas, na mesma luz, para comparar.',
   ];
   const obj = R.objetivo && R.objetivo !== 'outro' ? ROT.objetivo[R.objetivo] : '';
@@ -498,7 +516,8 @@ function montarResultado(j, f){
       gest:G ? `${G[0]}, ele ${G[2]}.` : '' });
   if (qx.has('manchas') || nivel('manchas') >= 2) ativos.push({ cls:'Ativo (classe)', t:'Clareador, só com orientação médica', d:juntar(marcou(['manchas']) ? marcou(['manchas']) + ':' : '', 'antes dele, o protetor com cor todo dia; sem isso, a mancha volta.').replace(/^antes/, 'Antes'),
       gest:G ? `${G[0]}, o médico escolhe um clareador seguro ${G[1]}.` : '' });
-  for (const a of ativos.slice(0, 2)) recs.push({ ...a, d:juntar(a.d, a.gest) });
+  // 03/11: as classes de ativo (retinoide, peróxido, clareador) saem da tela; fica um passo "com o médico"
+  if (ativos.length) recs.push({ cls:'Com o médico', t:'O passo além da base', d:juntar('Se a base estiver em dia e ainda incomodar, o próximo passo o médico escolhe com você, depois de olhar a pele de perto.', grav ? `${G[0]}, a escolha leva isso em conta.` : '') });
   if (sens) recs.push({ cls:'Cuidado', t:'Um produto novo por vez', d:`${SENS[R.alergia]}: teste antes numa área pequena, por alguns dias, antes de passar no rosto todo.` });
   if (R.rotina === 'receitada') recs.push({ cls:'Cuidado', t:'Os produtos que você já usa', d:'Como você usa produtos receitados por médico, mostre-os ao Dr. Lucca antes de trocar ou somar qualquer coisa.' });
   $('r-recs').innerHTML = `<h3>Recomendações para você</h3>${recs.map((r, i) => `<div class="rec"><em>${i + 1}</em><div><small>${esc(r.cls)}</small><b>${esc(r.t)}</b><span>${esc(r.d)}</span>${r.ev ? `<span class="ev">Evidência: ${esc(r.ev.evidencia)} <i>(${fonteCurta(r.ev.fonte)})</i></span>` : ''}</div></div>`).join('')}`;
@@ -517,7 +536,7 @@ function montarResultado(j, f){
 
   const ev = [];
   if (espinha || ['acne','cravos'].some(x => qx.has(x))) ev.push(['Espremer espinhas e cravos', 'Pode deixar mancha e marca no lugar.']);
-  if (grav) ev.push(['Começar retinoide ou ácido por conta própria', `${G[0]}, o médico escolhe o que é seguro ${G[1]}.`]);
+  if (grav) ev.push(['Começar ácido ou produto forte por conta própria', `${G[0]}, o médico escolhe o que é seguro ${G[1]}.`]);
   ev.push(['Trocar vários produtos ao mesmo tempo', 'Se a pele reagir, você não sabe qual foi.']);
   if (oleosa || espinha || qx.has('oleosidade')) ev.push(['Bucha e esfoliante de grânulos no rosto', `${oleosa ? `${comoTipo()}: eles` : 'Eles'} agridem a barreira da pele e não tiram o óleo de dentro do poro.`]);
   if (sens) ev.push(['Produto com perfume forte', `${SENS[R.alergia]}: perfume é uma causa comum de ardência.`]);
@@ -531,7 +550,7 @@ function montarResultado(j, f){
   const S = [
     ['A base', juntar(BASE[R.rotina] || 'Limpador suave, hidratante e protetor todo dia. Só isso, para a pele se acostumar.', espinha || qx.has('cravos') ? 'Sem espremer.' : '')],
     ['Constância', juntar('A mesma rotina, todo dia. Anote o que arde, coça ou descama: isso guia o próximo passo.', sens ? `${SENS[R.alergia]}, anote também o produto de cada dia.` : '')],
-    ativos.length ? ['Um passo a mais', grav ? `Se o médico indicar, entra um ativo seguro ${G[1]}, à noite, em dias alternados. Um de cada vez.` : 'Se o médico indicar, entra um ativo, à noite, em dias alternados. Um de cada vez.']
+    ativos.length ? ['Um passo a mais', 'Se o médico indicar, entra um passo a mais, um de cada vez.']
                   : ['Proteção reforçada', solMuito ? `Como você fica ${ROT.sol[R.sol].replace(' de sol', '')} no sol por dia, protetor também nos dias nublados, e reaplicado enquanto estiver nele.` : 'Protetor também nos dias nublados, e reaplicado se ficar no sol.'],
     ['Nova foto', obj ? `Refaça esta análise na mesma luz e compare com a foto de hoje, pensando no seu objetivo: “${lower1(obj)}”.` : 'Refaça esta análise na mesma luz e compare com a foto de hoje.'],
   ];
