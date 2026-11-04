@@ -14,7 +14,8 @@
    cada teste na bio e no Direct, desde 01/11) e Funil (onde as pessoas caem em cada teste, por etapa, desde 01/11). Na tela do código, cada braço/pernas/pele traz o bloco "Responder"
    (kits.js: faixa, mensagens prontas, atalhos e o modo revisão), que roda só aqui e não manda nada a servidor.
    02/11: Pele 2 (3 ângulos + acne) com fotos, achados por região, respostas do quiz e kit; modo revisão para o iPad
-   (caneta da Apple Pencil, zoom, troca de foto, destaque aproximado da região; braço e pernas em números grandes). */
+   (caneta da Apple Pencil, zoom, troca de foto, destaque aproximado da região; braço e pernas em números grandes).
+   03/11: roteiro.js = botão "Gerar roteiro" (edge gerar-roteiro, Claude) em cada resultado e "Parecido com isto" nas fotos da pele. */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
@@ -317,6 +318,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="react-nav"><button type="button" id="react-ant">Anterior</button><button type="button" class="sec" id="react-texto" aria-pressed="false">Só a foto</button><button type="button" id="react-prox">Próximo</button></div>
 </div>
 <script src="kits.js?v=20261102"></script>
+<script src="roteiro.js?v=20261103"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -699,10 +701,12 @@ function cartaoPele2(e, quando, g){
   const sobre = [['Faixa de idade da pele', d.faixa], ['Confiança', d.confianca], ['Qualidade da foto', d.qualidade], ['Fotos enviadas', d.enviadas],
     ['Ângulos', Array.isArray(d.angulos) ? d.angulos.join(', ') : d.angulos], ['Origem da foto', ORIG[d.origem] || d.origem], ['Marca do Direct', d.lv]]
     .filter(([, v]) => v != null && v !== '').map(([k, v]) => `<div class="l"><span>${esc(k)}</span><b>${esc(num(v))}</b></div>`).join('');
-  return `<div class="card"><h2>Pele 2</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
-    <div class="res">${esc(resumoAch)}</div>${achados}${resp}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>${kitBloco(e)}</div>`;
+  return `<div class="card"><h2>Pele 2</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}${rotP(e)}
+    <div class="res">${esc(resumoAch)}</div>${achados}${resp}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>${rotB(e)}${kitBloco(e)}</div>`;
 }
 const EXPR = { olhos:'sorriso', linhas_testa:'sobrancelhas' };
+// Roteiro do react pelo Claude e "Parecido com isto" (03/11, roteiro.js); sem o arquivo, nada aparece.
+const rotB = e => window.ROTEIRO ? ROTEIRO.bloco(e) : '', rotP = e => window.ROTEIRO ? ROTEIRO.parecido(e) : '';
 let FOTOS = [], codigoAtual = '';
 const num = v => typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits:2 }) : v;
 function campo(k, v){
@@ -761,7 +765,7 @@ async function ver(c){
     if (r.status === 404) return $('out').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>';
     const j = await r.json();
     if (!j.ok) return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`;
-    FOTOS = j.fotos || []; KB = []; KM = [];
+    FOTOS = j.fotos || []; KB = []; KM = []; window.ROTEIRO?.zerar(c);
     const usados = new Set();
     if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return $('out').innerHTML = `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`; }
     $('out').innerHTML = j.lista.map(e => {
@@ -769,10 +773,11 @@ async function ver(c){
       const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil === 'teste-emagrecimento' ? 'Emagrecimento' : e.funil;
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}${kitBloco(e)}</div>`;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) + rotP(e) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}${rotB(e)}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : '');
+    window.ROTEIRO?.depois(c);
   } catch { $('out').innerHTML = '<p class="aviso">Sem conexão.</p>'; }
 }
 // Fotos de um grupo, com a chave certa: pele antiga = repouso/sorriso/sobrancelhas; pele2 = frente/esquerda/direita.
