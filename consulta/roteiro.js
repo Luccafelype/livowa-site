@@ -466,7 +466,7 @@ async function preencheParecidos(){
     if (!esc1){ el.remove(); continue; }
     el.innerHTML = `<h4>Parecido com isto <small>${esc(NOME_SIN[esc1.id]?.[0] || esc1.id)}, ${esc(GRAU[esc1.g] || '')} na análise</small></h4>
       <div class="par-lista">${esc1.imgs.map(x => `<figure><img src="comparativas/${esc(String(x.arquivo).replace(/^\/+|\.\.\//g, ''))}" alt="${esc(x.descricao || x.titulo_original || '')}" loading="lazy">
-        <figcaption>${x.descricao ? `<span>${esc(x.descricao)}</span>` : ''}<small>${esc(x.autor || 'autor não informado')} · ${esc(x.licenca)}${urlOk(x.fonte_url) ? ` · <a href="${esc(x.fonte_url)}" target="_blank" rel="noopener noreferrer">fonte</a>` : ''}</small></figcaption></figure>`).join('')}</div>
+        <figcaption>${x.descricao ? `<span>${esc(x.descricao)}</span>` : ''}<small>${esc(x.autor || 'autor não informado')} · ${esc(x.licenca)}${urlOk(x.fonte_url) ? ` · <a href="${esc(x.fonte_url)}" target="_blank" rel="noopener noreferrer">fonte</a>` : ''}${x.modificacao ? ` · ${esc(x.modificacao)}` : ''}</small></figcaption></figure>`).join('')}</div>
       <p class="par-nota">Imagens de terceiros, para comparar; não são da pessoa. Não mostrar no react sem conferir a licença.</p>`;
     el.hidden = false;
     el.querySelectorAll('img').forEach(im => im.addEventListener('error', () => { im.closest('figure')?.remove(); if (!el.querySelector('figure')) el.remove(); }));
@@ -514,9 +514,11 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .rot-acoes button:disabled{opacity:.55}
 .parecido{margin:4px 0 8px;padding:10px;border:1px dashed var(--l);border-radius:12px}
 .parecido h4{margin:0 0 6px;font-size:.95rem}.parecido h4 small{color:var(--m);font-weight:500}
-.par-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
-.par-lista figure{margin:0;display:flex;flex-direction:column;gap:4px}
-.par-lista img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;background:var(--bg)}
+/* tamanho natural (vários recortes têm 200 a 400 px): nunca estica; só encolhe se não couber (altura até 240 px) */
+.par-lista{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.par-lista figure{margin:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:0 1 auto;max-width:100%}
+.par-lista img{display:block;width:auto;height:auto;max-width:100%;max-height:240px;border-radius:8px;background:var(--bg)}
+.par-lista figcaption{max-width:260px}
 .par-lista figcaption{font-size:.78rem;line-height:1.3;display:flex;flex-direction:column;gap:2px}
 .par-lista figcaption small{color:var(--m)}.par-lista a{color:var(--a)}
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
