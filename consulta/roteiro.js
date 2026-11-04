@@ -58,13 +58,24 @@ const P2 = {
   rotina:['Rotina de cuidados', { nenhuma:'sem rotina', funciona:'rotina que funciona', receitada:'produtos receitados', nao_sei:'não sabe se funciona' }],
   objetivo:['Objetivo', { confianca:'Me sentir bem e confiante com a minha pele', sem_maquiagem:'Sair sem maquiagem nem filtro, sem me preocupar', sem_filtro:'Sair sem filtro na foto', fotos:'Gostar de me ver em foto de perto', prevenir:'Cuidar agora, antes que piore', parar_gastar:'Parar de gastar com o que não funciona', outro:'O que você me contar' }],
 };
+// Pele: idade e vitalidade (04/11; rótulos de pele/index.html, a tela que ela viu)
+const PI = {
+  sexo:['Sexo', SEXO],
+  idade:['Idade real', null],
+  cigarro:['Você fuma ou já fumou?', { nunca:'Nunca fumei', parou_mais10:'Parei há mais de 10 anos', parou_menos10:'Parei há menos de 10 anos', hoje:'Fumo hoje' }],
+  sol:['Quanto sol o rosto pega sem protetor', { quase_nenhum:'Quase nenhum', fds:'Nos fins de semana', todo_dia:'Quase todo dia' }],
+  metabolico:['Já te disseram que a pressão ou a glicose estava alta?', { nao_medi:'Não, e medi no último ano', nunca:'Nunca medi ou não lembro', pressao:'Sim, a pressão', glicose:'Sim, a glicose', ambas:'Sim, as duas' }],
+  movimento:['Quanto se mexe numa semana comum', { quase_nada:'Quase nada', ate2:'Até 2 horas', '2a5':'De 2 a 5 horas', mais5:'Mais de 5 horas' }],
+  sono:['Como são as noites', { bem:'Durmo 7 horas ou mais e acordo bem', '6h':'Durmo umas 6 horas', curto:'Durmo 5 horas ou menos', cansado:'Durmo, mas acordo cansada(o)' }],
+  futuro:['Daqui a 10 anos, o que mais quer', { disposicao:'Ter a mesma disposição de hoje', parecer:'Parecer a idade que eu sinto', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça' }],
+};
 /** {pergunta: resposta} com o texto da tela; multi ('a+b' ou lista) vira lista. Pergunta sem resposta fica de fora. */
 function rotular(r, mapa){
   const out = {};
   for (const [k, [perg, ops]] of Object.entries(mapa)){
     const v = r?.[k]; if (v == null || v === '' || (Array.isArray(v) && !v.length)) continue;
     const vs = Array.isArray(v) ? v : String(v).includes('+') ? String(v).split('+') : [v];
-    const t = vs.map(x => ops[x] ?? String(x));
+    const t = vs.map(x => (ops && ops[x]) ?? String(x));
     out[perg] = t.length > 1 || Array.isArray(v) ? t : t[0];
   }
   return out;
@@ -134,13 +145,30 @@ function entradaEmag(d){
   return { imc:d.imc ?? undefined, faixa_do_imc:d.faixa || undefined, perfil_principal:EMAG.acontece[1][d.perfil] || d.perfil,
     sinais_de_saude_que_o_resultado_mostrou:s.map(x => SINAL_EMAG[x] || x), respostas:rotular(r, EMAG) };
 }
+const NOME_SIN_PI = { linhas_testa:'Linhas da testa', olhos:'Canto dos olhos', sulco_nasolabial:'Vinco do nariz à boca', manchas:'Manchas nas bochechas', flacidez:'Firmeza do contorno' };
+function entradaPeleIdade(d, c){
+  const sin = (d.sinais || []).filter(s => NOME_SIN_PI[s.id] && s.visivel !== false && s.nivel != null && +s.nivel >= 1).sort((a, b) => b.nivel - a.nivel);
+  return {
+    idade_informada:d.idade ?? undefined,
+    idade_que_o_rosto_aparenta:d.faixa || 'a página não mostrou número',
+    leitura:c ? c.titulo : undefined,
+    regra_da_faixa_para_o_video:c?.idadeFaixa?.txt,
+    confianca_da_analise:d.confianca, qualidade_da_foto:d.qualidade,
+    frases_de_vitalidade_na_pagina:d.frases ? String(d.frases).split('+') : undefined,
+    sinais_da_foto_ligados_a_idade:d.faixa ? sin.map(s => ({ sinal:NOME_SIN_PI[s.id], grau:`${GRAU[+s.nivel]} (${+s.nivel} de 3)`, onde_circular:'foto de frente' })) : undefined,
+    respostas:rotular(d.respostas, PI),
+    foto_duvidosa_refazer:c ? !!c.refazer : undefined,
+  };
+}
 const ENTRADA = {
-  pele:(d, c) => entradaPele(d, 'pele', c), pele2:(d, c) => entradaPele(d, 'pele2', c), pernas:entradaPernas, braco:entradaBraco,
+  pele:(d, c) => entradaPele(d, 'pele', c), pele2:(d, c) => entradaPele(d, 'pele2', c), 'pele-idade':entradaPeleIdade, pernas:entradaPernas, braco:entradaBraco,
   'quiz-emagrecimento':entradaEmag, 'quiz-longevidade':d => ({ respostas:rotular(d.respostas, LONG) }),
 };
-const testeDe = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'teste-pernas' ? 'pernas' : e.funil === 'teste-braco' ? 'braco'
+const testeDe = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'pele-idade' ? 'pele-idade' : e.funil === 'teste-pernas' ? 'pernas' : e.funil === 'teste-braco' ? 'braco'
   : e.funil === 'teste-emagrecimento' ? 'quiz-emagrecimento' : e.funil === 'quiz-longevidade' ? 'quiz-longevidade' : null;
-const KIT_DE = { pele:'pele', pele2:'pele2', pernas:'pernas', braco:'braco' };
+const KIT_DE = { pele:'pele', pele2:'pele2', 'pele-idade':'pele-idade', pernas:'pernas', braco:'braco' };
+// testes que a edge gerar-roteiro já aceita (logica.ts, TESTES); os outros mostram só o roteiro do estoque
+const CLAUDE_TESTES = new Set(['pele', 'pele2', 'pernas', 'braco', 'quiz-longevidade', 'quiz-emagrecimento']);
 /** {teste, chave, entrada} de um resultado da Caixa, ou null se o teste não tem roteiro. */
 function montar(e){
   const t = testeDe(e); if (!t) return null;
@@ -155,7 +183,7 @@ function montar(e){
 let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o botão do Claude)
 async function carregaEstoque(){
   if (EST) return EST;
-  try { const r = await fetch('roteiros-estoque.json?v=20261103c', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
+  try { const r = await fetch('roteiros-estoque.json?v=20261104', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
   return EST;
 }
 const TEMPO = ['0-8 s', '8-30 s', '30-45 s', '45-52 s', '52-60 s'];
@@ -220,6 +248,64 @@ function rotPele(d, t, c, E){
   if (['sensivel', 'reacao'].includes(resp.alergia)) avisos.push(`Alergia: "${P2.alergia[1][resp.alergia]}". Nada de nome de produto.`);
   if (c?.notaAcne) avisos.push(c.notaAcne);
   if (!principal) avisos.push('Nenhum achado com grau 1 ou mais: o vídeo pode ficar curto (70 a 130 palavras, regra 8).');
+  return { blocos:out.filter(Boolean), avisos };
+}
+// Pele: idade e vitalidade (04/11). Ordem: abertura com o "daqui a 10 anos" → a idade do rosto ao lado da idade real →
+// o que está bem → até 2 hábitos que pesam (o 1º com o sinal da foto, quando houver) → o mecanismo do 1º (o único número
+// de estudo) → ponte → pergunta. Sem produto, rotina ou programa (regras 4, 5 e 23).
+const ORDEM_HAB = ['cigarro', 'sol', 'metabolico', 'sono', 'movimento'];   // a mesma prioridade da página (pele/app.js)
+const ATENCAO_PI = { cigarro:['hoje', 'parou_menos10', 'parou_mais10'], sol:['todo_dia', 'fds'], metabolico:['pressao', 'glicose', 'ambas', 'nunca'], sono:['curto', 'cansado'], movimento:['quase_nada', 'ate2'] };
+const FOTO_HAB = { cigarro:['sulco_nasolabial', 'flacidez', 'olhos'], sol:['manchas', 'linhas_testa'], sono:['olhos'] };
+const ZONA_SIN = { linhas_testa:['testa'], olhos:['olhos_canto'], sulco_nasolabial:['sulco'], manchas:['bochecha'], flacidez:['mandibula'] };
+const REG_PI = { linhas_testa:'testa', olhos:'canto dos olhos', sulco_nasolabial:'do nariz à boca', manchas:'bochechas', flacidez:'contorno do rosto' };
+function rotPeleIdade(d, c, E){
+  const P = E['pele-idade'], C = E.comum, r = d.respostas || {}, out = [], avisos = [];
+  if (!P) return { blocos:[], avisos:['O estoque não tem o bloco pele-idade.'] };
+  if (c?.refazer){
+    const V = { motivo:E.pele.refazer.motivo[d.qualidade === 'ruim' ? 'ruim' : 'padrao'] };
+    out.push(blocoE('refazer', TEMPO[0] + ' a ' + TEMPO[2].split('-')[1], E.pele.refazer.texto, V, { f:E.pele.refazer.f }));
+    out.push(blocoE('refazer-pergunta', TEMPO[4], C.refazer_pergunta, V, { f:E.pele.refazer.f, fixo:true }));
+    avisos.push('Foto duvidosa: ' + (c.motivo || '') + ' Nenhum número nem sinal no vídeo (regra 16). Atalho /pirefazer (livowa.com/pele).');
+    return { blocos:out.filter(Boolean), avisos };
+  }
+  const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = d.idade ?? r.idade;
+  const V = { futuro:window.KITS?.['pele-idade']?.futuro?.[r.futuro] || null, idade:idade != null ? String(idade) : null, min:mF ? mF[1] : null, max:mF ? mF[2] : null };
+  out.push(blocoE('abertura', TEMPO[0], V.futuro ? P.abertura.com_futuro : P.abertura.sem_futuro, V, { f:P.abertura.f, circular:V.futuro ? 'a resposta "daqui a 10 anos" na tela' : null }));
+  // a idade do rosto: com número só se a página mostrou e a regra deixa (mais de 5 anos acima: sem número)
+  const caso = c?.caso || 'sem_numero', dizer = !!(c?.idadeFaixa?.dizer && mF);
+  const chave = caso === 'sem_numero' ? 'sem_numero' : caso === 'mais_velho' && !dizer ? 'mais_velho_sem_numero' : caso;
+  const bi = blocoE('idade', TEMPO[1], P.idade[chave], V, { f:P.idade.f, circular:chave === 'sem_numero' ? null : dizer ? 'a régua: a faixa do rosto e a sua idade' : 'a foto de frente inteira' });
+  if (bi) bi.regiao = null;
+  out.push(bi);
+  if (c?.idadeFaixa && !c.idadeFaixa.dizer) avisos.push(c.idadeFaixa.txt);
+  // o que está bem
+  const bons = [r.cigarro === 'nunca' && P.bem.itens.cigarro, r.sol === 'quase_nenhum' && P.bem.itens.sol, r.metabolico === 'nao_medi' && P.bem.itens.metabolico,
+    r.sono === 'bem' && P.bem.itens.sono, ['2a5', 'mais5'].includes(r.movimento) && P.bem.itens['movimento_' + r.movimento]].filter(Boolean);
+  if (bons.length) out.push(blocoE('bem', TEMPO[1], P.bem.texto, { ...V, bem:listaE(bons.slice(0, 2)) }, { f:P.bem.f }));
+  // hábitos que pesam: até 2 no vídeo (uma ideia só); o 1º leva o sinal da foto e o mecanismo
+  const hab = ORDEM_HAB.filter(k => (ATENCAO_PI[k] || []).includes(r[k]));
+  const comFoto = !!mF;   // a página só mostrou sinais quando mostrou número
+  const sin = Object.fromEntries((d.sinais || []).map(s => [s.id, s.visivel !== false && s.nivel != null ? +s.nivel || 0 : null]));
+  const fem = r.sexo === 'f' ? 'cansado_f' : r.sexo === 'm' ? 'cansado_m' : 'cansado';
+  hab.slice(0, 2).forEach((k, i) => {
+    const frase = P.habito.frase[k][k === 'sono' && r.sono === 'cansado' ? fem : r[k]];
+    const ids = comFoto && i === 0 ? (FOTO_HAB[k] || []).filter(id => sin[id] >= 1) : [];
+    const top = ids.length ? ids.reduce((a, b) => sin[b] > sin[a] ? b : a) : null;
+    const W = { ...V, habito:frase, nafoto:top ? P.habito.sinal[top][sin[top]] : null };
+    const b = blocoE('habito-' + k, TEMPO[1], top ? P.habito.com_foto : P.habito.texto, W, { f:P.habito.f, circular:top ? `foto de frente, ${REG_PI[top]}` : P.habito.circular[k] });
+    if (b) b.regiao = top ? ZONA_SIN[top] : null;
+    out.push(b);
+  });
+  if (hab.length > 2) avisos.push('Também pesam (fora do vídeo, uma ideia só): ' + hab.slice(2).map(k => P.habito.frase[k][k === 'sono' && r.sono === 'cansado' ? fem : r[k]]).join('; ') + '.');
+  if (comFoto && (sin.manchas || 0) >= 2) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.pele, V, { f:C.seguranca.f, fixo:true }));
+  const mec = hab[0] || 'gemeos';
+  out.push(blocoE('mecanismo', TEMPO[2], P.mecanismo[mec], V, { f:P.mecanismo.f }));
+  out.push(blocoE('ponte', TEMPO[3], P.ponte.texto, V, { f:P.ponte.f }));
+  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  if (['pressao', 'glicose', 'ambas'].includes(r.metabolico)) avisos.push('Ela marcou pressão ou glicose alta: sinal de saúde (regra 17). Vale olhar com exame; fale com ela também por escrito. Sem nome de doença nem de remédio.');
+  if (r.cigarro === 'hoje') avisos.push('Fuma hoje: tom de alívio e explicação, sem cobrança (regra 22).');
+  if (caso === 'sem_numero' && !c?.refazer) avisos.push('A página não mostrou número. Se ela quiser o número, mande o atalho /pirefazer.');
+  avisos.push('Não é análise de pele: nada de produto, rotina, procedimento ou programa no vídeo (regras 4, 5 e 23).');
   return { blocos:out.filter(Boolean), avisos };
 }
 function rotMov(t, d, c, E){
@@ -296,6 +382,7 @@ function doEstoque(e){
   const t = testeDe(e); if (!t) return null;
   const d = e.dados || {};
   let c = null; try { if (KIT_DE[t] && window.KITS) c = KITS[KIT_DE[t]].classifica(d); } catch (err) { console.error(err); }
+  if (t === 'pele-idade') return rotPeleIdade(d, c, EST);
   if (t === 'pele' || t === 'pele2') return rotPele(t === 'pele2' ? (window.KITS ? KITS.pele2.norm(d) : d) : d, t, c, EST);
   if (t === 'pernas' || t === 'braco') return rotMov(t, d, c, EST);
   if (t === 'quiz-emagrecimento') return rotEmag(d, EST);
@@ -355,7 +442,8 @@ function corpo(i){
   let h = `<div class="rot-h"><h3>Roteiro do react</h3><small>montado das suas regras; troque o bloco que não soar bem</small></div>`;
   h += b.est ? htmlEstoque(i) : `<p class="rot-vazio">${EST === null && b.estado === 'lendo' ? 'Montando o roteiro…' : 'Estoque de roteiros não carregou. Use o Claude abaixo.'}</p>`;
   if (b.est) h += `<div class="rot-acoes"><button type="button" class="rot-copiar" data-rot="${i}" data-de="estoque">Copiar roteiro</button></div>`;
-  // Claude, opcional e barato
+  // Claude, opcional e barato (só nos testes que a edge gerar-roteiro já aceita)
+  if (!CLAUDE_TESTES.has(b.teste)) return h + '<p class="rot-info">Ajustar com o Claude ainda não vale para este teste (falta a edge gerar-roteiro conhecer o teste). Use o roteiro do estoque.</p>';
   const ocupado = b.estado === 'gerando';
   h += `<details class="rot-aj"${r || b.erro || ocupado || b.aberto ? ' open' : ''}><summary>Ajustar com o Claude <small>opcional, caso fora do estoque · menos de 1 centavo</small></summary>
     <label class="rot-pedido"><span>O que mudar (opcional, sem nome nem telefone)</span><input type="text" maxlength="300" data-rot="${i}" value="${esc(b.pedido || '')}" placeholder="ex.: ela disse que a mancha apareceu depois da gravidez"></label>
@@ -473,6 +561,15 @@ async function preencheParecidos(){
   }
 }
 
+// Modo revisão da pele-idade: os passos são os blocos do roteiro montado, com a variação escolhida na tela.
+const ROT_BLOCO = { abertura:'Abertura', idade:'Idade do rosto', bem:'O que está bem', 'habito-cigarro':'Cigarro', 'habito-sol':'Sol', 'habito-metabolico':'Pressão e glicose',
+  'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', ponte:'Ponte', pergunta:'Pergunta', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
+function passosReact(e){
+  const b = B.find(x => x.e === e);
+  if (!b || !b.est || !b.est.blocos.length) return [{ bloco:'Foto', foto:'frente', tempo:'', tela:'Foto de frente inteira', fala:'', nota:'O roteiro do estoque não carregou: use o cartão.' }];
+  return b.est.blocos.map(bl => ({ bloco:ROT_BLOCO[bl.id] || bl.id, foto:'frente', tempo:bl.tempo, tela:bl.circular ? 'Circular: ' + bl.circular : 'Foto de frente inteira',
+    fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, nota:bl.fixo ? 'Frase fixa: não cortar.' : '' }));
+}
 /** Chamado pela Caixa depois de desenhar os cartões de um código. */
 function depois(c){ CODIGO = c; montarTodos(); lerGravados(c); preencheParecidos(); }
 /** Chamado pela Caixa antes de desenhar um código novo. */
@@ -524,5 +621,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { montar, bloco, parecido, depois, zerar, testeDe, doEstoque, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
+return { montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
 })();

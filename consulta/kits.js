@@ -702,12 +702,68 @@ const REGIAO_PASSO = { Testa:['testa'], Glabela:['glabela'], 'Olhos · canto':['
 // reaproveita o roteiro da pele antiga também com regiao (para o destaque nas fotos de frente)
 const reactPeleComRegiao = (d, perfil) => reactPele(d, perfil).map(p => ({ ...p, regiao:REGIAO_PASSO[p.bloco] || null }));
 
-const NOME_TESTE = { braco:'Idade muscular (braço)', pernas:'Pernas', pele:'Pele', pele2:'Pele 2' };
+// ---------- PELE: IDADE E VITALIDADE (04/11): livowa.com/pele, funnelId 'pele-idade' ----------
+// O resultado é a idade que o rosto aparenta ao lado da idade real, e a vitalidade pelas respostas (cigarro, sol,
+// pressão e glicose, movimento, sono). Não é análise de pele: sem perfil de cuidado, sem produto, sem convite (regras 4,
+// 5 e 23 do roteiro). As falas do vídeo saem do estoque (roteiros-estoque.json, bloco 'pele-idade') pelo roteiro.js;
+// aqui ficam a leitura (classifica), as mensagens curtas e os atalhos. Fonte das frases com número:
+// livowa-empresa/tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11).
+const CASO_PI = { mais_novo:'rosto aparenta menos que a idade', igual:'rosto acompanha a idade', mais_velho:'rosto aparenta um pouco mais que a idade', sem_numero:'sem número na página' };
+const FUTURO_PI = { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que você sente', aos70:'chegar bem aos 70, com força e memória',
+  entender:'entender o que o seu corpo já está mostrando', cuidar:'cuidar agora, antes que apareça' };
+function casoPeleIdade(d){
+  const { min, max } = faixaPele(d), idade = temValor(d.idade) ? +d.idade : null;
+  if (CASO_PI[d.caso]) return d.caso;
+  if (min == null || idade == null) return 'sem_numero';
+  const dif = (min + max) / 2 - idade;
+  return dif <= -3 ? 'mais_novo' : dif >= 3 ? 'mais_velho' : 'igual';   // mesmo corte ±3 da página (pele/app.js)
+}
+function classificaPeleIdade(d){
+  d = d || {};
+  const { min, max } = faixaPele(d), idade = temValor(d.idade) ? +d.idade : null, r = d.respostas || {};
+  const caso = casoPeleIdade(d), motivos = [], conf = { alta:'alta', media:'média', baixa:'baixa' }[d.confianca] || d.confianca || '?';
+  if (d.qualidade === 'ruim') motivos.push('A análise marcou a foto como ruim; a página não mostrou número.');
+  if (min == null && !(d.sinais || []).length) motivos.push('O resultado veio sem faixa e sem os sinais da foto.');
+  const acima = min != null && idade != null ? (min + max) / 2 - idade : null;
+  let idadeFaixa;
+  if (min == null) idadeFaixa = { dizer:false, aparente:true, txt:`A página não mostrou número (confiança ${conf}, foto ${d.qualidade || '?'}). No vídeo, nenhum número.` };
+  else if (acima != null && acima > 5) idadeFaixa = { dizer:false, aparente:true, txt:`Ela viu a faixa na página, mas o meio ficou mais de 5 anos acima da idade real (${idade}). No vídeo, sem o número (regra 25); se ela perguntar, por escrito, com a faixa e o erro.` };
+  else idadeFaixa = { dizer:true, aparente:true, txt:'Pode dizer a faixa (ela já viu na página), sempre como estimativa que erra alguns anos para cada lado.' };
+  const simples = min != null
+    ? `Rosto ${min} a ${max} anos${idade != null ? ` · tem ${idade}` : ''} · confiança ${conf} · foto ${d.qualidade || '?'}.`
+    : `Sem faixa na página${idade != null ? ` · tem ${idade}` : ''} · confiança ${conf} · foto ${d.qualidade || '?'}.`;
+  return { teste:'pele-idade', caso, perfil:null, titulo:CASO_PI[caso], simples, refazer:motivos.length > 0, motivo:motivos.join(' '),
+    cor:caso === 'mais_novo' || caso === 'igual' ? 'ok' : 'meh', idadeFaixa, atalhoRefazer:'pirefazer',
+    vars:{ idade, min, max, futuro:FUTURO_PI[r.futuro] || null } };
+}
+const T_PI = {
+  video:'{nome}, gravei esse vídeo olhando a sua foto e as suas respostas. Assiste quando puder e me fala o que achou.',
+  videoFuturo:'{nome}, gravei esse vídeo olhando a sua foto e o que você me contou: daqui a 10 anos, você quer {futuro}. Assiste quando puder e me fala o que achou.',
+  depois:'O rosto é a parte da idade que dá para ver numa foto. Força, sono, pressão e glicose só se sabe medindo. Isso bate com o que você sente no dia a dia?',
+};
+function mensagensPeleIdade(c){
+  if (c.refazer) return [];
+  return [
+    { ordem:1, rotulo:'Junto com o vídeo', quando:'Mandar junto com o vídeo do react', texto:c.vars.futuro ? T_PI.videoFuturo : T_PI.video },
+    { ordem:2, rotulo:'Depois que a pessoa responder', quando:'Liga o rosto ao que só se mede', texto:T_PI.depois,
+      nota:'Sem convite pronto aqui: este teste não fala de programa, valor nem produto.' },
+  ];
+}
+const PI_ATALHOS = ['peleoi', 'pelerefazer', 'pelemancha', 'peleapagar', 'pelevolta'];
+const atalhosPeleIdade = PI_ATALHOS.map(id => T.atalhos.pele.find(a => a.id === id)).filter(Boolean).map(a => {
+  if (a.id === 'pelerefazer') return { ...a, id:'pirefazer', texto:'{nome}, a sua foto ficou {escura / tremida / com muita coisa coberta} e eu prefiro não te dar um número com base nela. Se quiser, refaz em livowa.com/pele com a luz de uma janela na frente do rosto, e me manda o código novo.' };
+  if (a.id === 'pelevolta') return { ...a, id:'pivolta', texto:'{nome}, conseguiu ver o vídeo do seu resultado? Se ficou alguma dúvida, me fala.' };
+  return a;
+});
+
+const NOME_TESTE = { braco:'Idade muscular (braço)', pernas:'Pernas', pele:'Pele', pele2:'Pele 2', 'pele-idade':'Pele: idade e vitalidade' };
 return {
   T, T2, REF, preencher, pedacos, NOME_TESTE,
   braco:{ medida:medidaBraco, classifica:classificaBraco, mensagens:(c) => mensagensMov('braco', c.faixa, c.vars.idade), atalhos:T.atalhos.braco },
   pernas:{ classifica:classificaPernas, mensagens:(c) => mensagensMov('pernas', c.faixa, c.vars.idade), atalhos:T.atalhos.pernas },
   pele:{ classifica:classificaPele, mensagens:(c) => mensagensPele(c.perfil), react:reactPeleComRegiao, atalhos:T.atalhos.pele, perfis:PERFIL_TXT },
   pele2:{ classifica:classificaPele2, mensagens:(c) => mensagensPele(c.perfil), react:reactPele2, atalhos:atalhosPele2, perfis:PERFIL_TXT, norm:normPele2, acne:d => acnePele2(normPele2(d)) },
+  // react: os passos vêm do roteiro do estoque (ROTEIRO.passosReact, em roteiro.js), para a fala ser uma só
+  'pele-idade':{ classifica:classificaPeleIdade, mensagens:mensagensPeleIdade, atalhos:atalhosPeleIdade, caso:CASO_PI, futuro:FUTURO_PI },
 };
 })();

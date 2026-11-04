@@ -15,7 +15,9 @@
    (kits.js: faixa, mensagens prontas, atalhos e o modo revisão), que roda só aqui e não manda nada a servidor.
    02/11: Pele 2 (3 ângulos + acne) com fotos, achados por região, respostas do quiz e kit; modo revisão para o iPad
    (caneta da Apple Pencil, zoom, troca de foto, destaque aproximado da região; braço e pernas em números grandes).
-   03/11: roteiro.js = botão "Gerar roteiro" (edge gerar-roteiro, Claude) em cada resultado e "Parecido com isto" nas fotos da pele. */
+   03/11: roteiro.js = botão "Gerar roteiro" (edge gerar-roteiro, Claude) em cada resultado e "Parecido com isto" nas fotos da pele.
+   04/11: funil 'pele-idade' (livowa.com/pele) = "Pele: idade e vitalidade": cartão com a foto ligada, a idade do rosto ao lado
+   da idade real, as respostas e os sinais ligados à idade; roteiro do estoque (bloco pele-idade) e kit sem perfil de cuidado. */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
@@ -317,8 +319,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   </div>
   <div class="react-nav"><button type="button" id="react-ant">Anterior</button><button type="button" class="sec" id="react-texto" aria-pressed="false">Só a foto</button><button type="button" id="react-prox">Próximo</button></div>
 </div>
-<script src="kits.js?v=20261103"></script>
-<script src="roteiro.js?v=20261103d"></script>
+<script src="kits.js?v=20261104"></script>
+<script src="roteiro.js?v=20261104"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -329,7 +331,8 @@ const TZ = 'America/Sao_Paulo';
 
 // ---------- Caixa ----------
 const STATUS = [['novo','Novo'],['respondi','Respondi'],['consulta','Em conversa'],['nao_quis','Não quis']];
-const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
+const NOME_PI = 'Pele: idade e vitalidade';   // livowa.com/pele (funnelId pele-idade, 04/11)
+const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'pele-idade' ? NOME_PI : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
 let LEADS = [], filtro = 'abertos';
 const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '');
 function origem(o){
@@ -347,6 +350,8 @@ function resumo(l){
     if (n === 'Pele') return `Pele: ${d.faixa || p.resumo || '?'}`;
     if (n === 'Pele 2'){ const ach = (p.resumo || '').split('+').filter(x => SIN2[x]).map(x => SIN2[x][0].toLowerCase()), q = String(d.respostas?.incomoda || '').split('+').filter(Boolean).map(x => (ROT2.incomoda[1][x] || x).toLowerCase());
       return `Pele 2: ${ach.length ? ach.join(', ') : p.resumo === 'nenhum' ? 'nada marcado' : '?'}${q.length ? ` · queixa: ${q.join(', ')}` : ''}`; }
+    if (n === NOME_PI){ const f = ROTPI.futuro[1][d.respostas?.futuro];
+      return `${NOME_PI}: ${d.faixa ? 'rosto ' + d.faixa : 'sem número'}${d.idade ? ` (tem ${d.idade})` : ''}${f ? ` · quer ${f}` : ''}`; }
     if (n === 'Quiz') return `Quiz: ${d.ajuda === 'medico' || p.resumo === 'medico' ? 'quer com médico' : d.ajuda || p.resumo ? 'por conta própria' : 'respondido'}`;
     if (n === 'Emagrecimento'){ const P = { volta:'o peso volta', vontade:'vontade de comer', balanca:'balança parada', constancia:'começa e para', comeco:'não sabe por onde começar' };
       const SN = { sop:'sinais de SOP', menopausa:'menopausa', tireoide:'sinais de tireoide', metabolica:'sinais de síndrome metabólica', sem_exames:'sem exames recentes', remedio:'remédio contínuo', ronco:'ronco e cansaço' };   // v2 (03/11)
@@ -528,10 +533,11 @@ async function salvarPorta(el){
 }
 
 // ---------- Funil (01/11): onde as pessoas caem, etapa por etapa (RPCs funil_opcoes e funil_etapas, pela edge) ----------
-const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['pele2','Pele 2'],['teste-braco','Idade muscular'],['teste-emagrecimento','Emagrecimento'],['quiz-longevidade','Quiz'],['link-bio','Link da bio'],['quiz-metabolico','Quiz do app']];
+const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['pele2','Pele 2'],['pele-idade',NOME_PI],['teste-braco','Idade muscular'],['teste-emagrecimento','Emagrecimento'],['quiz-longevidade','Quiz'],['link-bio','Link da bio'],['quiz-metabolico','Quiz do app']];
 const ETAPA = {
   'teste-pernas': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, peso e altura', camera:'Câmera (5 levantadas)', resultado:'Resultado', fechar:'Médico (tela final)' },
   'pele2': { capa:'Capa (promessa)', nome:'Nome', sexo:'Sexo', seguranca:'Gestação/amamentação', alergia:'Alergia', incomoda:'O que incomoda (fotos)', tipo:'Tipo de pele', sol:'Sol por dia', agua:'Água', sono:'Sono', rotina:'Rotina', objetivo:'Objetivo', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (frente e lados)', carregando:'Analisando', resultado:'Resultado', fechar:'Médico + dois caminhos', erro:'Erro' },
+  'pele-idade': { inicio:'Abriu a página', capa:'Capa (promessa)', sexo:'Sexo', idade:'Idade real (roda)', reforco1:'Reforço 1 (gêmeos)', nome:'Nome (com Pular)', cigarro:'Cigarro', sol:'Sol sem protetor', reforco2:'Reforço 2 (por dentro)', metabolico:'Pressão e glicose', movimento:'Movimento', sono:'Sono e energia', futuro:'Daqui a 10 anos', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (só de frente)', carregando:'Analisando', resultado:'Resultado (idade e vitalidade)', fechar:'Médico (um passo)', erro:'Erro' },
   'teste-emagrecimento': { capa:'Capa (promessa)', sexo:'Sexo', fase:'Gestação/amamentação', idade:'Idade', nome:'Nome', medidas:'Peso e altura', cintura:'Cintura (até 03/11)', acontece:'O que mais acontece (decide o perfil)', tentou:'O que já tentou', ciclo:'Menstruação', pele:'Pelos, espinhas, cabelo', tireoide:'Sinais da tireoide', exames:'Pressão, glicose, gordura', remedios:'Remédios contínuos', vontade:'Vontade de comer', sono:'Sono', ronco:'Ronco', forca:'Força', proteina:'Proteína (até 03/11)', objetivo:'Objetivo', carregando:'Calculando', resultado:'Resultado', fechar:'Médico (um passo)' },
   'teste-pele': { 'pele-inicio':'Início da pele (aceite)', 'pele-camera':'Câmera da selfie', 'pele-envio':'Conferir e enviar a foto', 'pele-analise':'Analisando a foto', 'pele-resultado':'Tela final da pele', 'pele-erro':'Erro na pele' },
   'teste-braco': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, sexo e peso', sensor:'Permissão do sensor', medir:'Medição (10 s)', analise:'Analisando', resultado:'Resultado', erro:'Erro no sensor', fechar:'Médico (tela final)' },
@@ -704,6 +710,40 @@ function cartaoPele2(e, quando, g){
   return `<div class="card"><h2>Pele 2</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}${rotP(e)}
     <div class="res">${esc(resumoAch)}</div>${achados}${resp}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>${rotB(e)}${kitBloco(e)}</div>`;
 }
+// ---------- Pele: idade e vitalidade (04/11): livowa.com/pele, funnelId pele-idade (rótulos de pele/index.html) ----------
+const ROTPI = {
+  sexo:['Sexo', { f:'mulher', m:'homem' }],
+  cigarro:['Cigarro', { nunca:'nunca fumou', parou_mais10:'parou há mais de 10 anos', parou_menos10:'parou há menos de 10 anos', hoje:'fuma hoje' }],
+  sol:['Sol sem protetor', { quase_nenhum:'quase nenhum', fds:'nos fins de semana', todo_dia:'quase todo dia' }],
+  metabolico:['Pressão ou glicose alta', { nao_medi:'não, e mediu no último ano', nunca:'nunca mediu ou não lembra', pressao:'sim, a pressão', glicose:'sim, a glicose', ambas:'sim, as duas' }],
+  movimento:['Movimento por semana', { quase_nada:'quase nada', ate2:'até 2 horas', '2a5':'de 2 a 5 horas', mais5:'mais de 5 horas' }],
+  sono:['Sono', { bem:'7 h ou mais e acorda bem', '6h':'umas 6 h', curto:'5 h ou menos', cansado:'dorme, mas acorda cansada(o)' }],
+  futuro:['Daqui a 10 anos, quer', { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que sente', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o corpo já está mostrando', cuidar:'cuidar agora, antes que apareça' }],
+};
+const ALERTAPI = { cigarro:['hoje'], metabolico:['pressao', 'glicose', 'ambas'] };
+const SINPI = { linhas_testa:'Testa', olhos:'Canto dos olhos', sulco_nasolabial:'Nariz à boca', manchas:'Bochechas', flacidez:'Contorno' };
+const FRASEPI = { cigarro:'cigarro', sol:'sol', metabolico:'pressão e glicose', sono:'sono', movimento:'movimento' };
+function cartaoPeleIdade(e, quando, g){
+  const d = e.dados || {}, r = d.respostas || {}, c = window.KITS ? KITS['pele-idade'].classifica(d) : null;
+  const caso = c ? c.titulo : (d.caso || '');
+  const res = d.faixa ? `Rosto aparenta ${d.faixa}${d.idade != null ? ` · tem ${d.idade}` : ''}${caso ? ` · ${caso}` : ''}` : `Sem número na página${d.idade != null ? ` · tem ${d.idade}` : ''}`;
+  const resp = `<div class="p2"><h3>Respostas do quiz</h3>
+    <div class="l"><span>Nome</span><b>não vai para o servidor (fica só no celular dela); veja no Direct ou no WhatsApp</b></div>
+    <div class="l"><span>Idade real</span><b>${d.idade != null ? esc(d.idade) + ' anos' : '—'}</b></div>
+    ${Object.keys(ROTPI).map(k => `<div class="l${(ALERTAPI[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROTPI[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(ROTPI[k][1][r[k]] ?? r[k]) : '—'}</b></div>`).join('')}</div>`;
+  const frases = String(d.frases || '').split('+').filter(Boolean).map(x => FRASEPI[x] || x);
+  const sin = (d.sinais || []).filter(s => SINPI[s.id]);
+  const vis = sin.filter(s => s.visivel !== false && s.nivel != null), nao = sin.filter(s => !(s.visivel !== false && s.nivel != null));
+  const sinais = `<div class="p2"><h3>Sinais da foto ligados à idade</h3>${!d.faixa ? '<p class="p2-nada">A página não mostrou os sinais (sem número).</p>' : ''}
+    ${vis.length ? `<div class="p2-reg"><ul>${[...vis].sort((a, b) => b.nivel - a.nivel).map(s => `<li><span>${esc(SINPI[s.id])}</span><em class="g g${+s.nivel}">${esc(GRAU2[+s.nivel])}</em></li>`).join('')}</ul></div>` : '<p class="p2-nada">Sem sinais na análise.</p>'}
+    ${nao.length ? `<p class="p2-nada">Não deu para ver: ${esc(nao.map(s => SINPI[s.id].toLowerCase()).join(', '))}.</p>` : ''}</div>`;
+  const ORIG = { camera:'câmera', galeria:'galeria' };
+  const sobre = [['Faixa (idade do rosto)', d.faixa], ['Caso da régua', caso], ['Frases de vitalidade na página', frases.join(', ')], ['Confiança', { media:'média' }[d.confianca] || d.confianca], ['Qualidade da foto', d.qualidade],
+    ['Origem da foto', ORIG[d.origem] || d.origem], ['Fim sorteado', { A:'A (fala em vídeo)', B:'B (sem falar em vídeo)' }[d.fim] || d.fim], ['Marca do Direct', d.lv]]
+    .filter(([, v]) => v != null && v !== '').map(([k, v]) => `<div class="l"><span>${esc(k)}</span><b>${esc(num(v))}</b></div>`).join('');
+  return `<div class="card"><h2>${esc(NOME_PI)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
+    <div class="res">${esc(res)}</div>${resp}${sinais}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>${rotB(e)}${kitBloco(e)}</div>`;
+}
 const EXPR = { olhos:'sorriso', linhas_testa:'sobrancelhas' };
 // Roteiro do react pelo Claude e "Parecido com isto" (03/11, roteiro.js); sem o arquivo, nada aparece.
 const rotB = e => window.ROTEIRO ? ROTEIRO.bloco(e) : '', rotP = e => window.ROTEIRO ? ROTEIRO.parecido(e) : '';
@@ -770,9 +810,10 @@ async function ver(c){
     if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return $('out').innerHTML = `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`; }
     $('out').innerHTML = j.lista.map(e => {
       const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:TZ, dateStyle:'short', timeStyle:'short' });
-      const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil === 'teste-emagrecimento' ? 'Emagrecimento' : e.funil;
-      const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2') && e.dados?.foto; if (g) usados.add(g);
+      const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'pele-idade' ? NOME_PI : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil === 'teste-emagrecimento' ? 'Emagrecimento' : e.funil;
+      const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2' || e.funil === 'pele-idade') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
+      if (e.funil === 'pele-idade') return cartaoPeleIdade(e, quando, g);
       return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) + rotP(e) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}${rotB(e)}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
@@ -784,7 +825,7 @@ async function ver(c){
 // A edge só nomeia por ângulo quando chegam as 3 fotos; com 1 ou 2 ela usa os nomes antigos, aí vale a ordem dos ângulos.
 const ANG = ['frente', 'esquerda', 'direita'], EXP = ['repouso', 'sorriso', 'sobrancelhas'];
 function fotosDoGrupo(g, e){
-  const p2 = e?.funil === 'pele2', ang = ANG.filter(a => (e?.dados?.angulos || ANG).includes(a));
+  const p2 = e?.funil === 'pele2' || e?.funil === 'pele-idade', ang = ANG.filter(a => (e?.dados?.angulos || ANG).includes(a));
   return FOTOS.filter(f => f.grupo === g).map(f => {
     const chave = p2 && !ANG.includes(f.tipo) ? ang[EXP.indexOf(f.tipo)] || f.tipo : f.tipo;
     return { ...f, chave, rot:TIPO[chave] || chave };
@@ -815,7 +856,7 @@ $('out').addEventListener('click', async ev => {
 });
 // ---------- Kit de resposta (01/11): faixa, mensagens prontas e modo react; tudo local, nada vai para o servidor ----------
 let KB = [], KM = [], KIT_NOME = '', R = null;   // KB = blocos da tela; KM = mensagens desenhadas; KIT_NOME só nesta tela
-const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas' : null;
+const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'pele-idade' ? 'pele-idade' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas' : null;
 function kitBloco(e){
   const t = window.KITS && kitTeste(e); if (!t) return '';
   try {
@@ -838,6 +879,7 @@ const COR_FAIXA = { 1:'ok', 2:'meh', 3:'meh', 4:'bad' };
 function kitCorpo(i){
   const b = KB[i], K = KITS[b.t], c = b.c = K.classifica(b.d, b.forcar), pele = b.t === 'pele' || b.t === 'pele2';
   const atalho = id => K.atalhos.find(a => a.id === id)?.texto || '';
+  if (b.t === 'pele-idade') return kitCorpoPI(i, b, K, c, atalho);
   let h = '<h3 class="kit-h">Responder</h3>';
   h += `<div class="kit-faixa ${pele ? (c.perfil === 'A' ? 'ok' : 'meh') : COR_FAIXA[c.faixa] || 'meh'}"><b>${pele ? 'Perfil ' + esc(c.titulo) : c.faixa ? `Faixa ${c.faixa} de 4 · ${esc(c.titulo)}` : 'Faixa não calculada'}</b><span>${esc(c.simples || '')}</span></div>`;
   if (c.refazer) h += `<div class="kit-refazer"><b>${pele ? 'Foto duvidosa' : 'Medição duvidosa'}: peça para refazer</b><p>${esc(c.motivo)}</p>
@@ -856,6 +898,23 @@ function kitCorpo(i){
   const corpo = ms.map(m => kitMsg(m.texto, i, { n:m.ordem || '', rotulo:m.rotulo, quando:m.quando, nota:m.nota, audio:m.audio })).join('');
   h += !ms.length ? '<p class="kit-sub">Sem mensagens para este resultado.</p>'
     : c.refazer ? `<details><summary>Ver as mensagens da ${pele ? 'ficha' : 'faixa'} mesmo assim</summary><div>${corpo}</div></details>` : corpo;
+  h += `<details><summary>Ver atalhos do WhatsApp (${K.atalhos.length})</summary><div>
+    <p class="kit-sub">Para cadastrar em WhatsApp Business › Configurações › Ferramentas comerciais › Respostas rápidas. O app não preenche {nome}.</p>
+    ${K.atalhos.map(a => kitMsg(a.texto, i, { raw:true, rotulo:'/' + a.id, quando:[a.quando, a.nota].filter(Boolean).join(' · ') })).join('')}</div></details>`;
+  return h;
+}
+// Pele: idade e vitalidade (04/11): sem perfil de cuidado nem pergunta do pescoço; o modo revisão segue o roteiro do estoque.
+function kitCorpoPI(i, b, K, c, atalho){
+  let h = '<h3 class="kit-h">Responder</h3>';
+  h += `<div class="kit-faixa ${c.cor}"><b>${esc(c.titulo[0].toUpperCase() + c.titulo.slice(1))}</b><span>${esc(c.simples)}</span></div>`;
+  if (c.refazer) h += `<div class="kit-refazer"><b>Foto duvidosa: peça para refazer</b><p>${esc(c.motivo)}</p>
+    ${kitMsg(atalho(c.atalhoRefazer), i, { rotulo:'Atalho /' + c.atalhoRefazer, quando:'Mandar este e parar aí' })}</div>`;
+  h += `<label class="kit-nome-l"><span>Nome<small>só nesta tela</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
+  const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
+  h += `<button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>${fotos.length ? 'Modo revisão (iPad: caneta e zoom)' : 'Modo revisão (sem fotos: apagadas ou não carregaram)'}</button>
+    <p class="kit-sub">Idade do rosto no vídeo: ${esc(c.idadeFaixa.txt)}</p>`;
+  const ms = K.mensagens(c);
+  h += ms.map(m => kitMsg(m.texto, i, { n:m.ordem || '', rotulo:m.rotulo, quando:m.quando, nota:m.nota })).join('');
   h += `<details><summary>Ver atalhos do WhatsApp (${K.atalhos.length})</summary><div>
     <p class="kit-sub">Para cadastrar em WhatsApp Business › Configurações › Ferramentas comerciais › Respostas rápidas. O app não preenche {nome}.</p>
     ${K.atalhos.map(a => kitMsg(a.texto, i, { raw:true, rotulo:'/' + a.id, quando:[a.quando, a.nota].filter(Boolean).join(' · ') })).join('')}</div></details>`;
@@ -970,10 +1029,12 @@ function passosMov(b){
 // ----- abrir, passos e fotos -----
 function reactAbrir(i, volta, chave){
   const b = KB[i]; if (!b) return;
-  const foto = b.t === 'pele' || b.t === 'pele2';
+  const foto = b.t === 'pele' || b.t === 'pele2' || b.t === 'pele-idade';
   const telas = foto ? fotosDoGrupo(b.g, b.e).filter(f => f.url) : (b.quadros ||= quadrosMov(b));
   if (!telas.length) return;
-  R = { i, foto, passos:foto ? KITS[b.t].react(b.d, b.c.perfil) : passosMov(b), telas, pos:0, tela:-1, volta, z:{ s:1, tx:0, ty:0 }, fit:null };
+  const passos = b.t === 'pele-idade' ? window.ROTEIRO?.passosReact(b.e) || [{ bloco:'Foto', foto:'frente', tempo:'', tela:'Foto de frente inteira', fala:'' }]
+    : foto ? KITS[b.t].react(b.d, b.c.perfil) : passosMov(b);
+  R = { i, foto, passos, telas, pos:0, tela:-1, volta, z:{ s:1, tx:0, ty:0 }, fit:null };
   $('react').hidden = false; document.body.style.overflow = 'hidden';
   $('react-card').hidden = false; $('rv-corpo').classList.remove('so-foto'); $('rv-dica').hidden = false;
   $('react-texto').setAttribute('aria-pressed', 'false'); $('react-texto').textContent = 'Só a foto';

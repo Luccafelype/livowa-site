@@ -285,5 +285,168 @@
    "f": "regra 25 (potência: força com velocidade, das primeiras coisas que o músculo perde); frases 'o caminho passa pelas pernas' e 'depois dos 60, as pernas viram prioridade' (longevidade/config.js)",
    "texto": ["O que mais pesa para chegar bem lá são as pernas. Potência é força com velocidade, e é das primeiras coisas que o músculo perde.", "O caminho passa pelas pernas. A força com velocidade é das primeiras coisas que o músculo perde com os anos."]
   }
+ },
+ "pele-idade": {
+  "_sobre": "04/11/2026 · livowa.com/pele (funnelId pele-idade): a idade que o rosto aparenta ao lado da idade real, e a vitalidade pelas respostas. Não é análise de pele: nada de produto, rotina, procedimento ou programa (regras 4, 5 e 23). Frases com número só de livowa-empresa/tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11); no máximo um número de estudo por vídeo, no mecanismo (regra 15).",
+  "abertura": {
+   "f": "regra 6 (o nome e o que ela respondeu, nas palavras dela); tarefas/pele-idade-vitalidade/quiz.md §3.3 (o vídeo abre repetindo o 'daqui a 10 anos'); CL pdf 16",
+   "com_futuro": [
+    "{nome}, aqui é o Lucca. Você contou que daqui a 10 anos quer {futuro}. Olhei a sua foto com isso em mente.",
+    "{nome}, aqui é o Lucca. Olhei a sua foto e as suas respostas. Daqui a 10 anos, você quer {futuro}."
+   ],
+   "sem_futuro": [
+    "{nome}, aqui é o Lucca. Olhei a sua foto e as suas respostas com calma. Vou te mostrar o que eu vi.",
+    "{nome}, aqui é o Lucca. Você fez a foto com cuidado. Vou te mostrar o que ela conta sobre a sua idade."
+   ]
+  },
+  "idade": {
+   "f": "regra 25 (toda idade é estimativa, nunca idade biológica; mais de 5 anos acima: sem número); pele/app.js (régua e frases de alívio, corte de 3 anos; 'erra alguns anos para cada lado'); CFM 2.336 art. 11 §2º 'e' (nada de 'X anos a mais')",
+   "mais_novo": [
+    "Pela foto, o seu rosto aparenta entre {min} e {max} anos, e você tem {idade}. Fica abaixo da sua idade. É estimativa, erra alguns anos para cada lado.",
+    "O seu rosto aparenta entre {min} e {max} anos na foto. Você tem {idade}: o rosto mostra menos. É estimativa, e erra alguns anos."
+   ],
+   "igual": [
+    "Pela foto, o seu rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto acompanha a sua idade. É estimativa, erra alguns anos para cada lado.",
+    "O seu rosto aparenta entre {min} e {max} anos, e você tem {idade}. A foto mostra a idade que você tem. É estimativa, e erra alguns anos."
+   ],
+   "mais_velho": [
+    "Pela foto, o seu rosto aparenta entre {min} e {max} anos, um pouco acima dos seus {idade}. É estimativa, erra alguns anos. E isso é comum.",
+    "O seu rosto aparenta entre {min} e {max} anos na foto, um pouco acima dos seus {idade}. É estimativa, e isso tem explicação."
+   ],
+   "mais_velho_sem_numero": [
+    "Na foto, o seu rosto aparenta um pouco mais que os seus {idade} anos. É estimativa, e isso é comum.",
+    "O rosto ficou um pouco acima dos seus {idade} anos na foto. É comum, e tem explicação."
+   ],
+   "sem_numero": [
+    "A foto não deu segurança para estimar a idade do rosto, então não vou te dar número.",
+    "Pela foto, não deu para estimar a idade do rosto com segurança. Prefiro não te dar número."
+   ]
+  },
+  "bem": {
+   "f": "regras 6 e 7 (primeiro o que está bem; elogio só verdadeiro); respostas de pele/app.js",
+   "texto": [
+    "E tem coisa boa no que você contou: {bem}.",
+    "Nas suas respostas tem coisa boa: {bem}."
+   ],
+   "itens": {
+    "cigarro": "você nunca fumou",
+    "sol": "o seu rosto quase não pega sol sem protetor",
+    "metabolico": "a pressão e a glicose estavam normais",
+    "movimento_2a5": "você se mexe de 2 a 5 horas por semana",
+    "movimento_mais5": "você se mexe mais de 5 horas por semana",
+    "sono": "você dorme bem"
+   }
+  },
+  "habito": {
+   "f": "regras 2, 3, 12 e 14 (o que ela contou e, quando houver, o sinal da foto com onde circular; uma ideia por vídeo); falas de pele/app.js (vitalidade)",
+   "texto": [
+    "Você contou que {habito}.",
+    "Você me disse que {habito}."
+   ],
+   "com_foto": [
+    "Você contou que {habito}. Na foto, {nafoto}.",
+    "Você me disse que {habito}. E na foto, {nafoto}."
+   ],
+   "frase": {
+    "cigarro": {
+     "hoje": "fuma hoje",
+     "parou_menos10": "parou de fumar há menos de 10 anos",
+     "parou_mais10": "parou de fumar há mais de 10 anos"
+    },
+    "sol": {
+     "todo_dia": "o seu rosto pega sol sem protetor quase todo dia",
+     "fds": "o seu rosto pega sol sem protetor nos fins de semana"
+    },
+    "metabolico": {
+     "pressao": "já te disseram que a pressão estava alta",
+     "glicose": "já te disseram que a glicose estava alta",
+     "ambas": "já te disseram que a pressão e a glicose estavam altas",
+     "nunca": "nunca mediu a pressão e a glicose, ou não lembra"
+    },
+    "sono": {
+     "curto": "dorme 5 horas ou menos",
+     "cansado_f": "acorda cansada mesmo dormindo",
+     "cansado_m": "acorda cansado mesmo dormindo",
+     "cansado": "acorda sem descanso mesmo dormindo"
+    },
+    "movimento": {
+     "quase_nada": "se mexe quase nada numa semana comum",
+     "ate2": "se mexe até 2 horas numa semana comum"
+    }
+   },
+   "circular": {
+    "cigarro": "a resposta do cigarro na tela",
+    "sol": "a resposta do sol na tela",
+    "metabolico": "a resposta da pressão e da glicose na tela",
+    "sono": "a resposta do sono na tela",
+    "movimento": "a resposta do movimento na tela"
+   },
+   "sinal": {
+    "linhas_testa": [
+     "a testa aparece lisa",
+     "aparecem linhas leves na testa",
+     "aparecem linhas visíveis na testa",
+     "aparecem linhas bem marcadas na testa"
+    ],
+    "olhos": [
+     "o canto dos olhos aparece liso",
+     "aparecem linhas leves no canto dos olhos",
+     "aparecem linhas visíveis no canto dos olhos",
+     "aparecem linhas bem marcadas no canto dos olhos"
+    ],
+    "sulco_nasolabial": [
+     "o vinco do nariz à boca quase não aparece",
+     "o vinco do nariz à boca aparece leve",
+     "o vinco do nariz à boca aparece visível",
+     "o vinco do nariz à boca aparece bem marcado"
+    ],
+    "manchas": [
+     "o tom da pele aparece uniforme",
+     "aparecem poucas manchas, discretas",
+     "aparecem algumas manchas visíveis",
+     "aparecem manchas bem visíveis"
+    ],
+    "flacidez": [
+     "o contorno do rosto aparece firme",
+     "o contorno do rosto aparece levemente menos firme",
+     "o contorno do rosto aparece menos firme",
+     "o contorno do rosto aparece bem menos firme"
+    ]
+   }
+  },
+  "mecanismo": {
+   "f": "regra 15 (um número de estudo por vídeo, dizendo de onde vem); evidencia.md: cigarro e sol Guyuron 2009 (PMID 19337100; '2 anos' na legenda da fig. 3); pressão Gunn 2012 (PMID 22879455); glicose Noordam 2011 (PMID 22102339); sono Oyetakin-White 2015 (PMID 25266053); movimento Mayes 2010 (PMID 21179450); gêmeos Christensen 2009 (PMID 20008378)",
+   "cigarro": [
+    "Em gêmeos idênticos, cada 10 anos de cigarro somou cerca de 2 anos à idade que o rosto aparentava.",
+    "O cigarro tem o número mais claro no rosto: em gêmeos idênticos, 10 anos de cigarro somaram cerca de 2 anos."
+   ],
+   "sol": [
+    "O sol marca a pele por fora. Nos estudos com gêmeos, mais sol andou junto com um rosto mais velho.",
+    "Nos gêmeos, o rosto que pegava mais sol aparentava mais idade. Essa parte é pele por fora, não o corpo por dentro."
+   ],
+   "metabolico": [
+    "Pressão e glicose são números de dentro. Nos estudos, mais altas andaram junto com um rosto mais velho, mesmo sem doença.",
+    "Nos estudos, pressão e glicose mais altas apareceram no rosto, mesmo em quem não tinha doença. A foto não mede nenhuma das duas."
+   ],
+   "sono": [
+    "Dormir mal aparece na pele: num estudo com mulheres, quem dormia mal tinha mais sinais de envelhecimento.",
+    "Num estudo, quem dormia mal tinha mais sinais de envelhecimento na pele do que quem dormia bem."
+   ],
+   "movimento": [
+    "Mexer o corpo também aparece no rosto: num estudo com mulheres, a atividade moderada andou junto com um rosto mais novo.",
+    "Nos estudos, a atividade moderada andou junto com um rosto mais novo."
+   ],
+   "gemeos": [
+    "Num estudo com gêmeos de 70 anos ou mais, a idade que o rosto aparentava acompanhou a força e a memória.",
+    "Em gêmeos mais velhos, a idade que o rosto aparentava andou junto com a força e a memória. Boa parte disso vem de família."
+   ]
+  },
+  "ponte": {
+   "f": "regra 6 (ponte até 20 palavras, sem produto, preço, prazo ou vaga); pele/app.js ('O rosto é a parte que dá para ver. Força, sono e exames o Dr. Lucca vê com você')",
+   "texto": [
+    "O rosto é a parte da idade que dá para ver. Força, sono e exames eu só sei medindo.",
+    "A foto mostra a idade por fora. O resto do corpo eu só sei medindo com calma."
+   ]
+  }
  }
 }
