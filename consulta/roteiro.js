@@ -62,12 +62,13 @@ const P2 = {
 const PI = {
   sexo:['Sexo', SEXO],
   idade:['Idade real', null],
+  espelho:['Quando você se olha no espelho, o que mais te incomoda hoje?', { cansada:'Cara de cansada(o), mesmo quando eu durmo', caindo:'O rosto caindo: bochecha, bigode chinês', pescoco:'O pescoço e a papada', palpebra:'A pálpebra pesando', manchas:'Manchas e rugas', nada:'Nada em especial: quero saber a idade que o rosto mostra' }],
   cigarro:['Você fuma ou já fumou?', { nunca:'Nunca fumei', parou:'Já fumei e parei', parou_mais10:'Parei há mais de 10 anos', parou_menos10:'Parei há menos de 10 anos', as_vezes:'Fumo ou uso vape às vezes', hoje:'Fumo hoje / todo dia' }],
   sol:['Quanto sol o rosto pega (sem protetor)', { quase_nenhum:'Quase nenhum', fds:'Um pouco, ou só no fim de semana', todo_dia:'Quase todo dia' }],
   metabolico:['Já te disseram que a pressão ou a glicose estava alta?', { nao_medi:'Não, e medi no último ano', nunca:'Nunca medi ou não lembro', pressao:'Sim, a pressão', glicose:'Sim, a glicose', ambas:'Sim, as duas' }],
   movimento:['Quanto se mexe numa semana comum', { quase_nada:'Quase nada', ate2:'Até 2 horas', '2a5':'De 2 a 5 horas', mais5:'Mais de 5 horas' }],
   sono:['Como são as noites', { bem:'Durmo 7 horas ou mais e acordo bem', '6h':'Durmo umas 6 horas', curto:'Durmo 5 horas ou menos', cansado:'Durmo, mas acordo cansada(o)' }],
-  futuro:['Daqui a 10 anos, o que mais quer', { disposicao:'Ter a mesma disposição de hoje', parecer:'Parecer a idade que eu sinto', chegar10:'Chegar aos (idade + 10) com força e memória', antes:'Cuidar da saúde antes de aparecer problema', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça' }],
+  futuro:['Daqui a 10 anos, o que mais quer', { disposicao:'Ter a mesma disposição de hoje', parecer:'Parecer a idade que eu sinto', chegar10:'Chegar aos (idade + 10) com força e memória', antes:'Cuidar da saúde antes de aparecer problema', reconhecer:'Me reconhecer no espelho', independente:'Não depender de ninguém', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça' }],
 };
 /** {pergunta: resposta} com o texto da tela; multi ('a+b' ou lista) vira lista. Pergunta sem resposta fica de fora. */
 function rotular(r, mapa){
@@ -183,7 +184,7 @@ function montar(e){
 let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o botão do Claude)
 async function carregaEstoque(){
   if (EST) return EST;
-  try { const r = await fetch('roteiros-estoque.json?v=20261104', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
+  try { const r = await fetch('roteiros-estoque.json?v=20261104b', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
   return EST;
 }
 const TEMPO = ['0-8 s', '8-30 s', '30-45 s', '45-52 s', '52-60 s'];
@@ -269,8 +270,11 @@ function rotPeleIdade(d, c, E){
     return { blocos:out.filter(Boolean), avisos };
   }
   const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = d.idade ?? r.idade;
-  const V = { futuro:c?.vars?.futuro || window.KITS?.['pele-idade']?.futuro?.[r.futuro] || null, idade:idade != null ? String(idade) : null, min:mF ? mF[1] : null, max:mF ? mF[2] : null };
-  out.push(blocoE('abertura', TEMPO[0], V.futuro ? P.abertura.com_futuro : P.abertura.sem_futuro, V, { f:P.abertura.f, circular:V.futuro ? 'a resposta "daqui a 10 anos" na tela' : null }));
+  const V = { futuro:c?.vars?.futuro || window.KITS?.['pele-idade']?.futuro?.[r.futuro] || null, idade:idade != null ? String(idade) : null, min:mF ? mF[1] : null, max:mF ? mF[2] : null,
+    espelho:c?.vars?.espelho || null };
+  // v3: a abertura cita a dor do espelho com as palavras dela; o desejo de 10 anos passa para a ponte
+  const ab = V.espelho ? P.abertura.com_espelho : V.futuro ? P.abertura.com_futuro : P.abertura.sem_futuro;
+  out.push(blocoE('abertura', TEMPO[0], ab, V, { f:P.abertura.f, circular:V.espelho ? 'a resposta "o que mais incomoda no espelho" na tela' : V.futuro ? 'a resposta "daqui a 10 anos" na tela' : null }));
   // a idade do rosto: com número só se a página mostrou e a regra deixa (mais de 5 anos acima: sem número)
   const caso = c?.caso || 'sem_numero', dizer = !!(c?.idadeFaixa?.dizer && mF);
   const chave = caso === 'sem_numero' ? 'sem_numero' : caso === 'mais_velho' && !dizer ? 'mais_velho_sem_numero' : caso;
@@ -300,7 +304,7 @@ function rotPeleIdade(d, c, E){
   if (comFoto && (sin.manchas || 0) >= 2) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.pele, V, { f:C.seguranca.f, fixo:true }));
   const mec = hab[0] || 'gemeos';
   out.push(blocoE('mecanismo', TEMPO[2], P.mecanismo[mec], V, { f:P.mecanismo.f }));
-  out.push(blocoE('ponte', TEMPO[3], P.ponte.texto, V, { f:P.ponte.f }));
+  out.push(blocoE('ponte', TEMPO[3], V.espelho && V.futuro ? P.ponte.com_futuro : P.ponte.texto, V, { f:P.ponte.f }));
   out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
   if (['pressao', 'glicose', 'ambas'].includes(r.metabolico)) avisos.push('Ela marcou pressão ou glicose alta: sinal de saúde (regra 17). Vale olhar com exame; fale com ela também por escrito. Sem nome de doença nem de remédio.');
   if (r.cigarro === 'hoje') avisos.push('Fuma hoje: tom de alívio e explicação, sem cobrança (regra 22).');

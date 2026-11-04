@@ -3,6 +3,9 @@
 // evidencia.md / desenho-v2.md (nenhuma nova). Câmera = a da pele2 (3 fotos: frente, esquerda, direita; ordem NO OVAL),
 // mesma edge analisar-pele, com {angulos} quando chegam as 3. funnel_id 'pele-idade' e as chaves de resposta de antes
 // (a Caixa lê); chaves novas: cigarro parou|as_vezes, futuro chegar10|antes, props.desejo (o desejo de 10 anos com a idade).
+// v3 (04/11 noite, voz do público: livowa-empresa/pesquisa/voz-pele-potencia.md, tema A): pergunta nova 'espelho' depois do
+// nome (R.espelho: cansada|caindo|pescoco|palpebra|manchas|nada); futuro troca parecer→reconhecer e antes→independente
+// (os valores velhos seguem nos mapas, para leads antigos); no resultado, a região da dor dela vem primeiro.
 // Barra: log(passo)/log(total) sobre as telas da capa ao resultado (Conrad 2010; Villar 2013; design-web.md).
 // Texto: sem aspas retas dentro de frase (quebraram uma página antes); quando precisar, aspas tipográficas.
 import * as Analytics from '/idade/funnel-analytics.js';
@@ -49,8 +52,9 @@ function nomeBonito(){ const n = nome1(); return n ? n[0].toLocaleUpperCase('pt-
 const fem = () => R.sexo !== 'm';
 const idadeOu = () => R.idade ?? IDADE_PADRAO;
 // o desejo de 10 anos: em 1ª pessoa (mensagem) e em 2ª (resultado); o "chegar aos" usa a idade + 10
-const FUT_EU = { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que eu sinto', chegar10:i => `chegar aos ${i} com força e memória`, antes:'cuidar da saúde antes de aparecer problema' };
-const FUT_VOCE = { ...FUT_EU, parecer:'parecer a idade que você sente' };
+const FUT_EU = { disposicao:'ter a mesma disposição de hoje', reconhecer:'me reconhecer no espelho', chegar10:i => `chegar aos ${i} com força e memória`, independente:'não depender de ninguém',
+  parecer:'parecer a idade que eu sinto', antes:'cuidar da saúde antes de aparecer problema' };   // parecer e antes: v2, só para quem já respondeu
+const FUT_VOCE = { ...FUT_EU, reconhecer:'você se reconhecer no espelho', parecer:'parecer a idade que você sente' };
 const desejo = (M = FUT_VOCE) => { const v = M[R.futuro]; return typeof v === 'function' ? v(idadeOu() + 10) : v || ''; };
 // a resposta dela, curta (carregamento e resultado)
 const RESP = {
@@ -63,15 +67,15 @@ const RESP = {
 const resp = (k, v = R[k]) => (RESP[k]?.[v] || '').replace('@', fem() ? 'a' : 'o');
 
 // ---------- telas (ordem do desenho-v2) ----------
-const ORDEM = ['capa','idade','reforco1','nome','sol','cigarro','reforco2','metabolico','movimento','sono','futuro','instrucao','scan','carregando','resultado','fechar','erro'];
-const QUIZ = ['sol','cigarro','metabolico','movimento','sono','futuro'];   // uma escolha, avança sozinho (o sexo fica na capa)
+const ORDEM = ['capa','idade','reforco1','nome','espelho','sol','cigarro','reforco2','metabolico','movimento','sono','futuro','instrucao','scan','carregando','resultado','fechar','erro'];
+const QUIZ = ['espelho','sol','cigarro','metabolico','movimento','sono','futuro'];   // uma escolha, avança sozinho (o sexo fica na capa)
 const VOLTA = { scan:'instrucao', erro:'instrucao', fechar:'resultado' };
 // barra: todas as telas da capa ao resultado; valor = log(passo)/log(total), com passo = posição + 1 e total = telas + 1
 // (a capa já mostra um pouco, como em Conrad 2010: log(1) = 0 deixaria a 1ª tela vazia)
 const BARRA = ORDEM.slice(0, ORDEM.indexOf('resultado') + 1);
 const pBarra = s => { const i = BARRA.indexOf(s); return i < 0 ? null : Math.log(i + 2) / Math.log(BARRA.length + 1); };
-const SECOES = [['capa','idade','reforco1','nome'], ['sol','cigarro','reforco2','metabolico','movimento','sono','futuro'], ['instrucao','scan','carregando','resultado']];
-const LIMITE = [0, (pBarra('nome') + pBarra('sol'))/2, (pBarra('futuro') + pBarra('instrucao'))/2, 1];   // onde cada seção começa
+const SECOES = [['capa','idade','reforco1','nome','espelho'], ['sol','cigarro','reforco2','metabolico','movimento','sono','futuro'], ['instrucao','scan','carregando','resultado']];
+const LIMITE = [0, (pBarra('espelho') + pBarra('sol'))/2, (pBarra('futuro') + pBarra('instrucao'))/2, 1];   // onde cada seção começa
 (function montarBarra(){
   [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => { el.style.flex = `${LIMITE[k + 1] - LIMITE[k]} 1 0`; });
   $('barra').querySelector('.b-rot [data-sec="1"]').style.left = (LIMITE[1]*100).toFixed(1) + '%';
@@ -335,6 +339,15 @@ const SINAL = {   // sinais da edge ligados à idade do rosto (a textura/poro fi
   flacidez:{ nome:'Contorno', recorte:'contorno', c:['Firme', 'Levemente menos firme', 'Menos firme', 'Bem menos firme'] },
 };
 const cap = t => t ? t[0].toLocaleUpperCase('pt-BR') + t.slice(1) : '';
+// a dor do espelho (v3): a região dela vem primeiro em "O que a sua foto mostra", com a frase dela e o que a análise devolveu.
+// ids = sinais da edge que mostram essa região (o mais marcado entre eles); sem frase de saúde nova.
+const DOR = {
+  cansada:{ t:() => `a cara de ${fem() ? 'cansada' : 'cansado'}`, ids:['olhos'] },
+  caindo:{ t:() => 'o rosto caindo', ids:['sulco_nasolabial', 'flacidez'] },
+  pescoco:{ t:() => 'o pescoço e a papada', pl:true, ids:['flacidez'] },
+  palpebra:{ t:() => 'a pálpebra pesando', ids:['olhos'] },
+  manchas:{ t:() => 'as manchas e as rugas', pl:true, ids:['manchas', 'linhas_testa', 'olhos'] },
+};
 // fontes completas (todas em evidencia.md, conferidas no PubMed em 04/11/2026): só dentro de "Ver os estudos"
 const ESTUDOS = [
   ['Christensen et al., BMJ 2009', 'https://doi.org/10.1136/bmj.b5262', '1.826 gêmeos dinamarqueses com 70 anos ou mais: quem aparentava mais idade na foto tinha, em média, menos força e memória.'],
@@ -359,7 +372,7 @@ function regua(fx, idade){
   </div>`;
 }
 // o que das respostas pesa no rosto: frases só de evidencia.md §4 e do desenho-v2 (↑ pesa · ↓ a favor · ? a foto não mede)
-function fatores(){
+function fatores(max = 3){
   const at = [], bom = [], M = R.metabolico;
   const CIG = 'o cigarro é o hábito com o efeito mais claro no rosto.';
   if (['hoje','as_vezes'].includes(R.cigarro)) at.push({ id:'cigarro', s:'↑', r:resp('cigarro'), t:cap(CIG) });
@@ -377,7 +390,8 @@ function fatores(){
   else if (['2a5','mais5'].includes(R.movimento)) bom.push({ id:'movimento', s:'↓', r:resp('movimento'), t:'Atividade moderada se ligou a um rosto mais novo.' });
   if (M === 'nunca') at.push({ id:'metabolico', s:'?', r:resp('metabolico'), t:'Os estudos ligaram as duas ao rosto, e a foto não mede nenhuma.' });
   // até 3; quando há os dois lados, 2 que pesam + 1 a favor (resposta construtiva, sem só cobrança)
-  return at.length && bom.length ? [...at.slice(0, 2), bom[0]] : [...at, ...bom].slice(0, 3);
+  // com a dor do espelho no bloco da foto (v3), até 2 linhas: 1 que pesa + 1 a favor (as palavras antes do botão ficam em ~160)
+  return at.length && bom.length ? [...at.slice(0, max - 1), bom[0]] : [...at, ...bom].slice(0, max);
 }
 
 function montarResultado(j, f){
@@ -413,14 +427,19 @@ function montarResultado(j, f){
   const sel = vis.filter(id => nivel(id) >= 1).slice(0, 2);
   const liso = [...vis].reverse().find(id => !sel.includes(id) && nivel(id) === 0); if (liso) sel.push(liso);
   for (const id of vis) if (sel.length < 3 && !sel.includes(id)) sel.push(id);
+  // a dor do espelho primeiro (se a região apareceu na foto); com ela, 2 recortes (cabe nas ~160 palavras antes do botão)
+  const D = DOR[R.espelho], dorId = D ? D.ids.filter(id => nivel(id) != null).sort((a, b) => nivel(b) - nivel(a))[0] || null : null;
+  if (dorId){ sel.splice(0, sel.length, dorId, ...sel.filter(id => id !== dorId)); sel.length = Math.min(sel.length, 2); }
+  resultado.dor = dorId;
+  const txtRecorte = id => id === dorId ? `Você disse que ${D.t()} te ${D.pl ? 'incomodam' : 'incomoda'}. Na sua foto: ${SINAL[id].c[nivel(id)].toLocaleLowerCase('pt-BR')}.` : SINAL[id].c[nivel(id)];
   $('r-foto-bloco').hidden = !daParaDizer || !sel.length;
-  $('r-foto-bloco').innerHTML = `<h3>O que a sua foto mostra</h3><ul class="recortes">${sel.map(id => `<li data-id="${id}"><canvas data-r="${SINAL[id].recorte}" role="img" aria-label="Recorte da sua foto: ${esc(SINAL[id].nome.toLowerCase())}"></canvas>
-    <div><b>${esc(SINAL[id].nome)}</b><span>${esc(SINAL[id].c[nivel(id)])}</span></div></li>`).join('')}</ul>`;
+  $('r-foto-bloco').innerHTML = `<h3>O que a sua foto mostra</h3><ul class="recortes">${sel.map(id => `<li data-id="${id}"${id === dorId ? ' data-dor="1"' : ''}><canvas data-r="${SINAL[id].recorte}" role="img" aria-label="Recorte da sua foto: ${esc(SINAL[id].nome.toLowerCase())}"></canvas>
+    <div><b>${esc(SINAL[id].nome)}</b><span>${esc(txtRecorte(id))}</span></div></li>`).join('')}</ul>`;
   $('r-foto-bloco').querySelectorAll('canvas[data-r]').forEach(c => { const r = recorteRegiao(al, fr.g, c.dataset.r, 128); c.width = r.width; c.height = r.height; c.getContext('2d').drawImage(r, 0, 0); r.width = 0; });
   al.width = al.height = 0;
 
   // 4. o que das respostas pesa no rosto
-  const fs = fatores();
+  const fs = fatores(dorId ? 2 : 3);
   $('r-fatores').hidden = !daParaDizer;
   $('r-fatores').innerHTML = `<h3>O que das suas respostas pesa no rosto</h3>${fs.length
     ? `<ul class="fatores">${fs.map(x => `<li data-f="${x.id}"><i class="${x.s === '↓' ? 'bom' : ''}" aria-label="${x.s === '↑' ? 'pesa' : x.s === '↓' ? 'a favor' : 'a foto não mede'}">${x.s}</i><p><b>${esc(x.r)}.</b> ${esc(x.t)}</p></li>`).join('')}</ul>`
@@ -440,7 +459,7 @@ function montarResultado(j, f){
   // complete: o que a Caixa lê (codigo, idade, sexo, faixa, caso, respostas, angulos/enviadas para as 3 fotos, desejo)
   track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:caso,
     props:{ codigo:meuCodigo(), idade, sexo:R.sexo || null, faixa:daParaDizer ? `${fx.min} a ${fx.max} anos` : null, caso, respostas:respostasLimpa(),
-            desejo:desejo() || null, confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null, origem:fr.origem,
+            desejo:desejo() || null, espelho_regiao:dorId, confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null, origem:fr.origem,
             enviadas:window.__ultimoEnvio?.n || 1, angulos:window.__ultimoEnvio?.angulos || ['frente'],
             frases:daParaDizer ? fs.map(x => x.id).join('+') : '',
             sinais:Object.entries(sinais).map(([id, s]) => ({ id, visivel:s.visivel, nivel:s.visivel ? s.nivel : null })) } });

@@ -711,7 +711,12 @@ const reactPeleComRegiao = (d, perfil) => reactPele(d, perfil).map(p => ({ ...p,
 const CASO_PI = { mais_novo:'rosto aparenta menos que a idade', igual:'rosto acompanha a idade', mais_velho:'rosto aparenta um pouco mais que a idade', sem_numero:'sem número na página' };
 const FUTURO_PI = { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que você sente', aos70:'chegar bem aos 70, com força e memória',
   entender:'entender o que o seu corpo já está mostrando', cuidar:'cuidar agora, antes que apareça',
-  chegar10:'chegar daqui a 10 anos com força e memória', antes:'cuidar da saúde antes de aparecer problema' };   // v2 (04/11): chegar10 usa a idade (d.desejo)
+  chegar10:'chegar daqui a 10 anos com força e memória', antes:'cuidar da saúde antes de aparecer problema',   // v2 (04/11): chegar10 usa a idade (d.desejo)
+  reconhecer:'se reconhecer no espelho', independente:'não depender de ninguém' };   // v3 (04/11 noite): no lugar de parecer e antes (que seguem para leads antigos)
+// v3: o que mais incomoda no espelho (R.espelho), na voz do Lucca para ela; 'nada' = sem dor (não entra no roteiro)
+const ESPELHO_PI = { cansada:'a cara de cansada, mesmo quando você dorme', caindo:'o rosto caindo, a bochecha e o bigode chinês', pescoco:'o pescoço e a papada',
+  palpebra:'a pálpebra pesando', manchas:'as manchas e as rugas' };
+const espelhoPI = (d, r) => r.espelho === 'cansada' && (r.sexo || d.sexo) === 'm' ? ESPELHO_PI.cansada.replace('cansada', 'cansado') : ESPELHO_PI[r.espelho] || null;
 const futuroPI = (d, r) => r.futuro === 'chegar10' ? d.desejo || (temValor(d.idade) ? `chegar aos ${+d.idade + 10} com força e memória` : FUTURO_PI.chegar10) : FUTURO_PI[r.futuro] || null;
 function casoPeleIdade(d){
   const { min, max } = faixaPele(d), idade = temValor(d.idade) ? +d.idade : null;
@@ -736,7 +741,7 @@ function classificaPeleIdade(d){
     : `Sem faixa na página${idade != null ? ` · tem ${idade}` : ''} · confiança ${conf} · foto ${d.qualidade || '?'}.`;
   return { teste:'pele-idade', caso, perfil:null, titulo:CASO_PI[caso], simples, refazer:motivos.length > 0, motivo:motivos.join(' '),
     cor:caso === 'mais_novo' || caso === 'igual' ? 'ok' : 'meh', idadeFaixa, atalhoRefazer:'pirefazer',
-    vars:{ idade, min, max, futuro:futuroPI(d, r) } };
+    vars:{ idade, min, max, futuro:futuroPI(d, r), espelho:espelhoPI(d, r) } };
 }
 const T_PI = {
   video:'{nome}, gravei esse vídeo olhando a sua foto e as suas respostas. Assiste quando puder e me fala o que achou.',
