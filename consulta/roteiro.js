@@ -62,12 +62,12 @@ const P2 = {
 const PI = {
   sexo:['Sexo', SEXO],
   idade:['Idade real', null],
-  cigarro:['Você fuma ou já fumou?', { nunca:'Nunca fumei', parou_mais10:'Parei há mais de 10 anos', parou_menos10:'Parei há menos de 10 anos', hoje:'Fumo hoje' }],
-  sol:['Quanto sol o rosto pega sem protetor', { quase_nenhum:'Quase nenhum', fds:'Nos fins de semana', todo_dia:'Quase todo dia' }],
+  cigarro:['Você fuma ou já fumou?', { nunca:'Nunca fumei', parou:'Já fumei e parei', parou_mais10:'Parei há mais de 10 anos', parou_menos10:'Parei há menos de 10 anos', as_vezes:'Fumo ou uso vape às vezes', hoje:'Fumo hoje / todo dia' }],
+  sol:['Quanto sol o rosto pega (sem protetor)', { quase_nenhum:'Quase nenhum', fds:'Um pouco, ou só no fim de semana', todo_dia:'Quase todo dia' }],
   metabolico:['Já te disseram que a pressão ou a glicose estava alta?', { nao_medi:'Não, e medi no último ano', nunca:'Nunca medi ou não lembro', pressao:'Sim, a pressão', glicose:'Sim, a glicose', ambas:'Sim, as duas' }],
   movimento:['Quanto se mexe numa semana comum', { quase_nada:'Quase nada', ate2:'Até 2 horas', '2a5':'De 2 a 5 horas', mais5:'Mais de 5 horas' }],
   sono:['Como são as noites', { bem:'Durmo 7 horas ou mais e acordo bem', '6h':'Durmo umas 6 horas', curto:'Durmo 5 horas ou menos', cansado:'Durmo, mas acordo cansada(o)' }],
-  futuro:['Daqui a 10 anos, o que mais quer', { disposicao:'Ter a mesma disposição de hoje', parecer:'Parecer a idade que eu sinto', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça' }],
+  futuro:['Daqui a 10 anos, o que mais quer', { disposicao:'Ter a mesma disposição de hoje', parecer:'Parecer a idade que eu sinto', chegar10:'Chegar aos (idade + 10) com força e memória', antes:'Cuidar da saúde antes de aparecer problema', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça' }],
 };
 /** {pergunta: resposta} com o texto da tela; multi ('a+b' ou lista) vira lista. Pergunta sem resposta fica de fora. */
 function rotular(r, mapa){
@@ -254,7 +254,7 @@ function rotPele(d, t, c, E){
 // o que está bem → até 2 hábitos que pesam (o 1º com o sinal da foto, quando houver) → o mecanismo do 1º (o único número
 // de estudo) → ponte → pergunta. Sem produto, rotina ou programa (regras 4, 5 e 23).
 const ORDEM_HAB = ['cigarro', 'sol', 'metabolico', 'sono', 'movimento'];   // a mesma prioridade da página (pele/app.js)
-const ATENCAO_PI = { cigarro:['hoje', 'parou_menos10', 'parou_mais10'], sol:['todo_dia', 'fds'], metabolico:['pressao', 'glicose', 'ambas', 'nunca'], sono:['curto', 'cansado'], movimento:['quase_nada', 'ate2'] };
+const ATENCAO_PI = { cigarro:['hoje', 'as_vezes', 'parou', 'parou_menos10', 'parou_mais10'], sol:['todo_dia', 'fds'], metabolico:['pressao', 'glicose', 'ambas', 'nunca'], sono:['curto', 'cansado'], movimento:['quase_nada', 'ate2'] };
 const FOTO_HAB = { cigarro:['sulco_nasolabial', 'flacidez', 'olhos'], sol:['manchas', 'linhas_testa'], sono:['olhos'] };
 const ZONA_SIN = { linhas_testa:['testa'], olhos:['olhos_canto'], sulco_nasolabial:['sulco'], manchas:['bochecha'], flacidez:['mandibula'] };
 const REG_PI = { linhas_testa:'testa', olhos:'canto dos olhos', sulco_nasolabial:'do nariz à boca', manchas:'bochechas', flacidez:'contorno do rosto' };
@@ -269,7 +269,7 @@ function rotPeleIdade(d, c, E){
     return { blocos:out.filter(Boolean), avisos };
   }
   const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = d.idade ?? r.idade;
-  const V = { futuro:window.KITS?.['pele-idade']?.futuro?.[r.futuro] || null, idade:idade != null ? String(idade) : null, min:mF ? mF[1] : null, max:mF ? mF[2] : null };
+  const V = { futuro:c?.vars?.futuro || window.KITS?.['pele-idade']?.futuro?.[r.futuro] || null, idade:idade != null ? String(idade) : null, min:mF ? mF[1] : null, max:mF ? mF[2] : null };
   out.push(blocoE('abertura', TEMPO[0], V.futuro ? P.abertura.com_futuro : P.abertura.sem_futuro, V, { f:P.abertura.f, circular:V.futuro ? 'a resposta "daqui a 10 anos" na tela' : null }));
   // a idade do rosto: com número só se a página mostrou e a regra deixa (mais de 5 anos acima: sem número)
   const caso = c?.caso || 'sem_numero', dizer = !!(c?.idadeFaixa?.dizer && mF);

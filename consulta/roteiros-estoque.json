@@ -351,11 +351,13 @@
     "cigarro": {
      "hoje": "fuma hoje",
      "parou_menos10": "parou de fumar há menos de 10 anos",
-     "parou_mais10": "parou de fumar há mais de 10 anos"
+     "parou_mais10": "parou de fumar há mais de 10 anos",
+     "parou": "já fumou e parou",
+     "as_vezes": "fuma ou usa vape às vezes"
     },
     "sol": {
      "todo_dia": "o seu rosto pega sol sem protetor quase todo dia",
-     "fds": "o seu rosto pega sol sem protetor nos fins de semana"
+     "fds": "o seu rosto pega um pouco de sol sem protetor, ou só no fim de semana"
     },
     "metabolico": {
      "pressao": "já te disseram que a pressão estava alta",

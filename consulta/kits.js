@@ -710,7 +710,9 @@ const reactPeleComRegiao = (d, perfil) => reactPele(d, perfil).map(p => ({ ...p,
 // livowa-empresa/tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11).
 const CASO_PI = { mais_novo:'rosto aparenta menos que a idade', igual:'rosto acompanha a idade', mais_velho:'rosto aparenta um pouco mais que a idade', sem_numero:'sem número na página' };
 const FUTURO_PI = { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que você sente', aos70:'chegar bem aos 70, com força e memória',
-  entender:'entender o que o seu corpo já está mostrando', cuidar:'cuidar agora, antes que apareça' };
+  entender:'entender o que o seu corpo já está mostrando', cuidar:'cuidar agora, antes que apareça',
+  chegar10:'chegar daqui a 10 anos com força e memória', antes:'cuidar da saúde antes de aparecer problema' };   // v2 (04/11): chegar10 usa a idade (d.desejo)
+const futuroPI = (d, r) => r.futuro === 'chegar10' ? d.desejo || (temValor(d.idade) ? `chegar aos ${+d.idade + 10} com força e memória` : FUTURO_PI.chegar10) : FUTURO_PI[r.futuro] || null;
 function casoPeleIdade(d){
   const { min, max } = faixaPele(d), idade = temValor(d.idade) ? +d.idade : null;
   if (CASO_PI[d.caso]) return d.caso;
@@ -734,7 +736,7 @@ function classificaPeleIdade(d){
     : `Sem faixa na página${idade != null ? ` · tem ${idade}` : ''} · confiança ${conf} · foto ${d.qualidade || '?'}.`;
   return { teste:'pele-idade', caso, perfil:null, titulo:CASO_PI[caso], simples, refazer:motivos.length > 0, motivo:motivos.join(' '),
     cor:caso === 'mais_novo' || caso === 'igual' ? 'ok' : 'meh', idadeFaixa, atalhoRefazer:'pirefazer',
-    vars:{ idade, min, max, futuro:FUTURO_PI[r.futuro] || null } };
+    vars:{ idade, min, max, futuro:futuroPI(d, r) } };
 }
 const T_PI = {
   video:'{nome}, gravei esse vídeo olhando a sua foto e as suas respostas. Assiste quando puder e me fala o que achou.',

@@ -4,173 +4,162 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f2f4f1">
-<title>A idade que a sua pele mostra · Dr. Lucca</title>
+<meta name="theme-color" content="#f3f5f2">
+<title>Que idade o seu rosto mostra? · Dr. Lucca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="pele.css?v=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="pele.css?v=2">
 </head>
 <body>
-<!-- livowa.com/pele (04/11/2026): teste da IDADE APARENTE e da VITALIDADE pela pele do rosto, não análise dermatológica.
-     Ordem das telas: passo 2 de livowa-empresa/tarefas/pele-idade-vitalidade.md. Base técnica da pele2 (copiada; a pele2
-     fica intacta). Frases com número só de tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed). -->
+<!-- livowa.com/pele v2 (04/11/2026, refeito depois da reprovação do Lucca): segue À RISCA
+     livowa-empresa/tarefas/pele-idade-vitalidade/desenho-v2.md (tela a tela). Frases de saúde só de evidencia.md / desenho-v2.md.
+     Sistema visual: 1 família (IBM Plex Sans), 3 tamanhos (28 / 17 / 13) + 56 só no número do resultado, 1 estilo de cartão,
+     sem vermelho. Barra no topo: log(passo)/log(total) sobre todas as telas da capa ao resultado (Conrad 2010; Villar 2013). -->
 <div class="app">
-  <div class="top" id="top" hidden><button class="back" id="back" type="button" aria-label="Voltar">←</button></div>
+  <div class="top" id="top">
+    <button class="back" id="back" type="button" aria-label="Voltar">←</button>
+    <div class="barra" id="barra" aria-hidden="true">
+      <div class="b-rot"><span data-sec="0">Sobre você</span><span data-sec="1">Hábitos</span><span data-sec="2">Foto</span></div>
+      <div class="b-trilho"><i data-sec="0"><b></b></i><i data-sec="1"><b></b></i><i data-sec="2"><b></b></i></div>
+    </div>
+  </div>
 
-  <!-- 0 · capa: a promessa da bio e o botão -->
+  <!-- 0 · capa = 1ª pergunta (sexo) -->
   <section class="screen capa" data-s="capa">
-    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="72" height="72">
-      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
-    <h1>Descubra a idade que a sua <em>pele</em> mostra</h1>
-    <p class="sub">8 perguntas rápidas e uma foto do rosto. No fim, você vê a idade que o seu rosto aparenta ao lado da sua idade real. Leva uns 2 minutos.</p>
-    <p class="nota-capa">A idade do corpo aparece em muitos lugares. O rosto é a parte que dá para ver numa foto.</p>
-  </section>
-
-  <!-- 1 · sexo -->
-  <section class="screen q" data-s="sexo" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
-    <h2>A pele do homem e a da mulher envelhecem de jeitos diferentes. Você é:</h2>
-    <div class="opts" data-q="sexo">
-      <button type="button" class="opt" data-v="f"><span class="txt">Mulher</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="m"><span class="txt">Homem</span><span class="box"></span></button>
+    <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span class="nota">Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
+    <h1>Que idade o seu rosto mostra?</h1>
+    <p>Para começar, você é:</p>
+    <div class="opts duas" data-q="sexo">
+      <button type="button" class="opt grande" data-v="f">Mulher</button>
+      <button type="button" class="opt grande" data-v="m">Homem</button>
     </div>
   </section>
 
-  <!-- 2 · idade real (roda) -->
+  <!-- 1 · idade real (roda) -->
   <section class="screen q" data-s="idade" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
     <h2>Quantos anos você tem?</h2>
-    <p class="sub">É com essa idade que a idade do seu rosto vai ser comparada.</p>
-    <div class="wheels uma">
-      <div class="wheelbox"><label id="l-idade" class="sr">Sua idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade" aria-describedby="un-idade"></div><span class="un" id="un-idade">anos</span></div></div>
-    </div>
+    <p class="nota">É com ela que a foto vai ser comparada.</p>
+    <div class="wheelbox"><label id="l-idade" class="sr">Sua idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade" aria-describedby="un-idade"></div><span class="un" id="un-idade">anos</span></div></div>
   </section>
 
-  <!-- 3 · reforço 1: lugar certo (Christensen 2009) -->
-  <section class="screen q reforco" data-s="reforco1" hidden>
-    <p class="conta"><b>Você está no lugar certo</b> · <span class="falta"></span></p>
-    <h2>O rosto conta uma parte da história da idade.</h2>
-    <div class="cartao-ev">
-      <p>Num estudo com 1.826 gêmeos de 70 anos ou mais, quem parecia mais velho na foto tinha, em média, menos força e memória e tendia a viver menos, mesmo descontando a idade real.</p>
-      <small>Christensen et al., <a href="https://doi.org/10.1136/bmj.b5262" target="_blank" rel="noopener">BMJ, 2009</a></small>
+  <!-- 2 · interstício 1: responde à idade (Christensen 2009) -->
+  <section class="screen q inter" data-s="reforco1" hidden>
+    <h2><span class="dest"><span class="v-idade">40</span> anos</span> é o ponto de partida. A foto diz se o rosto acompanha.</h2>
+    <div class="cartao prova">
+      <p class="num">1.826 gêmeos</p>
+      <p>Quem parecia mais velho na foto tinha, em média, menos força e memória.*</p>
     </div>
-    <p class="sub">No fim, você vê a idade que o seu rosto aparenta e o que os estudos acharam sobre o que você contar.</p>
+    <p class="nota">* Christensen et al., BMJ 2009 · gêmeos com 70 anos ou mais</p>
   </section>
 
-  <!-- 4 · nome, com Pular -->
+  <!-- 3 · nome, com Pular -->
   <section class="screen q" data-s="nome" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
     <h2>Como o Dr. Lucca pode te chamar no seu resultado?</h2>
     <label class="campo"><span class="sr">Seu primeiro nome</span>
       <input id="nome" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" maxlength="40" placeholder="Seu primeiro nome"></label>
   </section>
 
-  <!-- 5 · cigarro (Guyuron 2009) -->
-  <section class="screen q" data-s="cigarro" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
-    <h2><span class="nm"></span>o cigarro aparece no rosto. Você fuma ou já fumou?</h2>
-    <div class="opts" data-q="cigarro">
-      <button type="button" class="opt" data-v="nunca"><span class="txt">Nunca fumei</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="parou_mais10"><span class="txt">Parei há mais de 10 anos</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="parou_menos10"><span class="txt">Parei há menos de 10 anos</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="hoje"><span class="txt">Fumo hoje</span><span class="box"></span></button>
-    </div>
-  </section>
-
-  <!-- 6 · sol sem protetor (Guyuron 2009) -->
+  <!-- 4 · sol (sem estudo no título) -->
   <section class="screen q" data-s="sol" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
-    <h2><span class="nm"></span>o sol também aparece no rosto. Quanto sol ele pega sem protetor?</h2>
+    <h2><span class="nm"></span>quanto sol o seu rosto pega num dia comum?</h2>
+    <p class="nota">Conta o sol sem protetor solar.</p>
     <div class="opts" data-q="sol">
-      <button type="button" class="opt" data-v="quase_nenhum"><span class="txt">Quase nenhum</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="fds"><span class="txt">Nos fins de semana</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="todo_dia"><span class="txt">Quase todo dia</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="quase_nenhum">Quase nenhum</button>
+      <button type="button" class="opt" data-v="fds">Um pouco, ou só no fim de semana</button>
+      <button type="button" class="opt" data-v="todo_dia">Bastante, quase todo dia</button>
     </div>
   </section>
 
-  <!-- 7 · reforço 2: o rosto acompanha o que acontece por dentro (Gunn 2012) -->
-  <section class="screen q reforco" data-s="reforco2" hidden>
-    <p class="conta"><b>Metade do caminho</b> · <span class="falta"></span></p>
-    <h2>O rosto acompanha o que acontece por dentro.</h2>
-    <div class="cartao-ev">
-      <p>Em 514 pessoas de 63 anos em média, sem doença, as mulheres com menor risco para o coração aparentavam mais de 2 anos menos. A pressão foi o que mais pesou.</p>
-      <small>Gunn et al., <a href="https://doi.org/10.1093/gerona/gls154" target="_blank" rel="noopener">J Gerontol A, 2012</a></small>
+  <!-- 5 · cigarro -->
+  <section class="screen q" data-s="cigarro" hidden>
+    <h2>Você fuma ou já fumou?</h2>
+    <div class="opts" data-q="cigarro">
+      <button type="button" class="opt" data-v="nunca">Nunca fumei</button>
+      <button type="button" class="opt" data-v="parou">Já fumei e parei</button>
+      <button type="button" class="opt" data-v="as_vezes">Fumo ou uso vape às vezes</button>
+      <button type="button" class="opt" data-v="hoje">Fumo todo dia</button>
     </div>
-    <p class="sub">As próximas perguntas olham para isso.</p>
   </section>
 
-  <!-- 8 · pressão e glicose (Gunn 2012; Noordam 2011) -->
+  <!-- 6 · interstício 2: responde ao cigarro (Guyuron 2009) -->
+  <section class="screen q inter" data-s="reforco2" hidden>
+    <h2 id="i2-tit">Ponto para você: o cigarro é o hábito com o efeito mais claro no rosto.</h2>
+    <div class="cartao prova">
+      <p class="num">~2 anos</p>
+      <p>a mais no rosto a cada 10 anos de cigarro, em gêmeos idênticos.*</p>
+    </div>
+    <p class="nota">* Guyuron et al., 2009 · 186 pares de gêmeos idênticos</p>
+  </section>
+
+  <!-- 7 · pressão e glicose -->
   <section class="screen q" data-s="metabolico" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
     <h2>Já te disseram que a sua pressão ou a sua glicose estava alta?</h2>
-    <p class="sub">Nos estudos, as duas aparecem no rosto, mesmo em quem não tem doença.</p>
     <div class="opts" data-q="metabolico">
-      <button type="button" class="opt" data-v="nao_medi"><span class="txt">Não, e medi no último ano</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="nunca"><span class="txt">Nunca medi ou não lembro</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="pressao"><span class="txt">Sim, a pressão</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="glicose"><span class="txt">Sim, a glicose</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="ambas"><span class="txt">Sim, as duas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="nao_medi">Não, e medi no último ano</button>
+      <button type="button" class="opt" data-v="nunca">Nunca medi ou não lembro</button>
+      <button type="button" class="opt" data-v="pressao">Sim, a pressão</button>
+      <button type="button" class="opt" data-v="glicose">Sim, a glicose</button>
+      <button type="button" class="opt" data-v="ambas">Sim, as duas</button>
     </div>
   </section>
 
-  <!-- 9 · movimento (Mayes 2010; Wolffenbuttel 2025) -->
+  <!-- 8 · movimento -->
   <section class="screen q" data-s="movimento" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
-    <h2><span class="nm"></span>quanto você se mexe numa semana comum?</h2>
-    <p class="sub">Num estudo com 250 mulheres, a atividade moderada andou junto com um rosto mais novo. Caminhada conta.</p>
+    <h2>Quanto você se mexe numa semana comum?</h2>
+    <p class="nota">Caminhada conta.</p>
     <div class="opts" data-q="movimento">
-      <button type="button" class="opt" data-v="quase_nada"><span class="txt">Quase nada</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="ate2"><span class="txt">Até 2 horas</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="2a5"><span class="txt">De 2 a 5 horas</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="mais5"><span class="txt">Mais de 5 horas</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="quase_nada">Quase nada</button>
+      <button type="button" class="opt" data-v="ate2">Até 2 horas</button>
+      <button type="button" class="opt" data-v="2a5">De 2 a 5 horas</button>
+      <button type="button" class="opt" data-v="mais5">Mais de 5 horas</button>
     </div>
   </section>
 
-  <!-- 10 · sono e energia (Oyetakin-White 2015) -->
+  <!-- 9 · sono e energia -->
   <section class="screen q" data-s="sono" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
-    <h2><span class="nm"></span>dormir mal aparece na pele. Como são as suas noites?</h2>
+    <h2><span class="nm"></span>como são as suas noites?</h2>
     <div class="opts" data-q="sono">
-      <button type="button" class="opt" data-v="bem"><span class="txt">Durmo 7 horas ou mais e acordo bem</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="6h"><span class="txt">Durmo umas 6 horas</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="curto"><span class="txt">Durmo 5 horas ou menos</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="cansado"><span class="txt">Durmo, mas acordo <span class="gen" data-f="cansada" data-m="cansado">cansada</span></span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="bem">Durmo 7 horas ou mais e acordo bem</button>
+      <button type="button" class="opt" data-v="6h">Durmo umas 6 horas</button>
+      <button type="button" class="opt" data-v="curto">Durmo 5 horas ou menos</button>
+      <button type="button" class="opt" data-v="cansado"><span>Durmo, mas acordo <span class="gen" data-f="cansada" data-m="cansado">cansada</span></span></button>
     </div>
   </section>
 
-  <!-- 11 · a pergunta que decide (mensagem e conversa) -->
+  <!-- 10 · daqui a 10 anos, com a idade dela -->
   <section class="screen q" data-s="futuro" hidden>
-    <p class="conta"><b>Idade do rosto</b> · <span class="falta"></span></p>
-    <h2><span class="nm"></span>daqui a 10 anos, o que você mais quer?</h2>
+    <h2>Daqui a 10 anos você vai ter <span class="dest v-i10">50</span>. O que mais quer?</h2>
     <div class="opts" data-q="futuro">
-      <button type="button" class="opt" data-v="disposicao"><span class="txt">Ter a mesma disposição de hoje</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="parecer"><span class="txt">Parecer a idade que eu sinto</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="aos70"><span class="txt">Chegar bem aos 70, com força e memória</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="entender"><span class="txt">Entender o que o meu corpo já está mostrando</span><span class="box"></span></button>
-      <button type="button" class="opt" data-v="cuidar"><span class="txt">Cuidar agora, antes que apareça</span><span class="box"></span></button>
+      <button type="button" class="opt" data-v="disposicao">Ter a mesma disposição de hoje</button>
+      <button type="button" class="opt" data-v="parecer">Parecer a idade que eu sinto</button>
+      <button type="button" class="opt" data-v="chegar10"><span>Chegar aos <span class="v-i10">50</span> com força e memória</span></button>
+      <button type="button" class="opt" data-v="antes">Cuidar da saúde antes de aparecer problema</button>
     </div>
   </section>
 
-  <!-- 12 · instrução da câmera + aceite: só a foto de frente; cabe em 390×664 sem rolar -->
+  <!-- 11 · instrução da foto: quadro realista em crossfade (frente → esquerda → frente → direita); vídeo opcional -->
   <section class="screen instr" data-s="instrucao" hidden>
-    <h2>Agora a foto: é ela que mostra a idade do seu rosto</h2>
-    <div class="anim-rosto" aria-hidden="true"><svg viewBox="0 0 200 200" id="rosto-ill"></svg></div>
-    <ol class="passos">
-      <li><em>1</em>Rosto dentro do oval, olhando reto</li>
-      <li><em>2</em>De frente para uma janela ou lâmpada</li>
-      <li><em>3</em>A foto sai sozinha quando o anel acende</li>
-    </ol>
-    <ul class="check tres">
-      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>Luz boa</li>
-      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="6"/><path d="M8 7.5C8 4.5 16 4.5 16 7.5"/><circle cx="12" cy="4" r="1.6"/></svg>Cabelo preso</li>
-      <li><svg viewBox="0 0 24 24"><circle cx="7" cy="13" r="3.6"/><circle cx="17" cy="13" r="3.6"/><path d="M10.6 13h2.8M2 4l20 18"/></svg>Sem óculos</li>
+    <div class="quadro" id="quadro" aria-hidden="true">
+      <img class="q-f" alt="" width="640" height="748">
+      <img class="q-e" alt="" width="640" height="748">
+      <img class="q-d" alt="" width="640" height="748">
+      <video id="q-video" muted loop playsinline preload="none" hidden></video>
+      <svg class="q-oval" viewBox="0 0 100 117" preserveAspectRatio="none"><ellipse cx="50" cy="46" rx="31" ry="38"/></svg>
+      <span class="q-rot q-rot-f">Frente</span><span class="q-rot q-rot-e">← Esquerda</span><span class="q-rot q-rot-d">Direita →</span>
+    </div>
+    <h2>Agora 3 fotos: de frente e virando para cada lado.</h2>
+    <ul class="dicas">
+      <li><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h16"/></svg>Luz de janela na frente</li>
+      <li><svg viewBox="0 0 24 24"><circle cx="7" cy="13" r="3.6"/><circle cx="17" cy="13" r="3.6"/><path d="M10.6 13h2.8M3 4l18 17"/></svg>Sem óculos</li>
+      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="6"/><path d="M7 8.5C8 4.5 16 4.5 17 8.5"/></svg>Cabelo para trás</li>
     </ul>
-    <label class="consent"><input type="checkbox" id="aceite"><span>Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minha foto só para analisá-la conforme os meus interesses, e depois ela será apagada definitivamente.</span></label>
-    <button type="button" class="link-gal" id="galeria">Prefiro escolher uma foto</button>
+    <p class="nota">As fotos servem só para a análise.</p>
+    <label class="consent"><input type="checkbox" id="aceite"><span>Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minhas fotos só para analisá-las conforme os meus interesses, e depois elas serão apagadas definitivamente.</span></label>
+    <button type="button" class="link-alt" id="galeria">Prefiro escolher uma foto</button>
     <input type="file" id="arquivo" accept="image/*" hidden>
   </section>
 
-  <!-- 13 · scan (só a frente) -->
+  <!-- 12 · câmera = a da pele2: frente, esquerda, direita; ordem NO OVAL -->
   <section class="screen scan" data-s="scan" hidden>
     <div class="stage" id="stage">
       <video id="v-bg" playsinline muted></video>
@@ -182,71 +171,79 @@
         <div class="luz" id="luz" role="status"><i id="luz-barra"></i><span id="luz-txt">☀ Luz</span></div>
         <button type="button" class="rd" id="scan-fechar" aria-label="Fechar a câmera">✕</button>
       </div>
+      <ol class="angulos" id="angulos" aria-label="Fotos"><li data-a="esquerda">Esquerda</li><li data-a="frente">Frente</li><li data-a="direita">Direita</li></ol>
       <div class="guia" id="guia" hidden aria-hidden="true">
         <svg class="g-seta" viewBox="0 0 132 52"><path d="M44 6 24 26l20 20"/><path d="M76 6 56 26l20 20"/><path d="M108 6 88 26l20 20"/></svg>
         <span class="g-ok">✓</span>
         <p class="g-txt" id="guia-txt"></p>
         <i class="g-barra"><b id="guia-barra"></b></i>
       </div>
-      <p class="scan-dica" id="scan-dica" aria-live="polite">Abrindo a câmera…</p>
-      <button type="button" class="btn pular" id="scan-pular" hidden>Seguir</button>
+      <p class="sr" id="scan-dica" aria-live="polite">Abrindo a câmera…</p>
+      <button type="button" class="btn pular" id="scan-pular" hidden>Seguir com as fotos que já tenho</button>
       <div class="scan-help" id="scan-help" hidden>
         <b>Como fazer</b>
-        <p>Celular na altura do rosto, de frente para uma janela ou lâmpada. Olhe reto para a câmera e fique parado um instante.</p>
-        <p>A foto sai sozinha: não precisa tocar em nada.</p>
+        <p>Celular na altura do rosto, de frente para uma janela. Primeiro olhe reto. Depois vire o rosto devagar para a sua esquerda até a foto sair, e então para a sua direita.</p>
+        <p>As fotos saem sozinhas: não precisa tocar em nada.</p>
         <button type="button" class="btn" id="scan-help-ok">Entendi</button>
-        <button type="button" class="btn ghost" id="scan-galeria">Prefiro escolher uma foto</button>
+        <button type="button" class="link-alt claro" id="scan-galeria">Prefiro escolher uma foto</button>
       </div>
     </div>
   </section>
 
-  <!-- 14 · carregamento: repete as respostas -->
+  <!-- 13 · carregamento: repete as respostas -->
   <section class="screen c" data-s="carregando" hidden>
-    <p class="kicker">Idade do rosto</p>
-    <div class="prog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="tr"/><circle cx="60" cy="60" r="52" class="pr" id="prog-c"/></svg><b id="prog-pct">0<small>%</small></b></div>
-    <h2 id="prog-etapa">Lendo a sua foto</h2>
-    <p class="sub">Isso leva alguns segundos. Não feche a página.</p>
+    <div class="prog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="tr"/><circle cx="60" cy="60" r="52" class="pr" id="prog-c"/></svg><b id="prog-pct">0%</b></div>
+    <h2>Analisando as suas fotos</h2>
+    <p id="prog-etapa">Lendo as suas fotos</p>
     <div class="dots" id="prog-dots"><i class="on"></i><i></i><i></i><i></i></div>
+    <p class="nota">Leva alguns segundos. Não feche a página.</p>
   </section>
 
-  <!-- 15 · erro -->
+  <!-- erro -->
   <section class="screen c" data-s="erro" hidden>
     <h2 id="erro-tit">Essa foto não deu para ler</h2>
-    <p class="sub" id="erro-txt"></p>
+    <p id="erro-txt"></p>
     <div class="f-acao" id="erro-contato" hidden>
-      <a class="btn ico" id="erro-wa" href="#" target="_blank" rel="noopener"><span>Falar com o Dr. Lucca no WhatsApp</span></a>
-      <a class="link-alt" id="erro-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
+      <a class="btn" id="erro-wa" href="#" target="_blank" rel="noopener">Falar com o Dr. Lucca no WhatsApp</a>
+      <a class="link-alt" id="erro-dm" href="https://ig.me/m/dr.luccamarques">ou pelo Direct do Instagram</a>
     </div>
   </section>
 
-  <!-- 16 · resultado: régua (idade aparente × idade real) → frase de alívio → vitalidade → gêmeos → ponte → 1 botão -->
+  <!-- 14 · resultado: número + régua → 1 frase → o que a foto mostra → o que das respostas pesa → por que importa → ponte + 1 botão -->
   <section class="screen res" data-s="resultado" hidden>
-    <div class="topo-foto"><img id="r-foto" alt="Sua foto de frente, com tarja nos olhos"><span class="data" id="r-data"></span></div>
-    <div class="folha" id="r-idade"></div>
-    <div class="bloco" id="r-vital"></div>
-    <div class="bloco" id="r-gemeos"></div>
-    <div class="bloco ponte-fim" id="r-ponte"></div>
-    <details class="completo" id="r-foto-det"><summary>Ver o que pesou na foto</summary><div class="bloco" id="r-sinais"></div></details>
-    <p class="aviso" id="r-aviso">Estimativa feita por inteligência artificial a partir de uma foto. Não é exame nem diagnóstico. As associações citadas vêm de estudos com grupos de pessoas e não dizem nada certo sobre a saúde de uma pessoa só. A foto é usada só para a análise e apagada depois. Dr. Lucca Marques, CRM-GO 33.990.</p>
+    <div class="cartao r-num" id="r-num"></div>
+    <div class="cartao" id="r-foto-bloco"></div>
+    <div class="cartao" id="r-fatores"></div>
+    <div class="cartao" id="r-importa">
+      <h3>Por que isso importa</h3>
+      <p>Em gêmeos, quem parecia mais velho na foto tinha, em média, <b>menos força e memória</b>.*</p>
+      <p class="nota">* Christensen et al., BMJ 2009 · médias de grupos, não uma medida sua</p>
+    </div>
+    <div class="r-ponte">
+      <p id="r-ponte-txt">A foto mostra a parte de fora. Força, sono e exames o Dr. Lucca vê com você.</p>
+      <button class="btn" id="r-cta" type="button">Quero que o Dr. Lucca me explique o meu resultado</button>
+      <p class="nota" id="r-cta-nota">Abre o WhatsApp com o seu código</p>
+    </div>
+    <details class="estudos" id="r-estudos"><summary>Ver os estudos</summary><div id="r-estudos-txt"></div></details>
   </section>
 
-  <!-- 17 · tela final: UM passo, em 3ª pessoa (igual à pele2: WhatsApp com o código, Direct como alternativa) -->
+  <!-- 15 · tela final: UM passo, em 3ª pessoa (WhatsApp com o código, Direct como alternativa) -->
   <section class="screen fim" data-s="fechar" hidden>
-    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="72" height="72">
-      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
+    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
+      <div><b>Dr. Lucca Marques</b><span class="nota">Médico · CRM-GO 33.990</span></div></div>
     <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado em vídeo</h2>
-    <p class="sub" id="f-sub">Um vídeo de 1 minuto sobre a sua foto, no seu WhatsApp, em até 24 horas. Ele grava um por um.</p>
+    <p id="f-sub">Um vídeo de 1 minuto sobre as suas fotos, no seu WhatsApp, em até 24 horas. Ele grava um por um.</p>
     <div class="f-acao">
       <a class="btn ico" id="cta-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="wa-txt">Enviar meu código pelo WhatsApp</span></a>
-      <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
+      <p class="nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
       <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
     </div>
-    <p class="cod-ref"><span id="f-cod">Seu código: <b id="cod">LV-0000</b> · </span>Estimativa pela foto, não é diagnóstico.</p>
+    <p class="nota cod-ref"><span id="f-cod">Seu código: <b id="cod">LV-0000</b> · </span>Estimativa pela foto, não é diagnóstico.</p>
   </section>
 
   <div class="cta" id="cta-bar"><div>
     <button class="btn" id="cta" type="button">Continuar</button>
-    <button class="btn ghost" id="cta-2" type="button" hidden></button>
+    <button class="link-alt" id="cta-2" type="button" hidden></button>
   </div></div>
   <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
   <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
@@ -257,6 +254,6 @@
   </div></div>
 </div>
 <script defer src="/assets/js/ponte.js?v=2"></script>
-<script type="module" src="app.js?v=1"></script>
+<script type="module" src="app.js?v=2"></script>
 </body>
 </html>

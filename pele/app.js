@@ -1,14 +1,14 @@
-// livowa.com/pele (04/11/2026) · teste da IDADE APARENTE e da VITALIDADE pela pele do rosto. Não é análise
-// dermatológica: nada de tipo de pele, rotina, produto ou classe de ativo. Pedido e ordem das telas:
-// livowa-empresa/tarefas/pele-idade-vitalidade.md (passo 2). Frases com número só de
-// tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11). Base técnica copiada da pele2 (scan.js,
-// rosto.js, fim de 1 passo); a pele2 fica intacta. Edge: a MESMA analisar-pele, só a foto de frente, sem extras.
-// Regras: sem número sem fonte, sem promessa, sem depoimento; o número é "a idade que o rosto aparenta", nunca outra
-// coisa; o que vem de estudo se diz "o que os estudos acharam". Confiança baixa ou foto ruim: sem número.
+// livowa.com/pele v2 (04/11/2026) · teste da IDADE QUE O ROSTO MOSTRA. Refeito depois da reprovação do Lucca (04/11),
+// seguindo À RISCA livowa-empresa/tarefas/pele-idade-vitalidade/desenho-v2.md, tela a tela. Frases de saúde só de
+// evidencia.md / desenho-v2.md (nenhuma nova). Câmera = a da pele2 (3 fotos: frente, esquerda, direita; ordem NO OVAL),
+// mesma edge analisar-pele, com {angulos} quando chegam as 3. funnel_id 'pele-idade' e as chaves de resposta de antes
+// (a Caixa lê); chaves novas: cigarro parou|as_vezes, futuro chegar10|antes, props.desejo (o desejo de 10 anos com a idade).
+// Barra: log(passo)/log(total) sobre as telas da capa ao resultado (Conrad 2010; Villar 2013; design-web.md).
+// Texto: sem aspas retas dentro de frase (quebraram uma página antes); quando precisar, aspas tipográficas.
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
-import * as Scan from './scan.js?v=1';
-import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=1';
+import * as Scan from './scan.js?v=2';
+import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=2';
 
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
@@ -18,54 +18,75 @@ const LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
 // ---------- medição (mesmo Supabase das outras páginas; em localhost só loga no console) ----------
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 Analytics.init({ enabled:true, funnelId:'pele-idade', variant:Q.get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
-// Fim A/B igual ao da pele2: A = "vai explicar o seu resultado em vídeo"; B = sem falar em vídeo. Sorteio 50/50 por
-// aparelho (chave própria, livowa_pele_fim); ?fim=A|B força. Vai em props.fim de TODOS os eventos.
+// Fim A/B igual ao da pele2: A = "vai explicar o seu resultado em vídeo"; B = sem falar em vídeo. ?fim=A|B força.
 const FIM = (() => {
   const q = (Q.get('fim') || '').toUpperCase(); if (q === 'A' || q === 'B') return q;
   try { let v = localStorage.getItem('livowa_pele_fim'); if (v !== 'A' && v !== 'B'){ v = Math.random() < .5 ? 'A' : 'B'; localStorage.setItem('livowa_pele_fim', v); } return v; }
   catch { return Math.random() < .5 ? 'A' : 'B'; }
 })();
-const PONTE = window.lvPonte?.props?.() || {};   // ponte da bio (/assets/js/ponte.js): props.ponte sim|nao
+// Ponte da bio: só a medição (props.ponte). A capa do desenho-v2 não leva parágrafo nenhum, então a linha não é pintada.
+const PONTE = window.lvPonte?.props?.() || {};
 const track = (tipo, o = {}) => Analytics.track(tipo, { ...o, props:{ ...(o.props || {}), fim:FIM, ...PONTE } });
 track('view');
-window.lvPonte?.pintar(document.querySelector('[data-s="capa"] .sub'), 'pele');
 
-// ---------- análise: a MESMA edge analisar-pele (1 foto de frente, sem extras, sem ângulos) ----------
+// ---------- análise: a MESMA edge analisar-pele; com as 3 fotos vai {angulos} (como a pele2), sem extras ----------
 const PELE_PRODUCAO = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/analisar-pele';
 const PELE_ENDPOINT = (LOCAL && Q.get('pele')) || PELE_PRODUCAO;   // em localhost dá para apontar para um mock
 const WHATSAPP = '5562991774809';
+
+// ---------- quadros da instrução (Codex, 04/11): troque aqui. O lado oposto é a mesma imagem espelhada pelo CSS. ----------
+const QUADROS = { f:{ frente:'img/mulher-frente.webp', lado:'img/mulher-lado.webp' }, m:{ frente:'img/homem-frente.webp', lado:'img/homem-lado.webp' } };
+// Vídeo do Google Flow: quando existir, ponha o caminho (ex.: 'img/instrucao.mp4') e ele entra no lugar do crossfade.
+const VIDEO_INSTRUCAO = { f:'', m:'' };
 
 // ---------- dados ----------
 const R = {};                  // respostas
 let codigo = null, fotos = null, resultado = null;
 const ALFA = 'ACDEFGHJKMNPQRTUVWXY34679';
 function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
-const ROT = {   // rótulos curtos (tela, carregamento, mensagem)
-  sexo:{ f:'mulher', m:'homem' },
-  cigarro:{ nunca:'nunca fumou', parou_mais10:'parou de fumar há mais de 10 anos', parou_menos10:'parou de fumar há menos de 10 anos', hoje:'fuma hoje' },
-  sol:{ quase_nenhum:'quase nenhum sol sem protetor', fds:'sol sem protetor nos fins de semana', todo_dia:'sol sem protetor quase todo dia' },
-  metabolico:{ nao_medi:'pressão e glicose normais', nunca:'nunca mediu pressão e glicose', pressao:'pressão alta', glicose:'glicose alta', ambas:'pressão e glicose altas' },
-  movimento:{ quase_nada:'quase nada de movimento', ate2:'até 2 h de movimento por semana', '2a5':'2 a 5 h de movimento por semana', mais5:'mais de 5 h de movimento por semana' },
-  sono:{ bem:'dorme bem', '6h':'dorme umas 6 h', curto:'dorme 5 h ou menos', cansado:'acorda cansado' },
-  futuro:{ disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que eu sinto', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o meu corpo já está mostrando', cuidar:'cuidar agora, antes que apareça' },
-  futuroVoce:{ disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que você sente', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o seu corpo já está mostrando', cuidar:'cuidar agora, antes que apareça' },
-};
 const nome1 = () => (R.nome || '').trim().split(/\s+/)[0] || '';
 function nomeBonito(){ const n = nome1(); return n ? n[0].toLocaleUpperCase('pt-BR') + n.slice(1) : ''; }
 const fem = () => R.sexo !== 'm';
+const idadeOu = () => R.idade ?? IDADE_PADRAO;
+// o desejo de 10 anos: em 1ª pessoa (mensagem) e em 2ª (resultado); o "chegar aos" usa a idade + 10
+const FUT_EU = { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que eu sinto', chegar10:i => `chegar aos ${i} com força e memória`, antes:'cuidar da saúde antes de aparecer problema' };
+const FUT_VOCE = { ...FUT_EU, parecer:'parecer a idade que você sente' };
+const desejo = (M = FUT_VOCE) => { const v = M[R.futuro]; return typeof v === 'function' ? v(idadeOu() + 10) : v || ''; };
+// a resposta dela, curta (carregamento e resultado)
+const RESP = {
+  cigarro:{ nunca:'Nunca fumou', parou:'Já fumou e parou', as_vezes:'Fuma ou usa vape às vezes', hoje:'Fuma todo dia' },
+  sol:{ quase_nenhum:'Quase nenhum sol', fds:'Um pouco de sol', todo_dia:'Sol quase todo dia' },
+  metabolico:{ nao_medi:'Pressão e glicose normais', nunca:'Nunca mediu pressão e glicose', pressao:'Pressão alta', glicose:'Glicose alta', ambas:'Pressão e glicose altas' },
+  movimento:{ quase_nada:'Quase nada de movimento', ate2:'Até 2 horas de movimento', '2a5':'De 2 a 5 horas de movimento', mais5:'Mais de 5 horas de movimento' },
+  sono:{ bem:'Dorme bem', '6h':'Dorme umas 6 horas', curto:'Dorme 5 horas ou menos', cansado:'Acorda cansad@' },
+};
+const resp = (k, v = R[k]) => (RESP[k]?.[v] || '').replace('@', fem() ? 'a' : 'o');
 
-// ---------- telas (ordem do passo 2 do dossiê) ----------
-const ORDEM = ['capa','sexo','idade','reforco1','nome','cigarro','sol','reforco2','metabolico','movimento','sono','futuro','instrucao','scan','carregando','resultado','fechar','erro'];
-const QUIZ = ['sexo','cigarro','sol','metabolico','movimento','sono','futuro'];          // uma escolha, avança sozinho
-const PERGUNTAS = ['sexo','idade','cigarro','sol','metabolico','movimento','sono','futuro'];   // as 8 da capa (o nome é opcional e não conta)
+// ---------- telas (ordem do desenho-v2) ----------
+const ORDEM = ['capa','idade','reforco1','nome','sol','cigarro','reforco2','metabolico','movimento','sono','futuro','instrucao','scan','carregando','resultado','fechar','erro'];
+const QUIZ = ['sol','cigarro','metabolico','movimento','sono','futuro'];   // uma escolha, avança sozinho (o sexo fica na capa)
 const VOLTA = { scan:'instrucao', erro:'instrucao', fechar:'resultado' };
-// contador honesto: quantas perguntas faltam até a foto, contando a da tela
-function falta(s){
-  let i = PERGUNTAS.indexOf(s);
-  if (i < 0){ const prox = ORDEM.slice(ORDEM.indexOf(s) + 1).find(x => PERGUNTAS.includes(x)); i = PERGUNTAS.indexOf(prox); }
-  const n = PERGUNTAS.length - i;
-  return n <= 1 ? 'Última pergunta antes da foto' : `Faltam ${n} perguntas para a foto`;
+// barra: todas as telas da capa ao resultado; valor = log(passo)/log(total), com passo = posição + 1 e total = telas + 1
+// (a capa já mostra um pouco, como em Conrad 2010: log(1) = 0 deixaria a 1ª tela vazia)
+const BARRA = ORDEM.slice(0, ORDEM.indexOf('resultado') + 1);
+const pBarra = s => { const i = BARRA.indexOf(s); return i < 0 ? null : Math.log(i + 2) / Math.log(BARRA.length + 1); };
+const SECOES = [['capa','idade','reforco1','nome'], ['sol','cigarro','reforco2','metabolico','movimento','sono','futuro'], ['instrucao','scan','carregando','resultado']];
+const LIMITE = [0, (pBarra('nome') + pBarra('sol'))/2, (pBarra('futuro') + pBarra('instrucao'))/2, 1];   // onde cada seção começa
+(function montarBarra(){
+  [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => { el.style.flex = `${LIMITE[k + 1] - LIMITE[k]} 1 0`; });
+  $('barra').querySelector('.b-rot [data-sec="1"]').style.left = (LIMITE[1]*100).toFixed(1) + '%';
+})();
+function pintarBarra(s){
+  const p = s === 'erro' ? pBarra('instrucao') : s === 'fechar' ? 1 : pBarra(s);
+  if (p == null) return;
+  const sec = s === 'fechar' ? 2 : s === 'erro' ? 2 : SECOES.findIndex(x => x.includes(s));
+  [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => {
+    el.firstElementChild.style.width = Math.round(Math.max(0, Math.min(1, (p - LIMITE[k])/(LIMITE[k + 1] - LIMITE[k])))*100) + '%';
+  });
+  $('barra').querySelectorAll('.b-rot span').forEach((el, k) => el.classList.toggle('on', k === sec));
+  window.__barra = Math.round(p*100);
 }
+
 let cur = 'capa';
 function show(s){
   if (cur === 'scan' && s !== 'scan') Scan.parar();
@@ -73,26 +94,35 @@ function show(s){
   cur = s;
   track('step_view', { stepId:s, stepIndex:ORDEM.indexOf(s) });
   document.body.classList.toggle('scan-on', s === 'scan');
-  $('top').hidden = ['capa','scan','carregando','resultado'].includes(s);
+  $('back').classList.toggle('some', ['capa','carregando','resultado'].includes(s));
+  pintarBarra(s);
   const cta = $('cta'), c2 = $('cta-2');
-  $('cta-bar').hidden = ['scan','carregando','fechar'].includes(s);
+  $('cta-bar').hidden = ['capa','scan','carregando','resultado','fechar'].includes(s);
   cta.hidden = false; c2.hidden = true; cta.classList.remove('off');
   cta.textContent = 'Continuar';
-  const el = document.querySelector(`[data-s="${s}"] .falta`); if (el) el.textContent = falta(s);
-  if (s === 'capa') cta.textContent = 'Começar';
+  // textos que dependem das respostas
+  document.querySelectorAll('.v-idade').forEach(el => { el.textContent = idadeOu(); });
+  document.querySelectorAll('.v-i10').forEach(el => { el.textContent = idadeOu() + 10; });
+  document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nomeBonito() + ', ' : ''; ajustarMaiuscula(el); });
+  document.querySelectorAll('.gen').forEach(el => { el.textContent = fem() ? el.dataset.f : el.dataset.m; });
   if (s === 'idade') posicionarIdade();
+  if (s === 'reforco2') $('i2-tit').textContent = TIT_CIGARRO[R.cigarro === 'nunca' ? 'nunca' : R.cigarro === 'parou' ? 'parou' : 'fuma'];
   if (s === 'nome'){ cta.classList.toggle('off', nome1().length < 2); c2.hidden = false; c2.textContent = 'Pular'; }
   if (QUIZ.includes(s)) cta.classList.toggle('off', R[s] == null);
-  if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); animarIlustracao(); }
+  if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); prepararQuadro(); }
+  else pararQuadro();
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
-  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só
   if (s === 'fechar') prepararFechamento();
-  document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nomeBonito() + ', ' : ''; el.nextSibling && ajustarMaiuscula(el); });
-  document.querySelectorAll('.gen').forEach(el => { el.textContent = fem() ? el.dataset.f : el.dataset.m; });
   window.scrollTo(0, 0);
   requestAnimationFrame(medirBarra);
 }
-// "Ana, o cigarro…" com nome; "O cigarro…" sem nome: a 1ª letra do texto depois do .nm acompanha
+// interstício 2: o título responde à resposta do cigarro (desenho-v2, tela 6)
+const TIT_CIGARRO = {
+  nunca:'Ponto para você: o cigarro é o hábito com o efeito mais claro no rosto.',
+  parou:'Ter parado conta: o cigarro é o hábito com o efeito mais claro no rosto.',
+  fuma:'Bom saber agora: o cigarro é o hábito com o efeito mais claro no rosto, e é dos que dá para mudar.',
+};
+// "Ana, quanto sol…" com nome; "Quanto sol…" sem nome: a 1ª letra do texto depois do .nm acompanha
 function ajustarMaiuscula(el){
   const t = el.nextSibling; if (!t || t.nodeType !== 3) return;
   const s = t.textContent; if (!s) return;
@@ -109,8 +139,7 @@ $('back').addEventListener('click', () => {
 });
 
 // ---------- idade real: roda de rolar (mesmo componente do /emagrecimento, /idade e /braco) ----------
-// Começa em 40 (ponto de partida, não é dado da pessoa) e não trava o Continuar; o evento diz se ela rolou
-// ('rolou'), tocou no número do meio ('confirmou') ou deixou como veio ('padrao').
+// Começa em 40 (ponto de partida, não é dado da pessoa); o evento diz se ela rolou, confirmou ou deixou como veio.
 const H = 44, IDADE_DE = 18, IDADE_ATE = 90, IDADE_PADRAO = 40;
 let comoIdade = 'padrao';
 const roda = (() => {
@@ -148,16 +177,15 @@ const roda = (() => {
     pronta: () => w.clientHeight > 0,
   };
 })();
-function posicionarIdade(){   // display:none perde a rolagem: ao mostrar a tela, a roda volta ao número
-  requestAnimationFrame(() => { if (roda.pronta()) roda.set(R.idade ?? IDADE_PADRAO); });
-}
+function posicionarIdade(){ requestAnimationFrame(() => { if (roda.pronta()) roda.set(R.idade ?? IDADE_PADRAO); }); }
 
 // ---------- nome (com Pular) ----------
 $('nome').addEventListener('input', () => { R.nome = $('nome').value.replace(/[<>]/g, '').slice(0, 40); $('cta').classList.toggle('off', nome1().length < 2); });
 $('nome').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('cta').click(); } });
 
-// ---------- perguntas de uma escolha (avança sozinho) ----------
+// ---------- perguntas de uma escolha (avança sozinho; o sexo está na capa) ----------
 function ligarOpcoes(box){
+  const tela = box.closest('.screen').dataset.s;
   box.addEventListener('click', e => {
     const b = e.target.closest('[data-v]'); if (!b || b.disabled) return;
     const q = box.dataset.q, v = b.dataset.v;
@@ -165,27 +193,24 @@ function ligarOpcoes(box){
     box.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     track('answer', { stepId:q, valueText:v });
     $('cta').classList.remove('off');
-    setTimeout(() => { if (cur === q) proxima(); }, 260);
+    setTimeout(() => { if (cur === tela) proxima(); }, 260);
   });
 }
-// ilustração da instrução: rosto de frente; o anel acende do topo para os lados, como no scan
-let ilustT = null;
-function animarIlustracao(){
-  const svg = $('rosto-ill');
-  if (!svg.childElementCount){
-    let h = '<g class="cabeca"><ellipse cx="100" cy="100" rx="50" ry="64" fill="#e7ece8"/></g><g class="traco"><circle cx="82" cy="92" r="5" fill="#5f6d65"/><circle cx="118" cy="92" r="5" fill="#5f6d65"/><path d="M100 98v16" stroke="#5f6d65" stroke-width="4" stroke-linecap="round"/><path d="M86 128q14 9 28 0" fill="none" stroke="#5f6d65" stroke-width="4" stroke-linecap="round"/></g>';
-    for (let k = 0; k < 48; k++){ const a = k*7.5*Math.PI/180; h += `<line class="tk" x1="${(100 + 64*Math.cos(a)).toFixed(1)}" y1="${(100 - 79*Math.sin(a)).toFixed(1)}" x2="${(100 + 76*Math.cos(a)).toFixed(1)}" y2="${(100 - 92*Math.sin(a)).toFixed(1)}"/>`; }
-    svg.innerHTML = h;
+
+// ---------- instrução: quadro realista em crossfade (ou o vídeo, quando existir) ----------
+function prepararQuadro(){
+  const sx = R.sexo === 'm' ? 'm' : 'f', q = QUADROS[sx], box = $('quadro'), vid = $('q-video');
+  box.querySelector('.q-f').src = q.frente; box.querySelector('.q-e').src = q.lado; box.querySelector('.q-d').src = q.lado;
+  if (VIDEO_INSTRUCAO[sx]){
+    box.classList.add('video'); box.classList.remove('anda'); vid.hidden = false;
+    if (!vid.src.endsWith(VIDEO_INSTRUCAO[sx])) vid.src = VIDEO_INSTRUCAO[sx];
+    vid.muted = true; vid.play?.().catch(() => {});
+  } else {
+    box.classList.remove('video', 'anda'); vid.hidden = true;
+    void box.offsetWidth; box.classList.add('anda');   // recomeça o ciclo pela frente
   }
-  clearInterval(ilustT);
-  const tks = [...svg.querySelectorAll('.tk')], t0 = performance.now();
-  ilustT = setInterval(() => {
-    if (cur !== 'instrucao') return clearInterval(ilustT);
-    const f = ((performance.now() - t0) % 3600) / 3600;   // 0,1-0,7 acende do topo para os dois lados; 0,7-0,95 inteiro
-    tks.forEach((tk, k) => { const a = k*7.5, d = Math.min(Math.abs(a - 90), 360 - Math.abs(a - 90));
-      tk.classList.toggle('on', f < .95 && f > .1 && d <= 180*Math.min(1, (f - .1)/.6)); });
-  }, 80);
 }
+function pararQuadro(){ $('quadro').classList.remove('anda'); const v = $('q-video'); if (!v.hidden) try { v.pause(); } catch {} }
 
 // ---------- botões principais ----------
 $('cta').addEventListener('click', () => {
@@ -194,35 +219,35 @@ $('cta').addEventListener('click', () => {
     if (cur === 'nome') return $('nome').focus();
     return;
   }
-  if (cur === 'capa') return proxima();
   if (cur === 'idade'){ R.idade = roda.valor ?? IDADE_PADRAO; track('answer', { stepId:'idade', valueText:String(R.idade), props:{ como:comoIdade } }); return proxima(); }
   if (cur === 'nome'){ R.nome = nomeBonito(); track('answer', { stepId:'nome', valueText:'ok' }); return proxima(); }
   if (QUIZ.includes(cur) || cur.startsWith('reforco')) return proxima();
   if (cur === 'instrucao') return abrirScan();
   if (cur === 'erro') return erroRede && fotos ? enviar(fotos) : abrirScan();
-  if (cur === 'resultado'){ track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
 });
 $('cta-2').addEventListener('click', () => {
   if (cur === 'nome'){ R.nome = ''; $('nome').value = ''; track('answer', { stepId:'nome', valueText:'pulou' }); return proxima(); }
   if (cur === 'erro') $('arquivo').click();
 });
+$('r-cta').addEventListener('click', () => { track('cta_click', { stepId:'resultado', valueText:'explicar' }); show('fechar'); });
 $('galeria').addEventListener('click', () => { if (!$('aceite').checked) return apontarAceite(); $('arquivo').click(); });
 $('aceite').addEventListener('change', () => { $('aceite').closest('.consent').classList.remove('alerta'); if (cur === 'instrucao') $('cta').classList.toggle('off', !$('aceite').checked); });
 function apontarAceite(){ const l = $('aceite').closest('.consent'); l.classList.add('alerta'); l.scrollIntoView({ block:'center', behavior:'smooth' }); }
 
-// ---------- scan (só a frente) ----------
+// ---------- câmera (a da pele2: frente, esquerda, direita) ----------
 function abrirScan(){
   Scan.liberarVoz();   // iOS: a voz só sai se começar dentro do toque
   show('scan'); $('scan-help').hidden = true;
-  Scan.abrir({ onPronto: f => { track('answer', { stepId:'scan', valueText:'frente' }); enviar(f); },
+  Scan.abrir({ onPronto: f => { track('answer', { stepId:'scan', valueText:Object.keys(f).join('+'), props:{ angulos:Object.keys(f).length } }); enviar(f); },
                onErro: e => track('answer', { stepId:'scan', valueText:'erro-camera', props:{ erro:e?.name || 'erro' } }) });
 }
 $('scan-fechar').addEventListener('click', () => { Scan.parar(); show('instrucao'); });
 $('scan-ajuda').addEventListener('click', () => { $('scan-help').hidden = !$('scan-help').hidden; });
 $('scan-help-ok').addEventListener('click', () => { $('scan-help').hidden = true; });
 $('scan-galeria').addEventListener('click', () => { Scan.parar(); $('arquivo').click(); });
+$('scan-pular').addEventListener('click', () => { track('answer', { stepId:'scan', valueText:'pulou-lados' }); Scan.seguirComOQueTem(); });
 
-// ---------- galeria (foto de frente) ----------
+// ---------- galeria (uma foto de frente) ----------
 let faceImagem = null;
 $('arquivo').addEventListener('change', async e => {
   const f = e.target.files?.[0]; e.target.value = ''; if (!f) return;
@@ -253,25 +278,27 @@ $('arquivo').addEventListener('change', async e => {
 let erroRede = false;
 function erro(txt, rede, limite){ erroRede = !!rede; $('erro-tit').textContent = limite ? 'Muitas análises agora' : rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler'; $('erro-txt').textContent = txt;
   $('erro-contato').hidden = !limite;
-  if (limite){ const s = sou(); $('erro-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Oi, Dr. Lucca! ${s ? s + '. ' : ''}Tentei fazer o teste da idade da pele, código ${meuCodigo()}, mas deu muitas análises agora.`)}`; }
+  if (limite){ const s = sou(); $('erro-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Oi, Dr. Lucca! ${s ? s + '. ' : ''}Tentei fazer o teste da idade do rosto, código ${meuCodigo()}, mas deu muitas análises agora.`)}`; }
   show('erro'); }
 $('erro-wa').addEventListener('click', () => track('cta_click', { stepId:'erro', valueText:'limite', props:{ canal:'whatsapp', codigo:meuCodigo() } }));
 $('erro-dm').addEventListener('click', () => track('cta_click', { stepId:'erro', valueText:'limite', props:{ canal:'direct', codigo:meuCodigo() } }));
 const PERIM = 326.7;
 function progresso(p, etapa){
   $('prog-c').style.strokeDashoffset = (PERIM * (1 - p/100)).toFixed(1);
-  $('prog-pct').innerHTML = `${Math.round(p)}<small>%</small>`;
+  $('prog-pct').textContent = `${Math.round(p)}%`;
   if (etapa != null){ $('prog-etapa').textContent = etapa.txt; [...$('prog-dots').children].forEach((d, i) => d.classList.toggle('on', i === etapa.i)); }
 }
 async function enviar(f){
   fotos = f;
-  const contou = [R.cigarro && ROT.cigarro[R.cigarro], R.sol && ROT.sol[R.sol]].filter(Boolean).join(', ');
-  const ETAPAS = [{ i:0, ate:22, txt:'Lendo a sua foto' }, { i:1, ate:52, txt:R.idade ? `Comparando com os seus ${R.idade} anos` : 'Comparando com a sua idade' },
+  const n = Object.keys(f).length;
+  const contou = [resp('cigarro'), resp('sol')].filter(Boolean).map(t => t.toLocaleLowerCase('pt-BR')).join(', ');
+  const ETAPAS = [{ i:0, ate:22, txt:n > 1 ? `Lendo as suas ${n} fotos` : 'Lendo a sua foto' }, { i:1, ate:52, txt:R.idade ? `Comparando com os seus ${R.idade} anos` : 'Comparando com a sua idade' },
                   { i:2, ate:84, txt:contou ? `Pesando o que você contou: ${contou}` : 'Pesando o que você contou' }, { i:3, ate:100, txt:'Montando o seu resultado' }];
   show('carregando'); progresso(0, ETAPAS[0]);
-  const cv = montarEnvio(f.frente.src, f.frente.g), img = cv.toDataURL('image/jpeg', .9).split(',')[1]; cv.width = cv.height = 0;
-  const corpo = { imagens:[img], modo:'rosto', ocultas:['olhos'], codigo:meuCodigo() };
-  window.__ultimoEnvio = { n:1, kb:Math.round(img.length*3/4/1024) };
+  const angulos = ['frente','esquerda','direita'].filter(a => f[a]);
+  const imagens = angulos.map(a => { const cv = montarEnvio(f[a].src, f[a].g), d = cv.toDataURL('image/jpeg', angulos.length > 1 ? .85 : .9).split(',')[1]; cv.width = cv.height = 0; return d; });
+  const corpo = { imagens, modo:'rosto', ocultas:['olhos'], codigo:meuCodigo(), ...(angulos.length > 1 ? { angulos } : {}) };
+  window.__ultimoEnvio = { n:imagens.length, angulos, kb:Math.round(imagens.reduce((s, x) => s + x.length, 0)*3/4/1024) };
   const t0 = performance.now(), MIN = 8000;   // mínimo de ~8 s: dá tempo de ler as etapas
   let pct = 0, fim = false;
   const etapaDe = p => ETAPAS.find(e => p <= e.ate) || ETAPAS[3];
@@ -282,7 +309,7 @@ async function enviar(f){
     const j = await r.json().catch(() => null);
     if (r.status === 429){ clearInterval(tick); return erro('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou mande o seu código ao Dr. Lucca e fale com ele direto.', true, true); }
     if (!r.ok || !j){ clearInterval(tick); return erro('Pode ser a internet. É só tentar de novo.', true); }
-    if (!j.ok){ clearInterval(tick); return erro('A foto não deu para ler direito. Tente de novo de frente para a luz, com o rosto inteiro no oval.', false); }
+    if (!j.ok){ clearInterval(tick); return erro('A foto não deu para ler direito. Tente de novo de frente para uma janela, com o rosto inteiro no oval.', false); }
     const resta = MIN - (performance.now() - t0);
     if (resta > 0) await new Promise(res => setTimeout(res, resta));
     fim = true; clearInterval(tick);
@@ -295,56 +322,62 @@ async function enviar(f){
 }
 
 // =====================================================================
-// RESULTADO: régua (idade aparente × idade real) → frase de alívio → vitalidade (resposta + sinal da foto + estudo)
-// → gêmeos (Christensen 2009) → ponte → 1 botão. Recolhido: os sinais da foto.
+// RESULTADO (desenho-v2, tela 14): 1. número + régua + foto pequena → 2. uma frase de leitura → 3. o que a foto mostra
+// (recortes) → 4. o que das respostas pesa (↑/↓) → 5. por que importa (só os gêmeos, no HTML) → 6. ponte + 1 botão.
+// Fechado: "Ver os estudos". Sem número (confiança baixa / foto ruim): 1 frase + "Tirar outra foto"; botão igual.
 // =====================================================================
-const CORTE = 3;   // ±3 anos entre o meio da faixa e a idade real: escolha de produto, não vem de estudo
-const GRAU = ['', 'leve', 'moderado', 'marcado'];
-// sinais da edge ligados à idade do rosto (a textura/poro fica de fora: não é o eixo deste teste)
-const SINAL = {
-  linhas_testa:{ nome:'Testa', recorte:'testa', t:['a testa aparece lisa', 'aparecem linhas leves na testa', 'aparecem linhas visíveis na testa', 'aparecem linhas bem marcadas na testa'],
-    tit:['Testa lisa', 'Linhas leves na testa', 'Linhas visíveis na testa', 'Linhas bem marcadas na testa'] },
-  olhos:{ nome:'Canto dos olhos', recorte:'olhos', t:['o canto dos olhos aparece liso', 'aparecem linhas leves no canto dos olhos', 'aparecem linhas visíveis no canto dos olhos', 'aparecem linhas bem marcadas no canto dos olhos'],
-    tit:['Cantos dos olhos lisos', 'Linhas leves no canto dos olhos', 'Linhas visíveis no canto dos olhos', 'Linhas bem marcadas no canto dos olhos'] },
-  sulco_nasolabial:{ nome:'Nariz à boca', recorte:'sulco', t:['o vinco do nariz à boca quase não aparece', 'o vinco do nariz à boca aparece leve', 'o vinco do nariz à boca aparece visível', 'o vinco do nariz à boca aparece bem marcado'],
-    tit:['Vinco quase imperceptível', 'Vinco leve', 'Vinco visível', 'Vinco bem marcado'] },
-  manchas:{ nome:'Bochechas', recorte:'bochecha', t:['o tom da pele aparece uniforme', 'aparecem poucas manchas, discretas', 'aparecem algumas manchas visíveis', 'aparecem manchas bem visíveis'],
-    tit:['Tom uniforme', 'Poucas manchas, discretas', 'Algumas manchas visíveis', 'Manchas bem visíveis'] },
-  flacidez:{ nome:'Contorno', recorte:'contorno', t:['o contorno do rosto aparece firme', 'o contorno do rosto aparece levemente menos firme', 'o contorno do rosto aparece menos firme', 'o contorno do rosto aparece bem menos firme'],
-    tit:['Contorno firme', 'Contorno levemente menos firme', 'Contorno menos firme', 'Contorno bem menos firme'] },
+const CORTE = 3;   // ±3 anos entre o meio da faixa e a idade real: escolha de produto (evidencia.md §4), não vem de estudo
+const SINAL = {   // sinais da edge ligados à idade do rosto (a textura/poro fica de fora); c = o que a foto mostra, curto
+  linhas_testa:{ nome:'Testa', recorte:'testa', c:['Lisa', 'Linhas leves', 'Linhas visíveis', 'Linhas bem marcadas'] },
+  olhos:{ nome:'Canto dos olhos', recorte:'olhos', c:['Liso', 'Linhas leves', 'Linhas visíveis', 'Linhas bem marcadas'] },
+  sulco_nasolabial:{ nome:'Do nariz à boca', recorte:'sulco', c:['Vinco quase imperceptível', 'Vinco leve', 'Vinco visível', 'Vinco bem marcado'] },
+  manchas:{ nome:'Bochechas', recorte:'bochecha', c:['Tom uniforme', 'Poucas manchas, discretas', 'Algumas manchas visíveis', 'Manchas bem visíveis'] },
+  flacidez:{ nome:'Contorno', recorte:'contorno', c:['Firme', 'Levemente menos firme', 'Menos firme', 'Bem menos firme'] },
 };
-// fontes (todas em evidencia.md, conferidas no PubMed em 04/11/2026)
-const F = {
-  christensen:['Christensen 2009, BMJ', 'https://doi.org/10.1136/bmj.b5262'],
-  guyuron:['Guyuron 2009, Plast Reconstr Surg', 'https://doi.org/10.1097/PRS.0b013e31819c4d42'],
-  okada:['Okada 2013, Plast Reconstr Surg', 'https://doi.org/10.1097/PRS.0b013e3182a4c20a'],
-  gunn12:['Gunn 2012, J Gerontol A', 'https://doi.org/10.1093/gerona/gls154'],
-  noordam:['Noordam 2011, Age', 'https://doi.org/10.1007/s11357-011-9339-9'],
-  drielen:['van Drielen 2015, Age', 'https://doi.org/10.1007/s11357-015-9771-3'],
-  mayes:['Mayes 2010, PLoS One', 'https://doi.org/10.1371/journal.pone.0015270'],
-  wolff:['Wolffenbuttel 2025, Front Endocrinol', 'https://doi.org/10.3389/fendo.2025.1700892'],
-  oyetakin:['Oyetakin-White 2015, Clin Exp Dermatol', 'https://doi.org/10.1111/ced.12455'],
-  gunn09:['Gunn 2009, PLoS One', 'https://pubmed.ncbi.nlm.nih.gov/19956599/'],
-};
-const fmtData = d => d.toLocaleDateString('pt-BR', { day:'numeric', month:'short' }) + ', ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-const fontes = ids => ids.map(id => `<a href="${F[id][1]}" target="_blank" rel="noopener">${esc(F[id][0])}</a>`).join(' · ');
-
-// caso da régua: mais novo / igual / mais velho (meio da faixa contra a idade real, corte ±3)
+const cap = t => t ? t[0].toLocaleUpperCase('pt-BR') + t.slice(1) : '';
+// fontes completas (todas em evidencia.md, conferidas no PubMed em 04/11/2026): só dentro de "Ver os estudos"
+const ESTUDOS = [
+  ['Christensen et al., BMJ 2009', 'https://doi.org/10.1136/bmj.b5262', '1.826 gêmeos dinamarqueses com 70 anos ou mais: quem aparentava mais idade na foto tinha, em média, menos força e memória.'],
+  ['Guyuron et al., Plast Reconstr Surg 2009', 'https://doi.org/10.1097/PRS.0b013e31819c4d42', '186 pares de gêmeos idênticos: cada 10 anos de cigarro a mais somaram cerca de 2 anos ao rosto; mais sol andou junto com um rosto mais velho.'],
+  ['Gunn et al., J Gerontol A 2012', 'https://doi.org/10.1093/gerona/gls154', '514 pessoas sem doença: a pressão foi o fator do coração mais ligado à idade que o rosto aparentava.'],
+  ['Noordam et al., Age 2011', 'https://doi.org/10.1007/s11357-011-9339-9', '602 pessoas: glicose mais alta já aparece no rosto, mesmo sem diabetes.'],
+  ['Oyetakin-White et al., Clin Exp Dermatol 2015', 'https://doi.org/10.1111/ced.12455', '60 mulheres: dormir mal se ligou a mais sinais de envelhecimento na pele.'],
+  ['Mayes et al., PLoS One 2010', 'https://doi.org/10.1371/journal.pone.0015270', '250 mulheres: atividade moderada se ligou a um rosto mais novo.'],
+];
 function casoDe(fx, idade){
   if (!fx || !idade) return 'sem_numero';
   const d = (fx.min + fx.max)/2 - idade;
   return d <= -CORTE ? 'mais_novo' : d >= CORTE ? 'mais_velho' : 'igual';
 }
-
 function regua(fx, idade){
   const lo = Math.max(15, Math.floor((Math.min(idade, fx.min) - 6)/5)*5), hi = Math.ceil((Math.max(idade, fx.max) + 6)/5)*5;
   const pc = v => ((v - lo)/(hi - lo)*100).toFixed(1) + '%';
   return `<div class="regua" role="img" aria-label="Régua: o rosto aparenta de ${fx.min} a ${fx.max} anos; a sua idade é ${idade}">
     <div class="rg-trilho"><i class="rg-faixa" style="left:${pc(fx.min)};width:calc(${pc(fx.max)} - ${pc(fx.min)})"></i><i class="rg-voce" style="left:${pc(idade)}"></i></div>
-    <span class="rg-rot rg-rot-voce" style="left:${pc(idade)}">Você: ${idade}</span>
-    <span class="rg-rot rg-rot-faixa" style="left:${pc((fx.min + fx.max)/2)}">Rosto: ${fx.min} a ${fx.max}</span>
+    <span class="rg-rot" style="left:${pc(idade)}">Você: ${idade}</span>
     <span class="rg-ponta" style="left:0">${lo}</span><span class="rg-ponta fim" style="left:100%">${hi}</span>
   </div>`;
+}
+// o que das respostas pesa no rosto: frases só de evidencia.md §4 e do desenho-v2 (↑ pesa · ↓ a favor · ? a foto não mede)
+function fatores(){
+  const at = [], bom = [], M = R.metabolico;
+  const CIG = 'o cigarro é o hábito com o efeito mais claro no rosto.';
+  if (['hoje','as_vezes'].includes(R.cigarro)) at.push({ id:'cigarro', s:'↑', r:resp('cigarro'), t:cap(CIG) });
+  else if (R.cigarro === 'parou') at.push({ id:'cigarro', s:'↑', r:resp('cigarro'), t:'Ter parado conta: ' + CIG });
+  else if (R.cigarro === 'nunca') bom.push({ id:'cigarro', s:'↓', r:resp('cigarro'), t:cap(CIG) });
+  if (M === 'pressao') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'A pressão foi o fator do coração mais ligado ao rosto.' });
+  else if (M === 'glicose') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'Glicose mais alta já aparece no rosto, mesmo sem diabetes.' });
+  else if (M === 'ambas') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'A pressão foi o fator do coração mais ligado ao rosto.' });   // a glicose fica no rótulo; frase curta (evidencia.md §4)
+  else if (M === 'nao_medi') bom.push({ id:'metabolico', s:'↓', r:resp('metabolico'), t:'Em quem não tem doença, pressão e glicose mais baixas andaram junto com um rosto mais novo.' });
+  if (['todo_dia','fds'].includes(R.sol)) at.push({ id:'sol', s:'↑', r:resp('sol'), t:'Parte do que aparece na foto é sol: é pele por fora, não necessariamente o corpo por dentro.' });
+  else if (R.sol === 'quase_nenhum') bom.push({ id:'sol', s:'↓', r:resp('sol'), t:'Nos gêmeos, quem usava protetor aparentava menos idade.' });   // Guyuron 2009 (evidencia.md §2)
+  if (['curto','cansado'].includes(R.sono)) at.push({ id:'sono', s:'↑', r:resp('sono'), t:'Dormir mal se ligou a mais sinais de envelhecimento na pele.' });
+  else if (R.sono === 'bem') bom.push({ id:'sono', s:'↓', r:resp('sono'), t:'Dormir mal se ligou a mais sinais de envelhecimento na pele.' });
+  if (['quase_nada','ate2'].includes(R.movimento)) at.push({ id:'movimento', s:'↑', r:resp('movimento'), t:'Atividade moderada se ligou a um rosto mais novo.' });
+  else if (['2a5','mais5'].includes(R.movimento)) bom.push({ id:'movimento', s:'↓', r:resp('movimento'), t:'Atividade moderada se ligou a um rosto mais novo.' });
+  if (M === 'nunca') at.push({ id:'metabolico', s:'?', r:resp('metabolico'), t:'Os estudos ligaram as duas ao rosto, e a foto não mede nenhuma.' });
+  // até 3; quando há os dois lados, 2 que pesam + 1 a favor (resposta construtiva, sem só cobrança)
+  return at.length && bom.length ? [...at.slice(0, 2), bom[0]] : [...at, ...bom].slice(0, 3);
 }
 
 function montarResultado(j, f){
@@ -356,107 +389,76 @@ function montarResultado(j, f){
   const caso = daParaDizer ? casoDe(fx, idade) : 'sem_numero';
   resultado = { faixa:daParaDizer ? fx : null, caso, confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null };
   const nivel = id => daParaDizer && sinais[id]?.visivel ? sinais[id].nivel : null;
-  // "Na foto, …": o sinal mais marcado entre os pedidos (empate: o primeiro da lista). Sem número, sem sinal.
-  const naFoto = ids => { const vis = ids.filter(id => nivel(id) != null); if (!vis.length) return '';
-    const top = vis.reduce((a, b) => nivel(b) > nivel(a) ? b : a); return `Na foto, ${SINAL[top].t[nivel(top)]}.`; };
 
-  // topo: a foto de frente com tarja nos olhos e a data
-  const topo = fotoTopo(al, fr.g, 720); $('r-foto').src = topo.toDataURL('image/jpeg', .86); topo.width = topo.height = 0;
-  $('r-data').textContent = fmtData(new Date());
-
-  // 1. a idade aparente ao lado da idade real, com a frase de alívio
-  const ALIVIO = {
-    mais_novo:`O seu rosto aparenta menos do que os seus ${idade} anos. Nos estudos, esse é o lado que anda junto com mais vitalidade.`,
-    igual:`O seu rosto acompanha os seus ${idade} anos: a foto mostra a idade que você tem.`,
-    mais_velho:`O seu rosto aparenta um pouco mais do que os seus ${idade} anos. Nos estudos, isso se liga a hábitos que dá para olhar com calma, e a genética pesa tanto quanto eles.`,
+  // 1 + 2. número, régua, foto pequena e a frase de leitura (a do "mais velho" é a aprovada em evidencia.md §4)
+  const O = nome ? `${esc(nome)}, o` : 'O';
+  const LEITURA = {
+    mais_novo:`${O} seu rosto aparenta menos que os seus ${idade} anos: está do lado que os estudos associam a mais vitalidade.`,
+    igual:`${O} seu rosto acompanha os seus ${idade} anos.`,
+    mais_velho:`${O} seu rosto aparenta mais do que os seus ${idade} anos. Nos estudos, isso se liga a hábitos que dá para olhar com calma, e a genética pesa tanto quanto eles.`,
   };
-  $('r-idade').innerHTML = daParaDizer
-    ? `<small class="rot">Idade que o seu rosto aparenta</small>
-       <h2>${nome ? esc(nome) + ', o' : 'O'} seu rosto aparenta <em>${fx.min} a ${fx.max} anos</em></h2>
-       <p class="real">Você tem ${idade}.</p>
-       ${regua(fx, idade)}
-       <p class="alivio" data-caso="${caso}">${esc(ALIVIO[caso])}${caso === 'mais_velho' ? ` <small>${fontes(['gunn09'])}</small>` : ''}</p>
-       <p class="miuda">Estimativa pela foto: erra alguns anos para cada lado e não é diagnóstico.${j.qualidade?.nota === 'regular' ? ' Com a foto regular, ela fica menos precisa.' : ''}</p>`
-    : `<small class="rot">Idade que o seu rosto aparenta</small>
-       <h2>Não deu para estimar</h2>
-       <p class="real">A foto não deu segurança para estimar a idade do rosto, então aqui não vai número nenhum. Com a luz de uma janela na frente, a estimativa sai melhor.</p>
+  const cab = `<div class="r-cab"><img id="r-foto" alt="A sua foto de frente, com tarja nos olhos"><p class="nota">Idade que o seu rosto aparenta</p></div>`;
+  $('r-num').innerHTML = daParaDizer
+    ? `${cab}<p class="numero">${fx.min}–${fx.max}<span>anos</span></p>${regua(fx, idade)}
+       <p class="r-leitura" data-caso="${caso}">${LEITURA[caso]}</p>
+       <p class="nota">Estimativa pela foto, não é diagnóstico.</p>`
+    : `${cab}<h2 data-caso="sem_numero">Não deu para estimar</h2>
+       <p>A foto não deu segurança para dar um número. Com a luz de uma janela na frente, a estimativa sai melhor.</p>
        <button type="button" class="link-alt" id="r-refazer">Tirar outra foto</button>`;
+  const topo = fotoTopo(al, fr.g, 240); $('r-foto').src = topo.toDataURL('image/jpeg', .86); topo.width = topo.height = 0;
   $('r-refazer')?.addEventListener('click', () => { track('answer', { stepId:'resultado-refazer', valueText:'abriu' }); show('instrucao'); });
 
-  // 2. vitalidade: frases que juntam a resposta, um sinal da foto e o que os estudos acharam
-  const sono = { curto:'dorme 5 horas ou menos', cansado:`acorda ${fem() ? 'cansada' : 'cansado'} mesmo dormindo` };
-  const atencao = [], bom = [];
-  if (['hoje','parou_menos10','parou_mais10'].includes(R.cigarro)){
-    const quem = R.cigarro === 'hoje' ? 'Você contou que fuma hoje.' : `Você contou que parou de fumar há ${R.cigarro === 'parou_mais10' ? 'mais' : 'menos'} de 10 anos.`;
-    atencao.push({ id:'cigarro', txt:[quem, naFoto(['sulco_nasolabial','flacidez','olhos']), 'Em 186 pares de gêmeos idênticos, o que pesou foi o total de anos de cigarro: cada 10 anos a mais somou cerca de 2 anos à idade que o rosto aparentava, mais no meio e na parte de baixo do rosto.'], f:['guyuron','okada'] });
-  } else if (R.cigarro === 'nunca') bom.push({ id:'cigarro', txt:['Você nunca fumou.', 'O cigarro é o hábito com o número mais claro sobre o rosto: em gêmeos idênticos, cada 10 anos de cigarro somou cerca de 2 anos à aparência.'], f:['guyuron'] });
-  if (['todo_dia','fds'].includes(R.sol))
-    atencao.push({ id:'sol', txt:[`Você contou que o seu rosto pega sol sem protetor ${R.sol === 'todo_dia' ? 'quase todo dia' : 'nos fins de semana'}.`, naFoto(['manchas','linhas_testa']), 'Nos gêmeos, mais sol andou junto com um rosto mais velho, e o efeito cresceu com a idade. Essa parte é pele por fora: não diz como o corpo está por dentro.'], f:['guyuron'] });
-  else if (R.sol === 'quase_nenhum') bom.push({ id:'sol', txt:['Você contou que o seu rosto quase não pega sol sem protetor.', naFoto(['manchas']), 'Nos gêmeos, quem usava protetor aparentava menos idade.'], f:['guyuron'] });
-  if (['pressao','glicose','ambas'].includes(R.metabolico)){
-    const qual = { pressao:'a sua pressão estava alta', glicose:'a sua glicose estava alta', ambas:'a sua pressão e a sua glicose estavam altas' }[R.metabolico];
-    const t = [`Você contou que já te disseram que ${qual}.`];
-    const fs = [];
-    if (R.metabolico !== 'glicose'){ t.push('Em 514 pessoas sem doença, a pressão foi o fator do coração mais ligado à idade que o rosto aparentava.'); fs.push('gunn12'); }
-    if (R.metabolico !== 'pressao'){ t.push(naFoto(['linhas_testa','olhos']), 'Mesmo sem diabetes, a glicose mais alta andou junto com um rosto mais velho, e metade disso passou pelas linhas.'); fs.push('noordam', 'drielen'); }
-    t.push('A foto não mede pressão nem glicose: isso se vê com aparelho e exame.');
-    atencao.push({ id:'metabolico', txt:t, f:fs });
-  } else if (R.metabolico === 'nunca')
-    atencao.push({ id:'metabolico', txt:['Você contou que nunca mediu a pressão e a glicose, ou não lembra.', 'São dois números de dentro que os estudos ligaram à idade que o rosto aparenta, mesmo em quem não tem doença, e a foto não mede nenhum dos dois.'], f:['gunn12','noordam'] });
-  else if (R.metabolico === 'nao_medi') bom.push({ id:'metabolico', txt:['Você mediu a pressão e a glicose no último ano, e estavam normais.', 'Em pessoas sem doença, pressão e glicose mais baixas andaram junto com um rosto mais novo.'], f:['gunn12','noordam'] });
-  if (sono[R.sono])
-    atencao.push({ id:'sono', txt:[`Você contou que ${sono[R.sono]}.`, naFoto(['olhos']), 'Num estudo com 60 mulheres, quem dormia mal tinha mais sinais de envelhecimento na pele, e a barreira da pele se recuperou 30% pior.'], f:['oyetakin'] });
-  else if (R.sono === 'bem') bom.push({ id:'sono', txt:['Você dorme 7 horas ou mais e acorda bem.', naFoto(['olhos']), 'Num estudo com 60 mulheres, quem dormia mal tinha mais sinais de envelhecimento na pele que quem dormia bem.'], f:['oyetakin'] });
-  if (['quase_nada','ate2'].includes(R.movimento))
-    atencao.push({ id:'movimento', txt:[`Você contou que se mexe ${R.movimento === 'quase_nada' ? 'quase nada' : 'até 2 horas'} numa semana comum.`, 'Num estudo com 250 mulheres, a atividade moderada andou junto com um rosto mais novo, e em 82 mil pessoas a pele tinha menos marcas de glicação com 150 a 299 minutos de atividade por semana.'], f:['mayes','wolff'] });
-  else if (['2a5','mais5'].includes(R.movimento)) bom.push({ id:'movimento', txt:[`Você se mexe ${R.movimento === '2a5' ? 'de 2 a 5 horas' : 'mais de 5 horas'} por semana.`, 'Em 82 mil pessoas, quem fazia de 150 a 299 minutos de atividade por semana tinha menos marcas de glicação na pele, e num estudo com 250 mulheres a atividade moderada andou junto com um rosto mais novo.'], f:['wolff','mayes'] });
-  const frases = [...atencao, ...bom].slice(0, 3);
-  const linha = x => `<li data-f="${x.id}"><p>${esc(x.txt.filter(Boolean).join(' '))}</p><small>${fontes(x.f)}</small></li>`;
-  $('r-vital').innerHTML = `<h3>Vitalidade: o que os estudos acharam</h3>
-    <p>${atencao.length ? 'Junta o que você contou com o que a foto mostra.' : 'Nas suas respostas não apareceu nenhum dos hábitos mais estudados.'} São médias de grupos de pessoas, não uma medida sua.</p>
-    <ul class="vital">${frases.map(linha).join('')}</ul>`;
-
-  // 3. os gêmeos (Christensen 2009)
-  $('r-gemeos').innerHTML = `<h3>Por que a idade do rosto importa</h3>
-    <p>Num estudo com 1.826 gêmeos dinamarqueses de 70 anos ou mais, a idade que outras pessoas davam olhando a foto acompanhou a força, a memória e o tempo de vida, mesmo descontando a idade real. Entre gêmeos idênticos, a diferença quase sumiu: boa parte vem de genes que mexem ao mesmo tempo no rosto e na saúde.</p>
-    <small>${fontes(['christensen'])}</small>`;
-
-  // 4. a ponte para a conversa (e o que ela quer daqui a 10 anos)
-  $('r-ponte').innerHTML = `<p><b>O rosto é a parte que dá para ver.</b> Força, sono e exames o Dr. Lucca vê com você.</p>
-    ${R.futuro ? `<p class="sub">Você disse que, daqui a 10 anos, quer ${esc(ROT.futuroVoce[R.futuro])}.</p>` : ''}`;
-
-  // 5. recolhido: os sinais da foto ligados à idade, com o recorte de cada área
-  const ids = Object.keys(SINAL).filter(id => nivel(id) != null);
-  $('r-foto-det').hidden = !daParaDizer || !ids.length;
-  $('r-sinais').innerHTML = ids.map(id => `<div class="achado" data-id="${id}"><canvas data-r="${SINAL[id].recorte}" role="img" aria-label="Recorte da sua foto: ${esc(SINAL[id].nome.toLowerCase())}"></canvas><div>
-      <div class="rg"><span>${esc(SINAL[id].nome)}</span>${nivel(id) ? `<b class="grau g${nivel(id)}">${GRAU[nivel(id)][0].toUpperCase() + GRAU[nivel(id)].slice(1)}</b>` : ''}</div>
-      <h4>${esc(SINAL[id].tit[nivel(id)])}</h4></div></div>`).join('') + '<p class="aviso">São os sinais da foto que mais pesam na idade que o rosto aparenta.</p>';
-  $('r-sinais').querySelectorAll('canvas[data-r]').forEach(c => { const r = recorteRegiao(al, fr.g, c.dataset.r, 128); c.width = r.width; c.height = r.height; c.getContext('2d').drawImage(r, 0, 0); r.width = 0; });
-  $('r-foto-det').open = false;
-  $('r-foto-det').ontoggle = () => { if ($('r-foto-det').open) track('answer', { stepId:'resultado-sinais', valueText:'abriu' }); };
+  // 3. o que a foto mostra: até 2 sinais mais marcados + 1 a favor (o mais liso), com o recorte da própria foto
+  const vis = Object.keys(SINAL).filter(id => nivel(id) != null).sort((a, b) => nivel(b) - nivel(a));
+  const sel = vis.filter(id => nivel(id) >= 1).slice(0, 2);
+  const liso = [...vis].reverse().find(id => !sel.includes(id) && nivel(id) === 0); if (liso) sel.push(liso);
+  for (const id of vis) if (sel.length < 3 && !sel.includes(id)) sel.push(id);
+  $('r-foto-bloco').hidden = !daParaDizer || !sel.length;
+  $('r-foto-bloco').innerHTML = `<h3>O que a sua foto mostra</h3><ul class="recortes">${sel.map(id => `<li data-id="${id}"><canvas data-r="${SINAL[id].recorte}" role="img" aria-label="Recorte da sua foto: ${esc(SINAL[id].nome.toLowerCase())}"></canvas>
+    <div><b>${esc(SINAL[id].nome)}</b><span>${esc(SINAL[id].c[nivel(id)])}</span></div></li>`).join('')}</ul>`;
+  $('r-foto-bloco').querySelectorAll('canvas[data-r]').forEach(c => { const r = recorteRegiao(al, fr.g, c.dataset.r, 128); c.width = r.width; c.height = r.height; c.getContext('2d').drawImage(r, 0, 0); r.width = 0; });
   al.width = al.height = 0;
 
-  // complete: o que a Caixa lê no topo (codigo, idade, sexo, faixa, respostas) + o resto para a consulta
+  // 4. o que das respostas pesa no rosto
+  const fs = fatores();
+  $('r-fatores').hidden = !daParaDizer;
+  $('r-fatores').innerHTML = `<h3>O que das suas respostas pesa no rosto</h3>${fs.length
+    ? `<ul class="fatores">${fs.map(x => `<li data-f="${x.id}"><i class="${x.s === '↓' ? 'bom' : ''}" aria-label="${x.s === '↑' ? 'pesa' : x.s === '↓' ? 'a favor' : 'a foto não mede'}">${x.s}</i><p><b>${esc(x.r)}.</b> ${esc(x.t)}</p></li>`).join('')}</ul>`
+    : '<p>Nas suas respostas não apareceu nenhum dos fatores mais estudados.</p>'}`;
+  // 5. por que importa: fixo no HTML (só os gêmeos). Some sem número, como o resto.
+  $('r-importa').hidden = !daParaDizer;
+
+  // 6. ponte + botão (o desejo de 10 anos dela) e, fechado, os estudos
+  const d = desejo();
+  $('r-ponte-txt').textContent = `A foto mostra a parte de fora. Força, sono e exames o Dr. Lucca vê com você${d ? `, pensando em ${d}` : ''}.`;
+  $('r-cta-nota').textContent = LV ? 'Volta ao Direct com o seu código' : 'Abre o WhatsApp com o seu código';
+  $('r-estudos-txt').innerHTML = ESTUDOS.map(([t, u, x]) => `<p><b>${esc(t)}.</b> ${esc(x)} <a href="${u}" target="_blank" rel="noopener">Ver o estudo</a></p>`).join('')
+    + '<p>Estimativa feita por inteligência artificial a partir de fotos. Não é exame nem diagnóstico. As associações citadas vêm de estudos com grupos de pessoas e não preveem a saúde de ninguém individualmente. As fotos são usadas só para a análise e apagadas depois. Dr. Lucca Marques, CRM-GO 33.990.</p>';
+  $('r-estudos').open = false;
+  $('r-estudos').ontoggle = () => { if ($('r-estudos').open) track('answer', { stepId:'resultado-estudos', valueText:'abriu' }); };
+
+  // complete: o que a Caixa lê (codigo, idade, sexo, faixa, caso, respostas, angulos/enviadas para as 3 fotos, desejo)
   track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:caso,
     props:{ codigo:meuCodigo(), idade, sexo:R.sexo || null, faixa:daParaDizer ? `${fx.min} a ${fx.max} anos` : null, caso, respostas:respostasLimpa(),
-            confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null, origem:fr.origem, enviadas:1, angulos:['frente'],
-            frases:frases.map(x => x.id).join('+'),
+            desejo:desejo() || null, confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null, origem:fr.origem,
+            enviadas:window.__ultimoEnvio?.n || 1, angulos:window.__ultimoEnvio?.angulos || ['frente'],
+            frases:daParaDizer ? fs.map(x => x.id).join('+') : '',
             sinais:Object.entries(sinais).map(([id, s]) => ({ id, visivel:s.visivel, nivel:s.visivel ? s.nivel : null })) } });
   if (window.__peleResultado) window.__peleResultado(j);
 }
 function respostasLimpa(){ const { nome, ...r } = R; return r; }
 
 // =====================================================================
-// FECHAMENTO: igual ao da pele2 (02/11, v2): um passo só, em 3ª pessoa; WhatsApp com o código na mensagem pronta,
-// Direct como alternativa; link marcado (?lv=) volta ao Instagram. Medição: cta_click com props.canal whatsapp/direct.
+// FECHAMENTO: igual ao de antes (1 passo, 3ª pessoa): WhatsApp com o código na mensagem pronta, Direct como alternativa;
+// link marcado (?lv=) volta ao Instagram. Medição: cta_click com props.canal whatsapp/direct.
 // =====================================================================
 const souA = () => R.sexo === 'm' ? 'o' : 'a';
 const sou = () => nomeBonito() ? `Sou ${souA()} ${nomeBonito()}` : '';
 function mensagem(){
   const s = sou(), fx = resultado?.faixa;
   const rosto = fx && R.idade ? ` Tenho ${R.idade} anos e o meu rosto deu ${fx.min} a ${fx.max}.` : '';
-  const quer = R.futuro ? ` Daqui a 10 anos, quero ${ROT.futuro[R.futuro]}.` : '';
-  return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste da idade da pele, código ${meuCodigo()}.${rosto}${quer} Quero que você me explique o meu resultado.`;
+  const d = desejo(FUT_EU), quer = d ? ` Daqui a 10 anos, quero ${d}.` : '';
+  return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste da idade do rosto, código ${meuCodigo()}.${rosto}${quer} Quero que você me explique o meu resultado.`;
 }
 function prepararFechamento(){
   const nome = nomeBonito();
@@ -464,7 +466,7 @@ function prepararFechamento(){
   const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado em vídeo';
   $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
   const canal = LV ? 'Direct' : 'WhatsApp';
-  $('f-sub').textContent = FIM === 'B' ? `Ele responde pessoalmente no seu ${canal}, em até 24 horas.` : `Um vídeo de 1 minuto sobre a sua foto, no seu ${canal}, em até 24 horas. Ele grava um por um.`;
+  $('f-sub').textContent = FIM === 'B' ? `Ele responde pessoalmente no seu ${canal}, em até 24 horas.` : `Um vídeo de 1 minuto sobre as suas fotos, no seu ${canal}, em até 24 horas. Ele grava um por um.`;
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   if (LV) return fimDirect();
   $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
@@ -516,4 +518,4 @@ function direto_lv(e){
 document.querySelectorAll('.opts[data-q]').forEach(ligarOpcoes);
 show('capa');
 // ganchos do teste automático (headless): estado e resultado sem câmera
-window.__pele = { R, estado:() => ({ cur, codigo, envio:window.__ultimoEnvio || null, resultado }), show, mensagem };
+window.__pele = { R, estado:() => ({ cur, codigo, envio:window.__ultimoEnvio || null, resultado, barra:window.__barra }), show, mensagem, pBarra, BARRA };

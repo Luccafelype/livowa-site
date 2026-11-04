@@ -16,7 +16,8 @@
    02/11: Pele 2 (3 ângulos + acne) com fotos, achados por região, respostas do quiz e kit; modo revisão para o iPad
    (caneta da Apple Pencil, zoom, troca de foto, destaque aproximado da região; braço e pernas em números grandes).
    03/11: roteiro.js = botão "Gerar roteiro" (edge gerar-roteiro, Claude) em cada resultado e "Parecido com isto" nas fotos da pele.
-   04/11: funil 'pele-idade' (livowa.com/pele) = "Pele: idade e vitalidade": cartão com a foto ligada, a idade do rosto ao lado
+   04/11: funil 'pele-idade' (livowa.com/pele) = "Pele: idade e vitalidade"; v2 (04/11 tarde): 3 fotos (frente/esquerda/direita, como a pele2),
+   chaves novas cigarro parou|as_vezes e futuro chegar10|antes (com props.desejo); as velhas continuam com o rótulo de antes: cartão com a foto ligada, a idade do rosto ao lado
    da idade real, as respostas e os sinais ligados à idade; roteiro do estoque (bloco pele-idade) e kit sem perfil de cuidado. */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
@@ -537,7 +538,7 @@ const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['pele2','Pele 2'
 const ETAPA = {
   'teste-pernas': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, peso e altura', camera:'Câmera (5 levantadas)', resultado:'Resultado', fechar:'Médico (tela final)' },
   'pele2': { capa:'Capa (promessa)', nome:'Nome', sexo:'Sexo', seguranca:'Gestação/amamentação', alergia:'Alergia', incomoda:'O que incomoda (fotos)', tipo:'Tipo de pele', sol:'Sol por dia', agua:'Água', sono:'Sono', rotina:'Rotina', objetivo:'Objetivo', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (frente e lados)', carregando:'Analisando', resultado:'Resultado', fechar:'Médico + dois caminhos', erro:'Erro' },
-  'pele-idade': { inicio:'Abriu a página', capa:'Capa (promessa)', sexo:'Sexo', idade:'Idade real (roda)', reforco1:'Reforço 1 (gêmeos)', nome:'Nome (com Pular)', cigarro:'Cigarro', sol:'Sol sem protetor', reforco2:'Reforço 2 (por dentro)', metabolico:'Pressão e glicose', movimento:'Movimento', sono:'Sono e energia', futuro:'Daqui a 10 anos', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (só de frente)', carregando:'Analisando', resultado:'Resultado (idade e vitalidade)', fechar:'Médico (um passo)', erro:'Erro' },
+  'pele-idade': { inicio:'Abriu a página', capa:'Capa = sexo (v2) · capa (v1)', sexo:'Sexo (v1)', idade:'Idade real (roda)', reforco1:'Interstício 1 (gêmeos)', nome:'Nome (com Pular)', sol:'Sol', cigarro:'Cigarro', reforco2:'Interstício 2 (cigarro)', metabolico:'Pressão e glicose', movimento:'Movimento', sono:'Sono e energia', futuro:'Daqui a 10 anos', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (3 fotos; v1 só de frente)', carregando:'Analisando', resultado:'Resultado (idade do rosto)', fechar:'Médico (um passo)', erro:'Erro' },
   'teste-emagrecimento': { capa:'Capa (promessa)', sexo:'Sexo', fase:'Gestação/amamentação', idade:'Idade', nome:'Nome', medidas:'Peso e altura', cintura:'Cintura (até 03/11)', acontece:'O que mais acontece (decide o perfil)', tentou:'O que já tentou', ciclo:'Menstruação', pele:'Pelos, espinhas, cabelo', tireoide:'Sinais da tireoide', exames:'Pressão, glicose, gordura', remedios:'Remédios contínuos', vontade:'Vontade de comer', sono:'Sono', ronco:'Ronco', forca:'Força', proteina:'Proteína (até 03/11)', objetivo:'Objetivo', carregando:'Calculando', resultado:'Resultado', fechar:'Médico (um passo)' },
   'teste-pele': { 'pele-inicio':'Início da pele (aceite)', 'pele-camera':'Câmera da selfie', 'pele-envio':'Conferir e enviar a foto', 'pele-analise':'Analisando a foto', 'pele-resultado':'Tela final da pele', 'pele-erro':'Erro na pele' },
   'teste-braco': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, sexo e peso', sensor:'Permissão do sensor', medir:'Medição (10 s)', analise:'Analisando', resultado:'Resultado', erro:'Erro no sensor', fechar:'Médico (tela final)' },
@@ -713,16 +714,18 @@ function cartaoPele2(e, quando, g){
 // ---------- Pele: idade e vitalidade (04/11): livowa.com/pele, funnelId pele-idade (rótulos de pele/index.html) ----------
 const ROTPI = {
   sexo:['Sexo', { f:'mulher', m:'homem' }],
-  cigarro:['Cigarro', { nunca:'nunca fumou', parou_mais10:'parou há mais de 10 anos', parou_menos10:'parou há menos de 10 anos', hoje:'fuma hoje' }],
-  sol:['Sol sem protetor', { quase_nenhum:'quase nenhum', fds:'nos fins de semana', todo_dia:'quase todo dia' }],
+  cigarro:['Cigarro', { nunca:'nunca fumou', parou:'já fumou e parou', parou_mais10:'parou há mais de 10 anos', parou_menos10:'parou há menos de 10 anos', as_vezes:'fuma ou usa vape às vezes', hoje:'fuma hoje / todo dia' }],
+  sol:['Sol no rosto, sem protetor', { quase_nenhum:'quase nenhum', fds:'um pouco, ou só no fim de semana', todo_dia:'quase todo dia' }],
   metabolico:['Pressão ou glicose alta', { nao_medi:'não, e mediu no último ano', nunca:'nunca mediu ou não lembra', pressao:'sim, a pressão', glicose:'sim, a glicose', ambas:'sim, as duas' }],
   movimento:['Movimento por semana', { quase_nada:'quase nada', ate2:'até 2 horas', '2a5':'de 2 a 5 horas', mais5:'mais de 5 horas' }],
   sono:['Sono', { bem:'7 h ou mais e acorda bem', '6h':'umas 6 h', curto:'5 h ou menos', cansado:'dorme, mas acorda cansada(o)' }],
-  futuro:['Daqui a 10 anos, quer', { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que sente', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o corpo já está mostrando', cuidar:'cuidar agora, antes que apareça' }],
+  futuro:['Daqui a 10 anos, quer', { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que sente', chegar10:'chegar aos (idade + 10) com força e memória', antes:'cuidar da saúde antes de aparecer problema', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o corpo já está mostrando', cuidar:'cuidar agora, antes que apareça' }],
 };
-const ALERTAPI = { cigarro:['hoje'], metabolico:['pressao', 'glicose', 'ambas'] };
+const ALERTAPI = { cigarro:['hoje', 'as_vezes'], metabolico:['pressao', 'glicose', 'ambas'] };
 const SINPI = { linhas_testa:'Testa', olhos:'Canto dos olhos', sulco_nasolabial:'Nariz à boca', manchas:'Bochechas', flacidez:'Contorno' };
 const FRASEPI = { cigarro:'cigarro', sol:'sol', metabolico:'pressão e glicose', sono:'sono', movimento:'movimento' };
+// o desejo de 10 anos com a idade (v2 de 04/11: 'chegar aos {idade+10}'): a página manda pronto em d.desejo
+const valPI = (k, v, d) => k === 'futuro' && v === 'chegar10' ? (d.desejo || (d.idade != null ? `chegar aos ${+d.idade + 10} com força e memória` : ROTPI.futuro[1].chegar10)) : ROTPI[k][1][v] ?? v;
 function cartaoPeleIdade(e, quando, g){
   const d = e.dados || {}, r = d.respostas || {}, c = window.KITS ? KITS['pele-idade'].classifica(d) : null;
   const caso = c ? c.titulo : (d.caso || '');
@@ -730,7 +733,7 @@ function cartaoPeleIdade(e, quando, g){
   const resp = `<div class="p2"><h3>Respostas do quiz</h3>
     <div class="l"><span>Nome</span><b>não vai para o servidor (fica só no celular dela); veja no Direct ou no WhatsApp</b></div>
     <div class="l"><span>Idade real</span><b>${d.idade != null ? esc(d.idade) + ' anos' : '—'}</b></div>
-    ${Object.keys(ROTPI).map(k => `<div class="l${(ALERTAPI[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROTPI[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(ROTPI[k][1][r[k]] ?? r[k]) : '—'}</b></div>`).join('')}</div>`;
+    ${Object.keys(ROTPI).map(k => `<div class="l${(ALERTAPI[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROTPI[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(valPI(k, r[k], d)) : '—'}</b></div>`).join('')}</div>`;
   const frases = String(d.frases || '').split('+').filter(Boolean).map(x => FRASEPI[x] || x);
   const sin = (d.sinais || []).filter(s => SINPI[s.id]);
   const vis = sin.filter(s => s.visivel !== false && s.nivel != null), nao = sin.filter(s => !(s.visivel !== false && s.nivel != null));
@@ -739,7 +742,7 @@ function cartaoPeleIdade(e, quando, g){
     ${nao.length ? `<p class="p2-nada">Não deu para ver: ${esc(nao.map(s => SINPI[s.id].toLowerCase()).join(', '))}.</p>` : ''}</div>`;
   const ORIG = { camera:'câmera', galeria:'galeria' };
   const sobre = [['Faixa (idade do rosto)', d.faixa], ['Caso da régua', caso], ['Frases de vitalidade na página', frases.join(', ')], ['Confiança', { media:'média' }[d.confianca] || d.confianca], ['Qualidade da foto', d.qualidade],
-    ['Origem da foto', ORIG[d.origem] || d.origem], ['Fim sorteado', { A:'A (fala em vídeo)', B:'B (sem falar em vídeo)' }[d.fim] || d.fim], ['Marca do Direct', d.lv]]
+    ['Fotos enviadas', d.enviadas], ['Ângulos', Array.isArray(d.angulos) ? d.angulos.join(', ') : d.angulos], ['Origem da foto', ORIG[d.origem] || d.origem], ['Fim sorteado', { A:'A (fala em vídeo)', B:'B (sem falar em vídeo)' }[d.fim] || d.fim], ['Marca do Direct', d.lv]]
     .filter(([, v]) => v != null && v !== '').map(([k, v]) => `<div class="l"><span>${esc(k)}</span><b>${esc(num(v))}</b></div>`).join('');
   return `<div class="card"><h2>${esc(NOME_PI)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
     <div class="res">${esc(res)}</div>${resp}${sinais}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>${rotB(e)}${kitBloco(e)}</div>`;

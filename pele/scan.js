@@ -1,9 +1,10 @@
-// SCAN do teste da idade da pele (livowa.com/pele, 04/11/2026): copiado de /pele2/scan.js (a pele2 fica intacta).
-// Muda só uma coisa: aqui sai UMA foto, de frente (a idade aparente vem dela; as laterais da pele2 serviam aos sinais
-// por região). Anel de risquinhos em volta do oval acende com a foto de frente; medidor de luz "☀ OK" no topo; malha e
-// contorno do rosto por cima. Alinhamento da malha medido no próprio elemento de vídeo (Safari do iPhone), vídeo e
-// canvas espelhados pelo CSS (scaleX(-1)); o desenho é feito em coordenadas da imagem crua.
-import { criarFace, FaceLandmarker, medir, pose, geometria, caixa, OVAL, NITIDEZ_MIN, subirTesta, olhoMedioY } from './rosto.js?v=1';
+// SCAN do /pele/ v2 (04/11/2026): o da pele2 (3 fotos: frente, depois a esquerda, depois a direita; copiado de
+// /pele2/scan.js, a pele2 fica intacta). Muda uma coisa, pedido do Lucca (reprovação de 04/11, item g): TODA ordem fica
+// NO OVAL, na parte de baixo do rosto, também na foto de frente ("Chegue mais perto", "Olhe reto", "Segure"); a faixa de
+// baixo (#scan-dica) fica só para leitor de tela. Anel de risquinhos que acende, ✓ por lado (chips Esquerda/Frente/
+// Direita), foto automática, voz curta que o botão 🔊 desliga. Malha medida no próprio elemento de vídeo (Safari do
+// iPhone); vídeo e canvas espelhados pelo CSS (scaleX(-1)); o desenho é feito em coordenadas da imagem crua.
+import { criarFace, FaceLandmarker, medir, pose, geometria, caixa, OVAL, NITIDEZ_MIN, subirTesta, olhoMedioY } from './rosto.js?v=2';
 
 const $ = id => document.getElementById(id);
 const N_TK = 72;                    // risquinhos do anel
@@ -12,7 +13,7 @@ const LADO_ALVO = .12;              // |yaw - 0,5| para a foto de lado (v2: mais
 const LADO_MAX = .38;
 const SEGURA_FRENTE = 650, SEGURA_LADO = 400;   // ms parado antes de tirar a foto
 const LUZ_MIN = 70, LUZ_MAX = 220;
-const ORDEM = ['frente'];   // só a foto de frente
+const ORDEM = ['frente', 'esquerda', 'direita'];
 // yaw > 0,5 = a pessoa virou para a ESQUERDA dela (ver pose() em rosto.js). Na tela espelhada isso aparece à esquerda.
 const SINAL = { esquerda:1, direita:-1 };
 
@@ -55,16 +56,20 @@ function medirPalco(){
   const cv = $('malha'), dpr = Math.min(3, devicePixelRatio || 1); cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
   const g = $('guia'); g.style.left = cx + 'px'; g.style.top = (cy + ry*.22) + 'px'; g.style.width = Math.min(300, rx*2*.86) + 'px';   // centro-baixo do oval
 }
-// a = ângulo do risquinho (0 = direita da tela, 90 = topo). Só a frente: o anel acende do topo para os dois lados
-// enquanto a pessoa segura parada, e fica verde inteiro quando a foto sai.
+// a = ângulo do risquinho (0 = direita da tela, 90 = topo). Lado esquerdo da PESSOA = esquerda da tela (espelho).
 function pintarAnel(prog){
   const els = $('anel').children, fr = fotos.frente, holdF = prog.frente || 0;
   for (let k = 0; k < els.length; k++){
-    const a = ticks[k], d = Math.min(Math.abs(a - 90), 360 - Math.abs(a - 90));
-    let cls = 'tk';
-    if (fr) cls += ' ok'; else if (holdF > 0 && d <= 180*holdF) cls += ' on';
+    const a = ticks[k]; let cls = 'tk';
+    if ((a > 60 && a < 120) || (a > 240 && a < 300)){ const d = Math.min(Math.abs(a - 90), Math.abs(a - 270)); if (fr) cls += ' ok'; else if (d <= 30*holdF) cls += ' on'; }
+    else {
+      const lado = (a <= 60 || a >= 300) ? 'direita' : 'esquerda', d = lado === 'direita' ? Math.min(Math.abs(a), Math.abs(a - 360)) : Math.abs(a - 180);
+      if (fotos[lado]) cls += ' ok'; else if (d <= 60*(prog[lado] || 0)) cls += ' on';
+    }
     if (els[k].getAttribute('class') !== cls) els[k].setAttribute('class', cls);
   }
+  const est = estagio();
+  document.querySelectorAll('#angulos li').forEach(li => { li.classList.toggle('feito', !!fotos[li.dataset.a]); li.classList.toggle('agora', li.dataset.a === est); });
 }
 // modo: 'vire' | 'outro' (virou para o lado errado) | 'demais' | 'segure' | 'feito'; lado: frente/esquerda/direita
 const NOME = { frente:'Frente', esquerda:'Esquerda', direita:'Direita' };
@@ -74,18 +79,19 @@ const GUIA = {
   demais: () => '<small>Virou demais:</small><b>volte um pouco</b>',
   segure: () => '<small>Isso!</small><b>Segure</b>',
   feito:  l => l === 'fim' ? '<b>Pronto!</b>' : `<b>${NOME[l]} pronta</b>`,
+  msg:    (l, t) => `<b class="curto">${t}</b>`,
 };
-function guia(modo, lado, prog){
+function guia(modo, lado, prog, txt){
   const g = $('guia');
   if (!modo){ if (!g.hidden){ g.hidden = true; guiaAtual = ''; } return; }
   g.hidden = false;
-  const chave = modo + lado;
+  const chave = modo + lado + (txt || '');
   if (chave !== guiaAtual){
     guiaAtual = chave;
-    g.className = `guia ${modo} ${lado === 'direita' ? 'dir' : 'esq'}`;
-    $('guia-txt').innerHTML = GUIA[modo](lado);
+    g.className = `guia ${modo} ${lado === 'direita' ? 'dir' : 'esq'}${lado === 'frente' ? ' frente' : ''}`;
+    $('guia-txt').innerHTML = GUIA[modo](lado, txt);
   }
-  $('guia-barra').style.width = Math.round((modo === 'feito' || modo === 'segure' ? 1 : prog || 0) * 100) + '%';
+  $('guia-barra').style.width = Math.round((modo === 'feito' || (modo === 'segure' && lado !== 'frente') ? 1 : prog || 0) * 100) + '%';   // de frente, a barrinha mostra o tempo segurando
 }
 function medidorLuz(lum){
   const el = $('luz'), t = $('luz-txt');
@@ -166,18 +172,17 @@ function loop(){
     medidorLuz(r.lm ? ultM?.lum : null);
     const mostrandoFeito = agora < feitoAte;   // o ✓ do lado que acabou de sair fica um instante antes da próxima seta
     if (est === 'frente'){
-      guia(null);
       if (!r.msg && !r.mexeu && nitido(est)){
         segDesde ||= agora; prog.frente = Math.min(1, (agora - segDesde)/SEGURA_FRENTE);
-        dica('Isso! Segure assim…', true);
+        dica('Isso! Segure assim…', true); guia('segure', 'frente', prog.frente);
         if (prog.frente >= 1){ capturar(v, 'frente', r.p); return; }
-      } else { segDesde = 0; dica(r.msg || 'Segure parado'); }
+      } else { segDesde = 0; dica(r.msg || 'Segure parado'); guia('msg', 'frente', 0, r.msg || 'Segure parado'); }
     } else if (est === 'esquerda' || est === 'direita'){
       const dev = r.p ? (r.p.yaw - .5) * SINAL[est] : 0;   // > 0 = virando para o lado pedido
       prog[est] = Math.max(0, Math.min(1, (dev - .02)/(LADO_ALVO - .02)));
       let gm = 'vire';
-      if (!r.p){ segDesde = 0; dica(r.msg || 'Coloque o rosto dentro do oval'); }
-      else if (r.msg){ segDesde = 0; dica(r.msg); }
+      if (!r.p){ segDesde = 0; gm = 'msg'; dica(r.msg || 'Coloque o rosto dentro do oval'); }
+      else if (r.msg){ segDesde = 0; gm = 'msg'; dica(r.msg); }
       else if (dev < -.05){ segDesde = 0; gm = 'outro'; dica(OUTRO[est]); falar(FALA[est]); }
       else if (dev > LADO_MAX){ segDesde = 0; gm = 'demais'; dica('Não precisa virar tanto: volte um pouquinho'); }
       else if (prog[est] < 1){ segDesde = 0; dica(`${PEDE[est]}<small>devagar, até o anel acender</small>`); }
@@ -186,7 +191,7 @@ function loop(){
         segDesde ||= agora; gm = 'segure'; dica('Isso! Segure…', true);
         if (agora - segDesde >= SEGURA_LADO){ capturar(v, est, r.p); return; }
       }
-      if (!mostrandoFeito) guia(gm, est, prog[est]);
+      if (!mostrandoFeito) guia(gm, est, prog[est], gm === 'msg' ? (r.msg || 'Coloque o rosto dentro do oval') : null);
       if (agora - ladoDesde > 25000 && fotos.frente) $('scan-pular').hidden = false;   // não conseguiu os lados: segue com o que tem
     }
     pintarAnel(prog);
@@ -224,15 +229,16 @@ export function parar(){
 export function seguirComOQueTem(){ if (fotos.frente) terminar(); }
 export async function abrir(callbacks){
   cb = callbacks; fotos = {}; segDesde = 0; narizAnt = null; ultM = null; quadro = 0; ladoDesde = performance.now(); feitoAte = 0;
-  $('scan-pular').hidden = true; guia(null); medirPalco(); pintarAnel({}); medidorLuz(null); dica('Abrindo a câmera…');
+  $('scan-pular').hidden = true; medirPalco(); guia('msg', 'frente', 0, 'Abrindo a câmera…'); pintarAnel({}); medidorLuz(null); dica('Abrindo a câmera…');
   try {
     face ??= await criarFace('VIDEO');
     stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:1280 }, height:{ ideal:960 } }, audio:false });
     for (const id of ['v-bg','v-fg']){ const v = $(id); v.srcObject = stream; await v.play(); }
-    medirPalco(); dica('Olhe reto para a câmera'); falar(FALA.frente, true); rodando = true; loop();
+    medirPalco(); dica('Olhe reto para a câmera'); guia('msg', 'frente', 0, 'Olhe reto para a câmera'); falar(FALA.frente, true); rodando = true; loop();
   } catch (e) {
     console.error(e); parar();
-    dica(e?.name === 'NotAllowedError' ? 'Libere a câmera nas configurações, ou escolha uma foto' : 'Não consegui abrir a câmera');
+    const t = e?.name === 'NotAllowedError' ? 'Libere a câmera nas configurações, ou escolha uma foto' : 'Não consegui abrir a câmera';
+    dica(t); guia('msg', 'frente', 0, t);
     cb?.onErro?.(e);
   }
 }
