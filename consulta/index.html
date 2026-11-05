@@ -18,7 +18,9 @@
    03/11: roteiro.js = botão "Gerar roteiro" (edge gerar-roteiro, Claude) em cada resultado e "Parecido com isto" nas fotos da pele.
    04/11: funil 'pele-idade' (livowa.com/pele) = "Pele: idade e vitalidade"; v2 (04/11 tarde): 3 fotos (frente/esquerda/direita, como a pele2),
    chaves novas cigarro parou|as_vezes e futuro chegar10|antes (com props.desejo); v3 (04/11 noite): espelho (o que mais incomoda) e futuro reconhecer|independente; as velhas continuam com o rótulo de antes: cartão com a foto ligada, a idade do rosto ao lado
-   da idade real, as respostas e os sinais ligados à idade; roteiro do estoque (bloco pele-idade) e kit sem perfil de cuidado. */
+   da idade real, as respostas e os sinais ligados à idade; roteiro do estoque (bloco pele-idade) e kit sem perfil de cuidado.
+   05/11: detalhe legível (função detalhe/DET): rótulo de leigo por funil, uma resposta por linha, valor traduzido, técnico num
+   bloco fechado; nada de JSON nem rolagem lateral. */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
@@ -67,7 +69,11 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .q{color:var(--m);font-size:.85rem;margin-bottom:8px}
 .res{font-size:1.3rem;font-weight:800;color:var(--a);margin:4px 0 8px}
 .l{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--l);font-size:.95rem}
-.l span{color:var(--m)} .l b{text-align:right}
+.l span{color:var(--m);flex:0 1 46%;min-width:0;overflow-wrap:anywhere} .l b{text-align:right;flex:1 1 54%;min-width:0;overflow-wrap:anywhere}
+/* 05/11: detalhe legível; texto longo quebra a linha, nada empurra o cartão para a direita */
+.card{min-width:0;overflow-wrap:anywhere} .res{overflow-wrap:anywhere}
+.tec{margin-top:10px;border-top:1px solid var(--l);padding-top:6px} .tec summary{cursor:pointer;color:var(--m);font-size:.9rem;padding:4px 0}
+.tec .l{font-size:.85rem}
 .si{padding:6px 0;border-top:1px solid var(--l)} .si small{display:block;color:var(--m)}
 .aviso{color:var(--m)}
 .interp{border-radius:14px;padding:12px;margin:8px 0 10px;background:var(--bg,#f2f4f1);border:1px solid var(--l)}
@@ -334,7 +340,7 @@ const TZ = 'America/Sao_Paulo';
 const STATUS = [['novo','Novo'],['respondi','Respondi'],['consulta','Em conversa'],['nao_quis','Não quis']];
 const NOME_PI = 'Pele: idade e vitalidade';   // livowa.com/pele (funnelId pele-idade, 04/11)
 const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'pele-idade' ? NOME_PI : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
-let LEADS = [], filtro = 'abertos';
+let LEADS = [], filtro = 'abertos', CARREGOU = false;
 const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '');
 function origem(o){
   if (!o || !o.source) return 'Direto';
@@ -416,7 +422,7 @@ async function carregar(){
     if (r.status === 404){ $('lista').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
     const j = await r.json();
     if (!j.ok) throw 0;
-    LEADS = j.leads || []; desenhaCaixa();
+    LEADS = j.leads || []; CARREGOU = true; desenhaCaixa();
   } catch { $('lista').innerHTML = '<p class="aviso">Não consegui carregar a caixa agora. Puxe para atualizar.</p>'; }
 }
 async function marcar(c, status, nota){
@@ -447,7 +453,7 @@ document.addEventListener('click', ev => {
   if (s){ s.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === s)); marcar(s.dataset.c, s.dataset.s); return; }
   const v = ev.target.closest('[data-ver]'); if (v){ abrirCodigo(v.dataset.ver, true); return; }
   const f = ev.target.closest('#filtro button');
-  if (f){ filtro = f.dataset.f; document.querySelectorAll('#filtro button').forEach(b => b.setAttribute('aria-pressed', b === f)); desenhaCaixa(); }
+  if (f){ filtro = f.dataset.f; document.querySelectorAll('#filtro button').forEach(b => b.setAttribute('aria-pressed', b === f)); CARREGOU ? desenhaCaixa() : carregar(); }
 });
 const timers = {};
 document.addEventListener('input', ev => {
@@ -653,9 +659,6 @@ function desenhaGestao(c){
 }
 
 // ---------- Consulta de um código (a de 28/10) ----------
-const ROT = { velMedia:'Velocidade média (°/s)', dur:'Duração medida (s)', queda:'Queda (%)', variab:'Variabilidade (%)', vmao:'Mão no pico (m/s)', wmax:'Giro máximo (°/s)', hz:'Leituras/s', nav:'Navegador', protocolo:'Protocolo', diag:'Diagnóstico', lv:'Marca do Direct', idade:'Idade', sexo:'Sexo', peso:'Peso (kg)', altura:'Altura (cm)', t:'5 levantadas (s)', rel:'Potência (W/kg)',
-  pc:'Percentil na idade', vel:'Subida média (m/s)', reps:'Repetições', faixa:'Faixa', modo:'Modo da foto', ocultas:'Áreas cobertas',
-  qualidade:'Qualidade da foto', confianca:'Confiança', fotos:'Variante (fotos pedidas)', enviadas:'Fotos enviadas', qualidade_motivo:'Sobre a foto', origem:'Origem da foto' };
 const SINAL = { linhas_testa:'Linhas da testa', olhos:'Ao redor dos olhos', sulco_nasolabial:'Sulco do nariz à boca', manchas:'Manchas', textura_poros:'Textura da pele', flacidez:'Firmeza do contorno' };
 const TIPO = { repouso:'Parado', sorriso:'Sorriso', sobrancelhas:'Sobrancelhas', frente:'Frente', esquerda:'Esquerda', direita:'Direita', resultado:'Resultado', referencia:'Referência' };
 // ---------- Pele 2 (02/11): nomes da biblioteca (pele2/biblioteca.json), regiões e respostas (rótulos de pele2/app.js) ----------
@@ -703,7 +706,7 @@ function cartaoPele2(e, quando, g){
   const val = (k, v) => k === 'incomoda' ? String(v || '').split('+').filter(Boolean).map(x => ROT2.incomoda[1][x] || x).join(', ') : (ROT2[k][1][v] ?? v);
   const resp = `<div class="p2"><h3>Respostas do quiz</h3>
     <div class="l"><span>Nome</span><b>não vai para o servidor (fica só no celular dela); veja no Direct ou no WhatsApp</b></div>
-    ${Object.keys(ROT2).map(k => `<div class="l${(ALERTA2[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROT2[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(val(k, r[k])) : '—'}</b></div>`).join('')}</div>`;
+    ${Object.keys(ROT2).map(k => `<div class="l${(ALERTA2[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROT2[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(val(k, r[k])) : '—'}</b></div>`).join('')}${respostasExtras(r, Object.keys(ROT2))}</div>`;
   const ORIG = { camera:'câmera', galeria:'galeria' };
   const sobre = [['Faixa de idade da pele', d.faixa], ['Confiança', d.confianca], ['Qualidade da foto', d.qualidade], ['Fotos enviadas', d.enviadas],
     ['Ângulos', Array.isArray(d.angulos) ? d.angulos.join(', ') : d.angulos], ['Origem da foto', ORIG[d.origem] || d.origem], ['Marca do Direct', d.lv]]
@@ -735,7 +738,7 @@ function cartaoPeleIdade(e, quando, g){
   const resp = `<div class="p2"><h3>Respostas do quiz</h3>
     <div class="l"><span>Nome</span><b>não vai para o servidor (fica só no celular dela); veja no Direct ou no WhatsApp</b></div>
     <div class="l"><span>Idade real</span><b>${d.idade != null ? esc(d.idade) + ' anos' : '—'}</b></div>
-    ${Object.keys(ROTPI).map(k => `<div class="l${(ALERTAPI[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROTPI[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(valPI(k, r[k], d)) : '—'}</b></div>`).join('')}</div>`;
+    ${Object.keys(ROTPI).map(k => `<div class="l${(ALERTAPI[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROTPI[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(valPI(k, r[k], d)) : '—'}</b></div>`).join('')}${respostasExtras(r, Object.keys(ROTPI))}</div>`;
   const frases = String(d.frases || '').split('+').filter(Boolean).map(x => FRASEPI[x] || x);
   const sin = (d.sinais || []).filter(s => SINPI[s.id]);
   const vis = sin.filter(s => s.visivel !== false && s.nivel != null), nao = sin.filter(s => !(s.visivel !== false && s.nivel != null));
@@ -754,15 +757,131 @@ const EXPR = { olhos:'sorriso', linhas_testa:'sobrancelhas' };
 const rotB = e => window.ROTEIRO ? ROTEIRO.bloco(e) : '', rotP = e => window.ROTEIRO ? ROTEIRO.parecido(e) : '';
 let FOTOS = [], codigoAtual = '';
 const num = v => typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits:2 }) : v;
-function campo(k, v){
-  if (v === null || v === undefined || v === '' || k === 'codigo' || k === 'foto') return '';
-  if (k === 'sexo') v = v === 'f' ? 'mulher' : v === 'm' ? 'homem' : v === 'n' ? 'não informou' : v;
-  if (k === 'sinais' && Array.isArray(v)) return v.map(s => `<div class="si"><b>${esc(s.nome ?? SINAL[s.id] ?? s.id)}</b> ${s.visivel === false ? '· coberto' : s.expressao != null
-      ? `<span class="din">Repouso ${esc(s.repouso ?? s.nivel)}/3 · ${EXPR[s.id] === 'sorriso' ? 'Sorriso' : 'Sobrancelhas'} ${esc(s.expressao)}/3</span>`
-      : `· nível ${esc(s.nivel)}/3`}${s.obs ? `<small>${esc(s.obs)}</small>` : ''}</div>`).join('');
-  if (Array.isArray(v)) v = v.join(', '); else if (typeof v === 'object') v = JSON.stringify(v);
-  return `<div class="l"><span>${esc(ROT[k] ?? k)}</span><b>${esc(num(v))}</b></div>`;
+// ---------- Detalhe legível (05/11): rótulo de leigo por funil, uma resposta por linha, nunca JSON ----------
+// Pedido do Lucca (print de 05/11: "rc 0,54", "perfil vontade" e as respostas em JSON cru estourando o cartão).
+// Chaves e valores conferidos no código que grava o 'complete' de cada funil: emagrecimento/app.js (v2 de 03/11; a v1,
+// git b32a5a7, tinha cintura, rc = cintura ÷ altura arredondada a 2 casas e proteína), idade/index.html (pernas e a pele
+// antiga), braco/index.html, longevidade/config.js e quiz.js. Chave nova sem rótulo aparece com o nome legível; objeto
+// vira uma linha por campo. Os dados técnicos ficam num bloco fechado no fim do cartão.
+const SEXO = { f:'mulher', m:'homem', n:'prefere não informar' };
+const sexoDe = d => d.respostas?.sexo ?? d.sexo;
+const gen = (d, fem, masc, neutro) => sexoDe(d) === 'm' ? masc : sexoDe(d) === 'f' ? fem : neutro;
+const humano = k => /\s/.test(k) ? k[0].toUpperCase() + k.slice(1) : humanoK(k);
+const humanoK = k => { const t = String(k).replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').trim().toLowerCase(); return t ? t[0].toUpperCase() + t.slice(1) : '—'; };
+const vazio = v => v === null || v === undefined || v === '' || (Array.isArray(v) && !v.length);
+const un = u => v => `${num(+v)}${u}`;
+const anos = v => /^\d+(\.\d+)?$/.test(String(v)) ? `${num(+v)} anos` : String(v);
+function valor(v, f, d){
+  if (typeof f === 'function') return String(f(v, d));
+  const um = x => typeof x === 'boolean' ? (x ? 'sim' : 'não') : typeof x === 'number' ? num(x) : String(x);
+  const xs = Array.isArray(v) ? v : f && typeof v === 'string' && v.includes('+') ? v.split('+').filter(Boolean) : [v];
+  return xs.map(x => f && f[x] != null ? f[x] : um(x)).join(', ');
 }
+// uma linha por campo; objeto e lista de objetos viram uma linha por item (nunca JSON)
+function linhas(rot, v, f, d, alerta){
+  if (vazio(v)) return '';
+  if (typeof f === 'function'){ const w = f(v, d); if (w && typeof w === 'object') return linhas(rot, w, null, d, alerta); }   // o formato pode devolver um objeto com chaves legíveis
+  const composto = v && typeof v === 'object' && !(Array.isArray(v) && v.every(x => x === null || typeof x !== 'object'));
+  if (composto && typeof f !== 'function')
+    return (Array.isArray(v) ? v.map((x, i) => [String(i + 1), x]) : Object.entries(v)).map(([k, x]) => linhas(`${rot} · ${humano(k)}`, x, null, d)).join('');
+  return `<div class="l${alerta ? ' alerta' : ''}"><span>${esc(rot)}</span><b>${esc(valor(v, f, d))}</b></div>`;
+}
+const temAlerta = (v, al) => !!al && String(Array.isArray(v) ? v.join('+') : v ?? '').split('+').some(x => al.includes(x));
+// [chave, rótulo, formato (mapa ou função), valores que pedem atenção]
+const EMAG = {
+  acontece:{ volta:'emagrece, mas depois engorda tudo de novo', vontade:'a vontade de comer vence, principalmente de doce', balanca:'faz tudo certo e a balança não desce', constancia:'começa e para em poucas semanas', comeco:'ainda não sabe por onde começar' },
+  sinais:{ sop:'sinais de SOP (ciclo e pelos)', menopausa:'menopausa', tireoide:'sinais de tireoide lenta', metabolica:'sinais de síndrome metabólica', sem_exames:'sem exames recentes', remedio:'remédio de uso contínuo', ronco:'ronco e cansaço (rastrear apneia)', nenhum:'nenhum' },
+};
+const SIMNAO = { sim:'sim', nao:'não', true:'sim', false:'não' };
+const TEC_COMUM = [['versao', 'Versão do teste'], ['ponte', 'Veio pela ponte da bio', SIMNAO], ['lv', 'Marca do Direct (link do OpenReply)'],
+  ['utm_source', 'Origem do link (utm_source)'], ['utm_medium', 'Meio (utm_medium)'], ['utm_campaign', 'Campanha (utm_campaign)'], ['utm_content', 'Conteúdo (utm_content)'],
+  ['utm_term', 'Termo (utm_term)'], ['utm_source_real', 'Origem real (aparelho do Lucca)'], ['referrer', 'Página de onde veio'], ['user_agent', 'Aparelho e navegador']];
+const DET = {
+  'teste-emagrecimento': {
+    res:(e, d) => { const P = { volta:'O peso volta', vontade:'A vontade de comer vence', balanca:'A balança não desce', constancia:'Começa e para', comeco:'Não sabe por onde começar' }; const k = d.perfil || e.resumo; return P[k] ? 'Perfil: ' + P[k].toLowerCase() : e.resumo; },
+    principal:[['perfil', 'O que mais acontece quando tenta emagrecer', EMAG.acontece], ['imc', 'IMC (peso ÷ altura²)', v => `${num(+v)} kg/m²`], ['faixa', 'Faixa do IMC'],
+      ['rc', 'Cintura ÷ altura', v => `${num(+v)} (${+v < .5 ? 'abaixo de 0,5: dentro da meta' : +v < .6 ? 'de 0,5 a 0,59: risco aumentado' : '0,6 ou mais: risco mais aumentado'})`],
+      ['sinais', 'Pontos de saúde no resultado', EMAG.sinais, ['sop', 'tireoide', 'metabolica', 'remedio', 'ronco']]],
+    respostas:[['sexo', 'Sexo', SEXO], ['fase', 'Gestação, amamentação ou menopausa', { nenhuma:'nenhuma', gravida:'grávida', amamentando:'amamentando', pos_parto:'teve bebê há menos de 1 ano', menopausa:'na menopausa ou chegando nela' }, ['gravida', 'amamentando']],
+      ['idade', 'Idade', { '18a29':'18 a 29 anos', '30a39':'30 a 39 anos', '40a49':'40 a 49 anos', '50a59':'50 a 59 anos', '60mais':'60 anos ou mais' }],
+      ['peso', 'Peso', un(' kg')], ['altura', 'Altura', un(' cm')], ['cintura', 'Mediu a cintura', { sei:'sim', sem_fita:'não, estava sem fita' }], ['cinturaCm', 'Cintura', un(' cm')],
+      ['acontece', 'O que mais acontece quando tenta emagrecer', EMAG.acontece],
+      ['tentou', 'Já tentou', { dieta:'dieta da internet ou de revista', low_carb:'cortar carboidrato', jejum:'jejum intermitente', academia:'academia ou corrida', nutri:'nutricionista', cha:'chá, shake ou suplemento', remedio:'remédio para emagrecer', nenhum:'nenhum destes' }],
+      ['ciclo', 'Menstruação', { regular:'vem todo mês, no mesmo intervalo', irregular:'falha meses, atrasa muito ou vem fora de hora', hormonio:'usa anticoncepcional ou DIU hormonal', outro:'não menstrua por outro motivo' }, ['irregular']],
+      ['pele', 'Pelos, espinhas ou cabelo', { pelos:'pelos grossos no rosto, queixo ou barriga', espinhas:'espinhas que não passam', cabelo:'cabelo afinando no alto da cabeça', nenhum:'nenhum destes' }, ['pelos']],
+      ['tireoide', 'No dia a dia, sente', { cansaco:'cansaço que não passa, mesmo dormindo', frio:'frio quando os outros não sentem', intestino:'intestino preso', pele_seca:'pele muito seca', nenhum:'nenhum destes' }],
+      ['exames', 'Médico ou exame já disse que tem', { pressao:'pressão alta', glicose:'glicose alta, pré-diabetes ou diabetes', gordura:'triglicerídeo alto ou HDL baixo', nada:'nada disso', sem_exames:'faz tempo que não faz exames' }, ['pressao', 'glicose', 'gordura']],
+      ['remedios', 'Remédio todo dia', { humor:'para depressão ou ansiedade', diabetes:'para diabetes', outro:'outro de uso contínuo', nenhum:'nenhum' }, ['humor', 'diabetes', 'outro']],
+      ['vontade', 'Vontade de comer mais forte', { noite:'à noite', tarde:'à tarde', ansiedade:'na ansiedade ou preocupação', fim_semana:'no fim de semana', dia_todo:'o dia todo', pouco:'quase não atrapalha' }],
+      ['sono', 'Sono por noite', { '5menos':'5 h ou menos', '6':'6 h', '7':'7 h', '8':'8 h', '9mais':'9 h ou mais' }],
+      ['ronco', 'Ronco e cansaço', (v, d) => ({ ronco_cansa:`ronca e acorda ${gen(d, 'cansada', 'cansado', 'cansada(o)')}`, ronco:'ronca, mas acorda bem', cansa:`não ronca, mas acorda ${gen(d, 'cansada', 'cansado', 'cansada(o)')}`, bem:'dorme e acorda bem', nao_sei:'não sabe se ronca' }[v] ?? v), ['ronco_cansa']],
+      ['forca', 'Exercício de força', { '0':'ainda não faz', '1':'1 vez por semana', '2mais':'2 vezes ou mais por semana' }],
+      ['proteina', 'Proteína (até 03/11)', { '1menos':'em 1 refeição ou menos', '2':'em 2 refeições', '3mais':'em 3 refeições ou mais' }],
+      ['objetivo', 'Objetivo', { roupas:'voltar a usar as roupas que gosta', nao_voltar:'parar de engordar tudo de novo', disposicao:'ter mais disposição no dia a dia', saude:'cuidar da saúde e dos exames', corpo:'se sentir bem com o corpo', outro:'outro' }]],
+    ocultoResp:['nome', 'faseAuto'],
+  },
+  'teste-pernas': {
+    res:(e, d) => d.faixa || e.resumo ? `Pernas com a força de quem tem ${d.faixa || e.resumo}` : '',
+    principal:[['faixa', 'Força das pernas parecida com quem tem'], ['pc', 'Posição entre pessoas da mesma idade e sexo', v => `percentil ${num(+v)} (de 4 a 96; 50 é o meio)`],
+      ['t', 'Tempo para levantar e sentar 5 vezes', un(' s')], ['reps', 'Levantadas contadas'], ['rel', 'Potência das pernas', un(' W/kg')], ['vel', 'Velocidade média da subida', un(' m/s')],
+      ['idade', 'Idade', anos], ['sexo', 'Sexo', SEXO], ['peso', 'Peso', un(' kg')], ['altura', 'Altura', un(' cm')]],
+  },
+  'teste-braco': {
+    principal:[['idade', 'Idade', anos], ['sexo', 'Sexo', SEXO], ['peso', 'Peso', un(' kg')], ['reps', 'Movimentos contados'], ['dur', 'Tempo medido', un(' s')],
+      ['velMedia', 'Velocidade média (dobrar + esticar o cotovelo)', un(' °/s')], ['queda', 'Quanto a velocidade caiu do começo para o fim', un('%')],
+      ['variab', 'Variação de um movimento para o outro', un('%')], ['vmao', 'Velocidade da mão no movimento mais rápido', un(' m/s')]],
+    tecnico:[['protocolo', 'Duração do teste', { '10s':'10 s', '20s':'20 s' }], ['wmax', 'Giro máximo do celular', un(' °/s')], ['hz', 'Leituras do sensor por segundo'],
+      ['nav', 'Navegador', { instagram:'navegador do Instagram', facebook:'navegador do Facebook', 'chrome-ios':'Chrome no iPhone', safari:'Safari (iPhone ou iPad)', android:'Android', outro:'outro' }],
+      ['picos', 'Velocidade de cada pico (°/s)'],
+      ['diag', 'Sensor', v => Object.fromEntries(Object.entries(v || {}).map(([k, x]) => [{ leituras:'leituras gravadas', gravMs:'tempo gravado (ms)', iniMs:'início do movimento (ms)', leit5s:'leituras a cada 5 s', picos5s:'picos a cada 5 s', wmaxSeg:'giro máximo a cada segundo (°/s)', picosT:'momento de cada pico (s)' }[k] || k, x]))]],
+  },
+  'quiz-longevidade': {
+    res:e => e.resumo === 'medico' ? 'Quer fazer com um médico do lado' : e.resumo === 'sozinho' ? 'Prefere fazer por conta própria' : 'Quiz respondido',
+    principal:[['vsl', 'Perfil do resultado (vídeo)', { 'exame-alterado':'exame alterado, e quer agir antes', 'dor-medo':'dor e medo de piorar', 'prevencao-60':'depois dos 60, sem depender de ninguém', 'agenda-cheia':'agenda cheia, pouco tempo', 'corpo-cobrando':'o corpo começou a cobrar', padrao:'quer chegar bem aos próximos 10 anos' }]],
+    respostas:[['objetivo', 'Daqui a 10 anos, quer continuar', { escada:'subir escada e carregar peso sem pensar', familia:'ter disposição com filhos e netos', trabalho:'trabalhar sem chegar no limite no fim do dia', viajar:'viajar e andar o dia inteiro', esporte:'continuar no esporte', independente:'não depender de ninguém' }],
+      ['idade', 'Idade', { ate39:'até 39 anos', '40-49':'40 a 49 anos', '50-59':'50 a 59 anos', '60-69':'60 a 69 anos', '70+':'70 anos ou mais' }],
+      ['rotina', 'Rotina da semana', { empresario:'cuida de empresa ou equipe, agenda cheia', liberal:'profissional liberal', fixo:'trabalha em horário fixo', aposentado:'aposentado(a)' }],
+      ['incomoda', 'O que mais incomoda', { cansaco:'cansaço que não passa', peso:'a barriga que só cresce', dor:'dor nas costas ou no joelho', exame:'exame que veio alterado (pressão, glicose ou colesterol)', forca:'não consegue fazer as mesmas coisas que antes', nada:'nada por enquanto, quer se cuidar antes' }, ['exame']],
+      ['atrapalha', 'O que trava', { tempo:'falta de tempo', comecar:'não sabe por onde começar', constancia:'começa bem e larga na segunda semana', clinica:'perder meio dia em clínica e laboratório', dor:'medo de se machucar ou piorar uma dor' }],
+      ['ajuda', 'Prefere fazer', { sozinho:'por conta própria, no ritmo dele(a)', medico:'com um médico do lado' }],
+      ['contato', 'Contato']],
+    tecnico:[['durationMs', 'Tempo no quiz', v => { const s = Math.round(+v / 1000); return s >= 60 ? `${Math.floor(s / 60)} min ${s % 60} s` : `${s} s`; }]],
+  },
+  'pele': {   // a pele antiga (28/10): etapa 'pele-resultado' dentro de livowa.com/idade
+    res:(e, d) => d.faixa ? `Pele aparenta ${d.faixa}` : e.resumo,
+    principal:[['faixa', 'Idade que a pele aparenta'], ['idade', 'Idade real', anos], ['sinais', 'Sinais da foto'], ['confianca', 'Confiança da análise', { alta:'alta', media:'média', baixa:'baixa' }],
+      ['qualidade', 'Qualidade da foto'], ['qualidade_motivo', 'Sobre a foto'], ['enviadas', 'Fotos enviadas']],
+    tecnico:[['fotos', 'Fotos pedidas (sorteio)', { 1:'1 (rosto parado)', 3:'3 (parado, sorriso e sobrancelhas)' }], ['modo', 'Como a foto foi', { rosto:'rosto inteiro', retalhos:'só pedacinhos de pele, sem o formato do rosto' }],
+      ['ocultas', 'Áreas cobertas na foto', { nenhuma:'nenhuma', olhos:'olhos', sobrancelhas:'sobrancelhas', boca:'boca' }], ['origem', 'Origem da foto', { camera:'câmera', galeria:'galeria' }]],
+  },
+};
+const chaveDet = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil;
+function sinaisPele(v){
+  return `<div class="p2"><h3>Sinais da foto</h3>${v.map(s => `<div class="si"><b>${esc(s.nome ?? SINAL[s.id] ?? humano(s.id))}</b> ${s.visivel === false ? '· coberto' : s.expressao != null
+      ? `<span class="din">Parado ${esc(s.repouso ?? s.nivel)}/3 · ${EXPR[s.id] === 'sorriso' ? 'Sorrindo' : 'Sobrancelhas levantadas'} ${esc(s.expressao)}/3</span>`
+      : `· nível ${esc(s.nivel)} de 3`}${s.obs ? `<small>${esc(s.obs)}</small>` : ''}</div>`).join('')}</div>`;
+}
+// respostas que um cartão próprio (Pele 2, Pele idade) não conhece: nome legível, uma por linha
+const respostasExtras = (r, conhecidas) => Object.keys(r || {}).filter(k => !conhecidas.includes(k) && !['nome', 'idade', 'segAuto'].includes(k)).map(k => linhas(humano(k), r[k], null, {})).join('');
+function detalhe(e){
+  const d = e.dados || {}, S = DET[chaveDet(e)] || {}, r = d.respostas && typeof d.respostas === 'object' && !Array.isArray(d.respostas) ? d.respostas : null;
+  const princ = S.principal || [], tec = [...(S.tecnico || []), ...TEC_COMUM];
+  const usados = new Set(['codigo', 'foto', 'respostas', ...princ.map(x => x[0]), ...tec.map(x => x[0])]);
+  const um = ([k, rot, f, al], src) => k === 'sinais' && Array.isArray(src[k]) ? sinaisPele(src[k]) : linhas(rot, src[k], f, d, temAlerta(src[k], al));
+  let h = princ.filter(([k]) => k !== 'sinais' || !Array.isArray(d[k])).map(x => um(x, d)).join('')
+    + Object.keys(d).filter(k => !usados.has(k)).map(k => linhas(humano(k), d[k], null, d)).join('');
+  if (r){
+    const rs = S.respostas || [], conh = rs.map(x => x[0]), ocu = S.ocultoResp || [];
+    const so = rs.filter(([k]) => !(k === 'fase' && r.sexo === 'm' && r.fase === 'nenhuma')   // homem: fase vem 'nenhuma' sozinha
+        && !(k === 'acontece' && d.perfil && r.acontece === d.perfil))                       // já está no alto como perfil
+      .map(x => um(x, r)).join('') + Object.keys(r).filter(k => !conh.includes(k) && !ocu.includes(k)).map(k => linhas(humano(k), r[k], null, d)).join('');
+    if (so) h += `<div class="p2"><h3>Respostas do teste</h3>${so}</div>`;
+  } else if (d.respostas != null) h += linhas('Respostas', d.respostas, null, d);
+  const si = princ.find(([k]) => k === 'sinais') && Array.isArray(d.sinais) ? sinaisPele(d.sinais) : '';
+  const t = tec.map(x => um(x, d)).join('');
+  return h + si + (t ? `<details class="tec"><summary>Dados técnicos</summary>${t}</details>` : '');
+}
+const resDet = e => { const f = DET[chaveDet(e)]?.res; return f ? f(e, e.dados || {}) : e.resumo; };
 // ---------- Interpretação da idade muscular (régua de 31/10/2026; fontes em tarefas/escada-isca/pesquisa/braco-*.md) ----------
 // Toosizadeh 2017 (BMC Geriatr, PMID 28577355): 20 s de flexão rápida do cotovelo; robustos (76 anos) 1.099 °/s,
 // pré-frágeis 812, frágeis 535; flexões 25/21/15; queda 3/6/15%. Toji 2007: velocidade igual até 50 anos, −0,8%/ano depois.
@@ -819,7 +938,7 @@ async function ver(c){
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2' || e.funil === 'pele-idade') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
       if (e.funil === 'pele-idade') return cartaoPeleIdade(e, quando, g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) + rotP(e) : ''}${e.resumo ? `<div class="res">${esc(e.resumo)}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${Object.entries(e.dados || {}).map(([k,v]) => campo(k,v)).join('')}${rotB(e)}${kitBloco(e)}</div>`;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) + rotP(e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${detalhe(e)}${rotB(e)}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : '');
