@@ -226,6 +226,26 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .f-nota{text-align:center;font-size:.88rem;color:var(--muted)}
 .link-alt{align-self:center;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 12px;background:none;border:0;cursor:pointer;color:var(--accent);font:600 .95rem var(--body);text-decoration:underline;text-underline-offset:3px}
 .screen.fim .cod-ref{margin-top:auto;text-align:center;font-size:.8rem;padding-top:4px}
+/* ---- como fazer (08/11): celular de pé no chão com a câmera da frente; o vídeo da capa roda na tela dele; cada etapa cabe
+   sem rolar (a demonstração ocupa o espaço que sobra). Letras: título, corpo (.sub) e nota (.82rem). ---- */
+.screen.como{gap:14px;padding-bottom:calc(var(--cta-h,130px) + 12px)}
+.demo{position:relative;flex:1 1 auto;min-height:170px;border-radius:22px;overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(to bottom,#eeece7 0,#e6e2da 79%,#cfae86 79%,#dcbf98 100%)}
+.cel{position:absolute;left:50%;top:50px;height:calc(93% - 50px);aspect-ratio:1/2;transform:translateX(-50%);border-radius:16%/8%;background:#16181a;
+  box-shadow:0 14px 16px -12px rgba(0,0,0,.55),inset 0 0 0 1.5px #3a3d40;transition:top .3s ease,height .3s ease}
+.cel .tela{position:absolute;top:2%;bottom:2%;left:4%;right:4%;border-radius:12%/5.8%;overflow:hidden;background:#d9d6d0}
+.cel video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:52% 50%;transform:scaleX(-1)}
+.cel .ilha{position:absolute;top:3.7%;left:50%;width:30%;height:3.4%;transform:translateX(-50%);border-radius:99px;background:#050506;z-index:2}
+.cel .ilha::after{content:"";position:absolute;right:9%;top:18%;height:64%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%,#4a6d9c,#0c1a30 62%)}
+.cel .ilha::before{content:"";position:absolute;inset:-55% -12%;border-radius:99px;border:2px solid #52c99c;animation:pulso 1.6s ease-out infinite}
+@keyframes pulso{0%{opacity:.95;transform:scale(.92)}100%{opacity:0;transform:scale(1.6)}}
+.demo .rot{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:3;background:var(--accent);color:var(--on-accent);border-radius:999px;padding:3px 12px;font:600 .82rem/1.4 var(--body);white-space:nowrap}
+.demo .rot::after{content:"";position:absolute;left:50%;top:100%;width:2px;height:22px;background:var(--accent);transform:translateX(-50%)}
+.cel .conta{position:absolute;left:7%;bottom:3.5%;z-index:2;display:none;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:3px 10px;font:700 .82rem/1.4 var(--body);font-variant-numeric:tabular-nums}
+.demo[data-passo="2"] .rot,.demo[data-passo="2"] .ilha::before{display:none}
+.demo[data-passo="2"] .cel{top:12px;height:calc(93% - 12px)}
+.demo[data-passo="2"] .conta{display:block}
+.screen.como .notice{margin-top:-2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script>/* link da pele (?pele=1|teste): esconde a página até o script abrir a pele, para não piscar a tela das pernas */
@@ -250,18 +270,24 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
     </div>
   </section>
 
-  <section class="screen" data-s="como" data-p="25" hidden>
-    <h2>Como posicionar</h2>
-    <div class="anim" aria-label="Celular em pé no chão, apoiado num tênis, filmando a pessoa sentada de lado">
-      <img src="img/celular-no-chao.jpg" alt="">
-      <span class="tag">você de lado · do ombro ao joelho na tela</span>
+  <!-- como fazer (08/11, Lucca: a imagem mostrava o celular gravando com a câmera traseira, não era vídeo e tinha de rolar).
+       O teste usa a câmera da FRENTE (facingMode 'user'): celular de pé, tela virada para a pessoa. A demonstração é o vídeo
+       da capa dentro de um celular desenhado (é o que a câmera da frente mostra). Duas etapas, uma por vez, na mesma tela
+       (o painel do Funil continua vendo uma etapa só, 'como'); textos em COMO, no script. -->
+  <section class="screen como" data-s="como" data-p="25" hidden>
+    <h2 id="como-tit">Celular em pé, com a tela virada para você</h2>
+    <div class="demo" id="como-demo" data-passo="1" aria-hidden="true">
+      <span class="rot">câmera da frente</span>
+      <div class="cel">
+        <div class="tela">
+          <video id="como-video" src="img/movimento.mp4" poster="img/movimento.jpg" muted loop playsinline preload="none"></video>
+          <span class="conta" id="como-conta">0/5</span>
+        </div>
+        <i class="ilha"></i>
+      </div>
     </div>
-    <ol class="steps">
-      <li><em>1</em><span>Celular em pé, apoiado no chão ou numa mesa baixa, a uns 2 passos. Precisa aparecer do ombro ao joelho.</span></li>
-      <li><em>2</em><span>Sente na cadeira, de lado para o celular, braços cruzados na frente do peito.</span></li>
-      <li><em>3</em><span>Levante e sente 5 vezes, o mais rápido que conseguir. A voz te guia.</span></li>
-    </ol>
-    <p class="notice">Não faça se tiver dor no peito, tontura, problema no joelho ou no quadril, ou uma queda recente. Tenha alguém por perto.</p>
+    <p class="sub" id="como-sub">No chão ou numa mesa baixa, a uns 2 passos. Do ombro ao joelho na tela.</p>
+    <p class="notice" id="como-aviso" hidden>Não faça se tiver dor no peito, tontura, problema no joelho ou no quadril, ou uma queda recente. Tenha alguém por perto.</p>
   </section>
 
   <section class="screen" data-s="dados" data-p="50" hidden>
@@ -535,6 +561,25 @@ function guiaEstavel(txt, ok){
   if (moda !== g.textContent && k >= guiaJanela.length / 2 && guiaJanela.length >= 3) guia(moda, guiaJanela.findLast(x => x.txt === moda).ok);
 }
 
+// ---------- como fazer (08/11): duas etapas, uma por vez, na mesma tela 'como' ----------
+// O analytics não muda: a tela continua sendo a etapa 'como' (índice 1) no painel do Funil.
+const COMO = [
+  { tit:'Celular em pé, com a tela virada para você', sub:'No chão ou numa mesa baixa, a uns 2 passos. Do ombro ao joelho na tela.', cta:'Continuar', p:25 },
+  { tit:'Sente de lado e levante 5 vezes', sub:'Braços cruzados, o mais rápido que conseguir. A voz te guia.', cta:'Entendi', p:35 },
+];
+let comoPasso = 0;
+function comoMostrar(i){
+  comoPasso = i; const c = COMO[i], sec = document.querySelector('[data-s="como"]');
+  $('como-tit').textContent = c.tit; $('como-sub').textContent = c.sub; $('como-aviso').hidden = i < COMO.length - 1;
+  $('como-demo').dataset.passo = String(i + 1); $('cta').textContent = c.cta; $('progress').style.width = c.p + '%';
+  sec.style.animation = 'none'; void sec.offsetWidth; sec.style.animation = '';   // entrada da etapa, como numa tela nova
+  const v = $('como-video'); try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch {}   // mudo; roda dentro do toque
+  window.scrollTo(0, 0); medirBarra();
+}
+// contador da demonstração: cada volta do vídeo (4 s) é uma levantada; conta de 0 a 5 e recomeça
+{ const v = $('como-video'); let t0 = 0, n = 0;
+  v.addEventListener('timeupdate', () => { const t = v.currentTime; if (t < t0 - 1){ n = (n + 1) % 6; $('como-conta').textContent = n + '/5'; } t0 = t; }); }
+
 // ---------- navegação ----------
 // 'fechar' (02/11) vai no fim da lista para não mudar o número das etapas da pele no painel do Funil
 const order = ['inicio','como','dados','camera','resultado','pele-inicio','pele-camera','pele-envio','pele-analise','pele-resultado','pele-erro','fechar'];
@@ -548,7 +593,7 @@ function show(s){
   const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true; $('cta-dm').hidden = true;
   $('cta-bar').hidden = s === 'fechar';   // tela final: o botão mora na própria tela
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
-  if (s === 'como') cta.textContent = 'Entendi';
+  if (s === 'como') comoMostrar(0);
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
   // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
@@ -571,12 +616,14 @@ function medirBarra(){ document.documentElement.style.setProperty('--cta-h', doc
 addEventListener('resize', medirBarra);
 $('back').addEventListener('click', () => {
   pararCamera(); pararCameraPele();
+  if (cur === 'como' && comoPasso > 0) return comoMostrar(comoPasso - 1);   // 08/11: voltar dentro do "como fazer"
   if (VOLTA[cur]){ const d = VOLTA[cur]; show(d); if (d === 'pele-camera') abrirCameraPele(); return; }
-  show(order[Math.max(0, order.indexOf(cur)-1)]);
+  const d = order[Math.max(0, order.indexOf(cur)-1)]; show(d);
+  if (d === 'como') comoMostrar(COMO.length - 1);   // de "Sobre você" volta à última etapa do "como fazer"
 });
 $('cta').addEventListener('click', () => {
   if (cur === 'inicio') show('como');
-  else if (cur === 'como') show('dados');
+  else if (cur === 'como'){ if (comoPasso < COMO.length - 1) comoMostrar(comoPasso + 1); else show('dados'); }
   else if (cur === 'dados'){
     if (faltam().length) return apontarDados();
     dadosOk = true; falar(' ', true);
