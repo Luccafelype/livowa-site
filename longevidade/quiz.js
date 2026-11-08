@@ -484,22 +484,15 @@ function renderResult() {
     main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_plano', onclick: () => clique('whatsapp_plano') }, R.sozinho.cta);
     alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.instagram, target: '_blank', rel: 'noopener', 'data-cta': 'seguir_instagram', onclick: () => clique('seguir_instagram') }, R.sozinho.alt);
   }
-  // link marcado (?lv=, 31/10/2026): quem veio do Direct não precisa de código; Direct em destaque, WhatsApp pequeno
-  const lv = Analytics.getLv();
-  if (lv) {
-    const msgWa = medico ? CONFIG.whatsapp.msgMedico(state, curto, op, cod) : CONFIG.whatsapp.msgPlano(state, curto, op, cod);
-    main = el('a', { class: 'btn', id: 'cta-main', href: CONFIG.links.direct, 'data-cta': 'direct-lv', onclick: (e) => { clique('direct-lv'); if (NO_INSTAGRAM) { e.preventDefault(); dicaDirect({ lv: true }); } } }, 'Voltar ao Instagram');
-    alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: wa(msgWa), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp', onclick: () => clique('whatsapp') }, 'Prefere WhatsApp?');
-  }
+  // 08/11 (Lucca): WhatsApp em primeiro também para quem veio do Direct pelo link marcado (?lv=); nada volta sozinho
+  // para o Direct, então essa pessoa vê o mesmo fim (código + WhatsApp + Direct com a mensagem copiada). O lv segue no evento.
   const video = playerVsl(vsl);
   return el('section', { class: 'screen info no-cta result' + (video ? ' com-video' : ''), 'data-id': 'resultado', 'data-vsl': vsl.id },
     pill(R.pill),
     el('h2', { html: fmt(vsl.titulo || '') }),
     vsl.frase ? el('p', { class: 'sub', html: fmt(vsl.frase) }) : null,
     video,
-    lv ? ctaInline(
-      el('p', { class: 'linha' }, 'Pronto! O Dr. Lucca já recebeu o seu teste e te responde aqui no Direct.'),
-      main, alt) : ctaInline(
+    ctaInline(
       el('div', { class: 'codigo' }, el('span', {}, R.codigoRotulo), el('b', { id: 'codigo' }, cod)),
       el('p', { class: 'linha' }, R.codigoLinha),
       main, alt),

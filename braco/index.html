@@ -509,37 +509,20 @@ function personalizar(){
 function mensagem(){
   return `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
 }
-// ---------- link marcado (?lv=, 31/10/2026): quem veio do Direct pelo link do Dr. Lucca não precisa de código ----------
-const LV = Analytics.getLv();
+// 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
+// volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
+// O lv continua indo nos eventos (props.lv, pelo funnel-analytics).
 function prepararFechamento(){
   $('res-cod').textContent = meuCodigo();
   $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado em vídeo';
-  $('f-sub').textContent = `Um vídeo de 1 minuto sobre o seu teste, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`;
+  $('f-sub').textContent = 'Um vídeo de 1 minuto sobre o seu teste, no seu WhatsApp, em até 24 horas. Ele grava um por um.';
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  if (LV) return fimDirect();
   $('f-wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('cta-dm').hidden = false;
 }
 const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
 $('cta-link').addEventListener('click', () => Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } }));
-$('cta-dm').addEventListener('click', e => {
-  if (LV){
-    Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps() } });
-    if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ lv:true }); }
-    return;
-  }
-  abrirDirect(e);
-});
-const IG_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>';
-function fimDirect(){   // ?lv=: "Voltar ao Instagram" em primeiro, WhatsApp como link; sem código
-  const dm = $('cta-dm'), wa = $('cta-link'), nota = $('f-nota');
-  $('f-cod').hidden = true; dm.hidden = false;
-  nota.textContent = 'O Dr. Lucca já recebeu o seu teste. É só voltar ao Direct.';
-  dm.className = 'btn ico'; dm.innerHTML = IG_SVG + '<span>Voltar ao Instagram</span>';
-  wa.className = 'link-alt'; wa.innerHTML = '<span>ou pelo WhatsApp</span>';
-  if (nota.previousElementSibling !== dm) nota.before(dm);
-  if (nota.nextElementSibling !== wa) nota.after(wa);
-}
+$('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 // Direct: o Instagram não aceita texto pronto; copia dentro do toque e deixa o link abrir o app (igual ao teste das pernas)
 function copiar(txt){
   let ok = false;

@@ -450,7 +450,7 @@ function montarResultado(j, f){
   // 6. ponte + botão (o desejo de 10 anos dela) e, fechado, os estudos
   const d = desejo();
   $('r-ponte-txt').textContent = `A foto mostra a parte de fora. Força, sono e exames o Dr. Lucca vê com você${d ? `, pensando em ${d}` : ''}.`;
-  $('r-cta-nota').textContent = LV ? 'Volta ao Direct com o seu código' : 'Abre o WhatsApp com o seu código';
+  $('r-cta-nota').textContent = 'Abre o WhatsApp com o seu código';   // 08/11: WhatsApp em primeiro também com ?lv=
   $('r-estudos-txt').innerHTML = ESTUDOS.map(([t, u, x]) => `<p><b>${esc(t)}.</b> ${esc(x)} <a href="${u}" target="_blank" rel="noopener">Ver o estudo</a></p>`).join('')
     + '<p>Estimativa feita por inteligência artificial a partir de fotos. Não é exame nem diagnóstico. As associações citadas vêm de estudos com grupos de pessoas e não preveem a saúde de ninguém individualmente. As fotos são usadas só para a análise e apagadas depois. Dr. Lucca Marques, CRM-GO 33.990.</p>';
   $('r-estudos').open = false;
@@ -484,17 +484,15 @@ function prepararFechamento(){
   $('cod').textContent = meuCodigo();
   const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado em vídeo';
   $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
-  const canal = LV ? 'Direct' : 'WhatsApp';
-  $('f-sub').textContent = FIM === 'B' ? `Ele responde pessoalmente no seu ${canal}, em até 24 horas.` : `Um vídeo de 1 minuto sobre as suas fotos, no seu ${canal}, em até 24 horas. Ele grava um por um.`;
+  $('f-sub').textContent = FIM === 'B' ? 'Ele responde pessoalmente no seu WhatsApp, em até 24 horas.' : 'Um vídeo de 1 minuto sobre as suas fotos, no seu WhatsApp, em até 24 horas. Ele grava um por um.';
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  if (LV) return fimDirect();
   $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('cta-dm').hidden = false;
 }
 const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo() });
 const fimValor = () => `explicar|fim${FIM}`;
 $('cta-wa').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps() } }); });
-$('cta-dm').addEventListener('click', e => { if (LV) return direto_lv(e); abrirDirect(e); });
+$('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 
 // Direct: o Instagram não aceita texto pronto. Copia DENTRO do toque (exigência do iOS), avisa e deixa o link abrir o app.
 function copiar(txt){
@@ -516,22 +514,9 @@ function abrirDirect(e){
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
 $('aviso-link').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor() + '|abrir', props:{ canal:'direct', ...fimProps() } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
-const LV = Analytics.getLv();
-const IG_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>';
-function fimDirect(){
-  const dm = $('cta-dm'), wa = $('cta-wa'), nota = $('f-nota');
-  $('f-cod').hidden = true; dm.hidden = false;
-  nota.textContent = 'O Dr. Lucca já recebeu a sua análise. É só voltar ao Direct.';
-  dm.className = 'btn ico'; dm.innerHTML = IG_SVG + '<span>Voltar ao Instagram</span>';
-  wa.className = 'link-alt'; wa.innerHTML = '<span>ou pelo WhatsApp</span>';
-  if (nota.previousElementSibling !== dm) nota.before(dm);
-  if (nota.nextElementSibling !== wa) nota.after(wa);
-}
-function direto_lv(e){
-  track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps() } });
-  if (!NO_INSTAGRAM) return;
-  e.preventDefault(); dicaDirect({ lv:true, voz:true });
-}
+// 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
+// volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
+// O lv continua indo nos eventos (props.lv, pelo funnel-analytics).
 
 // ---------- início ----------
 document.querySelectorAll('.opts[data-q]').forEach(ligarOpcoes);

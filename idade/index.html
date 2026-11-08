@@ -385,9 +385,9 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
   </section>
 
   <div class="cta" id="cta-bar"><div>
-    <!-- fim da pele (?pele): dois canais com o mesmo peso. WhatsApp leva a mensagem pronta; o Direct não aceita texto pronto, então ela vai copiada -->
-    <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg>WhatsApp</a>
-    <a class="btn ico" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>Direct do Instagram</a>
+    <!-- fim da pele (?pele), 08/11: WhatsApp em primeiro (botão), Direct como link embaixo. WhatsApp leva a mensagem pronta; o Direct não aceita texto pronto, então ela vai copiada -->
+    <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg>Enviar meu código pelo WhatsApp</a>
+    <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><span>ou pelo Direct do Instagram</span></a>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
     <button class="btn ghost" id="cta-2" type="button" hidden></button>
   </div></div>
@@ -562,7 +562,7 @@ function show(s){
   if (s === 'pele-envio'){ cta.textContent = 'Analisar minha pele'; c2.hidden = false; c2.textContent = capturas.length > 1 ? 'Tirar de novo' : 'Tirar outra foto'; }
   if (s === 'pele-analise'){ cta.hidden = true; }
   if (s === 'pele-erro'){ cta.textContent = peleErroRede ? 'Tentar de novo' : FOTOS === 3 ? 'Tirar de novo' : 'Tirar outra foto'; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
-  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; fimDirect(s); }
+  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; }
   window.scrollTo(0,0);
   medirBarra();
 }
@@ -846,23 +846,9 @@ function mensagem(){
   const fiz = pernas && peleRes ? 'o teste das pernas e da pele' : peleRes ? 'o teste da pele' : 'o teste das pernas';
   return `Oi, Dr. Lucca! Fiz ${fiz}. Meu código é ${meuCodigo()}. Quero entender meu resultado.`;
 }
-// ---------- link marcado (?lv=, 31/10/2026): quem veio do Direct pelo link do Dr. Lucca não precisa de código ----------
-const LV = Analytics.getLv();
-function fimDirect(sec){
-  if (!LV) return;
-  const el = document.querySelector(`[data-s="${sec}"]`); if (!el) return;
-  const sub = el.querySelector('.sub'); if (sub) sub.textContent = 'Pronto! O Dr. Lucca já recebeu o seu teste e te responde aqui no Direct.';
-  el.querySelectorAll('.cod-ref').forEach(x => { x.hidden = true; });
-  const dm = $('cta-dm'), wa = $('cta-link');
-  if (dm.lastChild && dm.lastChild.nodeType === 3) dm.lastChild.textContent = 'Voltar ao Instagram';
-  dm.onclick = e => {
-    Analytics.track('cta_click', { stepId:cur, valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM } });
-    if (!NO_INSTAGRAM) return;   // fora do app, o link abre o Instagram; dentro dele, abriria a página de login
-    e.preventDefault(); dicaDirect({ lv:true, voz });
-  };
-  wa.classList.add('ghost'); if (wa.lastChild && wa.lastChild.nodeType === 3) wa.lastChild.textContent = 'Prefere WhatsApp?';
-  if (dm.nextElementSibling !== wa) dm.parentNode.insertBefore(dm, wa);   // Direct primeiro, WhatsApp pequeno embaixo
-}
+// 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
+// volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
+// O lv continua indo nos eventos (props.lv, pelo funnel-analytics).
 // =====================================================================
 // FIM DAS PERNAS (02/11, molde da pele2): o resultado tem um botão só (o Dr. Lucca explica); o lembrete de 4 semanas saiu.
 // Tela final de um passo, em 3ª pessoa. Medição igual à pele2: cta_click com props.canal whatsapp/direct (é o que a
@@ -884,9 +870,8 @@ function mensagemFim(){
 function prepararFechamento(){
   $('res-cod').textContent = meuCodigo();
   $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado em vídeo';
-  $('f-sub').textContent = `Um vídeo de 1 minuto sobre o seu teste, no seu ${LV ? 'Direct' : 'WhatsApp'}, em até 24 horas. Ele grava um por um.`;
+  $('f-sub').textContent = 'Um vídeo de 1 minuto sobre o seu teste, no seu WhatsApp, em até 24 horas. Ele grava um por um.';
   $('f-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagemFim())}`;
-  if (LV) return fimDirectFechar();
   $('f-wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('f-dm').hidden = false;
 }
@@ -894,25 +879,7 @@ const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
 $('f-wa').addEventListener('click', () => Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } }));
 $('pele-erro-wa').addEventListener('click', () => Analytics.track('cta_click', { stepId:'pele-erro', valueText:'limite', props:{ canal:'whatsapp', codigo:meuCodigo() } }));
 $('pele-erro-dm').addEventListener('click', () => Analytics.track('cta_click', { stepId:'pele-erro', valueText:'limite', props:{ canal:'direct', codigo:meuCodigo() } }));
-$('f-dm').addEventListener('click', e => {
-  if (LV){
-    Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps() } });
-    if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ lv:true, voz }); }
-    return;
-  }
-  abrirDirect(e, mensagemFim(), fimProps());
-});
-// ?lv= (veio do Direct pelo link do Dr. Lucca): "Voltar ao Instagram" em primeiro, WhatsApp como link; sem código
-const IG_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>';
-function fimDirectFechar(){
-  const dm = $('f-dm'), wa = $('f-wa'), nota = $('f-nota');
-  $('f-cod').hidden = true; dm.hidden = false;
-  nota.textContent = 'O Dr. Lucca já recebeu o seu teste. É só voltar ao Direct.';
-  dm.className = 'btn ico'; dm.innerHTML = IG_SVG + '<span>Voltar ao Instagram</span>';
-  wa.className = 'link-alt'; wa.innerHTML = '<span>ou pelo WhatsApp</span>';
-  if (nota.previousElementSibling !== dm) nota.before(dm);
-  if (nota.nextElementSibling !== wa) nota.after(wa);
-}
+$('f-dm').addEventListener('click', e => abrirDirect(e, mensagemFim(), fimProps()));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 function ctaPernas(){
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp', props:{ canal:'whatsapp' } });

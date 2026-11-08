@@ -431,13 +431,12 @@ function prepararFechamento(){
   $('f-sub').textContent = ULT.n ? `${NUM_TXT[ULT.n] ? NUM_TXT[ULT.n][0].toUpperCase() + NUM_TXT[ULT.n].slice(1) : ULT.n} ${ULT.n === 1 ? 'ponto das suas respostas merece' : 'pontos das suas respostas merecem'} o olhar de um médico.`
     : `O que mais pesa no seu caso, ${PERFIL[ULT.perfil] || 'o seu resultado'}, merece o olhar de um médico.`;
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  if (LV) return fimDirect();
   $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('cta-dm').hidden = false;
 }
 const fimProps = e => ({ escolha:e, codigo:meuCodigo() });
 $('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
-$('cta-dm').addEventListener('click', e => { if (LV) return direto_lv(e, escolha()); abrirDirect(e); });
+$('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 
 // Direct: o Instagram não aceita texto pronto. Copia dentro do toque, avisa e deixa o link abrir o app (igual à pele2).
 function copiar(txt){
@@ -459,23 +458,9 @@ function abrirDirect(e){
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
 $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
-// link marcado (?lv=): quem veio do Direct pelo link do Dr. Lucca não precisa de código; "Voltar ao Instagram" + "ou pelo WhatsApp"
-const LV = Analytics.getLv();
-const IG_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>';
-function fimDirect(){
-  const dm = $('cta-dm'), wa = $('cta-wa'), nota = $('f-nota');
-  $('f-cod').hidden = true; dm.hidden = false;
-  nota.textContent = 'O Dr. Lucca já recebeu o seu resultado. É só voltar ao Direct.';
-  dm.className = 'btn ico'; dm.innerHTML = IG_SVG + '<span>Voltar ao Instagram</span>';
-  wa.className = 'link-alt'; wa.innerHTML = '<span>ou pelo WhatsApp</span>';
-  if (nota.previousElementSibling !== dm) nota.before(dm);
-  if (nota.nextElementSibling !== wa) nota.after(wa);
-}
-function direto_lv(e, esc_){
-  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-lv', props:{ canal:'direct', noInstagram:NO_INSTAGRAM, ...fimProps(esc_) } });
-  if (!NO_INSTAGRAM) return;
-  e.preventDefault(); dicaDirect({ lv:true, voz:false });
-}
+// 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
+// volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
+// O lv continua indo nos eventos (props.lv, pelo funnel-analytics).
 
 
 // ---------- início ----------
