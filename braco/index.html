@@ -57,9 +57,7 @@ p{margin:0}
 .seg button{font:600 1.05rem var(--body);padding:15px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .wheels{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.seg3{grid-template-columns:1fr 1fr}
 .seg.alerta button{border-color:var(--warn);background:var(--warn-bg)}
-.seg3 button:last-child{grid-column:1/-1;font-size:.95rem;padding:11px}
 .mini-anim{height:min(30vh,280px)}
 .wheelbox{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .wheelbox label{font-size:.82rem;color:var(--muted)}
@@ -73,7 +71,10 @@ p{margin:0}
 
 /* permissão do sensor */
 .screen.c{text-align:center}
-.sensor-ill{width:min(170px,46vw);height:auto;margin:16px auto 0;display:block}
+.sensor-ill{width:min(190px,50vw);height:auto;margin:16px auto 0;display:block;overflow:visible}
+.sensor-ill .antebraco{transform-box:view-box;transform-origin:80px 140px;animation:cotovelo 1.5s ease-in-out infinite alternate}
+@keyframes cotovelo{from{transform:rotate(-12deg)}to{transform:rotate(-138deg)}}
+@media (prefers-reduced-motion:reduce){.sensor-ill .antebraco{animation:none;transform:rotate(-75deg)}}
 .ok-sensor{display:inline-flex;align-self:center;align-items:center;gap:8px;background:var(--accent-2);color:var(--accent);border-radius:999px;padding:8px 16px;font:600 .95rem var(--body)}
 
 /* medição */
@@ -82,7 +83,11 @@ p{margin:0}
 .num small{font-size:.35em;color:var(--muted);font-weight:700}
 .dica{font-size:1.2rem;color:var(--muted)}
 .relogio{font:600 1.6rem var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
-body.valendo{background:var(--accent-2);transition:background .2s}
+/* 09/11 (Lucca): fundo verde = pode começar (do toque em Começar até o 1º movimento) e de novo no fim dos 10 s */
+body{transition:background .25s}
+body.valendo{background:#157a52}
+body.valendo .num,body.valendo .num small,body.valendo .dica,body.valendo .relogio{color:#fff}
+body.valendo .cta{background:none}
 html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-action:none}   /* durante a medição: sem rolar e sem puxar para recarregar */
 .ponto{display:flex;gap:10px;justify-content:center}
 .ponto i{width:14px;height:14px;border-radius:50%;background:var(--line);transition:background .15s}
@@ -169,8 +174,8 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
     <h2>Como fazer</h2>
     <div class="anim mini-anim" aria-hidden="true"><video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video></div>
     <ol class="steps">
-      <li><em>1</em><span>Fique em pé e segure o celular firme na mão, com a tela para cima.</span></li>
-      <li><em>2</em><span>Dobre e estique o cotovelo o mais rápido que conseguir, com o punho firme, como no vídeo.</span></li>
+      <li><em>1</em><span>Fique em pé e segure o celular muito firme na mão.</span></li>
+      <li><em>2</em><span>Dobre e estique o cotovelo o mais rápido que conseguir, com o punho firme, igual ao movimento do vídeo.</span></li>
       <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 10 segundos, sem parar. Um bip avisa o começo; dois bips, o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
@@ -178,10 +183,9 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   <section class="screen" data-s="dados" data-p="40" hidden>
     <h2>Sobre você</h2>
     <p class="sub">Antes do teste, informe seu sexo, sua idade e seu peso. O resultado é comparado com pessoas parecidas com você.</p>
-    <div class="seg seg3" role="group" aria-label="Sexo">
+    <div class="seg" role="group" aria-label="Sexo">   <!-- 09/11 (Lucca): só Homem ou Mulher; "Prefiro não informar" saiu -->
       <button type="button" data-sexo="m" aria-pressed="false">Homem</button>
       <button type="button" data-sexo="f" aria-pressed="false">Mulher</button>
-      <button type="button" data-sexo="n" aria-pressed="false">Prefiro não informar</button>
     </div>
     <div class="wheels">
       <div class="wheelbox"><label id="l-idade">Idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade"></div></div></div>
@@ -191,15 +195,24 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   </section>
 
   <section class="screen c" data-s="sensor" data-p="60" hidden>
-    <svg class="sensor-ill" viewBox="0 0 170 170" aria-hidden="true">
-      <rect x="55" y="20" width="60" height="120" rx="14" fill="none" stroke="var(--fg)" stroke-width="6"/>
-      <rect x="74" y="28" width="22" height="5" rx="2.5" fill="var(--fg)"/>
-      <path d="M30 70a58 58 0 0 1 14-34M140 70a58 58 0 0 0-14-34M22 92a76 76 0 0 1 8-46M148 92a76 76 0 0 0-8-46" fill="none" stroke="var(--accent)" stroke-width="6" stroke-linecap="round"/>
-      <circle cx="85" cy="80" r="16" fill="var(--accent-2)"/><circle cx="85" cy="80" r="6" fill="var(--accent)"/>
+    <!-- 09/11 (Lucca: o celular parado com arcos não dava a ideia de movimento): braço de lado, o antebraço com o celular
+         na mão dobra e estica no cotovelo, em loop. O mesmo desenho serve para "Sensor liberado". -->
+    <svg class="sensor-ill" viewBox="0 0 200 245" aria-hidden="true">
+      <defs><marker id="seta" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.2" markerHeight="3.2" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
+      <path d="M124 234.3A104 104 0 0 0 165.2 80.3" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 11" marker-start="url(#seta)" marker-end="url(#seta)"/>
+      <circle cx="70" cy="20" r="17" fill="var(--line)"/>
+      <rect x="42" y="40" width="50" height="150" rx="24" fill="var(--line)"/>
+      <path d="M80 58V138" stroke="var(--muted)" stroke-width="17" stroke-linecap="round"/>
+      <g class="antebraco">
+        <path d="M80 140V186" stroke="var(--muted)" stroke-width="14" stroke-linecap="round"/>
+        <rect x="67" y="182" width="26" height="46" rx="6" fill="var(--surface)" stroke="var(--fg)" stroke-width="4"/>
+        <rect x="75" y="187" width="10" height="3.5" rx="1.75" fill="var(--fg)"/>
+        <ellipse cx="80" cy="198" rx="15" ry="9" fill="var(--muted)"/>
+      </g>
+      <circle cx="80" cy="140" r="7" fill="var(--surface)" stroke="var(--muted)" stroke-width="3"/>
     </svg>
-    <h2>Libere o sensor de movimento</h2>
-    <p class="sub">O teste usa o sensor de movimento do celular. Nada é filmado e só o resultado sai do aparelho.</p>
-    <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o movimento. Toque em <b>Permitir</b>.</p>
+    <h2>Libere o sensor de movimento do celular</h2>
+    <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o sensor de movimento. Toque em <b>Permitir</b>.</p>
     <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
     <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 10 segundos. Um bip avisa o começo; dois bips, o fim.</p>
   </section>
@@ -218,8 +231,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
       <source src="/idade/img/logo/logo-caligrafia-pagina.mp4" type="video/mp4">
     </video>
     <h2>Analisando o seu <em>movimento</em>…</h2>
-    <p class="sub" id="an-etapa">Contando os movimentos</p>
-    <div class="loadrow"><span>ANALISANDO</span><span id="an-pct">0%</span></div>
+    <div class="loadrow"><span id="an-etapa">Calculando a velocidade…</span><span id="an-pct">0%</span></div>
     <div class="loadbar"><i id="an-bar"></i></div>
   </section>
 
@@ -242,14 +254,13 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   <section class="screen fim" data-s="fechar" data-p="100" hidden>
     <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
       <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
-    <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado em vídeo</h2>
-    <p class="sub" id="f-sub">Um vídeo de 1 minuto sobre o seu teste, no seu WhatsApp, em até 24 horas. Ele grava um por um.</p>
+    <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado, sem custo</h2>
     <div class="f-acao">
       <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="f-wa-txt">Enviar meu código pelo WhatsApp</span></a>
       <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
       <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
     </div>
-    <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b> · </span>Estimativa, não é diagnóstico.</p>
+    <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b></span></p>
   </section>
 
   <section class="screen c" data-s="erro" data-p="60" hidden>
@@ -299,7 +310,8 @@ window.lvPonte?.pintar(document.querySelector('[data-s="inicio"] .sub'), 'braco'
 const $ = id => document.getElementById(id);
 const WHATSAPP = '5562991774809';
 const ANTEBRACO = 0.30;                    // m, do cotovelo à mão: converte giro (°/s) em velocidade da mão
-const DURACAO = 10000, ESPERA_MAX = 8000;   // 10 s (decisão do Lucca, 31/10); o protocolo dos estudos é 20 s (Toosizadeh): a ficha corrige
+const DURACAO = 10000, ESPERA_MAX = 15000;   // 10 s (decisão do Lucca, 31/10); o protocolo dos estudos é 20 s (Toosizadeh): a ficha corrige.
+// 09/11: os 10 s (e o bip do começo) saem do 1º movimento; sem movimento em 15 s depois do toque, encerra com o aviso de erro.
 const ua = navigator.userAgent;
 const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
 const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro','fechar'];   // 'fechar' (02/11) no fim: não muda o número das outras etapas no Funil
@@ -342,6 +354,7 @@ document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click'
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
   document.documentElement.classList.toggle('medindo', s === 'medir');
+  if (s !== 'medir') document.body.classList.remove('valendo');
   cur = s; const el = document.querySelector(`[data-s="${s}"]`);
   Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s) });
   $('top').hidden = s === 'inicio' || s === 'medir' || s === 'analise' || s === 'resultado';
@@ -386,7 +399,7 @@ function atualizaEixo(){
   const M = [[0,0,0],[0,0,0],[0,0,0]];
   for (const a of win){ const v = a.v; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) M[r][c] += v[r] * v[c]; }
   let e = eixo.slice();
-  for (let k = 0; k < 10; k++){ const n = [0,1,2].map(r => M[r][0]*e[0] + M[r][1]*e[1] + M[r][2]*e[2]); const m = Math.hypot(...n) || 1; e = n.map(x => x / m); }
+  for (let k = 0; k < 10; k++){ const n = [0,1,2].map(r => M[r][0]*e[0] + M[r][1]*e[1] + M[r][2]*e[2]); const m = Math.hypot(...n); if (!(m > 1e-9)) return; e = n.map(x => x / m); }   // 09/11: janela toda parada (giro 0) não zera o eixo
   if (e[0]*eixo[0] + e[1]*eixo[1] + e[2]*eixo[2] < 0) e = e.map(x => -x);   // mantém o mesmo sentido
   eixo = e;
 }
@@ -398,7 +411,7 @@ function onMotion(ev){
   const v = [r.alpha || 0, r.beta || 0, r.gamma || 0];
   const s = { t: now - t0, v, w: Math.hypot(...v), acc: Math.hypot(a.x || 0, a.y || 0, a.z || 0) };
   amostras.push(s);
-  if (ini === null && s.w > 150){ ini = s.t; clearTimeout(fim); fim = setTimeout(encerrar, DURACAO); }   // 10 s contados do 1º movimento
+  if (ini === null && s.w > 150) comecou(s.t);   // 10 s contados do 1º movimento
   if (amostras.length % 10 === 0) atualizaEixo();
   if (ini === null) return;   // só conta depois que o movimento de verdade começou
   const p = v[0]*eixo[0] + v[1]*eixo[1] + v[2]*eixo[2];
@@ -433,14 +446,23 @@ function bip(){ try { audio = audio || new (window.AudioContext || window.webkit
   o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + .36); } catch {} }
 function medir(){
   // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; os 10 s contam do 1º movimento.
-  try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {}   // libera o bip dentro do toque
-  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Valendo! O máximo que conseguir, sem parar'; $('relogio').textContent = '10 s';
-  bip(); document.body.classList.add('valendo'); setTimeout(() => document.body.classList.remove('valendo'), 600);   // sinal claro de início: bip + tela pisca
+  // 09/11 (Lucca): do toque até o 1º movimento o fundo fica verde (pode começar); o bip do começo toca no 1º movimento.
+  try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume();   // libera o bip dentro do toque
+        const o = audio.createOscillator(), g = audio.createGain(); g.gain.value = 0; o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + .05); } catch {}
+  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Pode começar: dobre e estique o cotovelo'; $('relogio').textContent = '10 s';
+  document.body.classList.add('valendo');
   amostras = []; picos = []; meias = []; estado = 0; picoAtual = 0; eixo = [1, 0, 0]; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
-  fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 8 s, encerra
+  clearTimeout(fim); fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 15 s, encerra
   clearInterval(relogioT); relogioT = setInterval(() => {
     if (ini === null) return; const resta = Math.max(0, Math.ceil((DURACAO - (performance.now() - t0 - ini)) / 1000)); $('relogio').textContent = resta + ' s';
   }, 200);
+}
+
+// 1º movimento: bip, o fundo volta ao normal e os 10 s começam a contar
+function comecou(t){
+  ini = t; clearTimeout(fim); fim = setTimeout(encerrar, DURACAO);
+  bip(); vibrar(60); document.body.classList.remove('valendo');
+  $('dica').textContent = 'Valendo! O máximo que conseguir, sem parar';
 }
 
 // ---------- código e resultado ----------
@@ -451,6 +473,7 @@ function encerrar(){
   if (!gravando) return; gravando = false; clearTimeout(fim); clearInterval(relogioT); bip(); setTimeout(bip, 420); vibrar([60, 60, 60]);
   fechaMeia(); picos = meias;
   const reps = Math.floor(picos.length / 2);
+  if (reps){ document.body.classList.add('valendo'); $('relogio').textContent = '0 s'; $('dica').textContent = 'Pronto! Pode parar'; }   // 09/11: fim dos 10 s = verde de novo
   const wmaxAll = amostras.length ? Math.round(Math.max(...amostras.map(s => s.w))) : 0;
   if (!reps){
     Analytics.track('answer', { stepId:'medir', valueText:'sem-movimento', props:{ nav:NAV, leituras:amostras.length, wmax:wmaxAll, hz:hz.length } });
@@ -465,7 +488,7 @@ function encerrar(){
   const dp = a => { const m = media(a); return Math.sqrt(media(a.map(x => (x - m) ** 2))); };
   const variab = amp.length > 2 ? Math.round(dp(amp) / media(amp) * 100) : null;
   const vmao = Math.max(...picos.filter((_, i) => i % 2 === 0).map(p => p.w)) * Math.PI / 180 * ANTEBRACO;
-  analisar(() => {
+  setTimeout(() => analisar(() => {
     $('res-cod').textContent = meuCodigo();
     // 02/11: a tela repete o que o sensor mediu (a pessoa viu o número subir) e cita as respostas dela em cada frase
     $('res-medida').textContent = `${reps} ${reps === 1 ? 'movimento' : 'movimentos'} em ${Math.round(DURACAO / 1000)}\u00a0s`;
@@ -480,11 +503,11 @@ function encerrar(){
           wmaxSeg:Array.from({ length:12 }, (_, k) => Math.round(Math.max(0, ...amostras.filter(a => a.t - z >= k * 1000 && a.t - z < (k + 1) * 1000).map(a => a.w)))),
           picosT:picos.slice(0, 60).map(p => Math.round((p.t - z) / 100) / 10) } } });
     show('resultado');
-  });
+  }), 1400);   // o verde do fim fica 1,4 s na tela antes da análise
 }
 function analisar(fim){
-  show('analise'); const etapas = ['Contando os movimentos', 'Medindo a velocidade de cada uma', 'Comparando com os estudos de envelhecimento', 'Preparando o seu resultado'];
-  let k = 0; const T = 4200, t1 = performance.now();
+  show('analise'); const etapas = ['Calculando a velocidade…', 'Medindo a amplitude…', 'Verificando a aceleração máxima…', 'Comparando com pessoas da sua idade…'];   // 09/11 (Lucca): uma frase por vez, junto com a %
+  let k = 0; const T = 4200, t1 = performance.now(); $('an-etapa').textContent = etapas[0]; $('an-bar').style.width = '0%'; $('an-pct').textContent = '0%';
   const iv = setInterval(() => {
     const f = Math.min(1, (performance.now() - t1) / T); $('an-bar').style.width = Math.round(f * 100) + '%'; $('an-pct').textContent = Math.round(f * 100) + '%';
     const e = Math.min(etapas.length - 1, Math.floor(f * etapas.length)); if (e !== k || f === 0){ k = e; $('an-etapa').textContent = etapas[e]; }
@@ -514,8 +537,7 @@ function mensagem(){
 // O lv continua indo nos eventos (props.lv, pelo funnel-analytics).
 function prepararFechamento(){
   $('res-cod').textContent = meuCodigo();
-  $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado em vídeo';
-  $('f-sub').textContent = 'Um vídeo de 1 minuto sobre o seu teste, no seu WhatsApp, em até 24 horas. Ele grava um por um.';
+  $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado, sem custo';
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('f-wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('cta-dm').hidden = false;

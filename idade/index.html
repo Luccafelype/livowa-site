@@ -175,12 +175,6 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .regua .m.voce{color:var(--muted)} .regua .m.voce span{top:4px} .regua .m.voce i{background:var(--surface);border:3px solid var(--muted)}
 .regua .m.pernas{color:var(--accent)} .regua .m.pernas span{top:60px} .regua .m.pernas i{background:var(--accent)}
 .cod-nota{color:var(--muted);font-size:.8rem;margin-top:-10px}
-.pele-card{background:var(--surface);border:1.5px solid var(--accent);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:8px;text-align:left}
-.pele-card canvas{width:84px;height:96px;grid-row:span 1}
-.pele-card div{display:flex;flex-direction:column;gap:6px}
-.pele-card h3{margin:0;font:700 1.3rem/1.1 var(--display)}
-.pele-card p{margin:0;font-size:.9rem;color:var(--muted)}
-.pele-card .btn{grid-column:1/3;margin-top:8px}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .duo .mini b{font-size:1.15rem}
 .sinal{display:grid;grid-template-columns:30px 1fr auto;gap:0 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
@@ -220,7 +214,6 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .medida b{font:800 1.7rem/1.15 var(--display);color:var(--accent)}
 .res-txt{font-size:1.02rem}
 .res-txt b{font-weight:600}
-.pele-card .btn.sec{background:var(--surface);color:var(--accent);border:1.5px solid var(--accent);padding:13px}
 .screen.fim{gap:14px}
 .f-acao{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .f-nota{text-align:center;font-size:.88rem;color:var(--muted)}
@@ -234,18 +227,20 @@ details.how ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:col
 .cel{position:absolute;left:50%;top:50px;height:calc(93% - 50px);aspect-ratio:1/2;transform:translateX(-50%);border-radius:16%/8%;background:#16181a;
   box-shadow:0 14px 16px -12px rgba(0,0,0,.55),inset 0 0 0 1.5px #3a3d40;transition:top .3s ease,height .3s ease}
 .cel .tela{position:absolute;top:2%;bottom:2%;left:4%;right:4%;border-radius:12%/5.8%;overflow:hidden;background:#d9d6d0}
-.cel video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:52% 50%;transform:scaleX(-1)}
+/* 09/11: a pessoa e a cadeira ocupam de 23% a 90% da largura do vídeo (centro em 56,5%); 94% põe esse centro no meio da tela */
+.cel video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:94% 50%;transform:scaleX(-1) scale(1.08);transform-origin:50% 42%}
 .cel .ilha{position:absolute;top:3.7%;left:50%;width:30%;height:3.4%;transform:translateX(-50%);border-radius:99px;background:#050506;z-index:2}
 .cel .ilha::after{content:"";position:absolute;right:9%;top:18%;height:64%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%,#4a6d9c,#0c1a30 62%)}
 .cel .ilha::before{content:"";position:absolute;inset:-55% -12%;border-radius:99px;border:2px solid #52c99c;animation:pulso 1.6s ease-out infinite}
 @keyframes pulso{0%{opacity:.95;transform:scale(.92)}100%{opacity:0;transform:scale(1.6)}}
 .demo .rot{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:3;background:var(--accent);color:var(--on-accent);border-radius:999px;padding:3px 12px;font:600 .82rem/1.4 var(--body);white-space:nowrap}
 .demo .rot::after{content:"";position:absolute;left:50%;top:100%;width:2px;height:22px;background:var(--accent);transform:translateX(-50%)}
-.cel .conta{position:absolute;left:7%;bottom:3.5%;z-index:2;display:none;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:3px 10px;font:700 .82rem/1.4 var(--body);font-variant-numeric:tabular-nums}
-.demo[data-passo="2"] .rot,.demo[data-passo="2"] .ilha::before{display:none}
-.demo[data-passo="2"] .cel{top:12px;height:calc(93% - 12px)}
-.demo[data-passo="2"] .conta{display:block}
+.cel .conta{position:absolute;left:50%;bottom:3.5%;transform:translateX(-50%);z-index:2;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:3px 10px;font:700 .82rem/1.4 var(--body);font-variant-numeric:tabular-nums}
 .screen.como .notice{margin-top:-2px}
+.como-passos{gap:6px}
+.como-passos li{font-size:.95rem;line-height:1.4;color:var(--fg)}
+.como-passos li em{width:22px;height:22px;font-size:.78rem;margin-top:1px}
+@media (max-height:700px){.screen.como{gap:10px}.screen.como h2{font-size:1.5rem}.como-passos li{font-size:.9rem;line-height:1.35}.demo{min-height:150px}.cel{top:40px;height:calc(94% - 40px)}.demo .rot::after{height:14px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script>/* link da pele (?pele=1|teste): esconde a página até o script abrir a pele, para não piscar a tela das pernas */
@@ -271,23 +266,26 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
   </section>
 
   <!-- como fazer (08/11, Lucca: a imagem mostrava o celular gravando com a câmera traseira, não era vídeo e tinha de rolar).
-       O teste usa a câmera da FRENTE (facingMode 'user'): celular de pé, tela virada para a pessoa. A demonstração é o vídeo
-       da capa dentro de um celular desenhado (é o que a câmera da frente mostra). Duas etapas, uma por vez, na mesma tela
-       (o painel do Funil continua vendo uma etapa só, 'como'); textos em COMO, no script. -->
+       O teste usa a câmera frontal (facingMode 'user'): celular de pé, tela virada para a pessoa. A demonstração é o vídeo
+       da capa dentro de um celular desenhado (é o que a câmera frontal mostra), com a pessoa e a cadeira no centro da tela.
+       09/11 (Lucca): as duas etapas viraram uma tela só, sem rolar no iPhone, com o aviso de segurança. -->
   <section class="screen como" data-s="como" data-p="25" hidden>
-    <h2 id="como-tit">Celular em pé, com a tela virada para você</h2>
-    <div class="demo" id="como-demo" data-passo="1" aria-hidden="true">
-      <span class="rot">câmera da frente</span>
+    <h2 id="como-tit">Sente de lado e levante 5 vezes</h2>
+    <div class="demo" id="como-demo" aria-hidden="true">
+      <span class="rot">câmera frontal</span>
       <div class="cel">
         <div class="tela">
-          <video id="como-video" src="img/movimento.mp4" poster="img/movimento.jpg" muted loop playsinline preload="none"></video>
+          <video id="como-video" src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline preload="auto"></video>
           <span class="conta" id="como-conta">0/5</span>
         </div>
         <i class="ilha"></i>
       </div>
     </div>
-    <p class="sub" id="como-sub">No chão ou numa mesa baixa, a uns 2 passos. Do ombro ao joelho na tela.</p>
-    <p class="notice" id="como-aviso" hidden>Não faça se tiver dor no peito, tontura, problema no joelho ou no quadril, ou uma queda recente. Tenha alguém por perto.</p>
+    <ol class="steps como-passos">
+      <li><em>1</em><span>Celular em pé no chão ou numa mesa baixa, a uns 2 passos, com a tela virada para você. Do ombro ao joelho na tela.</span></li>
+      <li><em>2</em><span>Braços cruzados, o mais rápido que conseguir. A voz te guia.</span></li>
+    </ol>
+    <p class="notice" id="como-aviso">Não faça se tiver dor no peito, tontura, problema no joelho ou no quadril, ou uma queda recente. Tenha alguém por perto.</p>
   </section>
 
   <section class="screen" data-s="dados" data-p="50" hidden>
@@ -320,17 +318,9 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
   <section class="screen final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Teste concluído</span>
     <h2 id="res-tit">Seu teste está <em>pronto</em></h2>
-    <div class="medida"><span class="rot">O que a câmera mediu</span><b id="res-medida">5 levantadas em 0,0 s</b></div>
+    <div class="medida"><span class="rot">O que a câmera mediu</span><b id="res-medida">5 movimentos em 0,0 s</b></div>
     <p class="res-txt" id="res-txt1"></p>
     <p class="res-txt" id="res-txt2"></p>
-    <div class="pele-card" id="pele-card" hidden>
-      <div>
-        <span class="pill sm" id="pele-card-pill">Uma selfie</span>
-        <h3 id="pele-card-h">Agora a <em>pele</em>: 30 segundos</h3>
-        <p>A análise da pele vai junto no mesmo código.</p>
-      </div>
-      <button class="btn sec" id="pele-ir" type="button">Fazer a análise da pele</button>
-    </div>
   </section>
 
   <!-- tela final (02/11, molde da pele2): UM passo só, em 3ª pessoa. -->
@@ -344,7 +334,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
       <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
       <a class="link-alt" id="f-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
     </div>
-    <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b> · </span>Estimativa, não é diagnóstico.</p>
+    <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b></span></p>
   </section>
 
   <!-- ===================== PELE ===================== -->
@@ -561,20 +551,10 @@ function guiaEstavel(txt, ok){
   if (moda !== g.textContent && k >= guiaJanela.length / 2 && guiaJanela.length >= 3) guia(moda, guiaJanela.findLast(x => x.txt === moda).ok);
 }
 
-// ---------- como fazer (08/11): duas etapas, uma por vez, na mesma tela 'como' ----------
-// O analytics não muda: a tela continua sendo a etapa 'como' (índice 1) no painel do Funil.
-const COMO = [
-  { tit:'Celular em pé, com a tela virada para você', sub:'No chão ou numa mesa baixa, a uns 2 passos. Do ombro ao joelho na tela.', cta:'Continuar', p:25 },
-  { tit:'Sente de lado e levante 5 vezes', sub:'Braços cruzados, o mais rápido que conseguir. A voz te guia.', cta:'Entendi', p:35 },
-];
-let comoPasso = 0;
-function comoMostrar(i){
-  comoPasso = i; const c = COMO[i], sec = document.querySelector('[data-s="como"]');
-  $('como-tit').textContent = c.tit; $('como-sub').textContent = c.sub; $('como-aviso').hidden = i < COMO.length - 1;
-  $('como-demo').dataset.passo = String(i + 1); $('cta').textContent = c.cta; $('progress').style.width = c.p + '%';
-  sec.style.animation = 'none'; void sec.offsetWidth; sec.style.animation = '';   // entrada da etapa, como numa tela nova
+// ---------- como fazer (09/11): uma tela só, etapa 'como' no painel do Funil ----------
+function comoMostrar(){
+  $('cta').textContent = 'Entendi';
   const v = $('como-video'); try { const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch {}   // mudo; roda dentro do toque
-  window.scrollTo(0, 0); medirBarra();
 }
 // contador da demonstração: cada volta do vídeo (4 s) é uma levantada; conta de 0 a 5 e recomeça
 { const v = $('como-video'); let t0 = 0, n = 0;
@@ -593,7 +573,7 @@ function show(s){
   const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true; $('cta-dm').hidden = true;
   $('cta-bar').hidden = s === 'fechar';   // tela final: o botão mora na própria tela
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
-  if (s === 'como') comoMostrar(0);
+  if (s === 'como') comoMostrar();
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
   // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
@@ -616,14 +596,12 @@ function medirBarra(){ document.documentElement.style.setProperty('--cta-h', doc
 addEventListener('resize', medirBarra);
 $('back').addEventListener('click', () => {
   pararCamera(); pararCameraPele();
-  if (cur === 'como' && comoPasso > 0) return comoMostrar(comoPasso - 1);   // 08/11: voltar dentro do "como fazer"
   if (VOLTA[cur]){ const d = VOLTA[cur]; show(d); if (d === 'pele-camera') abrirCameraPele(); return; }
   const d = order[Math.max(0, order.indexOf(cur)-1)]; show(d);
-  if (d === 'como') comoMostrar(COMO.length - 1);   // de "Sobre você" volta à última etapa do "como fazer"
 });
 $('cta').addEventListener('click', () => {
   if (cur === 'inicio') show('como');
-  else if (cur === 'como'){ if (comoPasso < COMO.length - 1) comoMostrar(comoPasso + 1); else show('dados'); }
+  else if (cur === 'como') show('dados');
   else if (cur === 'dados'){
     if (faltam().length) return apontarDados();
     dadosOk = true; falar(' ', true);
@@ -811,10 +789,9 @@ function resultado(c){
   // decisão do Lucca (28/10): o resultado NÃO aparece na tela; vai no evento 'complete' com o código e ele responde por áudio
   // 02/11: a tela repete o que a câmera mediu (a pessoa viu o tempo correr) e cita as respostas dela em cada frase
   $('res-cod').textContent = meuCodigo();
-  $('res-medida').textContent = `${c.reps} levantadas em ${fmt(t)}\u00a0s`;
+  $('res-medida').textContent = `${c.reps} movimentos em ${fmt(t)}\u00a0s`;   // 09/11 (Lucca): "movimentos", não "levantadas"
   personalizar();
   pernas = { rel, idade, faixa:eq.txt };
-  $('pele-card').hidden = !PELE_ENDPOINT;
   falar('Pronto.', true);
   Analytics.track('complete', { stepId:'resultado', stepIndex:order.length, valueText:eq.txt,
     props:{ codigo:meuCodigo(), t:+t.toFixed(1), rel:+rel.toFixed(2), pc, faixa:eq.txt, vel:vel ? +vel.toFixed(2) : null, idade, sexo, peso:m, altura:dados.altura, reps:c.reps } });
@@ -1313,7 +1290,6 @@ function atualizarEnvio(){
 document.querySelectorAll('#pele-opts .opt').forEach(b => b.addEventListener('click', () => { opcoes[b.dataset.o] = !opcoes[b.dataset.o]; atualizarEnvio(); }));
 $('pele-ok').addEventListener('change', () => { if (cur === 'pele-inicio') $('cta').classList.toggle('off', !$('pele-ok').checked); $('pele-ok').closest('.consent').classList.remove('alerta'); });
 function apontarAceite(){ const l = $('pele-ok').closest('.consent'); l.classList.add('alerta'); l.scrollIntoView({ block:'center', behavior:'smooth' }); falar('Marque a autorização para continuar', true); }
-$('pele-ir').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'resultado', valueText:'pele', props:{ fotos:FOTOS } }); show('pele-inicio'); });
 // galeria sem o aceite: aponta o aceite em vez de não fazer nada
 $('cta-2').addEventListener('click', () => { if (cur === 'pele-inicio' && !$('pele-ok').checked) apontarAceite(); }, true);
 
@@ -1378,8 +1354,6 @@ window.__peleEstado = () => ({ ultimoEnvio, capturas: capturas.length, fase, fot
 
 // textos da variante de 3 fotos
 if (FOTOS === 3){
-  $('pele-card-pill').textContent = '3 selfies';
-  $('pele-card-h').innerHTML = 'Agora a <em>pele</em>: 40 segundos';
   $('pele-ini-pill').textContent = '40 segundos · 3 selfies';
   $('pele-ini-sub').textContent = 'São 3 selfies de frente para a luz: com o rosto parado, sorrindo e com as sobrancelhas levantadas. A câmera tira cada uma sozinha: não precisa tocar em nada.';
   $('pele-aceite').textContent = 'Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minhas fotos só para analisá-las conforme os meus interesses, e depois elas serão apagadas definitivamente.';
