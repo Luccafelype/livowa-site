@@ -500,7 +500,7 @@ function textoCTA(fx){
   if (disse) partes.push(`${nome ? `${nome}, você` : 'Você'} disse que ${disse}.`);
   if (fx) partes.push(`O seu rosto aparenta de ${fx.min} a ${fx.max} anos.`);
   partes.push(FIM === 'B' ? 'Mande o seu código: o Dr. Lucca olha o seu caso e explica o que pesa e por onde começar.'
-                          : 'Mande o seu código: o Dr. Lucca grava um vídeo curto explicando o que pesa no seu caso e por onde começar.');
+                          : 'Mande o seu código: o Dr. Lucca analisa o seu caso e te explica o que pesa e por onde começar.');
   return partes.join(' ');
 }
 
@@ -524,7 +524,7 @@ function prepararFechamento(){
   const d = desejo();
   const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado, sem custo.' : `o Dr. Lucca vai te explicar, sem custo, por onde começar${d ? ` para ${d}` : ''}.`;
   $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
-  $('f-sub').textContent = FIM === 'B' ? 'Ele responde pessoalmente no seu WhatsApp, em até 24 horas.' : '';
+  $('f-sub').textContent = '';   // 09/11: decisão de 03/11 do Lucca, nada de "vídeo/grava um por um" nem "responde em até 24 h"
   $('f-sub').hidden = FIM !== 'B';
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';

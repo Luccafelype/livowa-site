@@ -582,9 +582,9 @@ const escolha = () => 'explicar';
 function prepararFechamento(){
   const nome = nomeBonito();
   $('cod').textContent = meuCodigo();
-  const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado em vídeo';
+  const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado';
   $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
-  $('f-sub').textContent = FIM === 'B' ? 'Ele responde pessoalmente no seu WhatsApp, em até 24 horas.' : 'Um vídeo de 1 minuto sobre a sua foto, no seu WhatsApp, em até 24 horas. Ele grava um por um.';
+  $('f-sub').textContent = '';   // 09/11: decisão do Lucca de 03/11 (tirar os dois textos do A/B: vídeo um por um e 24 h)
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('cta-dm').hidden = false;
