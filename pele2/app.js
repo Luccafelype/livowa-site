@@ -84,9 +84,11 @@ function show(s){
   cta.textContent = 'Continuar';
   if (s === 'capa') cta.textContent = 'Começar a análise';
   if (s === 'nome'){ cta.classList.toggle('off', nome1().length < 2); }
-  if (s === 'objetivo') objetivoPorSexo();
+  if (s === 'objetivo'){ objetivoPorSexo(); fotosDoQuadro(); }   // as fotos do quadro já carregam na tela anterior à instrução
   if (QUIZ.includes(s)) cta.classList.toggle('off', !respondida(s));
-  if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); animarIlustracao(); }
+  if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); prepararQuadro(); }
+  else pararQuadro();
+  if ($('creditos-caixa').open) fecharCreditos();
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
   if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
   if (s === 'fechar') prepararFechamento();
@@ -153,27 +155,43 @@ function montarGrade(){
     const itens = Object.values(c).filter((x, i, a) => a.findIndex(y => y.autor === x.autor) === i)
       .map(x => `${esc(x.autor)}, ${esc(x.licenca)}, <a href="${esc(x.fonte)}" target="_blank" rel="noopener">${fonte(x.fonte)}</a>`);
     $('creditos').innerHTML = `Fotos: ${itens.join(' · ')}. Recortadas e reduzidas; os recortes de fotos CC BY-SA seguem a mesma licença.`;
+    $('creditos-ver').hidden = false;   // o link só aparece com os créditos carregados
   }).catch(() => {});
 }
-// ilustração da instrução: um rosto que vira para a esquerda e para a direita, e o anel acende junto (mesmo ciclo do CSS)
-let ilustT = null;
-function animarIlustracao(){
-  const svg = $('rosto-ill');
-  if (!svg.childElementCount){
-    let h = '<g class="cabeca"><ellipse cx="100" cy="100" rx="50" ry="64" fill="#e7ece8"/></g><g class="traco"><circle cx="82" cy="92" r="5" fill="#5f6d65"/><circle cx="118" cy="92" r="5" fill="#5f6d65"/><path d="M100 98v16" stroke="#5f6d65" stroke-width="4" stroke-linecap="round"/><path d="M86 128q14 9 28 0" fill="none" stroke="#5f6d65" stroke-width="4" stroke-linecap="round"/></g>';
-    for (let k = 0; k < 48; k++){ const a = k*7.5*Math.PI/180; h += `<line class="tk" x1="${(100 + 64*Math.cos(a)).toFixed(1)}" y1="${(100 - 79*Math.sin(a)).toFixed(1)}" x2="${(100 + 76*Math.cos(a)).toFixed(1)}" y2="${(100 - 92*Math.sin(a)).toFixed(1)}"/>`; }
-    svg.innerHTML = h;
-  }
-  clearInterval(ilustT);
-  const tks = [...svg.querySelectorAll('.tk')], t0 = performance.now();
-  ilustT = setInterval(() => {
-    if (cur !== 'instrucao') return clearInterval(ilustT);
-    const f = ((performance.now() - t0) % 4800) / 4800;   // 0-0,14 frente · 0,3-0,44 esquerda · 0,6-0,74 direita
-    tks.forEach((tk, k) => { const a = k*7.5, topo = (a > 60 && a < 120) || (a > 240 && a < 300), esq = a >= 120 && a <= 240;
-      const on = f < .95 && ((topo && f > .06) || (esq && f > .2 + Math.abs(a - 180)/60*.12) || (!topo && !esq && f > .5 + Math.min(Math.abs(a), Math.abs(a - 360))/60*.12));
-      tk.classList.toggle('on', on); });
-  }, 80);
+// créditos das fotos (09/11): link discreto embaixo da grade → caixa com a atribuição completa, que as licenças CC BY e
+// CC BY-SA exigem. Fecha no botão, no Esc (nativo do <dialog>) e tocando fora da caixa.
+const caixaCred = $('creditos-caixa');
+function abrirCreditos(){ if (caixaCred.showModal) caixaCred.showModal(); else caixaCred.setAttribute('open', ''); }
+function fecharCreditos(){ if (caixaCred.close) caixaCred.close(); else caixaCred.removeAttribute('open'); }
+$('creditos-ver').addEventListener('click', abrirCreditos);
+$('creditos-fechar').addEventListener('click', fecharCreditos);
+caixaCred.addEventListener('click', e => { if (e.target === caixaCred) fecharCreditos(); });   // o toque fora cai no fundo (::backdrop)
+// ---------- instrução: quadro realista em crossfade (o mesmo da /pele/, 09/11, pedido do Lucca) ----------
+// Homem vê homem, mulher vê mulher (R.sexo). O lado oposto é a mesma imagem espelhada pelo CSS. Vídeo, quando existir:
+// ponha o caminho (ex.: 'img/instrucao-f.mp4') e ele entra no lugar do crossfade. Com "reduzir movimento", fica a frente parada.
+const QUADROS = { f:{ frente:'img/mulher-frente.webp?v=1', lado:'img/mulher-lado.webp?v=1' }, m:{ frente:'img/homem-frente.webp?v=1', lado:'img/homem-lado.webp?v=1' } };
+const VIDEO_INSTRUCAO = { f:'', m:'' };
+const sexoQuadro = () => R.sexo === 'm' ? 'm' : 'f';
+function fotosDoQuadro(){   // só troca o src quando muda (voltar e trocar o sexo troca as fotos)
+  const q = QUADROS[sexoQuadro()], box = $('quadro');
+  for (const [sel, src] of [['.q-f', q.frente], ['.q-e', q.lado], ['.q-d', q.lado]]){ const im = box.querySelector(sel); if (im.getAttribute('src') !== src) im.src = src; }
 }
+// tela baixa (iPhone com as barras do Safari, 375×667): o quadro vai para o lado dos passos, senão ficaria com 118 px
+const encaixarQuadro = () => $('quadro').closest('.instr').classList.toggle('lado', innerHeight < 750);
+addEventListener('resize', () => { if (cur === 'instrucao') encaixarQuadro(); });
+function prepararQuadro(){
+  const sx = sexoQuadro(), box = $('quadro'), vid = $('q-video'), parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  fotosDoQuadro(); encaixarQuadro();
+  if (VIDEO_INSTRUCAO[sx] && !parado){
+    box.classList.add('video'); box.classList.remove('anda'); vid.hidden = false;
+    if (!vid.src.endsWith(VIDEO_INSTRUCAO[sx])) vid.src = VIDEO_INSTRUCAO[sx];
+    vid.muted = true; vid.play?.().catch(() => {});
+  } else {
+    box.classList.remove('video', 'anda'); vid.hidden = true;
+    void box.offsetWidth; box.classList.add('anda');   // recomeça o ciclo pela frente
+  }
+}
+function pararQuadro(){ $('quadro').classList.remove('anda'); const v = $('q-video'); if (!v.hidden) try { v.pause(); } catch {} }
 
 // ---------- botões principais ----------
 $('cta').addEventListener('click', () => {

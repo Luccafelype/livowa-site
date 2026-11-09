@@ -8,7 +8,7 @@
 <title>Que idade a sua pele mostra · Dr. Lucca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
-<link rel="stylesheet" href="pele2.css?v=8">
+<link rel="stylesheet" href="pele2.css?v=9">
 </head>
 <body>
 <div class="app">
@@ -18,7 +18,7 @@
   <section class="screen capa" data-s="capa">
     <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="72" height="72">
       <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
-    <h1>Que idade a sua pele mostra? Veja pela foto, com a <em>leitura de um médico</em></h1>
+    <h1>Que idade a sua pele mostra?</h1>
     <p class="sub">Responda algumas perguntas, tire uma foto e veja a idade que o seu rosto aparenta e o que mais pesa nela, região por região. Leva poucos minutos.</p>
   </section>
 
@@ -56,7 +56,7 @@
 
   <!-- 2b · nome: depois das primeiras perguntas de toque, quando a pessoa já investiu (posição a testar) -->
   <section class="screen" data-s="nome" hidden>
-    <h2>Como posso te chamar no seu relatório?</h2>
+    <h2>Como posso te chamar?</h2>
     <label class="campo"><span class="sr">Seu primeiro nome</span>
       <input id="nome" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" maxlength="40" placeholder="Seu primeiro nome"></label>
   </section>
@@ -66,7 +66,13 @@
     <h2><span class="nm"></span>o que mais te incomoda na sua pele hoje?</h2>
     <p class="sub">Escolha até 3. A análise começa por elas.</p>
     <div class="grade" data-q="incomoda" data-tipo="ate3" id="grade"></div>
-    <p class="creditos" id="creditos"></p>
+    <!-- 09/11 (Lucca): a linha de créditos virou um link discreto; as licenças CC BY / CC BY-SA exigem a atribuição, que abre numa caixa -->
+    <button type="button" class="creditos-ver" id="creditos-ver" aria-haspopup="dialog" aria-controls="creditos-caixa" hidden>Créditos das fotos</button>
+    <dialog class="creditos-caixa" id="creditos-caixa" aria-labelledby="creditos-tit"><div>
+      <b id="creditos-tit">Créditos das fotos</b>
+      <p class="creditos" id="creditos"></p>
+      <button type="button" class="btn" id="creditos-fechar">Fechar</button>
+    </div></dialog>
   </section>
 
   <!-- 4 · tipo de pele -->
@@ -141,15 +147,27 @@
     </div>
   </section>
 
-  <!-- 12 · instrução da câmera + aceite: cabe numa tela de iPhone (390×664) sem rolar -->
+  <!-- 12 · instrução da câmera + aceite: cabe numa tela de iPhone (390×664) sem rolar.
+       09/11 (Lucca): no lugar do rosto desenhado, o quadro realista da /pele/ (homem para homem, mulher para mulher), em
+       crossfade frente → esquerda → frente → direita. Tela alta: quadro em cima dos passos; tela baixa (< 750 px, .lado):
+       quadro ao lado dos passos, para o quadro não encolher -->
   <section class="screen instr" data-s="instrucao" hidden>
     <h2>Agora, a foto: vamos ver a idade que o seu rosto mostra</h2>
-    <div class="anim-rosto" aria-hidden="true"><svg viewBox="0 0 200 200" id="rosto-ill"></svg></div>
+    <div class="demo">
+    <div class="quadro" id="quadro" aria-hidden="true">
+      <img class="q-f" alt="" width="640" height="748" decoding="async">
+      <img class="q-e" alt="" width="640" height="748" decoding="async">
+      <img class="q-d" alt="" width="640" height="748" decoding="async">
+      <video id="q-video" muted loop playsinline preload="none" hidden></video>
+      <svg class="q-oval" viewBox="0 0 100 117" preserveAspectRatio="none"><ellipse cx="50" cy="46" rx="31" ry="38"/></svg>
+      <span class="q-rot q-rot-f">Frente</span><span class="q-rot q-rot-e">← Esquerda</span><span class="q-rot q-rot-d">Direita →</span>
+    </div>
     <ol class="passos">
       <li><em>1</em>Rosto dentro do oval, olhando reto</li>
       <li><em>2</em>Vire devagar para a esquerda, depois a direita</li>
       <li><em>3</em>A foto sai sozinha: o anel acende inteiro</li>
     </ol>
+    </div>
     <ul class="check">
       <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></svg>Luz boa</li>
       <li><svg viewBox="0 0 24 24"><path d="M12 3c3.9 0 7 3.1 7 7.4 0 4.6-3.4 9.6-7 9.6s-7-5-7-9.6C5 6.1 8.1 3 12 3z"/><path d="M4 4l16 16"/></svg>Sem maquiagem</li>
@@ -262,6 +280,6 @@
   </div></div>
 </div>
 <script defer src="/assets/js/ponte.js?v=2"></script>
-<script type="module" src="app.js?v=15"></script>
+<script type="module" src="app.js?v=16"></script>
 </body>
 </html>
