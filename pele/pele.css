@@ -26,15 +26,11 @@ b,strong{font-weight:700}
 .app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
   padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
 
-/* ---------- topo: voltar + barra de progresso segmentada (3 seções, rótulo em nota) ---------- */
-.top{display:flex;align-items:flex-end;gap:8px;padding-top:8px;min-height:52px}
+/* ---------- topo: voltar + barra de progresso segmentada (3 trechos; 09/11: sem rótulo) ---------- */
+.top{display:flex;align-items:center;gap:8px;padding-top:8px;min-height:52px}
 .back{flex:none;width:44px;height:44px;margin-left:-10px;background:none;border:0;color:var(--fg);font-size:var(--t1);line-height:1;cursor:pointer}
 .back.some{visibility:hidden}
-.barra{flex:1;padding-bottom:12px}
-.b-rot{position:relative;height:18px;margin-bottom:6px}
-.b-rot span{position:absolute;top:0;font-size:var(--t3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;transition:color .3s}
-.b-rot span:last-child{right:0}
-.b-rot span.on{color:var(--accent)}
+.barra{flex:1}
 .b-trilho{display:flex;gap:4px}
 .b-trilho i{display:block;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
 .b-trilho b{display:block;height:100%;width:0;background:var(--accent);border-radius:inherit;transition:width .45s ease}
@@ -97,7 +93,9 @@ b,strong{font-weight:700}
 .q-rot{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);opacity:0;white-space:nowrap;font-size:var(--t3);font-weight:700;color:#fff;background:rgba(13,106,77,.9);border-radius:99px;padding:4px 12px}
 .dicas{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .dicas li{display:flex;align-items:center;gap:12px}
-.dicas svg{width:28px;height:28px;flex:none;padding:4px;border-radius:50%;background:var(--accent-2);fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dicas li{min-height:36px}
+.dicas svg{width:36px;height:36px;flex:none;padding:7px;border-radius:50%;background:var(--accent-2);fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.dicas svg .cheio{fill:var(--accent);stroke:none}   /* 09/11: ícones de traço (sol · óculos riscado · rosto com coque) */
 .consent{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--raio);padding:10px 12px;font-size:var(--t3);line-height:1.35;color:var(--muted);cursor:pointer}
 .consent:has(input:checked){border-color:var(--accent)}
 .consent.alerta{border-color:var(--accent);background:var(--accent-2);color:var(--fg)}
@@ -106,6 +104,7 @@ b,strong{font-weight:700}
 /* ---------- botões ---------- */
 .cta{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
   background:linear-gradient(transparent,var(--bg) 22%)}
+.teclado .cta{bottom:var(--kb,0px);padding-bottom:10px}   /* 09/11: com o teclado aberto, o botão fica logo acima dele */
 .cta > div{max-width:488px;margin:0 auto;display:flex;flex-direction:column;gap:2px}
 .btn{display:block;width:100%;min-height:54px;padding:14px 16px;border:0;border-radius:var(--raio);background:var(--accent);color:var(--on-accent);font:700 var(--t2)/1.25 var(--font);text-align:center;text-decoration:none;cursor:pointer}
 .btn.off{opacity:.4}
@@ -162,6 +161,13 @@ b,strong{font-weight:700}
 .guia.demais .g-seta,.guia.feito .g-seta,.guia.msg .g-seta,.guia.frente .g-seta{display:none}
 .guia.msg .g-barra,.guia.feito .g-barra{display:none}
 .guia.feito .g-ok{display:grid}
+.voz{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 24px);z-index:2;display:flex;align-items:center;gap:8px;min-height:52px;padding:0 18px 0 14px;border-radius:99px;border:1px solid rgba(255,255,255,.28);background:rgba(10,14,12,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font:600 var(--t2) var(--font);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.voz svg{width:26px;height:26px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.voz .risco{display:none}
+.voz.off{color:#9aa39f;background:rgba(10,14,12,.5);border-color:rgba(255,255,255,.16)}
+.voz.off .risco{display:inline;stroke-width:2.2}
+.voz.off span{color:#fff}
+.stage:has(#scan-pular:not([hidden])) .voz{bottom:calc(env(safe-area-inset-bottom,0px) + 24px + 54px + 12px)}   /* não fica em cima do Seguir */
 .pular{position:absolute;left:16px;right:16px;width:auto;max-width:420px;margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);background:rgba(255,255,255,.92);color:var(--fg)}
 .scan-help{position:absolute;inset:auto 12px calc(env(safe-area-inset-bottom,0px) + 12px) 12px;max-width:440px;margin:0 auto;background:var(--surface);color:var(--fg);border-radius:var(--raio);padding:18px;display:flex;flex-direction:column;gap:10px;z-index:3}
 
@@ -171,6 +177,8 @@ b,strong{font-weight:700}
 .prog .tr{fill:none;stroke:var(--accent-2);stroke-width:7}
 .prog .pr{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset .45s ease}
 .prog b{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--t1);font-variant-numeric:tabular-nums}
+#prog-tit{min-height:2.3em;max-width:340px;display:flex;align-items:center;justify-content:center}
+#prog-tit.troca{animation:entra .35s ease}
 #prog-etapa{min-height:3em;max-width:340px}
 .dots{display:flex;gap:6px;justify-content:center}
 .dots i{width:8px;height:8px;border-radius:99px;background:var(--line);transition:all .3s}

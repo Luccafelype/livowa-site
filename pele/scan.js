@@ -2,7 +2,7 @@
 // /pele2/scan.js, a pele2 fica intacta). Muda uma coisa, pedido do Lucca (reprovação de 04/11, item g): TODA ordem fica
 // NO OVAL, na parte de baixo do rosto, também na foto de frente ("Chegue mais perto", "Olhe reto", "Segure"); a faixa de
 // baixo (#scan-dica) fica só para leitor de tela. Anel de risquinhos que acende, ✓ por lado (chips Esquerda/Frente/
-// Direita), foto automática, voz curta que o botão 🔊 desliga. Malha medida no próprio elemento de vídeo (Safari do
+// Direita), foto automática, voz curta que o botão “Desligar voz” (canto inferior direito) desliga. Malha medida no próprio elemento de vídeo (Safari do
 // iPhone); vídeo e canvas espelhados pelo CSS (scaleX(-1)); o desenho é feito em coordenadas da imagem crua.
 import { criarFace, FaceLandmarker, medir, pose, geometria, caixa, OVAL, NITIDEZ_MIN, subirTesta, olhoMedioY } from './rosto.js?v=2';
 
@@ -24,7 +24,7 @@ let fotos = {}, segDesde = 0, narizAnt = null, ultM = null, ladoDesde = 0, cb = 
 const estagio = () => ORDEM.find(a => !fotos[a]) || 'fim';
 function dica(html, ok){ const d = $('scan-dica'); if (d.innerHTML !== html) d.innerHTML = html; d.classList.toggle('ok', !!ok); }
 
-// ---------- voz curta (só quando o passo muda; o botão 🔊 desliga) ----------
+// ---------- voz curta (só quando o passo muda; o botão Desligar voz desliga) ----------
 let voz = true, ultFala = '', ultT = -1e9;
 export function liberarVoz(){ try { if ('speechSynthesis' in window){ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(' ')); } } catch {} }   // iOS: dentro do toque
 function falar(txt, forcar){
@@ -34,8 +34,11 @@ function falar(txt, forcar){
   ultFala = txt; ultT = t;
   try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'pt-BR'; u.rate = 1.05; speechSynthesis.speak(u); } catch {}
 }
+// 09/11 (Lucca): o botão saiu do topo e foi para o canto inferior direito, com texto: "Desligar voz" ↔ "Ligar voz"
+// (desligada: ícone cinza e riscado). aria-pressed = voz ligada.
 $('scan-voz').addEventListener('click', () => {
-  voz = !voz; const b = $('scan-voz'); b.textContent = voz ? '🔊' : '🔇'; b.setAttribute('aria-pressed', String(voz)); b.setAttribute('aria-label', voz ? 'Voz ligada' : 'Voz desligada');
+  voz = !voz; const b = $('scan-voz'); b.classList.toggle('off', !voz); b.setAttribute('aria-pressed', String(voz));
+  $('scan-voz-txt').textContent = voz ? 'Desligar voz' : 'Ligar voz';
   if (!voz) try { speechSynthesis.cancel(); } catch {}
 });
 

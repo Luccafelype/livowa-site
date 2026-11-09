@@ -8,9 +8,12 @@
 // (os valores velhos seguem nos mapas, para leads antigos); no resultado, a região da dor dela vem primeiro.
 // Barra: log(passo)/log(total) sobre as telas da capa ao resultado (Conrad 2010; Villar 2013; design-web.md).
 // Texto: sem aspas retas dentro de frase (quebraram uma página antes); quando precisar, aspas tipográficas.
+// 09/11 (alfinetes do Lucca): sem rótulos de seção na barra; tela 03 e 08 com frase no lugar do número solto e "Fonte:";
+// Continuar acima do teclado (visualViewport); futuro ganha 'jovem'; carregamento troca o título; resultado sem
+// "Por que isso importa" e com o CTA que liga o que ela marcou ao resultado; fim A sem o parágrafo do vídeo.
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
-import * as Scan from './scan.js?v=2';
+import * as Scan from './scan.js?v=3';
 import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=2';
 
 const $ = id => document.getElementById(id);
@@ -53,8 +56,10 @@ const fem = () => R.sexo !== 'm';
 const idadeOu = () => R.idade ?? IDADE_PADRAO;
 // o desejo de 10 anos: em 1ª pessoa (mensagem) e em 2ª (resultado); o "chegar aos" usa a idade + 10
 const FUT_EU = { disposicao:'ter a mesma disposição de hoje', reconhecer:'me reconhecer no espelho', chegar10:i => `chegar aos ${i} com força e memória`, independente:'não depender de ninguém',
+  jovem:'aparentar ser mais jovem',   // 09/11 (Lucca): 5ª opção
   parecer:'parecer a idade que eu sinto', antes:'cuidar da saúde antes de aparecer problema' };   // parecer e antes: v2, só para quem já respondeu
-const FUT_VOCE = { ...FUT_EU, reconhecer:'você se reconhecer no espelho', parecer:'parecer a idade que você sente' };
+const FUT_VOCE = { ...FUT_EU, reconhecer:'você se reconhecer no espelho', parecer:'parecer a idade que você sente' };   // "para {…}" (tela final)
+const FUT_QUER = { ...FUT_EU, reconhecer:'se reconhecer no espelho', parecer:'parecer a idade que sente' };              // "quer {…}" (CTA do resultado)
 const desejo = (M = FUT_VOCE) => { const v = M[R.futuro]; return typeof v === 'function' ? v(idadeOu() + 10) : v || ''; };
 // a resposta dela, curta (carregamento e resultado)
 const RESP = {
@@ -74,20 +79,16 @@ const VOLTA = { scan:'instrucao', erro:'instrucao', fechar:'resultado' };
 // (a capa já mostra um pouco, como em Conrad 2010: log(1) = 0 deixaria a 1ª tela vazia)
 const BARRA = ORDEM.slice(0, ORDEM.indexOf('resultado') + 1);
 const pBarra = s => { const i = BARRA.indexOf(s); return i < 0 ? null : Math.log(i + 2) / Math.log(BARRA.length + 1); };
-const SECOES = [['capa','idade','reforco1','nome','espelho'], ['sol','cigarro','reforco2','metabolico','movimento','sono','futuro'], ['instrucao','scan','carregando','resultado']];
 const LIMITE = [0, (pBarra('espelho') + pBarra('sol'))/2, (pBarra('futuro') + pBarra('instrucao'))/2, 1];   // onde cada seção começa
 (function montarBarra(){
   [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => { el.style.flex = `${LIMITE[k + 1] - LIMITE[k]} 1 0`; });
-  $('barra').querySelector('.b-rot [data-sec="1"]').style.left = (LIMITE[1]*100).toFixed(1) + '%';
-})();
+})();   // 09/11 (Lucca): sem os rótulos SOBRE VOCÊ / HÁBITOS / FOTO; os 3 trechos da barra ficam
 function pintarBarra(s){
   const p = s === 'erro' ? pBarra('instrucao') : s === 'fechar' ? 1 : pBarra(s);
   if (p == null) return;
-  const sec = s === 'fechar' ? 2 : s === 'erro' ? 2 : SECOES.findIndex(x => x.includes(s));
   [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => {
     el.firstElementChild.style.width = Math.round(Math.max(0, Math.min(1, (p - LIMITE[k])/(LIMITE[k + 1] - LIMITE[k])))*100) + '%';
   });
-  $('barra').querySelectorAll('.b-rot span').forEach((el, k) => el.classList.toggle('on', k === sec));
   window.__barra = Math.round(p*100);
 }
 
@@ -134,6 +135,19 @@ function ajustarMaiuscula(el){
 }
 function medirBarra(){ const b = $('cta-bar'); document.documentElement.style.setProperty('--cta-h', (b.hidden ? 0 : b.offsetHeight) + 'px'); }
 addEventListener('resize', medirBarra);
+// 09/11 (Lucca): com o teclado aberto (iPhone), o Continuar sobe e fica logo acima dele. O position:fixed do iOS segue a
+// janela de layout, que o teclado não encolhe; a visualViewport encolhe. Distância = fundo do layout − fundo do visível.
+function acimaDoTeclado(){
+  const vv = window.visualViewport; if (!vv) return;
+  const a = document.activeElement, digitando = !!a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && !['checkbox','radio','file','button'].includes(a.type)));
+  const kb = digitando ? Math.max(0, Math.round(document.documentElement.clientHeight - (vv.height + vv.offsetTop))) : 0;
+  const on = kb > 60;   // abaixo disso é barra do navegador mexendo, não teclado
+  document.documentElement.style.setProperty('--kb', (on ? kb : 0) + 'px');
+  document.body.classList.toggle('teclado', on);
+}
+if (window.visualViewport){ visualViewport.addEventListener('resize', acimaDoTeclado); visualViewport.addEventListener('scroll', acimaDoTeclado); }
+addEventListener('focusin', () => setTimeout(acimaDoTeclado, 60));
+addEventListener('focusout', () => setTimeout(acimaDoTeclado, 60));
 if ('ResizeObserver' in window) new ResizeObserver(medirBarra).observe($('cta-bar'));
 function proxima(){ show(ORDEM[ORDEM.indexOf(cur) + 1]); }
 
@@ -287,17 +301,23 @@ function erro(txt, rede, limite){ erroRede = !!rede; $('erro-tit').textContent =
 $('erro-wa').addEventListener('click', () => track('cta_click', { stepId:'erro', valueText:'limite', props:{ canal:'whatsapp', codigo:meuCodigo() } }));
 $('erro-dm').addEventListener('click', () => track('cta_click', { stepId:'erro', valueText:'limite', props:{ canal:'direct', codigo:meuCodigo() } }));
 const PERIM = 326.7;
+// 09/11 (Lucca): o título troca ao longo da barra (o que a análise está olhando), 5 frases em partes iguais
+const TIT_ANALISE = () => ['Analisando a textura da pele…', 'Procurando linhas ao redor dos olhos…', 'Olhando as marcas ao redor da boca…', 'Medindo manchas e tom da pele…',
+  R.idade ? `Comparando com os seus ${R.idade} anos…` : 'Comparando com a sua idade…'];
 function progresso(p, etapa){
   $('prog-c').style.strokeDashoffset = (PERIM * (1 - p/100)).toFixed(1);
   $('prog-pct').textContent = `${Math.round(p)}%`;
+  const T = TIT_ANALISE(), t = T[Math.min(T.length - 1, Math.floor(p / (100 / T.length)))], h = $('prog-tit');
+  if (h.textContent !== t){ h.textContent = t; h.classList.remove('troca'); void h.offsetWidth; h.classList.add('troca'); }
   if (etapa != null){ $('prog-etapa').textContent = etapa.txt; [...$('prog-dots').children].forEach((d, i) => d.classList.toggle('on', i === etapa.i)); }
 }
 async function enviar(f){
   fotos = f;
   const n = Object.keys(f).length;
   const contou = [resp('cigarro'), resp('sol')].filter(Boolean).map(t => t.toLocaleLowerCase('pt-BR')).join(', ');
-  const ETAPAS = [{ i:0, ate:22, txt:n > 1 ? `Lendo as suas ${n} fotos` : 'Lendo a sua foto' }, { i:1, ate:52, txt:R.idade ? `Comparando com os seus ${R.idade} anos` : 'Comparando com a sua idade' },
-                  { i:2, ate:84, txt:contou ? `Pesando o que você contou: ${contou}` : 'Pesando o que você contou' }, { i:3, ate:100, txt:'Montando o seu resultado' }];
+  // 09/11: a etapa "Comparando com os seus N anos" saiu daqui (agora é o último título); ficam 3 etapas
+  const ETAPAS = [{ i:0, ate:30, txt:n > 1 ? `Lendo as suas ${n} fotos` : 'Lendo a sua foto' },
+                  { i:1, ate:76, txt:contou ? `Pesando o que você contou: ${contou}` : 'Pesando o que você contou' }, { i:2, ate:100, txt:'Montando o seu resultado' }];
   show('carregando'); progresso(0, ETAPAS[0]);
   const angulos = ['frente','esquerda','direita'].filter(a => f[a]);
   const imagens = angulos.map(a => { const cv = montarEnvio(f[a].src, f[a].g), d = cv.toDataURL('image/jpeg', angulos.length > 1 ? .85 : .9).split(',')[1]; cv.width = cv.height = 0; return d; });
@@ -305,7 +325,7 @@ async function enviar(f){
   window.__ultimoEnvio = { n:imagens.length, angulos, kb:Math.round(imagens.reduce((s, x) => s + x.length, 0)*3/4/1024) };
   const t0 = performance.now(), MIN = 8000;   // mínimo de ~8 s: dá tempo de ler as etapas
   let pct = 0, fim = false;
-  const etapaDe = p => ETAPAS.find(e => p <= e.ate) || ETAPAS[3];
+  const etapaDe = p => ETAPAS.find(e => p <= e.ate) || ETAPAS[2];
   const tick = setInterval(() => { if (fim) return; pct = Math.min(92, pct + (pct < 50 ? 2.6 : pct < 80 ? 1.6 : .6)); progresso(pct, etapaDe(pct)); }, 220);
   const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 45000);
   try {
@@ -317,7 +337,7 @@ async function enviar(f){
     const resta = MIN - (performance.now() - t0);
     if (resta > 0) await new Promise(res => setTimeout(res, resta));
     fim = true; clearInterval(tick);
-    for (const p of [96, 100]){ progresso(p, ETAPAS[3]); await new Promise(res => setTimeout(res, 380)); }
+    for (const p of [96, 100]){ progresso(p, ETAPAS[2]); await new Promise(res => setTimeout(res, 380)); }
     montarResultado(j, f);
     show('resultado');
   } catch (e) {
@@ -327,7 +347,8 @@ async function enviar(f){
 
 // =====================================================================
 // RESULTADO (desenho-v2, tela 14): 1. número + régua + foto pequena → 2. uma frase de leitura → 3. o que a foto mostra
-// (recortes) → 4. o que das respostas pesa (↑/↓) → 5. por que importa (só os gêmeos, no HTML) → 6. ponte + 1 botão.
+// (recortes) → 4. o que das respostas pesa (↑/↓) → 5. CTA: o que ela marcou (espelho + 10 anos) + a faixa + 1 botão.
+// 09/11 (Lucca): o cartão "Por que isso importa" saiu (os gêmeos já aparecem na tela 03).
 // Fechado: "Ver os estudos". Sem número (confiança baixa / foto ruim): 1 frase + "Tirar outra foto"; botão igual.
 // =====================================================================
 const CORTE = 3;   // ±3 anos entre o meio da faixa e a idade real: escolha de produto (evidencia.md §4), não vem de estudo
@@ -339,6 +360,14 @@ const SINAL = {   // sinais da edge ligados à idade do rosto (a textura/poro fi
   flacidez:{ nome:'Contorno', recorte:'contorno', c:['Firme', 'Levemente menos firme', 'Menos firme', 'Bem menos firme'] },
 };
 const cap = t => t ? t[0].toLocaleUpperCase('pt-BR') + t.slice(1) : '';
+// a dor do espelho como frase, depois de "você disse que" (CTA do resultado; 09/11); 'nada' fica de fora
+const DOR_FRASE = {
+  cansada:() => `se sente com cara de ${fem() ? 'cansada' : 'cansado'} mesmo dormindo`,
+  caindo:() => 'o rosto caindo te incomoda',
+  pescoco:() => 'o pescoço e a papada te incomodam',
+  palpebra:() => 'a pálpebra pesando te incomoda',
+  manchas:() => 'manchas e rugas te incomodam',
+};
 // a dor do espelho (v3): a região dela vem primeiro em "O que a sua foto mostra", com a frase dela e o que a análise devolveu.
 // ids = sinais da edge que mostram essa região (o mais marcado entre eles); sem frase de saúde nova.
 const DOR = {
@@ -444,12 +473,8 @@ function montarResultado(j, f){
   $('r-fatores').innerHTML = `<h3>O que das suas respostas pesa no rosto</h3>${fs.length
     ? `<ul class="fatores">${fs.map(x => `<li data-f="${x.id}"><i class="${x.s === '↓' ? 'bom' : ''}" aria-label="${x.s === '↑' ? 'pesa' : x.s === '↓' ? 'a favor' : 'a foto não mede'}">${x.s}</i><p><b>${esc(x.r)}.</b> ${esc(x.t)}</p></li>`).join('')}</ul>`
     : '<p>Nas suas respostas não apareceu nenhum dos fatores mais estudados.</p>'}`;
-  // 5. por que importa: fixo no HTML (só os gêmeos). Some sem número, como o resto.
-  $('r-importa').hidden = !daParaDizer;
-
-  // 6. ponte + botão (o desejo de 10 anos dela) e, fechado, os estudos
-  const d = desejo();
-  $('r-ponte-txt').textContent = `A foto mostra a parte de fora. Força, sono e exames o Dr. Lucca vê com você${d ? `, pensando em ${d}` : ''}.`;
+  // 5. CTA: liga o que ela marcou (espelho + daqui a 10 anos) ao resultado e dá o próximo passo; e, fechado, os estudos
+  $('r-ponte-txt').textContent = textoCTA(daParaDizer ? fx : null);
   $('r-cta-nota').textContent = 'Abre o WhatsApp com o seu código';   // 08/11: WhatsApp em primeiro também com ?lv=
   $('r-estudos-txt').innerHTML = ESTUDOS.map(([t, u, x]) => `<p><b>${esc(t)}.</b> ${esc(x)} <a href="${u}" target="_blank" rel="noopener">Ver o estudo</a></p>`).join('')
     + '<p>Estimativa feita por inteligência artificial a partir de fotos. Não é exame nem diagnóstico. As associações citadas vêm de estudos com grupos de pessoas e não preveem a saúde de ninguém individualmente. As fotos são usadas só para a análise e apagadas depois. Dr. Lucca Marques, CRM-GO 33.990.</p>';
@@ -466,6 +491,18 @@ function montarResultado(j, f){
   if (window.__peleResultado) window.__peleResultado(j);
 }
 function respostasLimpa(){ const { nome, ...r } = R; return r; }
+// "{Nome}, você disse que {incômodo} e que daqui a 10 anos quer {objetivo}. O seu rosto aparenta de X a Y anos. Mande o seu código: …"
+// Sem nome: começa em "Você". Sem incômodo ('nada'): só o objetivo. Sem número: a frase da faixa sai. Fim B não fala em vídeo.
+function textoCTA(fx){
+  const nome = nomeBonito(), dor = DOR_FRASE[R.espelho]?.() || '', d = desejo(FUT_QUER);
+  const disse = [dor, d ? `${dor ? 'que ' : ''}daqui a 10 anos quer ${d}` : ''].filter(Boolean).join(' e ');
+  const partes = [];
+  if (disse) partes.push(`${nome ? `${nome}, você` : 'Você'} disse que ${disse}.`);
+  if (fx) partes.push(`O seu rosto aparenta de ${fx.min} a ${fx.max} anos.`);
+  partes.push(FIM === 'B' ? 'Mande o seu código: o Dr. Lucca olha o seu caso e explica o que pesa e por onde começar.'
+                          : 'Mande o seu código: o Dr. Lucca grava um vídeo curto explicando o que pesa no seu caso e por onde começar.');
+  return partes.join(' ');
+}
 
 // =====================================================================
 // FECHAMENTO: igual ao de antes (1 passo, 3ª pessoa): WhatsApp com o código na mensagem pronta, Direct como alternativa;
@@ -482,9 +519,13 @@ function mensagem(){
 function prepararFechamento(){
   const nome = nomeBonito();
   $('cod').textContent = meuCodigo();
-  const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado em vídeo';
+  // 09/11 (Lucca): A = "vai te explicar, sem custo, por onde começar para {objetivo}", sem o parágrafo do vídeo;
+  // B = o título dela com "sem custo" e o parágrafo de sempre. O código fica sozinho na última linha.
+  const d = desejo();
+  const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado, sem custo.' : `o Dr. Lucca vai te explicar, sem custo, por onde começar${d ? ` para ${d}` : ''}.`;
   $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
-  $('f-sub').textContent = FIM === 'B' ? 'Ele responde pessoalmente no seu WhatsApp, em até 24 horas.' : 'Um vídeo de 1 minuto sobre as suas fotos, no seu WhatsApp, em até 24 horas. Ele grava um por um.';
+  $('f-sub').textContent = FIM === 'B' ? 'Ele responde pessoalmente no seu WhatsApp, em até 24 horas.' : '';
+  $('f-sub').hidden = FIM !== 'B';
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('cta-dm').hidden = false;
