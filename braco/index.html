@@ -133,6 +133,12 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .link-alt{align-self:center;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 12px;background:none;border:0;cursor:pointer;color:var(--accent);font:600 .95rem var(--body);text-decoration:underline;text-underline-offset:3px}
 .screen.fim .cod-ref{margin-top:auto;text-align:center;font-size:.8rem;padding-top:4px}
 .screen.fim{padding-bottom:24px}
+/* 09/11 (Lucca): prazo da análise sem custo (30 min do 1º resultado). Discreto: corpo normal + relógio pequeno, algarismos tabulares */
+.prazo{font-size:.98rem;line-height:1.4;text-align:center;text-wrap:balance;margin:0 0 4px}
+.prazo-rel{display:block;margin-top:2px;font:600 .88rem var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
+.prazo.acabou{color:var(--muted)}
+.prazo-mini{text-align:center;font:500 .88rem var(--body);color:var(--muted);font-variant-numeric:tabular-nums}
+.prazo-mini b{font:600 .88rem var(--mono);color:var(--accent)}
 
 .cta{position:fixed;left:0;right:0;bottom:0;padding:14px max(20px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
   background:linear-gradient(to top,var(--bg) 70%,transparent)}
@@ -175,7 +181,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
     <div class="anim mini-anim" aria-hidden="true"><video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video></div>
     <ol class="steps">
       <li><em>1</em><span>Fique em pé e segure o celular muito firme na mão.</span></li>
-      <li><em>2</em><span>Dobre e estique o cotovelo o mais rápido que conseguir, com o punho firme, igual ao movimento do vídeo.</span></li>
+      <li><em>2</em><span>Dobre e estique o cotovelo o mais rápido que conseguir, com o punho firme, igual ao movimento mostrado acima.</span></li>
       <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 10 segundos, sem parar. Um bip avisa o começo; dois bips, o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
@@ -254,8 +260,10 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   <section class="screen fim" data-s="fechar" data-p="100" hidden>
     <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
       <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
-    <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado, sem custo</h2>
+    <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado.</h2>
     <div class="f-acao">
+      <!-- 09/11 (Lucca): urgência real, 30 min contados da 1ª vez que a pessoa vê o resultado (o relógio está no script, PRAZO) -->
+      <p class="prazo" id="f-prazo"><span id="f-prazo-txt">Envie a solicitação de análise para o Dr. Lucca. Se enviar nos próximos 30 minutos, será sem custo.</span> <span class="prazo-rel" id="f-prazo-rel">Faltam 30:00</span></p>
       <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="f-wa-txt">Enviar meu código pelo WhatsApp</span></a>
       <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
       <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
@@ -269,6 +277,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   </section>
 
   <div class="cta" id="cta-bar"><div>
+    <p class="prazo-mini" id="r-prazo" hidden></p>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
   </div></div>
   <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
@@ -367,7 +376,8 @@ function show(s){
   if (s === 'sensor') cta.textContent = sensorOk ? 'Começar' : 'Liberar o sensor';
   if (s === 'medir' || s === 'analise') cta.hidden = true;
   // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
-  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';
+  if (s === 'resultado'){ cta.textContent = 'Quero que o Dr. Lucca me explique'; iniciarPrazo(); }
+  pintarPrazo();   // a linha do prazo (junto do botão) só aparece no resultado
   if (s === 'fechar') prepararFechamento();
   if (s === 'erro') cta.textContent = 'Tentar de novo';
   scrollTo(0, 0);
@@ -530,20 +540,65 @@ function personalizar(){
   $('res-txt2').innerHTML = `O Dr. Lucca compara a sua velocidade com a de <b>${pares()} de ${i}&nbsp;anos</b> e explica a idade que os seus músculos mostram.`;
 }
 function mensagem(){
-  return `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
+  return `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}. Quero que você me explique o meu resultado.\n${linhaPrazo()}`;
+}
+const linkWA = () => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
+
+// =====================================================================
+// PRAZO (09/11, decisão do Lucca): análise sem custo para quem enviar em 30 min, contados da 1ª vez que a pessoa vê o
+// resultado. Guardado no localStorage pelo código LV: livowa_prazo = { 'LV-XXXX': { t, teste } } (o mesmo objeto da pele).
+// O código é novo a cada carregamento; quem recarrega e refaz o teste em até 24 h herda o início do último resultado
+// deste teste, para o prazo não recomeçar. A mensagem diz se saiu no prazo, lido no toque do botão.
+// =====================================================================
+const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'braco', PRAZO_HERDA = 24 * 3600 * 1000, PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
+function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
+let prazoT0 = null, prazoIv = null;   // prazoT0: cópia em memória (vale quando o navegador não deixa gravar)
+function iniciarPrazo(){
+  const m = lerPrazos(), c = meuCodigo(), agora = Date.now();
+  if (+m[c]?.t) prazoT0 = +m[c].t;
+  else {
+    if (prazoT0 == null){
+      const ult = Object.values(m).filter(x => x && x.teste === PRAZO_TESTE && +x.t && agora - x.t < PRAZO_HERDA).sort((a, b) => b.t - a.t)[0];
+      prazoT0 = ult ? +ult.t : agora;
+    }
+    for (const k of Object.keys(m)) if (!(agora - (+m[k]?.t || 0) < PRAZO_GUARDA)) delete m[k];   // limpa os velhos
+    m[c] = { t:prazoT0, teste:PRAZO_TESTE }; gravarPrazos(m);
+  }
+  clearInterval(prazoIv); prazoIv = setInterval(pintarPrazo, 1000);
+}
+function prazoResta(){   // ms que faltam (null = o resultado ainda não apareceu); relê o guardado a cada vez
+  const t = +lerPrazos()[codigo]?.t || prazoT0;
+  return t ? Math.max(0, t + PRAZO_MS - Date.now()) : null;
+}
+const noPrazo = () => { const r = prazoResta(); return r == null || r > 0; };
+const linhaPrazo = () => noPrazo() ? '(enviado no prazo da análise sem custo)' : '(enviado depois do prazo)';
+const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+function pintarPrazo(){
+  const r = prazoResta(), ok = r == null || r > 0;
+  $('r-prazo').hidden = cur !== 'resultado' || r == null || !ok;
+  if (r == null) return;
+  if (ok) $('r-prazo').innerHTML = `Análise sem custo se enviar em <b>${mmss(r)}</b>`;
+  $('f-prazo').classList.toggle('acabou', !ok);
+  const txt = ok ? 'Envie a solicitação de análise para o Dr. Lucca. Se enviar nos próximos 30 minutos, será sem custo.'
+                 : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  if ($('f-prazo-txt').textContent !== txt) $('f-prazo-txt').textContent = txt;
+  $('f-prazo-rel').hidden = !ok; $('f-prazo-rel').textContent = ok ? `Faltam ${mmss(r)}` : '';
+  if (cur === 'fechar') $('cta-link').href = linkWA();
 }
 // 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
 // volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
 // O lv continua indo nos eventos (props.lv, pelo funnel-analytics).
 function prepararFechamento(){
   $('res-cod').textContent = meuCodigo();
-  $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado, sem custo';
-  $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
+  $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado.';   // 09/11: o "sem custo" mora na frase do prazo
+  $('cta-link').href = linkWA();
   $('f-wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('cta-dm').hidden = false;
 }
 const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
-$('cta-link').addEventListener('click', () => Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } }));
+// o href é refeito no toque: a linha do prazo vale para o momento do envio, não para quando a tela abriu
+$('cta-link').addEventListener('click', () => { $('cta-link').href = linkWA(); Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', noPrazo:noPrazo(), ...fimProps() } }); });
 $('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 // Direct: o Instagram não aceita texto pronto; copia dentro do toque e deixa o link abrir o app (igual ao teste das pernas)
 function copiar(txt){
@@ -556,7 +611,7 @@ function copiar(txt){
 let toastT = null;
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps() } });
+  Analytics.track('cta_click', { stepId:cur, valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, noPrazo:noPrazo(), ...fimProps() } });
   if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem:txt, copiou }); return; }   // dentro do Instagram o link pede login (31/10)
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }
   e.preventDefault(); $('aviso-msg').textContent = txt; $('aviso-dm').hidden = false;

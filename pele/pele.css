@@ -229,3 +229,10 @@ b,strong{font-weight:700}
 .aviso-dm q{font-weight:600;color:var(--accent);-webkit-user-select:all;user-select:all}
 .aviso-dm span{font-size:var(--t3);color:var(--muted)}
 #f-sub:empty{display:none}
+/* 09/11 (Lucca): prazo da análise sem custo (30 min do 1º resultado), logo acima do botão. Discreto: corpo normal,
+   relógio em --t3 com algarismos tabulares; vencido, a frase fica cinza e o relógio some */
+.prazo{text-align:center;text-wrap:balance;margin-bottom:4px}
+.prazo-rel{display:block;margin-top:2px;font-size:var(--t3);font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.prazo.acabou{color:var(--muted)}
+.prazo-mini{font-variant-numeric:tabular-nums}
+.prazo-mini b{color:var(--accent)}

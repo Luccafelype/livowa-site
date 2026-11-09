@@ -11,6 +11,8 @@
 // 09/11 (alfinetes do Lucca): sem rótulos de seção na barra; tela 03 e 08 com frase no lugar do número solto e "Fonte:";
 // Continuar acima do teclado (visualViewport); futuro ganha 'jovem'; carregamento troca o título; resultado sem
 // "Por que isso importa" e com o CTA que liga o que ela marcou ao resultado; fim A sem o parágrafo do vídeo.
+// 09/11 (Lucca): urgência real. Análise sem custo para quem enviar em 30 min contados da 1ª vez que vê o resultado (PRAZO,
+// perto do fechamento); o título da tela final perde o "sem custo" e a mensagem pronta diz se saiu no prazo.
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
 import * as Scan from './scan.js?v=3';
@@ -117,7 +119,9 @@ function show(s){
   if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); prepararQuadro(); }
   else pararQuadro();
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
+  if (s === 'resultado') iniciarPrazo();
   if (s === 'fechar') prepararFechamento();
+  pintarPrazo();
   window.scrollTo(0, 0);
   requestAnimationFrame(medirBarra);
 }
@@ -514,25 +518,70 @@ function mensagem(){
   const s = sou(), fx = resultado?.faixa;
   const rosto = fx && R.idade ? ` Tenho ${R.idade} anos e o meu rosto deu ${fx.min} a ${fx.max}.` : '';
   const d = desejo(FUT_EU), quer = d ? ` Daqui a 10 anos, quero ${d}.` : '';
-  return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste da idade do rosto, código ${meuCodigo()}.${rosto}${quer} Quero que você me explique o meu resultado.`;
+  return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste da idade do rosto, código ${meuCodigo()}.${rosto}${quer} Quero que você me explique o meu resultado.\n${linhaPrazo()}`;
 }
+const linkWA = () => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 function prepararFechamento(){
   const nome = nomeBonito();
   $('cod').textContent = meuCodigo();
-  // 09/11 (Lucca): A = "vai te explicar, sem custo, por onde começar para {objetivo}", sem o parágrafo do vídeo;
-  // B = o título dela com "sem custo" e o parágrafo de sempre. O código fica sozinho na última linha.
+  // 09/11 (Lucca): A = "vai te explicar por onde começar para {objetivo}", sem o parágrafo do vídeo; B = "vai olhar o seu
+  // resultado". O "sem custo" saiu dos dois títulos: mora na frase do prazo, logo acima do botão. O código fica na última linha.
   const d = desejo();
-  const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado, sem custo.' : `o Dr. Lucca vai te explicar, sem custo, por onde começar${d ? ` para ${d}` : ''}.`;
+  const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado.' : `o Dr. Lucca vai te explicar por onde começar${d ? ` para ${d}` : ''}.`;
   $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
   $('f-sub').textContent = '';   // 09/11: decisão de 03/11 do Lucca, nada de "vídeo/grava um por um" nem "responde em até 24 h"
   $('f-sub').hidden = FIM !== 'B';
-  $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
+  $('cta-wa').href = linkWA();
   $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
   $('cta-dm').hidden = false;
 }
 const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo() });
+
+// =====================================================================
+// PRAZO (09/11, decisão do Lucca): análise sem custo para quem enviar em 30 min, contados da 1ª vez que a pessoa vê o
+// resultado. Guardado no localStorage pelo código LV: livowa_prazo = { 'LV-XXXX': { t, teste } } (o mesmo objeto do braço).
+// O código é novo a cada carregamento; quem recarrega e refaz o teste em até 24 h herda o início do último resultado
+// deste teste, para o prazo não recomeçar. A mensagem diz se saiu no prazo, lido no toque do botão. Vale no fim A e no B.
+// =====================================================================
+const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele', PRAZO_HERDA = 24 * 3600 * 1000, PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
+function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
+let prazoT0 = null, prazoIv = null;   // prazoT0: cópia em memória (vale quando o navegador não deixa gravar)
+function iniciarPrazo(){
+  const m = lerPrazos(), c = meuCodigo(), agora = Date.now();
+  if (+m[c]?.t) prazoT0 = +m[c].t;
+  else {
+    if (prazoT0 == null){
+      const ult = Object.values(m).filter(x => x && x.teste === PRAZO_TESTE && +x.t && agora - x.t < PRAZO_HERDA).sort((a, b) => b.t - a.t)[0];
+      prazoT0 = ult ? +ult.t : agora;
+    }
+    for (const k of Object.keys(m)) if (!(agora - (+m[k]?.t || 0) < PRAZO_GUARDA)) delete m[k];   // limpa os velhos
+    m[c] = { t:prazoT0, teste:PRAZO_TESTE }; gravarPrazos(m);
+  }
+  clearInterval(prazoIv); prazoIv = setInterval(pintarPrazo, 1000);
+}
+function prazoResta(){   // ms que faltam (null = o resultado ainda não apareceu); relê o guardado a cada vez
+  const t = +lerPrazos()[codigo]?.t || prazoT0;
+  return t ? Math.max(0, t + PRAZO_MS - Date.now()) : null;
+}
+function noPrazo(){ const r = prazoResta(); return r == null || r > 0; }
+function linhaPrazo(){ return noPrazo() ? '(enviado no prazo da análise sem custo)' : '(enviado depois do prazo)'; }
+const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+function pintarPrazo(){
+  const r = prazoResta(), ok = r == null || r > 0;
+  $('r-prazo').hidden = cur !== 'resultado' || r == null || !ok;
+  if (r == null) return;
+  if (ok) $('r-prazo').innerHTML = `Análise sem custo se enviar em <b>${mmss(r)}</b>`;
+  $('f-prazo').classList.toggle('acabou', !ok);
+  const txt = ok ? 'Envie a solicitação de análise para o Dr. Lucca. Se enviar nos próximos 30 minutos, será sem custo.'
+                 : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  if ($('f-prazo-txt').textContent !== txt) $('f-prazo-txt').textContent = txt;
+  $('f-prazo-rel').hidden = !ok; $('f-prazo-rel').textContent = ok ? `Faltam ${mmss(r)}` : '';
+  if (cur === 'fechar') $('cta-wa').href = linkWA();
+}
 const fimValor = () => `explicar|fim${FIM}`;
-$('cta-wa').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps() } }); });
+// o href é refeito no toque: a linha do prazo vale para o momento do envio, não para quando a tela abriu
+$('cta-wa').addEventListener('click', () => { $('cta-wa').href = linkWA(); track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'whatsapp', noPrazo:noPrazo(), ...fimProps() } }); });
 $('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 
 // Direct: o Instagram não aceita texto pronto. Copia DENTRO do toque (exigência do iOS), avisa e deixa o link abrir o app.
@@ -547,7 +596,7 @@ let toastT = null;
 const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // navegador de dentro do app: ig.me abre como página e pede login
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps() } });
+  track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, noPrazo:noPrazo(), ...fimProps() } });
   if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem:txt, copiou, voz:true }); return; }
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }
   e.preventDefault();
