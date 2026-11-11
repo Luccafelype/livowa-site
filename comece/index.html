@@ -26,7 +26,7 @@
 const analyticsPronto = import('./funnel-analytics.js');   // 02/11: em paralelo com o banco (antes o banco esperava o arquivo)
 const SUPA = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', CHAVE = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';
 const DESTINOS = {
-  longevidade: { pele:'/idade/?pele=1', quiz:'/longevidade/', teste:'/idade/', braco:'/braco/', pele2:'/pele2/' },
+  longevidade: { pele:'/idade/?pele=1', quiz:'/longevidade/', teste:'/idade/', braco:'/braco/', pele2:'/pele2/', pelenova:'/pele/' },
   emagrecimento: { emag:'/emagrecimento/' },   // 02/11: teste do emagrecimento (funnelId teste-emagrecimento). Salvar o tema na aba Portas pede a edge com emagrecimento:['emag'] (OPERACOES/funis.md)
 };
 const RESERVA = {
@@ -68,6 +68,9 @@ if (!id){
   }
   try { localStorage.setItem(chave, id); } catch {}
 }
+// 11/11, Lucca: a pele principal é a nova (/pele/, idade e vitalidade); a pele2 fica de reserva. Voltar à pele2 = PELE_PRINCIPAL = null
+const PELE_PRINCIPAL = 'pelenova';
+if (id === 'pele' && q.get('f') !== 'pele' && PELE_PRINCIPAL) id = PELE_PRINCIPAL;
 // a pele sorteada (ou fixa por campanha) vira pele ou pele2; ?f=pele / ?f=pele2 não sorteiam
 if (id === 'pele' && q.get('f') !== 'pele' && PELE2_PCT > 0){
   let lado = null;
