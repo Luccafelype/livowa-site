@@ -23,7 +23,9 @@ b,strong{font-weight:700}
 .nota{font-size:var(--t3);color:var(--muted);line-height:1.4}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
+/* 11/11 (Lucca): no iPhone a capa ficava a 60-65% da tela. O 100vh do Safari é a tela SEM as barras; o 100svh é a parte
+   que se vê com elas. Fallback 100vh para navegador antigo. */
+.app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
   padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
 
 /* ---------- topo: voltar + barra de progresso segmentada (3 trechos; 09/11: sem rótulo) ---------- */
@@ -41,7 +43,8 @@ b,strong{font-weight:700}
 .screen.c{text-align:center;justify-content:center;align-items:center}
 
 /* capa = 1ª pergunta */
-.screen.capa{justify-content:center;gap:20px;padding-bottom:40px}
+/* 11/11: centro de verdade da tela visível: o fundo compensa a barra do topo (52 px) que fica em cima */
+.screen.capa{justify-content:center;gap:20px;padding-bottom:64px}
 .medico-mini{display:flex;align-items:center;gap:10px}
 .medico-mini img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none}
 
@@ -60,6 +63,7 @@ b,strong{font-weight:700}
 /* campo do nome */
 .campo input{width:100%;min-height:56px;padding:14px 16px;font:400 var(--t2) var(--font);color:var(--fg);background:var(--surface);border:1.5px solid var(--line);border-radius:var(--raio)}
 .campo input:focus{outline:none;border-color:var(--accent)}
+.campo .nota{display:block;margin-bottom:6px}   /* “Outro” no espelho (11/11) */
 
 /* roda da idade */
 .wheelbox{align-self:center;width:min(220px,100%)}
@@ -204,13 +208,15 @@ b,strong{font-weight:700}
 .fatores li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
 .fatores i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;font-style:normal;font-weight:700;background:var(--bg);color:var(--fg)}
 .fatores i.bom{background:var(--accent-2);color:var(--accent)}
-.r-ponte{display:flex;flex-direction:column;gap:10px;padding-top:8px}
-.r-ponte .nota{text-align:center}
-.estudos{border-top:1px solid var(--line);padding-top:4px}
-.estudos summary{min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--accent);font-weight:600;list-style:none}
-.estudos summary::-webkit-details-marker{display:none}
-.estudos > div{display:flex;flex-direction:column;gap:10px;font-size:var(--t3);color:var(--muted);padding-bottom:8px}
-.estudos a{color:var(--accent)}
+/* 11/11 (Lucca: “esse CTA parece nota de rodapé”): o fim é o cartão do Dr. Lucca, em destaque (fundo verde), com o
+   título que fecha a narrativa e UM botão claro e maior. Mesmo raio e respiro do .cartao. */
+.cartao.r-ponte{background:var(--accent);border-color:var(--accent);color:var(--on-accent);gap:12px;padding:20px 18px;margin-top:8px;box-shadow:0 10px 30px rgba(13,106,77,.28)}
+.r-ponte .medico-mini img{border:2px solid rgba(255,255,255,.85)}
+.r-ponte .nota{color:rgba(255,255,255,.86)}
+.r-ponte #r-cta-nota{text-align:center}
+.r-ponte .btn{background:var(--surface);color:var(--accent);min-height:60px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.r-ponte .prazo-mini{text-align:center;font-weight:600}
+.r-ponte .prazo-mini b{color:var(--on-accent)}
 
 /* ---------- tela final ---------- */
 .screen.fim{gap:16px}
@@ -235,4 +241,4 @@ b,strong{font-weight:700}
 .prazo-rel{display:block;margin-top:2px;font-size:var(--t3);font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
 .prazo.acabou{color:var(--muted)}
 .prazo-mini{font-variant-numeric:tabular-nums}
-.prazo-mini b{color:var(--accent)}
+.prazo-mini b{font-variant-numeric:tabular-nums}

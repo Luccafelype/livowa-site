@@ -8,7 +8,7 @@
 <title>Que idade o seu rosto mostra? · Dr. Lucca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="pele.css?v=5">
+<link rel="stylesheet" href="pele.css?v=6">
 </head>
 <body>
 <!-- livowa.com/pele v2 (04/11/2026, refeito depois da reprovação do Lucca): segue À RISCA
@@ -58,17 +58,21 @@
       <input id="nome" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" maxlength="40" placeholder="Seu primeiro nome"></label>
   </section>
 
-  <!-- 3b · espelho (v3, 04/11 noite): a dor mais repetida nos comentários reais (livowa-empresa/pesquisa/voz-pele-potencia.md, tema A) -->
+  <!-- 3b · espelho (v3, 04/11 noite): a dor mais repetida nos comentários reais (livowa-empresa/pesquisa/voz-pele-potencia.md, tema A).
+       11/11 (Lucca): sai a pálpebra e o “Nada em especial” (tentador demais); entram “Pareço mais velho(a) do que sou” (A6) e “Outro”,
+       que abre um campo curto (o texto vai no mesmo answer, em props.texto, e em R.espelho_texto). -->
   <section class="screen q" data-s="espelho" hidden>
     <h2><span class="nm"></span>quando você se olha no espelho, o que mais te incomoda hoje?</h2>
     <div class="opts" data-q="espelho">
       <button type="button" class="opt" data-v="cansada"><span>Cara de <span class="gen" data-f="cansada" data-m="cansado">cansada</span>, mesmo quando eu durmo</span></button>
       <button type="button" class="opt" data-v="caindo">O rosto caindo: bochecha, bigode chinês</button>
       <button type="button" class="opt" data-v="pescoco">O pescoço e a papada</button>
-      <button type="button" class="opt" data-v="palpebra">A pálpebra pesando</button>
+      <button type="button" class="opt" data-v="velho"><span>Pareço mais <span class="gen" data-f="velha" data-m="velho">velha</span> do que sou</span></button>
       <button type="button" class="opt" data-v="manchas">Manchas e rugas</button>
-      <button type="button" class="opt" data-v="nada">Nada em especial: quero saber a idade que o rosto mostra</button>
+      <button type="button" class="opt" data-v="outro">Outro</button>
     </div>
+    <label class="campo" id="espelho-outro" hidden><span class="nota">Em poucas palavras, o que te incomoda?</span>
+      <input id="espelho-txt" type="text" autocomplete="off" autocapitalize="sentences" enterkeyhint="next" maxlength="60" placeholder="Escreva aqui"></label>
   </section>
 
   <!-- 4 · sol (sem estudo no título) -->
@@ -138,7 +142,8 @@
     </div>
   </section>
 
-  <!-- 10 · daqui a 10 anos, com a idade dela -->
+  <!-- 10 · daqui a 10 anos, com a idade dela. 11/11 (Lucca: “tem que mudar de acordo com a idade informada”): as opções
+       saem do app.js (FUT_FAIXA), por faixa da idade real; estas são só o ponto de partida sem JS -->
   <section class="screen q" data-s="futuro" hidden>
     <h2>Daqui a 10 anos você vai ter <span class="dest v-i10">50</span>. O que mais quer?</h2>
     <div class="opts" data-q="futuro">
@@ -162,7 +167,7 @@
     </div>
     <h2>Agora 3 fotos: de frente e virando para cada lado.</h2>
     <ul class="dicas">
-      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>Luz de janela na frente</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>Luz frontal, rosto bem iluminado</li>
       <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6.4" cy="12.4" r="3.9"/><circle cx="17.6" cy="12.4" r="3.9"/><path d="M10.3 11.6c1.1-.9 2.3-.9 3.4 0"/><path d="M3.5 3.5l17 17"/></svg>Sem óculos</li>
       <li><svg viewBox="0 0 24 24" aria-hidden="true"><path class="cheio" d="M12 2.2a2.3 2.3 0 1 1 0 4.6 2.3 2.3 0 0 1 0-4.6z"/><path d="M5.3 12.5c0-4 3-6.2 6.7-6.2s6.7 2.2 6.7 6.2v1c0 4.2-3 7.3-6.7 7.3s-6.7-3.1-6.7-7.3z"/><path d="M5.6 11.6c2.4-1.4 4.4-2.6 6.4-3.6 2 1 4 2.2 6.4 3.6"/><path d="M9.6 14.4h.01M14.4 14.4h.01"/></svg>Cabelo para trás</li>
     </ul>
@@ -196,7 +201,7 @@
       <button type="button" class="btn pular" id="scan-pular" hidden>Seguir com as fotos que já tenho</button>
       <div class="scan-help" id="scan-help" hidden>
         <b>Como fazer</b>
-        <p>Celular na altura do rosto, de frente para uma janela. Primeiro olhe reto. Depois vire o rosto devagar para a sua esquerda até a foto sair, e então para a sua direita.</p>
+        <p>Celular na altura do rosto, com a luz de frente e o rosto bem iluminado. Primeiro olhe reto. Depois vire o rosto devagar para a sua esquerda até a foto sair, e então para a sua direita.</p>
         <p>As fotos saem sozinhas: não precisa tocar em nada.</p>
         <button type="button" class="btn" id="scan-help-ok">Entendi</button>
         <button type="button" class="link-alt claro" id="scan-galeria">Prefiro escolher uma foto</button>
@@ -223,19 +228,23 @@
     </div>
   </section>
 
-  <!-- 14 · resultado: número + régua → 1 frase → o que a foto mostra → o que das respostas pesa → CTA (o que ela marcou + próximo passo) + 1 botão.
-       09/11 (Lucca): sai o cartão “Por que isso importa” (os gêmeos já estão na tela 03). -->
+  <!-- 14 · resultado. 11/11 (Lucca): cumpre a promessa da capa (o rosto conta a saúde de dentro) e conduz ao botão:
+       1. o que a foto mostrou (número + régua + 1 frase que liga a idade do rosto ao corpo, Christensen 2009)
+       2. o que a foto mostra, por região (a dor dela primeiro)
+       3. o que pode estar por trás do rosto: só o que ela tem ou marcou (nunca o hábito que ela não tem)
+       4. o que a foto não vê + o ganho de mandar → UM botão, destacado. Sem “Ver os estudos”. -->
   <section class="screen res" data-s="resultado" hidden>
     <div class="cartao r-num" id="r-num"></div>
     <div class="cartao" id="r-foto-bloco"></div>
     <div class="cartao" id="r-fatores"></div>
-    <div class="r-ponte">
-      <p id="r-ponte-txt">Mande o seu código: o Dr. Lucca analisa o seu caso e te explica o que pesa e por onde começar.</p>
-      <p class="nota prazo-mini" id="r-prazo" hidden></p>
-      <button class="btn" id="r-cta" type="button">Quero que o Dr. Lucca me explique o meu resultado</button>
+    <div class="cartao r-ponte" id="r-ponte">
+      <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span class="nota">Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
+      <h2 id="r-ponte-tit">O que a foto não vê, o Dr. Lucca vê com você.</h2>
+      <p id="r-ponte-txt">Mande o seu resultado: o Dr. Lucca junta a foto e as respostas e te explica o que pode estar pesando por dentro e por onde começar.</p>
+      <p class="prazo-mini" id="r-prazo" hidden></p>
+      <button class="btn" id="r-cta" type="button">Quero a análise do Dr. Lucca</button>
       <p class="nota" id="r-cta-nota">Abre o WhatsApp com o seu código</p>
     </div>
-    <details class="estudos" id="r-estudos"><summary>Ver os estudos</summary><div id="r-estudos-txt"></div></details>
   </section>
 
   <!-- 15 · tela final: UM passo, em 3ª pessoa (WhatsApp com o código, Direct como alternativa) -->
@@ -267,6 +276,6 @@
   </div></div>
 </div>
 <script defer src="/assets/js/ponte.js?v=2"></script>
-<script type="module" src="app.js?v=7"></script>
+<script type="module" src="app.js?v=8"></script>
 </body>
 </html>

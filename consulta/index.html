@@ -717,19 +717,22 @@ function cartaoPele2(e, quando, g){
 // ---------- Pele: idade e vitalidade (04/11): livowa.com/pele, funnelId pele-idade (rótulos de pele/index.html) ----------
 const ROTPI = {
   sexo:['Sexo', { f:'mulher', m:'homem' }],
-  espelho:['O que mais incomoda no espelho', { cansada:'cara de cansada(o), mesmo quando dorme', caindo:'o rosto caindo: bochecha, bigode chinês', pescoco:'o pescoço e a papada', palpebra:'a pálpebra pesando', manchas:'manchas e rugas', nada:'nada em especial (quer saber a idade que o rosto mostra)' }],
+  espelho:['O que mais incomoda no espelho', { cansada:'cara de cansada(o), mesmo quando dorme', caindo:'o rosto caindo: bochecha, bigode chinês', pescoco:'o pescoço e a papada', palpebra:'a pálpebra pesando', manchas:'manchas e rugas', nada:'nada em especial (quer saber a idade que o rosto mostra)',
+    velho:'parece mais velha(o) do que é', outro:'outro' }],   // 11/11: velho e outro (com o texto dela em respostas.espelho_texto)
   cigarro:['Cigarro', { nunca:'nunca fumou', parou:'já fumou e parou', parou_mais10:'parou há mais de 10 anos', parou_menos10:'parou há menos de 10 anos', as_vezes:'fuma ou usa vape às vezes', hoje:'fuma hoje / todo dia' }],
   sol:['Sol no rosto, sem protetor', { quase_nenhum:'quase nenhum', fds:'um pouco, ou só no fim de semana', todo_dia:'quase todo dia' }],
   metabolico:['Pressão ou glicose alta', { nao_medi:'não, e mediu no último ano', nunca:'nunca mediu ou não lembra', pressao:'sim, a pressão', glicose:'sim, a glicose', ambas:'sim, as duas' }],
   movimento:['Movimento por semana', { quase_nada:'quase nada', ate2:'até 2 horas', '2a5':'de 2 a 5 horas', mais5:'mais de 5 horas' }],
   sono:['Sono', { bem:'7 h ou mais e acorda bem', '6h':'umas 6 h', curto:'5 h ou menos', cansado:'dorme, mas acorda cansada(o)' }],
-  futuro:['Daqui a 10 anos, quer', { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que sente', chegar10:'chegar aos (idade + 10) com força e memória', antes:'cuidar da saúde antes de aparecer problema', reconhecer:'se reconhecer no espelho', independente:'não depender de ninguém', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o corpo já está mostrando', cuidar:'cuidar agora, antes que apareça' }],
+  futuro:['Daqui a 10 anos, quer', { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que sente', chegar10:'chegar aos (idade + 10) com força e memória', antes:'cuidar da saúde antes de aparecer problema', reconhecer:'se reconhecer no espelho', independente:'não depender de ninguém', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o corpo já está mostrando', cuidar:'cuidar agora, antes que apareça', devagar:'envelhecer mais devagar' }],   // 11/11: devagar (faixa abaixo de 35)
 };
 const ALERTAPI = { cigarro:['hoje', 'as_vezes'], metabolico:['pressao', 'glicose', 'ambas'] };
 const SINPI = { linhas_testa:'Testa', olhos:'Canto dos olhos', sulco_nasolabial:'Nariz à boca', manchas:'Bochechas', flacidez:'Contorno' };
 const FRASEPI = { cigarro:'cigarro', sol:'sol', metabolico:'pressão e glicose', sono:'sono', movimento:'movimento' };
 // o desejo de 10 anos com a idade (v2 de 04/11: 'chegar aos {idade+10}'): a página manda pronto em d.desejo
-const valPI = (k, v, d) => k === 'espelho' && v === 'cansada' ? (d.respostas?.sexo === 'm' || d.sexo === 'm' ? 'cara de cansado, mesmo quando dorme' : d.respostas?.sexo === 'f' || d.sexo === 'f' ? 'cara de cansada, mesmo quando dorme' : ROTPI.espelho[1].cansada)
+const valPI = (k, v, d) => k === 'espelho' && v === 'outro' ? (d.respostas?.espelho_texto ? `outro: “${d.respostas.espelho_texto}”` : 'outro')
+  : k === 'espelho' && v === 'velho' ? (d.respostas?.sexo === 'm' || d.sexo === 'm' ? 'parece mais velho do que é' : d.respostas?.sexo === 'f' || d.sexo === 'f' ? 'parece mais velha do que é' : ROTPI.espelho[1].velho)
+  : k === 'espelho' && v === 'cansada' ? (d.respostas?.sexo === 'm' || d.sexo === 'm' ? 'cara de cansado, mesmo quando dorme' : d.respostas?.sexo === 'f' || d.sexo === 'f' ? 'cara de cansada, mesmo quando dorme' : ROTPI.espelho[1].cansada)
   : k === 'futuro' && v === 'chegar10' ? (d.desejo || (d.idade != null ? `chegar aos ${+d.idade + 10} com força e memória` : ROTPI.futuro[1].chegar10)) : ROTPI[k][1][v] ?? v;
 function cartaoPeleIdade(e, quando, g){
   const d = e.dados || {}, r = d.respostas || {}, c = window.KITS ? KITS['pele-idade'].classifica(d) : null;
@@ -738,7 +741,7 @@ function cartaoPeleIdade(e, quando, g){
   const resp = `<div class="p2"><h3>Respostas do quiz</h3>
     <div class="l"><span>Nome</span><b>não vai para o servidor (fica só no celular dela); veja no Direct ou no WhatsApp</b></div>
     <div class="l"><span>Idade real</span><b>${d.idade != null ? esc(d.idade) + ' anos' : '—'}</b></div>
-    ${Object.keys(ROTPI).map(k => `<div class="l${(ALERTAPI[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROTPI[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(valPI(k, r[k], d)) : '—'}</b></div>`).join('')}${respostasExtras(r, Object.keys(ROTPI))}</div>`;
+    ${Object.keys(ROTPI).map(k => `<div class="l${(ALERTAPI[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROTPI[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(valPI(k, r[k], d)) : '—'}</b></div>`).join('')}${respostasExtras(r, [...Object.keys(ROTPI), 'espelho_texto'])}</div>`;
   const frases = String(d.frases || '').split('+').filter(Boolean).map(x => FRASEPI[x] || x);
   const sin = (d.sinais || []).filter(s => SINPI[s.id]);
   const vis = sin.filter(s => s.visivel !== false && s.nivel != null), nao = sin.filter(s => !(s.visivel !== false && s.nivel != null));

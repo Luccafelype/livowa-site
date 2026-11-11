@@ -13,6 +13,11 @@
 // "Por que isso importa" e com o CTA que liga o que ela marcou ao resultado; fim A sem o parágrafo do vídeo.
 // 09/11 (Lucca): urgência real. Análise sem custo para quem enviar em 30 min contados da 1ª vez que vê o resultado (PRAZO,
 // perto do fechamento); o título da tela final perde o "sem custo" e a mensagem pronta diz se saiu no prazo.
+// 11/11 (comentários do Lucca na Central): capa no meio da tela visível (svh); espelho sem pálpebra e sem “Nada em
+// especial”, com “Pareço mais velho(a) do que sou” e “Outro” (campo curto, texto em props.texto do answer e em
+// R.espelho_texto); daqui a 10 anos com opções pela faixa da idade real (FUT_FAIXA); carregamento e resultado só com o
+// que ela tem ou marcou (o hábito que ela não tem não gasta frase); resultado liga a idade do rosto ao corpo (Christensen
+// 2009) e conduz a UM botão destacado; sai o “Ver os estudos”; instrução com luz frontal.
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
 import * as Scan from './scan.js?v=3';
@@ -59,10 +64,33 @@ const idadeOu = () => R.idade ?? IDADE_PADRAO;
 // o desejo de 10 anos: em 1ª pessoa (mensagem) e em 2ª (resultado); o "chegar aos" usa a idade + 10
 const FUT_EU = { disposicao:'ter a mesma disposição de hoje', reconhecer:'me reconhecer no espelho', chegar10:i => `chegar aos ${i} com força e memória`, independente:'não depender de ninguém',
   jovem:'aparentar ser mais jovem',   // 09/11 (Lucca): 5ª opção
+  devagar:'envelhecer mais devagar',   // 11/11: faixa abaixo de 35
   parecer:'parecer a idade que eu sinto', antes:'cuidar da saúde antes de aparecer problema' };   // parecer e antes: v2, só para quem já respondeu
 const FUT_VOCE = { ...FUT_EU, reconhecer:'você se reconhecer no espelho', parecer:'parecer a idade que você sente' };   // "para {…}" (tela final)
 const FUT_QUER = { ...FUT_EU, reconhecer:'se reconhecer no espelho', parecer:'parecer a idade que sente' };              // "quer {…}" (CTA do resultado)
 const desejo = (M = FUT_VOCE) => { const v = M[R.futuro]; return typeof v === 'function' ? v(idadeOu() + 10) : v || ''; };
+// 11/11 (Lucca: “não faz sentido uma pessoa de 30 anos falar que aos 40 não quer depender de ninguém”): as opções de
+// “daqui a 10 anos” saem da faixa da idade real. Base: livowa-empresa/pesquisa/voz-pele-potencia.md (disposição: 35 a 60,
+// mediana 50, B3; depender e medo de cair: mediana 71, B11; “não me reconheço” e “pareço mais velha”: 42 a 62, tema A).
+// Abaixo de 35: prevenção e aparência; 35-49: disposição e espelho; 50-64: entra força e memória; 65+: força, memória e
+// não depender. Os valores velhos seguem nos mapas (leads antigos).
+const FUT_FAIXA = i => i < 35 ? 'ate34' : i < 50 ? '35a49' : i < 65 ? '50a64' : '65mais';
+const FUT_OPCOES = {
+  ate34:['disposicao', 'jovem', 'devagar', 'antes'],
+  '35a49':['disposicao', 'reconhecer', 'jovem', 'antes'],
+  '50a64':['disposicao', 'chegar10', 'reconhecer', 'jovem'],
+  '65mais':['chegar10', 'independente', 'disposicao', 'reconhecer'],
+};
+const FUT_ROT = { disposicao:'Ter a mesma disposição de hoje', reconhecer:'Me reconhecer no espelho', chegar10:i => `Chegar aos ${i} com força e memória`,
+  independente:'Não depender de ninguém', jovem:'Aparentar ser mais jovem', antes:'Cuidar da saúde antes de aparecer problema', devagar:'Envelhecer mais devagar' };
+function montarFuturo(){
+  const faixa = FUT_FAIXA(idadeOu()), ops = FUT_OPCOES[faixa], box = document.querySelector('[data-s="futuro"] .opts');
+  if (box.dataset.faixa === faixa + ':' + idadeOu()) return;
+  box.dataset.faixa = faixa + ':' + idadeOu();
+  if (R.futuro && !ops.includes(R.futuro)) delete R.futuro;   // voltou e trocou a idade: a resposta velha não vale
+  box.innerHTML = ops.map(v => { const t = FUT_ROT[v], txt = typeof t === 'function' ? t(idadeOu() + 10) : t;
+    return `<button type="button" class="opt" data-v="${v}" aria-pressed="${R.futuro === v}"><span>${esc(txt)}</span></button>`; }).join('');
+}
 // a resposta dela, curta (carregamento e resultado)
 const RESP = {
   cigarro:{ nunca:'Nunca fumou', parou:'Já fumou e parou', as_vezes:'Fuma ou usa vape às vezes', hoje:'Fuma todo dia' },
@@ -72,6 +100,7 @@ const RESP = {
   sono:{ bem:'Dorme bem', '6h':'Dorme umas 6 horas', curto:'Dorme 5 horas ou menos', cansado:'Acorda cansad@' },
 };
 const resp = (k, v = R[k]) => (RESP[k]?.[v] || '').replace('@', fem() ? 'a' : 'o');
+const PESA = { metabolico:['pressao', 'glicose', 'ambas'], cigarro:['hoje', 'as_vezes'], sono:['curto', 'cansado'], movimento:['quase_nada'], sol:['todo_dia'] };   // o que ela tem e pesa
 
 // ---------- telas (ordem do desenho-v2) ----------
 const ORDEM = ['capa','idade','reforco1','nome','espelho','sol','cigarro','reforco2','metabolico','movimento','sono','futuro','instrucao','scan','carregando','resultado','fechar','erro'];
@@ -115,7 +144,9 @@ function show(s){
   if (s === 'idade') posicionarIdade();
   if (s === 'reforco2') $('i2-tit').textContent = TIT_CIGARRO[R.cigarro === 'nunca' ? 'nunca' : R.cigarro === 'parou' ? 'parou' : 'fuma'];
   if (s === 'nome'){ cta.classList.toggle('off', nome1().length < 2); c2.hidden = false; c2.textContent = 'Pular'; }
+  if (s === 'futuro') montarFuturo();
   if (QUIZ.includes(s)) cta.classList.toggle('off', R[s] == null);
+  if (s === 'espelho') mostrarOutro(false);
   if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); prepararQuadro(); }
   else pararQuadro();
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
@@ -213,11 +244,22 @@ function ligarOpcoes(box){
     const q = box.dataset.q, v = b.dataset.v;
     R[q] = v;
     box.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    track('answer', { stepId:q, valueText:v });
+    if (q === 'espelho'){ mostrarOutro(v === 'outro'); if (v === 'outro') return; delete R.espelho_texto; }
+    track('answer', { stepId:q, valueText:v, ...(q === 'futuro' ? { props:{ faixa:FUT_FAIXA(idadeOu()) } } : {}) });
     $('cta').classList.remove('off');
     setTimeout(() => { if (cur === tela) proxima(); }, 260);
   });
 }
+
+// “Outro” no espelho (11/11): abre o campo curto; o Continuar acende com 2 letras; o texto vai no mesmo answer
+const txtOutro = () => ($('espelho-txt').value || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 60);
+function mostrarOutro(foco){
+  const on = R.espelho === 'outro';
+  $('espelho-outro').hidden = !on;
+  if (on){ $('cta').classList.toggle('off', txtOutro().length < 2); if (foco) setTimeout(() => { $('espelho-txt').focus(); $('espelho-outro').scrollIntoView({ block:'center', behavior:'smooth' }); }, 60); }
+}
+$('espelho-txt').addEventListener('input', () => { if (R.espelho === 'outro') $('cta').classList.toggle('off', txtOutro().length < 2); });
+$('espelho-txt').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('cta').click(); } });
 
 // ---------- instrução: quadro realista em crossfade (ou o vídeo, quando existir) ----------
 function prepararQuadro(){
@@ -239,8 +281,10 @@ $('cta').addEventListener('click', () => {
   if ($('cta').classList.contains('off')){
     if (cur === 'instrucao') return apontarAceite();
     if (cur === 'nome') return $('nome').focus();
+    if (cur === 'espelho' && R.espelho === 'outro') return $('espelho-txt').focus();
     return;
   }
+  if (cur === 'espelho' && R.espelho === 'outro'){ R.espelho_texto = txtOutro(); $('espelho-txt').blur(); track('answer', { stepId:'espelho', valueText:'outro', props:{ texto:R.espelho_texto } }); return proxima(); }
   if (cur === 'idade'){ R.idade = roda.valor ?? IDADE_PADRAO; track('answer', { stepId:'idade', valueText:String(R.idade), props:{ como:comoIdade } }); return proxima(); }
   if (cur === 'nome'){ R.nome = nomeBonito(); track('answer', { stepId:'nome', valueText:'ok' }); return proxima(); }
   if (QUIZ.includes(cur) || cur.startsWith('reforco')) return proxima();
@@ -318,7 +362,8 @@ function progresso(p, etapa){
 async function enviar(f){
   fotos = f;
   const n = Object.keys(f).length;
-  const contou = [resp('cigarro'), resp('sol')].filter(Boolean).map(t => t.toLocaleLowerCase('pt-BR')).join(', ');
+  // 11/11: repete só o que ela TEM (nunca o “nunca fumou”); sem nada que pese, a frase fica sem lista
+  const contou = Object.keys(PESA).filter(k => PESA[k].includes(R[k])).slice(0, 2).map(k => resp(k).toLocaleLowerCase('pt-BR')).join(', ');
   // 09/11: a etapa "Comparando com os seus N anos" saiu daqui (agora é o último título); ficam 3 etapas
   const ETAPAS = [{ i:0, ate:30, txt:n > 1 ? `Lendo as suas ${n} fotos` : 'Lendo a sua foto' },
                   { i:1, ate:76, txt:contou ? `Pesando o que você contou: ${contou}` : 'Pesando o que você contou' }, { i:2, ate:100, txt:'Montando o seu resultado' }];
@@ -337,7 +382,7 @@ async function enviar(f){
     const j = await r.json().catch(() => null);
     if (r.status === 429){ clearInterval(tick); return erro('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou mande o seu código ao Dr. Lucca e fale com ele direto.', true, true); }
     if (!r.ok || !j){ clearInterval(tick); return erro('Pode ser a internet. É só tentar de novo.', true); }
-    if (!j.ok){ clearInterval(tick); return erro('A foto não deu para ler direito. Tente de novo de frente para uma janela, com o rosto inteiro no oval.', false); }
+    if (!j.ok){ clearInterval(tick); return erro('A foto não deu para ler direito. Tente de novo com luz frontal, o rosto bem iluminado e inteiro no oval.', false); }
     const resta = MIN - (performance.now() - t0);
     if (resta > 0) await new Promise(res => setTimeout(res, resta));
     fim = true; clearInterval(tick);
@@ -350,10 +395,13 @@ async function enviar(f){
 }
 
 // =====================================================================
-// RESULTADO (desenho-v2, tela 14): 1. número + régua + foto pequena → 2. uma frase de leitura → 3. o que a foto mostra
-// (recortes) → 4. o que das respostas pesa (↑/↓) → 5. CTA: o que ela marcou (espelho + 10 anos) + a faixa + 1 botão.
-// 09/11 (Lucca): o cartão "Por que isso importa" saiu (os gêmeos já aparecem na tela 03).
-// Fechado: "Ver os estudos". Sem número (confiança baixa / foto ruim): 1 frase + "Tirar outra foto"; botão igual.
+// RESULTADO (11/11, comentários do Lucca): a promessa da capa é que o rosto conta a saúde de dentro, e o fim todo leva a
+// mandar para a análise dele. Narrativa: 1. o que a foto mostrou (número + régua + 1 frase que liga a idade do rosto à
+// força, à memória e ao tempo de vida, Christensen 2009, só como média de grupo) → 2. o que a foto mostra por região (a
+// dor dela primeiro) → 3. o que pode estar por trás do rosto: só o que ela TEM ou marcou (o hábito ruim que ela não tem
+// não gasta frase) → 4. o que a foto não vê + o ganho de mandar → UM botão, destacado. Sem “Ver os estudos”.
+// Frases de saúde só de evidencia.md (conferidas no PubMed em 04/11). Sem número (confiança baixa / foto ruim): 1 frase
+// + “Tirar outra foto”; o cartão do botão fica igual.
 // =====================================================================
 const CORTE = 3;   // ±3 anos entre o meio da faixa e a idade real: escolha de produto (evidencia.md §4), não vem de estudo
 const SINAL = {   // sinais da edge ligados à idade do rosto (a textura/poro fica de fora); c = o que a foto mostra, curto
@@ -364,16 +412,19 @@ const SINAL = {   // sinais da edge ligados à idade do rosto (a textura/poro fi
   flacidez:{ nome:'Contorno', recorte:'contorno', c:['Firme', 'Levemente menos firme', 'Menos firme', 'Bem menos firme'] },
 };
 const cap = t => t ? t[0].toLocaleUpperCase('pt-BR') + t.slice(1) : '';
-// a dor do espelho como frase, depois de "você disse que" (CTA do resultado; 09/11); 'nada' fica de fora
+// a dor do espelho como frase, depois de "você disse que" (CTA do resultado); 'nada' (leads antigos) fica de fora
 const DOR_FRASE = {
   cansada:() => `se sente com cara de ${fem() ? 'cansada' : 'cansado'} mesmo dormindo`,
   caindo:() => 'o rosto caindo te incomoda',
   pescoco:() => 'o pescoço e a papada te incomodam',
   palpebra:() => 'a pálpebra pesando te incomoda',
   manchas:() => 'manchas e rugas te incomodam',
+  velho:() => `sente que parece mais ${fem() ? 'velha' : 'velho'} do que é`,   // 11/11
+  outro:() => R.espelho_texto ? `o que mais te incomoda é “${R.espelho_texto}”` : '',   // 11/11: as palavras dela
 };
-// a dor do espelho (v3): a região dela vem primeiro em "O que a sua foto mostra", com a frase dela e o que a análise devolveu.
-// ids = sinais da edge que mostram essa região (o mais marcado entre eles); sem frase de saúde nova.
+// a dor do espelho: a região dela vem primeiro em "O que a sua foto mostra", com a frase dela e o que a análise devolveu.
+// ids = sinais da edge que mostram essa região (o mais marcado entre eles). 'velho' e 'outro' não puxam região: o número
+// e a régua já respondem a 'velho'; 'outro' é texto livre.
 const DOR = {
   cansada:{ t:() => `a cara de ${fem() ? 'cansada' : 'cansado'}`, ids:['olhos'] },
   caindo:{ t:() => 'o rosto caindo', ids:['sulco_nasolabial', 'flacidez'] },
@@ -381,15 +432,6 @@ const DOR = {
   palpebra:{ t:() => 'a pálpebra pesando', ids:['olhos'] },
   manchas:{ t:() => 'as manchas e as rugas', pl:true, ids:['manchas', 'linhas_testa', 'olhos'] },
 };
-// fontes completas (todas em evidencia.md, conferidas no PubMed em 04/11/2026): só dentro de "Ver os estudos"
-const ESTUDOS = [
-  ['Christensen et al., BMJ 2009', 'https://doi.org/10.1136/bmj.b5262', '1.826 gêmeos dinamarqueses com 70 anos ou mais: quem aparentava mais idade na foto tinha, em média, menos força e memória.'],
-  ['Guyuron et al., Plast Reconstr Surg 2009', 'https://doi.org/10.1097/PRS.0b013e31819c4d42', '186 pares de gêmeos idênticos: cada 10 anos de cigarro a mais somaram cerca de 2 anos ao rosto; mais sol andou junto com um rosto mais velho.'],
-  ['Gunn et al., J Gerontol A 2012', 'https://doi.org/10.1093/gerona/gls154', '514 pessoas sem doença: a pressão foi o fator do coração mais ligado à idade que o rosto aparentava.'],
-  ['Noordam et al., Age 2011', 'https://doi.org/10.1007/s11357-011-9339-9', '602 pessoas: glicose mais alta já aparece no rosto, mesmo sem diabetes.'],
-  ['Oyetakin-White et al., Clin Exp Dermatol 2015', 'https://doi.org/10.1111/ced.12455', '60 mulheres: dormir mal se ligou a mais sinais de envelhecimento na pele.'],
-  ['Mayes et al., PLoS One 2010', 'https://doi.org/10.1371/journal.pone.0015270', '250 mulheres: atividade moderada se ligou a um rosto mais novo.'],
-];
 function casoDe(fx, idade){
   if (!fx || !idade) return 'sem_numero';
   const d = (fx.min + fx.max)/2 - idade;
@@ -404,26 +446,26 @@ function regua(fx, idade){
     <span class="rg-ponta" style="left:0">${lo}</span><span class="rg-ponta fim" style="left:100%">${hi}</span>
   </div>`;
 }
-// o que das respostas pesa no rosto: frases só de evidencia.md §4 e do desenho-v2 (↑ pesa · ↓ a favor · ? a foto não mede)
+// 3. o que pode estar por trás do rosto. 11/11 (Lucca: “explicação comum de hábito negativo que a pessoa não tem”): só
+// entra o que ela TEM ou marcou; “nunca fumou” não gasta linha. Ordem: o que liga o rosto ao corpo por dentro primeiro
+// (pressão e glicose), depois cigarro, sono, movimento e, por último, o sol (que é pele por fora).
+// ↑ pesa · ↓ a favor · ? a foto não mede. f = a fonte curta (evidencia.md), que vai numa linha só no fim do cartão.
 function fatores(max = 3){
   const at = [], bom = [], M = R.metabolico;
-  const CIG = 'o cigarro é o hábito com o efeito mais claro no rosto.';
-  if (['hoje','as_vezes'].includes(R.cigarro)) at.push({ id:'cigarro', s:'↑', r:resp('cigarro'), t:cap(CIG) });
-  else if (R.cigarro === 'parou') at.push({ id:'cigarro', s:'↑', r:resp('cigarro'), t:'Ter parado conta: ' + CIG });
-  else if (R.cigarro === 'nunca') bom.push({ id:'cigarro', s:'↓', r:resp('cigarro'), t:cap(CIG) });
-  if (M === 'pressao') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'A pressão foi o fator do coração mais ligado ao rosto.' });
-  else if (M === 'glicose') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'Glicose mais alta já aparece no rosto, mesmo sem diabetes.' });
-  else if (M === 'ambas') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'A pressão foi o fator do coração mais ligado ao rosto.' });   // a glicose fica no rótulo; frase curta (evidencia.md §4)
-  else if (M === 'nao_medi') bom.push({ id:'metabolico', s:'↓', r:resp('metabolico'), t:'Em quem não tem doença, pressão e glicose mais baixas andaram junto com um rosto mais novo.' });
-  if (['todo_dia','fds'].includes(R.sol)) at.push({ id:'sol', s:'↑', r:resp('sol'), t:'Parte do que aparece na foto é sol: é pele por fora, não necessariamente o corpo por dentro.' });
-  else if (R.sol === 'quase_nenhum') bom.push({ id:'sol', s:'↓', r:resp('sol'), t:'Nos gêmeos, quem usava protetor aparentava menos idade.' });   // Guyuron 2009 (evidencia.md §2)
-  if (['curto','cansado'].includes(R.sono)) at.push({ id:'sono', s:'↑', r:resp('sono'), t:'Dormir mal se ligou a mais sinais de envelhecimento na pele.' });
-  else if (R.sono === 'bem') bom.push({ id:'sono', s:'↓', r:resp('sono'), t:'Dormir mal se ligou a mais sinais de envelhecimento na pele.' });
-  if (['quase_nada','ate2'].includes(R.movimento)) at.push({ id:'movimento', s:'↑', r:resp('movimento'), t:'Atividade moderada se ligou a um rosto mais novo.' });
-  else if (['2a5','mais5'].includes(R.movimento)) bom.push({ id:'movimento', s:'↓', r:resp('movimento'), t:'Atividade moderada se ligou a um rosto mais novo.' });
-  if (M === 'nunca') at.push({ id:'metabolico', s:'?', r:resp('metabolico'), t:'Os estudos ligaram as duas ao rosto, e a foto não mede nenhuma.' });
-  // até 3; quando há os dois lados, 2 que pesam + 1 a favor (resposta construtiva, sem só cobrança)
-  // com a dor do espelho no bloco da foto (v3), até 2 linhas: 1 que pesa + 1 a favor (as palavras antes do botão ficam em ~160)
+  if (M === 'pressao') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'Em quem não tinha doença, a pressão foi o fator do coração mais ligado à idade do rosto.', f:['Gunn 2012'] });
+  else if (M === 'glicose') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'Glicose mais alta já aparece no rosto, mesmo sem diabetes.', f:['Noordam 2011'] });
+  else if (M === 'ambas') at.push({ id:'metabolico', s:'↑', r:resp('metabolico'), t:'As duas apareceram no rosto nos estudos, mesmo em quem não tinha doença.', f:['Gunn 2012', 'Noordam 2011'] });
+  else if (M === 'nunca') at.push({ id:'metabolico', s:'?', r:resp('metabolico'), t:'As duas apareceram no rosto nos estudos, e a foto não mede nenhuma.', f:['Gunn 2012', 'Noordam 2011'] });
+  else if (M === 'nao_medi') bom.push({ id:'metabolico', s:'↓', r:resp('metabolico'), t:'Em quem não tem doença, pressão e glicose mais baixas andaram junto com um rosto mais novo.', f:['Gunn 2012', 'Noordam 2011'] });
+  if (['hoje', 'as_vezes'].includes(R.cigarro)) at.push({ id:'cigarro', s:'↑', r:resp('cigarro'), t:'O cigarro é o hábito com o efeito mais claro no rosto, e é dos que dá para mudar.', f:['Guyuron 2009'] });
+  else if (R.cigarro === 'parou') bom.push({ id:'cigarro', s:'↓', r:resp('cigarro'), t:'Ter parado conta: o cigarro é o hábito com o efeito mais claro no rosto.', f:['Guyuron 2009'] });
+  if (['curto', 'cansado'].includes(R.sono)) at.push({ id:'sono', s:'↑', r:resp('sono'), t:'Dormir mal se ligou a mais sinais de envelhecimento na pele.', f:['Oyetakin-White 2015'] });
+  else if (R.sono === 'bem') bom.push({ id:'sono', s:'↓', r:resp('sono'), t:'Em quem dormia bem, a pele mostrou menos sinais de envelhecimento.', f:['Oyetakin-White 2015'] });
+  if (['quase_nada', 'ate2'].includes(R.movimento)) at.push({ id:'movimento', s:'↑', r:resp('movimento'), t:'Atividade moderada se ligou a um rosto mais novo.', f:['Mayes 2010'] });
+  else if (['2a5', 'mais5'].includes(R.movimento)) bom.push({ id:'movimento', s:'↓', r:resp('movimento'), t:'Atividade moderada se ligou a um rosto mais novo.', f:['Mayes 2010'] });
+  if (['todo_dia', 'fds'].includes(R.sol)) at.push({ id:'sol', s:'↑', r:resp('sol'), t:'Parte do que aparece na foto é sol: é pele por fora, não necessariamente o corpo por dentro.', f:['Guyuron 2009'] });
+  else if (R.sol === 'quase_nenhum') bom.push({ id:'sol', s:'↓', r:resp('sol'), t:'Nos gêmeos, menos sol andou junto com um rosto mais novo.', f:['Guyuron 2009'] });
+  // até max; com os dois lados, os que pesam + 1 a favor (resposta construtiva, sem só cobrança)
   return at.length && bom.length ? [...at.slice(0, max - 1), bom[0]] : [...at, ...bom].slice(0, max);
 }
 
@@ -437,30 +479,31 @@ function montarResultado(j, f){
   resultado = { faixa:daParaDizer ? fx : null, caso, confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null };
   const nivel = id => daParaDizer && sinais[id]?.visivel ? sinais[id].nivel : null;
 
-  // 1 + 2. número, régua, foto pequena e a frase de leitura (a do "mais velho" é a aprovada em evidencia.md §4)
+  // 1. o que a foto mostrou: número, régua e a frase que liga o rosto ao corpo (a do "mais velho" leva a frase aprovada
+  // de evidencia.md §4). Christensen 2009: idade aparente × força, memória e sobrevida em 7 anos; média de grupo, ≥70 anos.
   const O = nome ? `${esc(nome)}, o` : 'O';
   const LEITURA = {
-    mais_novo:`${O} seu rosto aparenta menos que os seus ${idade} anos: está do lado que os estudos associam a mais vitalidade.`,
-    igual:`${O} seu rosto acompanha os seus ${idade} anos.`,
-    mais_velho:`${O} seu rosto aparenta mais do que os seus ${idade} anos. Nos estudos, isso se liga a hábitos que dá para olhar com calma, e a genética pesa tanto quanto eles.`,
+    mais_novo:`${O} seu rosto aparenta menos que os seus ${idade} anos. Nos estudos, rostos que aparentavam menos andaram junto com mais força, memória e tempo de vida.*`,
+    igual:`${O} seu rosto acompanha os seus ${idade} anos. Nos estudos, a idade do rosto andou junto com a força, a memória e o tempo de vida.*`,
+    mais_velho:`${O} seu rosto aparenta mais do que os seus ${idade} anos. Nos estudos, a idade do rosto andou junto com a força e a memória.* Isso se liga a hábitos que dá para olhar com calma, e a genética pesa tanto quanto eles.`,
   };
   const cab = `<div class="r-cab"><img id="r-foto" alt="A sua foto de frente, com tarja nos olhos"><p class="nota">Idade que o seu rosto aparenta</p></div>`;
   $('r-num').innerHTML = daParaDizer
     ? `${cab}<p class="numero">${fx.min}–${fx.max}<span>anos</span></p>${regua(fx, idade)}
        <p class="r-leitura" data-caso="${caso}">${LEITURA[caso]}</p>
-       <p class="nota">Estimativa pela foto, não é diagnóstico.</p>`
+       <p class="nota">Estimativa, não é diagnóstico. *Christensen, BMJ 2009: 1.826 gêmeos com 70+ anos.</p>`
     : `${cab}<h2 data-caso="sem_numero">Não deu para estimar</h2>
-       <p>A foto não deu segurança para dar um número. Com a luz de uma janela na frente, a estimativa sai melhor.</p>
+       <p>A foto não deu segurança para dar um número. Com luz frontal e o rosto bem iluminado, a estimativa sai melhor.</p>
        <button type="button" class="link-alt" id="r-refazer">Tirar outra foto</button>`;
   const topo = fotoTopo(al, fr.g, 240); $('r-foto').src = topo.toDataURL('image/jpeg', .86); topo.width = topo.height = 0;
   $('r-refazer')?.addEventListener('click', () => { track('answer', { stepId:'resultado-refazer', valueText:'abriu' }); show('instrucao'); });
 
-  // 3. o que a foto mostra: até 2 sinais mais marcados + 1 a favor (o mais liso), com o recorte da própria foto
+  // 2. o que a foto mostra: até 2 sinais mais marcados + 1 a favor (o mais liso), com o recorte da própria foto
   const vis = Object.keys(SINAL).filter(id => nivel(id) != null).sort((a, b) => nivel(b) - nivel(a));
   const sel = vis.filter(id => nivel(id) >= 1).slice(0, 2);
   const liso = [...vis].reverse().find(id => !sel.includes(id) && nivel(id) === 0); if (liso) sel.push(liso);
   for (const id of vis) if (sel.length < 3 && !sel.includes(id)) sel.push(id);
-  // a dor do espelho primeiro (se a região apareceu na foto); com ela, 2 recortes (cabe nas ~160 palavras antes do botão)
+  // a dor do espelho primeiro (se a região apareceu na foto); com ela, 2 recortes
   const D = DOR[R.espelho], dorId = D ? D.ids.filter(id => nivel(id) != null).sort((a, b) => nivel(b) - nivel(a))[0] || null : null;
   if (dorId){ sel.splice(0, sel.length, dorId, ...sel.filter(id => id !== dorId)); sel.length = Math.min(sel.length, 2); }
   resultado.dor = dorId;
@@ -471,19 +514,16 @@ function montarResultado(j, f){
   $('r-foto-bloco').querySelectorAll('canvas[data-r]').forEach(c => { const r = recorteRegiao(al, fr.g, c.dataset.r, 128); c.width = r.width; c.height = r.height; c.getContext('2d').drawImage(r, 0, 0); r.width = 0; });
   al.width = al.height = 0;
 
-  // 4. o que das respostas pesa no rosto
-  const fs = fatores(dorId ? 2 : 3);
+  // 3. o que pode estar por trás do rosto (só o que ela tem ou marcou), com as fontes numa linha
+  const fs = fatores(2), fontes = [...new Set(fs.flatMap(x => x.f))];
   $('r-fatores').hidden = !daParaDizer;
-  $('r-fatores').innerHTML = `<h3>O que das suas respostas pesa no rosto</h3>${fs.length
-    ? `<ul class="fatores">${fs.map(x => `<li data-f="${x.id}"><i class="${x.s === '↓' ? 'bom' : ''}" aria-label="${x.s === '↑' ? 'pesa' : x.s === '↓' ? 'a favor' : 'a foto não mede'}">${x.s}</i><p><b>${esc(x.r)}.</b> ${esc(x.t)}</p></li>`).join('')}</ul>`
+  $('r-fatores').innerHTML = `<h3>O que pode estar por trás do seu rosto</h3>${fs.length
+    ? `<ul class="fatores">${fs.map(x => `<li data-f="${x.id}"><i class="${x.s === '↓' ? 'bom' : ''}" aria-label="${x.s === '↑' ? 'pesa' : x.s === '↓' ? 'a favor' : 'a foto não mede'}">${x.s}</i><p><b>${esc(x.r)}.</b> ${esc(x.t)}</p></li>`).join('')}</ul>
+       <p class="nota">Fontes: ${esc(fontes.join(' · '))}</p>`
     : '<p>Nas suas respostas não apareceu nenhum dos fatores mais estudados.</p>'}`;
-  // 5. CTA: liga o que ela marcou (espelho + daqui a 10 anos) ao resultado e dá o próximo passo; e, fechado, os estudos
-  $('r-ponte-txt').textContent = textoCTA(daParaDizer ? fx : null);
+  // 4. o que a foto não vê + o ganho de mandar + UM botão
+  $('r-ponte-txt').textContent = textoCTA(!dorId);   // a dor só se repete aqui se não apareceu nos recortes
   $('r-cta-nota').textContent = 'Abre o WhatsApp com o seu código';   // 08/11: WhatsApp em primeiro também com ?lv=
-  $('r-estudos-txt').innerHTML = ESTUDOS.map(([t, u, x]) => `<p><b>${esc(t)}.</b> ${esc(x)} <a href="${u}" target="_blank" rel="noopener">Ver o estudo</a></p>`).join('')
-    + '<p>Estimativa feita por inteligência artificial a partir de fotos. Não é exame nem diagnóstico. As associações citadas vêm de estudos com grupos de pessoas e não preveem a saúde de ninguém individualmente. As fotos são usadas só para a análise e apagadas depois. Dr. Lucca Marques, CRM-GO 33.990.</p>';
-  $('r-estudos').open = false;
-  $('r-estudos').ontoggle = () => { if ($('r-estudos').open) track('answer', { stepId:'resultado-estudos', valueText:'abriu' }); };
 
   // complete: o que a Caixa lê (codigo, idade, sexo, faixa, caso, respostas, angulos/enviadas para as 3 fotos, desejo)
   track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:caso,
@@ -495,16 +535,16 @@ function montarResultado(j, f){
   if (window.__peleResultado) window.__peleResultado(j);
 }
 function respostasLimpa(){ const { nome, ...r } = R; return r; }
-// "{Nome}, você disse que {incômodo} e que daqui a 10 anos quer {objetivo}. O seu rosto aparenta de X a Y anos. Mande o seu código: …"
-// Sem nome: começa em "Você". Sem incômodo ('nada'): só o objetivo. Sem número: a frase da faixa sai. Fim B não fala em vídeo.
-function textoCTA(fx){
-  const nome = nomeBonito(), dor = DOR_FRASE[R.espelho]?.() || '', d = desejo(FUT_QUER);
-  const disse = [dor, d ? `${dor ? 'que ' : ''}daqui a 10 anos quer ${d}` : ''].filter(Boolean).join(' e ');
+// "{Nome}, você disse que {incômodo}." (só quando a dor não apareceu nos recortes) "Mande o seu resultado: o Dr. Lucca junta a foto e as suas respostas e te explica o que
+// pode estar pesando por dentro e por onde começar para {objetivo de 10 anos}." Sem nome: começa em "Você"; sem incômodo:
+// a 1ª frase sai. Fim B: "olha" no lugar de "junta… e te explica" (como antes); nenhum dos dois fala em vídeo.
+function textoCTA(comDor = true){
+  const nome = nomeBonito(), dor = comDor ? DOR_FRASE[R.espelho]?.() || '' : '', d = desejo(FUT_VOCE);
   const partes = [];
-  if (disse) partes.push(`${nome ? `${nome}, você` : 'Você'} disse que ${disse}.`);
-  if (fx) partes.push(`O seu rosto aparenta de ${fx.min} a ${fx.max} anos.`);
-  partes.push(FIM === 'B' ? 'Mande o seu código: o Dr. Lucca olha o seu caso e explica o que pesa e por onde começar.'
-                          : 'Mande o seu código: o Dr. Lucca analisa o seu caso e te explica o que pesa e por onde começar.');
+  if (dor) partes.push(`${nome ? `${nome}, você` : 'Você'} disse que ${dor}.`);
+  const para = d ? ` para ${d}` : '';
+  partes.push(FIM === 'B' ? `Mande o seu resultado: o Dr. Lucca olha a foto com as respostas e explica o que pode estar pesando por dentro e por onde começar${para}.`
+                          : `Mande o seu resultado: o Dr. Lucca junta a foto e as respostas e te explica o que pode estar pesando por dentro e por onde começar${para}.`);
   return partes.join(' ');
 }
 

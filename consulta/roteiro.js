@@ -62,13 +62,14 @@ const P2 = {
 const PI = {
   sexo:['Sexo', SEXO],
   idade:['Idade real', null],
-  espelho:['Quando você se olha no espelho, o que mais te incomoda hoje?', { cansada:'Cara de cansada(o), mesmo quando eu durmo', caindo:'O rosto caindo: bochecha, bigode chinês', pescoco:'O pescoço e a papada', palpebra:'A pálpebra pesando', manchas:'Manchas e rugas', nada:'Nada em especial: quero saber a idade que o rosto mostra' }],
+  espelho:['Quando você se olha no espelho, o que mais te incomoda hoje?', { cansada:'Cara de cansada(o), mesmo quando eu durmo', caindo:'O rosto caindo: bochecha, bigode chinês', pescoco:'O pescoço e a papada', palpebra:'A pálpebra pesando', manchas:'Manchas e rugas', nada:'Nada em especial: quero saber a idade que o rosto mostra', velho:'Pareço mais velha(o) do que sou', outro:'Outro' }],
+  espelho_texto:['Em poucas palavras, o que te incomoda?', null],   // 11/11: o texto do “Outro”
   cigarro:['Você fuma ou já fumou?', { nunca:'Nunca fumei', parou:'Já fumei e parei', parou_mais10:'Parei há mais de 10 anos', parou_menos10:'Parei há menos de 10 anos', as_vezes:'Fumo ou uso vape às vezes', hoje:'Fumo hoje / todo dia' }],
   sol:['Quanto sol o rosto pega (sem protetor)', { quase_nenhum:'Quase nenhum', fds:'Um pouco, ou só no fim de semana', todo_dia:'Quase todo dia' }],
   metabolico:['Já te disseram que a pressão ou a glicose estava alta?', { nao_medi:'Não, e medi no último ano', nunca:'Nunca medi ou não lembro', pressao:'Sim, a pressão', glicose:'Sim, a glicose', ambas:'Sim, as duas' }],
   movimento:['Quanto se mexe numa semana comum', { quase_nada:'Quase nada', ate2:'Até 2 horas', '2a5':'De 2 a 5 horas', mais5:'Mais de 5 horas' }],
   sono:['Como são as noites', { bem:'Durmo 7 horas ou mais e acordo bem', '6h':'Durmo umas 6 horas', curto:'Durmo 5 horas ou menos', cansado:'Durmo, mas acordo cansada(o)' }],
-  futuro:['Daqui a 10 anos, o que mais quer', { disposicao:'Ter a mesma disposição de hoje', parecer:'Parecer a idade que eu sinto', chegar10:'Chegar aos (idade + 10) com força e memória', antes:'Cuidar da saúde antes de aparecer problema', reconhecer:'Me reconhecer no espelho', independente:'Não depender de ninguém', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça' }],
+  futuro:['Daqui a 10 anos, o que mais quer', { disposicao:'Ter a mesma disposição de hoje', parecer:'Parecer a idade que eu sinto', chegar10:'Chegar aos (idade + 10) com força e memória', antes:'Cuidar da saúde antes de aparecer problema', reconhecer:'Me reconhecer no espelho', independente:'Não depender de ninguém', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça', devagar:'Envelhecer mais devagar' }],
 };
 /** {pergunta: resposta} com o texto da tela; multi ('a+b' ou lista) vira lista. Pergunta sem resposta fica de fora. */
 function rotular(r, mapa){
