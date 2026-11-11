@@ -43,7 +43,7 @@ export const CONFIG = {
   pedirContatoAntes: false,
 
   links: {
-    teste: '/idade/',                                       // teste das pernas (link pequeno no resultado)
+    teste: null,   // 10/11 D1: o teste das pernas saiu do funil, e o fim fica com uma chamada só (era '/idade/')
     direct: 'https://ig.me/m/dr.luccamarques',              // DM do Instagram (não aceita texto pronto)
     instagram: 'https://www.instagram.com/dr.luccamarques/',
     politica: ''                                            // URL da política de privacidade (vazio = sem link)

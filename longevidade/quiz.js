@@ -6,7 +6,7 @@
 // Conteúdo: config.js. Este arquivo não precisa mudar para trocar textos.
 // ============================================================
 
-import { CONFIG } from './config.js?v=lg3';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
+import { CONFIG } from './config.js?v=lg4';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
 import * as Analytics from './funnel-analytics.js?v=lg3';
 import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js?v=3';
 // 03/11: o link "Ou meça suas pernas agora" leva a origem junto (utm_*, canal e o lv do link marcado), senão a sessão das
@@ -496,7 +496,7 @@ function renderResult() {
       el('div', { class: 'codigo' }, el('span', {}, R.codigoRotulo), el('b', { id: 'codigo' }, cod)),
       el('p', { class: 'linha' }, R.codigoLinha),
       main, alt),
-    el('a', { class: 'link-teste', id: 'cta-teste', href: comOrigem(CONFIG.links.teste), onclick: () => clique('teste_idade') }, R.teste)
+    CONFIG.links.teste ? el('a', { class: 'link-teste', id: 'cta-teste', href: comOrigem(CONFIG.links.teste), onclick: () => clique('teste_idade') }, R.teste) : null
   );
 }
 

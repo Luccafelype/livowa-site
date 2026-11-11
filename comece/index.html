@@ -31,9 +31,9 @@ const DESTINOS = {
 };
 const RESERVA = {
   bio:    { tema:'longevidade', pesos:{ pele:50, quiz:50, teste:0, braco:0 }, fixo:null },
-  direct: { tema:'longevidade', pesos:{ pele:25, quiz:25, teste:25, braco:25 }, fixo:null },
+  direct: { tema:'longevidade', pesos:{ pele:25, quiz:25, teste:0, braco:50 }, fixo:null },
 };
-const CAMP_RESERVA = { PERNAS:'teste', MUSCULO:'braco', PELE:'pele', IDADE:'quiz' };
+const CAMP_RESERVA = { PERNAS:'braco', MUSCULO:'braco', PELE:'pele', IDADE:'quiz' };   // 10/11 D1: PERNAS leva ao braço
 const PELE2_PCT = 100;   // 03/11, Lucca: "pode deixar a pele 2". A pele antiga (/idade/?pele=1) sai do sorteio; continua no ar e abre com ?f=pele. Voltar ao A/B = 50
 const q = new URLSearchParams(location.search);
 const canal = q.get('canal') === 'direct' ? 'direct' : 'bio', camp = (q.get('camp') || '').toUpperCase() || null;
@@ -51,6 +51,10 @@ async function lerRota(){
 const rota = await lerRota();
 let tema = rota.tema, cat = DESTINOS[tema];
 let lista = Object.entries(rota.pesos).filter(([id, p]) => cat[id] && p > 0);
+// 10/11, D1 do Lucca ("pode sair"): o teste das pernas (/idade/) sai do funil. A fatia "teste" da aba Portas vai para o
+// braço e a campanha fixa em "teste" (PERNAS) abre o braço; ?f=teste (link mandado à mão) continua abrindo as pernas.
+if (cat.braco){ const t = lista.find(([b]) => b === 'teste'); if (t){ lista = lista.filter(([b]) => b !== 'teste'); const b = lista.find(([x]) => x === 'braco'); if (b) b[1] += t[1]; else lista.push(['braco', t[1]]); } }
+if (rota.fixo === 'teste') rota.fixo = 'braco';
 if (!lista.length){ tema = 'longevidade'; cat = DESTINOS.longevidade; lista = Object.entries(RESERVA.bio.pesos).filter(([, p]) => p > 0); }   // tema sem isca: não deixa a pessoa sem destino
 const todos = { ...DESTINOS.longevidade, ...DESTINOS.emagrecimento };
 const chave = 'livowa_braco_' + canal + '_' + tema;
