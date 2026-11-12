@@ -153,7 +153,9 @@ function show(s){
   if (s === 'espelho') mostrarOutro(false);
   if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); prepararQuadro(); }
   else pararQuadro();
-  if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
+  // 12/11 (teste ao vivo, item 4): na tela do limite não há "Tentar de novo" (até as 21h de Brasília todo envio volta 429);
+  // fica só o WhatsApp/Direct do texto. A de erro de internet e a de foto ruim seguem com os botões.
+  if (s === 'erro'){ if (erroLimite) $('cta-bar').hidden = true; else { cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; } }
   if (s === 'resultado'){ iniciarPrazo(); prepararFechamento(); }
   pintarPrazo();
   window.scrollTo(0, 0);
@@ -343,8 +345,8 @@ $('arquivo').addEventListener('change', async e => {
 });
 
 // ---------- envio e carregamento que repete as respostas ----------
-let erroRede = false;
-function erro(txt, rede, limite){ erroRede = !!rede; $('erro-tit').textContent = limite ? 'Muitas análises agora' : rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler'; $('erro-txt').textContent = txt;
+let erroRede = false, erroLimite = false;
+function erro(txt, rede, limite){ erroRede = !!rede; erroLimite = !!limite; $('erro-tit').textContent = limite ? 'Muitas análises agora' : rede ? 'Não consegui analisar agora' : 'Essa foto não deu para ler'; $('erro-txt').textContent = txt;
   $('erro-contato').hidden = !limite;
   if (limite){ const s = sou(); $('erro-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Oi, Dr. Lucca! ${s ? s + '. ' : ''}Tentei fazer o teste da idade do rosto, código ${meuCodigo()}, mas deu muitas análises agora.`)}`; }
   show('erro'); }
@@ -382,7 +384,7 @@ async function enviar(f){
   try {
     const r = await fetch(PELE_ENDPOINT, { method:'POST', signal:ctl.signal, headers:{ 'Content-Type':'application/json', apikey:SUPA_KEY }, body:JSON.stringify(corpo) });
     const j = await r.json().catch(() => null);
-    if (r.status === 429){ clearInterval(tick); return erro('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou mande o seu código ao Dr. Lucca e fale com ele direto.', true, true); }
+    if (r.status === 429){ clearInterval(tick); gravarLimite(); return erro('Muita gente fez a análise hoje e a automática parou por agora. As suas respostas chegaram: mande o seu código ao Dr. Lucca e ele te responde direto.', true, true); }
     if (!r.ok || !j){ clearInterval(tick); return erro('Pode ser a internet. É só tentar de novo.', true); }
     if (!j.ok){ clearInterval(tick); return erro('A foto não deu para ler direito. Tente de novo com luz frontal, o rosto bem iluminado e inteiro no oval.', false); }
     const resta = MIN - (performance.now() - t0);
@@ -526,6 +528,16 @@ function montarResultado(j, f){
             sinais:Object.entries(sinais).map(([id, s]) => ({ id, visivel:s.visivel, nivel:s.visivel ? s.nivel : null })) } });
   if (window.__peleResultado) window.__peleResultado(j);
 }
+// 12/11 (teste ao vivo, item 4): quem bate no limite da análise (429) sumia da Caixa (nenhum 'complete' com o código).
+// Agora grava um 'complete' sem análise, com os mesmos nomes de campo do normal, uma vez por código: a Caixa lista e o
+// aviso do celular dispara. Sem foto, faixa, caso nem sinais (a análise não rodou).
+const limiteGravado = new Set();
+function gravarLimite(){
+  const c = meuCodigo(); if (limiteGravado.has(c)) return; limiteGravado.add(c);
+  track('complete', { stepId:'limite', stepIndex:ORDEM.indexOf('erro'), valueText:'sem_analise',
+    props:{ codigo:c, idade:R.idade ?? null, sexo:R.sexo || null, respostas:respostasLimpa(), desejo:desejo() || null, espelho_regiao:null, sem_analise:true,
+            enviadas:window.__ultimoEnvio?.n || null, angulos:window.__ultimoEnvio?.angulos || null } });
+}
 // 12/11 (Lucca: "por que não fica aqui? só ficar seguro"): o primeiro nome vai em respostas.nome, junto das respostas e
 // com a mesma proteção delas (o site só grava; quem lê é a Caixa, pela chave). '' = pulou o nome. O ntfy segue sem nome.
 function respostasLimpa(){ const { nome, ...r } = R; return { ...r, nome:nomeBonito().slice(0, 40) }; }
@@ -646,4 +658,4 @@ $('aviso-link').addEventListener('click', () => { track('cta_click', { stepId:'r
 document.querySelectorAll('.opts[data-q]').forEach(ligarOpcoes);
 show('capa');
 // ganchos do teste automático (headless): estado e resultado sem câmera
-window.__pele = { R, estado:() => ({ cur, codigo, envio:window.__ultimoEnvio || null, resultado, barra:window.__barra }), show, mensagem, pBarra, BARRA };
+window.__pele = { R, estado:() => ({ cur, codigo, envio:window.__ultimoEnvio || null, resultado, barra:window.__barra }), show, mensagem, pBarra, BARRA, enviar:f => enviar(f || fotos) };

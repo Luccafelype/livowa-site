@@ -383,8 +383,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div id="conv" class="conv" role="dialog" aria-modal="true" aria-labelledby="conv-tit" hidden>
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
-<script src="kits.js?v=20261112a"></script>
-<script src="roteiro.js?v=20261112a"></script>
+<script src="kits.js?v=20261112b"></script>
+<script src="roteiro.js?v=20261112b"></script>
 <script src="gravar-analise.js?v=20261112a"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
@@ -409,10 +409,15 @@ try { FINO = JSON.parse(localStorage.getItem(FINO_K) || '{}') || {}; } catch { F
 const gravaFino = () => { try { localStorage.setItem(FINO_K, JSON.stringify(FINO)); } catch { /* sem armazenamento: vale só nesta aba */ } };
 const etapaDe = l => { const s = l?.status || 'novo'; if (NOME_ET[s] && s !== 'novo' && s !== 'nao_quis') return s;
   const f = FINO[l?.codigo]; if (f && VELHA[f] === s) return f; return DE_VELHA[s] || s || 'novo'; };
-const temPele = l => (l.partes || []).some(p => p.funil === 'pele-idade' || p.funil === 'pele2' || p.etapa === 'pele-resultado');
+// 12/11 (teste ao vivo, item 4): quem bateu no limite da análise grava um 'complete' sem análise (etapa 'limite',
+// resumo 'sem_analise', props.sem_analise): sem foto, faixa, caso nem sinais
+const semAnaliseP = p => p.funil === 'pele-idade' && (p.etapa === 'limite' || p.resumo === 'sem_analise' || p.dados?.sem_analise === true);
+const temPele = l => (l.partes || []).some(p => (p.funil === 'pele-idade' || p.funil === 'pele2' || p.etapa === 'pele-resultado') && !semAnaliseP(p));
 const ehPI = l => (l.partes || []).some(p => p.funil === 'pele-idade');
+const soSemAnalise = l => { const ps = (l.partes || []).filter(p => p.funil === 'pele-idade'); return ps.length > 0 && ps.every(semAnaliseP); };
 function proxAcao(l, et){
   const pi = ehPI(l);
+  if (pi && soSemAnalise(l) && (et === 'novo' || et === 'audio')) return 'Pedir a foto no WhatsApp (a análise automática não rodou)';
   if (et === 'novo') return pi ? 'Mandar o áudio antes' : 'Responder (kit do teste)';
   if (et === 'audio') return pi ? 'Gravar a análise' : 'Mandar a análise';
   if (et === 'respondeu') return 'Mandar o convite';
@@ -425,7 +430,7 @@ function espera(d){
   return m < 60 ? `há ${m} min` : m < 48 * 60 ? `há ${Math.round(m / 60)} h` : `há ${Math.round(m / 1440)} dias`;
 }
 function apagaFoto(l){
-  const p = (l.partes || []).filter(x => x.funil === 'pele-idade' || x.funil === 'pele2' || x.etapa === 'pele-resultado').map(x => new Date(x.quando).getTime()).sort((a, b) => b - a)[0];
+  const p = (l.partes || []).filter(x => (x.funil === 'pele-idade' || x.funil === 'pele2' || x.etapa === 'pele-resultado') && !semAnaliseP(x)).map(x => new Date(x.quando).getTime()).sort((a, b) => b - a)[0];
   if (!p) return '';
   const dias = Math.ceil((p + 7 * 86400e3 - Date.now()) / 86400e3);
   return dias <= 0 ? 'A foto já apagou (7 dias)' : dias === 1 ? 'A foto apaga em 1 dia' : `A foto apaga em ${dias} dias`;
@@ -450,7 +455,7 @@ function resumo(l){
     if (n === 'Pele 2'){ const ach = (p.resumo || '').split('+').filter(x => SIN2[x]).map(x => SIN2[x][0].toLowerCase()), q = String(d.respostas?.incomoda || '').split('+').filter(Boolean).map(x => (ROT2.incomoda[1][x] || x).toLowerCase());
       return `Pele 2: ${ach.length ? ach.join(', ') : p.resumo === 'nenhum' ? 'nada marcado' : '?'}${q.length ? ` · queixa: ${q.join(', ')}` : ''}`; }
     if (n === NOME_PI){ const r = d.respostas || {}, f = r.futuro ? valPI('futuro', r.futuro, d) : null, inc = r.espelho && r.espelho !== 'nada' ? valPI('espelho', r.espelho, d) : null;
-      return `${NOME_PI}: ${d.faixa ? 'rosto ' + d.faixa : 'sem número'}${d.idade ? ` (tem ${d.idade})` : ''}${inc ? ` · incomoda: ${inc}` : ''}${f ? ` · quer ${f}` : ''}`; }
+      return `${NOME_PI}: ${semAnaliseP(p) ? 'sem análise (limite do dia)' : d.faixa ? 'rosto ' + d.faixa : 'sem número'}${d.idade ? ` (tem ${d.idade})` : ''}${inc ? ` · incomoda: ${inc}` : ''}${f ? ` · quer ${f}` : ''}`; }
     if (n === 'Quiz') return `Quiz: ${d.ajuda === 'medico' || p.resumo === 'medico' ? 'quer com médico' : d.ajuda || p.resumo ? 'por conta própria' : 'respondido'}`;
     if (n === 'Emagrecimento'){ const P = { volta:'o peso volta', vontade:'vontade de comer', balanca:'balança parada', constancia:'começa e para', comeco:'não sabe por onde começar' };
       const SN = { sop:'sinais de SOP', menopausa:'menopausa', tireoide:'sinais de tireoide', metabolica:'sinais de síndrome metabólica', sem_exames:'sem exames recentes', remedio:'remédio contínuo', ronco:'ronco e cansaço' };   // v2 (03/11)
@@ -892,7 +897,7 @@ const valPI = (k, v, d) => k === 'espelho' && v === 'outro' ? (d.respostas?.espe
 function cartaoPeleIdade(e, quando, g){
   const d = e.dados || {}, r = d.respostas || {}, c = window.KITS ? KITS['pele-idade'].classifica(d) : null;
   const caso = c ? c.titulo : (d.caso || '');
-  const res = d.faixa ? `Rosto aparenta ${d.faixa}${d.idade != null ? ` · tem ${d.idade}` : ''}${caso ? ` · ${caso}` : ''}` : `Sem número na página${d.idade != null ? ` · tem ${d.idade}` : ''}`;
+  const res = d.sem_analise ? `A análise automática não rodou (limite do dia)${d.idade != null ? ` · tem ${d.idade}` : ''}` : d.faixa ? `Rosto aparenta ${d.faixa}${d.idade != null ? ` · tem ${d.idade}` : ''}${caso ? ` · ${caso}` : ''}` : `Sem número na página${d.idade != null ? ` · tem ${d.idade}` : ''}`;
   const resp = `<div class="p2"><h3>Respostas do quiz</h3>
     ${linhaNome(e)}
     <div class="l"><span>Idade real</span><b>${d.idade != null ? esc(d.idade) + ' anos' : '—'}</b></div>
@@ -900,7 +905,7 @@ function cartaoPeleIdade(e, quando, g){
   const frases = String(d.frases || '').split('+').filter(Boolean).map(x => FRASEPI[x] || x);
   const sin = (d.sinais || []).filter(s => SINPI[s.id]);
   const vis = sin.filter(s => s.visivel !== false && s.nivel != null), nao = sin.filter(s => !(s.visivel !== false && s.nivel != null));
-  const sinais = `<div class="p2"><h3>Sinais da foto ligados à idade</h3>${!d.faixa ? '<p class="p2-nada">A página não mostrou os sinais (sem número).</p>' : ''}
+  const sinais = `<div class="p2"><h3>Sinais da foto ligados à idade</h3>${d.sem_analise ? '<p class="p2-nada">Sem análise da foto (limite do dia): a foto não foi guardada.</p>' : !d.faixa ? '<p class="p2-nada">A página não mostrou os sinais (sem número).</p>' : ''}
     ${vis.length ? `<div class="p2-reg"><ul>${[...vis].sort((a, b) => b.nivel - a.nivel).map(s => `<li><span>${esc(SINPI[s.id])}</span><em class="g g${+s.nivel}">${esc(GRAU2[+s.nivel])}</em></li>`).join('')}</ul></div>` : '<p class="p2-nada">Sem sinais na análise.</p>'}
     ${nao.length ? `<p class="p2-nada">Não deu para ver: ${esc(nao.map(s => SINPI[s.id].toLowerCase()).join(', '))}.</p>` : ''}</div>`;
   const ORIG = { camera:'câmera', galeria:'galeria' };
@@ -1088,6 +1093,7 @@ async function ver(c){
     const j = await r.json();
     if (!j.ok) return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`;
     FOTOS = j.fotos || []; KB = []; KM = []; window.ROTEIRO?.zerar(c);
+    (j.lista || []).forEach(e => { if (e.funil === 'pele-idade' && e.etapa === 'limite' && e.dados) e.dados.sem_analise = true; });   // 12/11: complete do limite
     // 12/11: o kit e o roteiro começam com o nome guardado no teste; outro código não herda o nome do anterior
     NOME_G = (j.lista || []).map(nomeDe).find(Boolean) || '';
     if (c !== KIT_COD){ KIT_COD = c; KIT_NOME = NOME_G; } else if (!KIT_NOME.trim()) KIT_NOME = NOME_G;
@@ -1206,6 +1212,7 @@ function kitCorpoPI(i, b, K, c, atalho){
   h += `<div class="kit-faixa ${c.cor}"><b>${esc(c.titulo[0].toUpperCase() + c.titulo.slice(1))}</b><span>${esc(c.simples)}</span></div>`;
   if (c.refazer) h += `<div class="kit-refazer"><b>Foto duvidosa: peça para refazer</b><p>${esc(c.motivo)}</p>
     ${kitMsg(atalho(c.atalhoRefazer), i, { rotulo:'Atalho /' + c.atalhoRefazer, quando:'Mandar este e parar aí' })}</div>`;
+  if (c.semAnalise) h += `<div class="kit-refazer"><b>A análise automática não rodou</b><p>Ela bateu no limite de análises do dia: aqui não há foto nem número, só as respostas. Peça a foto no WhatsApp; o roteiro acima usa só as respostas.</p></div>`;
   h += `<label class="kit-nome-l"><span>Nome<small>${NOME_G ? 'veio do teste' : 'só nesta tela'}</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
   const marca = (e, t) => `<button type="button" class="pi-marca${ord >= ORDEM_ET[e] && (et === e || ORDEM_ET[e] < 5) ? ' feito' : ''}" data-et="${e}" data-kb="${i}">${et === e ? '✓ ' : ''}${esc(t)}</button>`;
   const passo = (n, tit, corpo) => { const agora = PASSO_DE[et] === n && ord < 5 || (n === 3 && ord === 5 && et !== 'comprou'), feito = PASSO_DE[et] > n || (n === 4 && et === 'comprou');

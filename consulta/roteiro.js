@@ -280,9 +280,10 @@ function rotPeleIdade(d, c, E){
   // a idade do rosto: com número só se a página mostrou e a regra deixa (mais de 5 anos acima: sem número)
   const caso = c?.caso || 'sem_numero', dizer = !!(c?.idadeFaixa?.dizer && mF);
   const chave = caso === 'sem_numero' ? 'sem_numero' : caso === 'mais_velho' && !dizer ? 'mais_velho_sem_numero' : caso;
-  const bi = blocoE('idade', TEMPO[1], P.idade[chave], V, { f:P.idade.f, circular:chave === 'sem_numero' ? null : dizer ? 'a régua: a faixa do rosto e a sua idade' : 'a foto de frente inteira' });
+  const bi = d.sem_analise ? null : blocoE('idade', TEMPO[1], P.idade[chave], V, { f:P.idade.f, circular:chave === 'sem_numero' ? null : dizer ? 'a régua: a faixa do rosto e a sua idade' : 'a foto de frente inteira' });
   if (bi) bi.regiao = null;
   out.push(bi);
+  if (d.sem_analise) avisos.push('A análise automática não rodou (limite do dia): não há foto nem número. Peça a foto no WhatsApp; este roteiro usa só as respostas, sem o bloco da idade do rosto.');
   if (c?.idadeFaixa && !c.idadeFaixa.dizer) avisos.push(c.idadeFaixa.txt);
   // o que está bem
   const bons = [r.cigarro === 'nunca' && P.bem.itens.cigarro, r.sol === 'quase_nenhum' && P.bem.itens.sol, r.metabolico === 'nao_medi' && P.bem.itens.metabolico,

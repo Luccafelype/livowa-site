@@ -730,6 +730,10 @@ function classificaPeleIdade(d){
   d = d || {};
   const { min, max } = faixaPele(d), idade = temValor(d.idade) ? +d.idade : null, r = d.respostas || {};
   const caso = casoPeleIdade(d), motivos = [], conf = { alta:'alta', media:'média', baixa:'baixa' }[d.confianca] || d.confianca || '?';
+  // 12/11: o 'complete' do limite (sem_analise) não tem foto: não é foto ruim, é análise que não rodou
+  if (d.sem_analise) return { teste:'pele-idade', caso:'sem_numero', perfil:null, semAnalise:true, titulo:'análise automática não rodou (limite do dia)',
+    simples:`Sem foto e sem número${idade != null ? ` · tem ${idade}` : ''}: peça a foto no WhatsApp.`, refazer:false, motivo:'', cor:'meh', atalhoRefazer:'pirefazer',
+    idadeFaixa:{ dizer:false, aparente:false, txt:'A análise não rodou: no vídeo, nenhum número.' }, vars:{ idade, min:null, max:null, futuro:futuroPI(d, r), espelho:espelhoPI(d, r) } };
   if (d.qualidade === 'ruim') motivos.push('A análise marcou a foto como ruim; a página não mostrou número.');
   if (min == null && !(d.sinais || []).length) motivos.push('O resultado veio sem faixa e sem os sinais da foto.');
   const acima = min != null && idade != null ? (min + max) / 2 - idade : null;
@@ -794,10 +798,12 @@ const CONVERSA_PI = [
   { min:'6-8', titulo:'O que já tentou', fala:'O que você já tentou para {desejo}? Por quanto tempo? Como foi? E além disso, o que mais?', nota:'Depois tire a culpa: "Pelo que você contou, não faltou esforço. Faltou olhar o conjunto."' },
   { min:'8-9', titulo:'Resumo', fala:'Deixa eu ver se entendi: você quer {desejo}, já tentou {x e y}, e o que mais pesa é {incomodo}. É isso?', nota:'Sem o "é isso", não seguir. Depois: "Então cuidar disso agora é prioridade para você. É justo dizer isso?"' },
   { min:'9-12', titulo:'Como eu acompanho', fala:'Posso te contar como eu acompanho?', nota:'Até 3 minutos, ligando cada parte ao que ela contou. Sem promessa: "a ideia é você saber o que pesa por dentro e ter alguém olhando isso com você, todo mês".' },
+  // 12/11 noite (Lucca mudou de ideia): o valor do online NÃO está decidido; fica a lacuna destacada para ele preencher
   { min:'12-14', titulo:'A oferta', itens:[
-    'Online (o padrão de quem vem do Instagram): o acompanhamento de R$ 2.000 por mês: acompanhamento e, se for indicado, reposição hormonal; exames e medicação ela paga direto aos fornecedores, nunca a você.',
+    'Goiânia, a âncora primeiro (só para Goiânia, só falada por você, nunca por escrito): "O mais completo é o presencial: eu vou até a sua casa e organizo toda a sua saúde comigo. Fica em R$ 12 mil por mês." Pausa.',
+    'Online (o padrão de quem vem do Instagram): {valor do online: ainda não decidido}: acompanhamento e, se for indicado, reposição hormonal; exames e medicação ela paga direto aos fornecedores, nunca a você.',
     'Pedir: "Você prefere começar esta semana ou na próxima?"',
-    'Goiânia: você fala primeiro do acompanhamento de R$ 12 mil e depois do online, como âncora real. Só na conversa, nunca por escrito.',
+    'Garantia e duração: em pesquisa; nada disso entra antes de você escolher.',
     'Objeção ao valor: "Qual é a sua principal preocupação?" Nunca baixar o preço.',
     'Downsell: o app anual, sem o acompanhamento ao vivo (valor exato e prescrição pelo app ainda não decididos).'] },
   { min:'14-15', titulo:'Fechar', itens:[
