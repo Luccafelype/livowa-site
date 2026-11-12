@@ -1,10 +1,11 @@
 /* livowa.com/pele v2 (04/11/2026). Reescrito do zero pelo desenho-v2.md (livowa-empresa/tarefas/pele-idade-vitalidade/).
    Sistema: UMA família (IBM Plex Sans) · TRÊS tamanhos: --t1 28px (título), --t2 17px (corpo, botão, opção),
-   --t3 13px (nota, rótulo da barra, rodapé) · exceção única: --tn 56px, só no número do resultado.
+   --t3 13px (nota, rótulo da barra, rodapé) · exceções: --tn 56px, só no número do resultado; --tg 20px, só no texto e no
+   botão do cartão final do Dr. Lucca (11/11 23h, Lucca: “letras miúdas”).
    Ênfase só por peso (700) ou pela cor de destaque. Cores: texto, cinza, 1 destaque (verde). UM estilo de cartão (.cartao).
-   Nada de vermelho. Todo font-size usa uma das 4 variáveis. */
+   Nada de vermelho. Todo font-size usa uma das 5 variáveis. */
 :root{
-  --t1:28px; --t2:17px; --t3:13px; --tn:56px;
+  --t1:28px; --t2:17px; --t3:13px; --tn:56px; --tg:20px;
   --bg:#f3f5f2; --surface:#ffffff; --fg:#141c17; --muted:#5d6b63; --line:#dde3de;
   --accent:#0d6a4d; --accent-2:#dcefe6; --on-accent:#ffffff;
   --font:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
@@ -213,20 +214,17 @@ b,strong{font-weight:700}
 .cartao.r-ponte{background:var(--accent);border-color:var(--accent);color:var(--on-accent);gap:12px;padding:20px 18px;margin-top:8px;box-shadow:0 10px 30px rgba(13,106,77,.28)}
 .r-ponte .medico-mini img{border:2px solid rgba(255,255,255,.85)}
 .r-ponte .nota{color:rgba(255,255,255,.86)}
-.r-ponte #r-cta-nota{text-align:center}
-.r-ponte .btn{background:var(--surface);color:var(--accent);min-height:60px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
-.r-ponte .prazo-mini{text-align:center;font-weight:600}
-.r-ponte .prazo-mini b{color:var(--on-accent)}
-
-/* ---------- tela final ---------- */
-.screen.fim{gap:16px}
-.medico{display:flex;gap:14px;align-items:center;margin-top:8px}
-.medico img{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;border:3px solid var(--surface);box-shadow:0 2px 12px rgba(0,0,0,.12)}
-.medico b{display:block}
-.f-acao{display:flex;flex-direction:column;gap:6px;margin-top:4px}
-.f-acao .nota{text-align:center}
-.cod-ref{margin-top:auto;text-align:center}
-.cod-ref b{color:var(--fg);letter-spacing:.04em;white-space:nowrap}
+/* 11/11 23h (Lucca: “chamada fraquíssima, letras miúdas”; a tela final saiu e o cartão é o fim): texto e botão em --tg
+   (20 px), relógio em --t1 (28 px), sem nota embaixo do botão; Direct e código à vista, em branco */
+.r-ponte-txt{font-size:var(--tg);line-height:1.35}
+.r-prazo{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:2px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.13);text-align:center;font-weight:600;text-wrap:balance}
+.r-prazo b{font-size:var(--t1);font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--on-accent)}
+.r-prazo.acabou{font-weight:400}
+.r-ponte .btn{background:var(--surface);color:var(--accent);min-height:64px;font-size:var(--tg);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.r-ponte .btn.ico svg{width:26px;height:26px}
+.r-ponte .link-alt{color:var(--on-accent);margin-top:-4px}
+.r-cod{text-align:center;color:rgba(255,255,255,.9)}
+.r-cod b{color:var(--on-accent);letter-spacing:.04em;white-space:nowrap}
 .toast{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;width:min(440px,calc(100% - 32px));background:var(--fg);color:#fff;border-radius:var(--raio);padding:12px 16px;font-size:var(--t3);text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 .toast b{display:block;font-size:var(--t2)}
 .aviso-dm{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:20px}
@@ -234,11 +232,3 @@ b,strong{font-weight:700}
 .aviso-dm b{font-size:var(--t1);line-height:1.15}
 .aviso-dm q{font-weight:600;color:var(--accent);-webkit-user-select:all;user-select:all}
 .aviso-dm span{font-size:var(--t3);color:var(--muted)}
-#f-sub:empty{display:none}
-/* 09/11 (Lucca): prazo da análise sem custo (30 min do 1º resultado), logo acima do botão. Discreto: corpo normal,
-   relógio em --t3 com algarismos tabulares; vencido, a frase fica cinza e o relógio some */
-.prazo{text-align:center;text-wrap:balance;margin-bottom:4px}
-.prazo-rel{display:block;margin-top:2px;font-size:var(--t3);font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
-.prazo.acabou{color:var(--muted)}
-.prazo-mini{font-variant-numeric:tabular-nums}
-.prazo-mini b{font-variant-numeric:tabular-nums}

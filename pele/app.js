@@ -18,6 +18,9 @@
 // R.espelho_texto); daqui a 10 anos com opções pela faixa da idade real (FUT_FAIXA); carregamento e resultado só com o
 // que ela tem ou marcou (o hábito que ela não tem não gasta frase); resultado liga a idade do rosto ao corpo (Christensen
 // 2009) e conduz a UM botão destacado; sai o “Ver os estudos”; instrução com luz frontal.
+// 11/11 23h (lote l-mwcww64n): o resultado vira a TELA FINAL (a antiga 'fechar' saiu). O botão do cartão verde abre o
+// WhatsApp com a mensagem pronta e o código (cta_click canal whatsapp, como a tela final gravava), com o Direct, o código
+// e o cronômetro real de 30 min no mesmo cartão. Título com o nome e o incômodo do espelho; texto com o desejo de 10 anos.
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
 import * as Scan from './scan.js?v=3';
@@ -103,9 +106,10 @@ const resp = (k, v = R[k]) => (RESP[k]?.[v] || '').replace('@', fem() ? 'a' : 'o
 const PESA = { metabolico:['pressao', 'glicose', 'ambas'], cigarro:['hoje', 'as_vezes'], sono:['curto', 'cansado'], movimento:['quase_nada'], sol:['todo_dia'] };   // o que ela tem e pesa
 
 // ---------- telas (ordem do desenho-v2) ----------
-const ORDEM = ['capa','idade','reforco1','nome','espelho','sol','cigarro','reforco2','metabolico','movimento','sono','futuro','instrucao','scan','carregando','resultado','fechar','erro'];
+// 11/11 23h: sem 'fechar' (o resultado é a tela final); a barra já chegava a 100% no resultado
+const ORDEM = ['capa','idade','reforco1','nome','espelho','sol','cigarro','reforco2','metabolico','movimento','sono','futuro','instrucao','scan','carregando','resultado','erro'];
 const QUIZ = ['espelho','sol','cigarro','metabolico','movimento','sono','futuro'];   // uma escolha, avança sozinho (o sexo fica na capa)
-const VOLTA = { scan:'instrucao', erro:'instrucao', fechar:'resultado' };
+const VOLTA = { scan:'instrucao', erro:'instrucao' };
 // barra: todas as telas da capa ao resultado; valor = log(passo)/log(total), com passo = posição + 1 e total = telas + 1
 // (a capa já mostra um pouco, como em Conrad 2010: log(1) = 0 deixaria a 1ª tela vazia)
 const BARRA = ORDEM.slice(0, ORDEM.indexOf('resultado') + 1);
@@ -115,7 +119,7 @@ const LIMITE = [0, (pBarra('espelho') + pBarra('sol'))/2, (pBarra('futuro') + pB
   [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => { el.style.flex = `${LIMITE[k + 1] - LIMITE[k]} 1 0`; });
 })();   // 09/11 (Lucca): sem os rótulos SOBRE VOCÊ / HÁBITOS / FOTO; os 3 trechos da barra ficam
 function pintarBarra(s){
-  const p = s === 'erro' ? pBarra('instrucao') : s === 'fechar' ? 1 : pBarra(s);
+  const p = s === 'erro' ? pBarra('instrucao') : pBarra(s);
   if (p == null) return;
   [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => {
     el.firstElementChild.style.width = Math.round(Math.max(0, Math.min(1, (p - LIMITE[k])/(LIMITE[k + 1] - LIMITE[k])))*100) + '%';
@@ -133,7 +137,7 @@ function show(s){
   $('back').classList.toggle('some', ['capa','carregando','resultado'].includes(s));
   pintarBarra(s);
   const cta = $('cta'), c2 = $('cta-2');
-  $('cta-bar').hidden = ['capa','scan','carregando','resultado','fechar'].includes(s);
+  $('cta-bar').hidden = ['capa','scan','carregando','resultado'].includes(s);
   cta.hidden = false; c2.hidden = true; cta.classList.remove('off');
   cta.textContent = 'Continuar';
   // textos que dependem das respostas
@@ -150,8 +154,7 @@ function show(s){
   if (s === 'instrucao'){ cta.textContent = 'Abrir a câmera'; cta.classList.toggle('off', !$('aceite').checked); prepararQuadro(); }
   else pararQuadro();
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
-  if (s === 'resultado') iniciarPrazo();
-  if (s === 'fechar') prepararFechamento();
+  if (s === 'resultado'){ iniciarPrazo(); prepararFechamento(); }
   pintarPrazo();
   window.scrollTo(0, 0);
   requestAnimationFrame(medirBarra);
@@ -295,7 +298,6 @@ $('cta-2').addEventListener('click', () => {
   if (cur === 'nome'){ R.nome = ''; $('nome').value = ''; track('answer', { stepId:'nome', valueText:'pulou' }); return proxima(); }
   if (cur === 'erro') $('arquivo').click();
 });
-$('r-cta').addEventListener('click', () => { track('cta_click', { stepId:'resultado', valueText:'explicar' }); show('fechar'); });
 $('galeria').addEventListener('click', () => { if (!$('aceite').checked) return apontarAceite(); $('arquivo').click(); });
 $('aceite').addEventListener('change', () => { $('aceite').closest('.consent').classList.remove('alerta'); if (cur === 'instrucao') $('cta').classList.toggle('off', !$('aceite').checked); });
 function apontarAceite(){ const l = $('aceite').closest('.consent'); l.classList.add('alerta'); l.scrollIntoView({ block:'center', behavior:'smooth' }); }
@@ -412,16 +414,6 @@ const SINAL = {   // sinais da edge ligados à idade do rosto (a textura/poro fi
   flacidez:{ nome:'Contorno', recorte:'contorno', c:['Firme', 'Levemente menos firme', 'Menos firme', 'Bem menos firme'] },
 };
 const cap = t => t ? t[0].toLocaleUpperCase('pt-BR') + t.slice(1) : '';
-// a dor do espelho como frase, depois de "você disse que" (CTA do resultado); 'nada' (leads antigos) fica de fora
-const DOR_FRASE = {
-  cansada:() => `se sente com cara de ${fem() ? 'cansada' : 'cansado'} mesmo dormindo`,
-  caindo:() => 'o rosto caindo te incomoda',
-  pescoco:() => 'o pescoço e a papada te incomodam',
-  palpebra:() => 'a pálpebra pesando te incomoda',
-  manchas:() => 'manchas e rugas te incomodam',
-  velho:() => `sente que parece mais ${fem() ? 'velha' : 'velho'} do que é`,   // 11/11
-  outro:() => R.espelho_texto ? `o que mais te incomoda é “${R.espelho_texto}”` : '',   // 11/11: as palavras dela
-};
 // a dor do espelho: a região dela vem primeiro em "O que a sua foto mostra", com a frase dela e o que a análise devolveu.
 // ids = sinais da edge que mostram essa região (o mais marcado entre eles). 'velho' e 'outro' não puxam região: o número
 // e a régua já respondem a 'velho'; 'outro' é texto livre.
@@ -521,9 +513,9 @@ function montarResultado(j, f){
     ? `<ul class="fatores">${fs.map(x => `<li data-f="${x.id}"><i class="${x.s === '↓' ? 'bom' : ''}" aria-label="${x.s === '↑' ? 'pesa' : x.s === '↓' ? 'a favor' : 'a foto não mede'}">${x.s}</i><p><b>${esc(x.r)}.</b> ${esc(x.t)}</p></li>`).join('')}</ul>
        <p class="nota">Fontes: ${esc(fontes.join(' · '))}</p>`
     : '<p>Nas suas respostas não apareceu nenhum dos fatores mais estudados.</p>'}`;
-  // 4. o que a foto não vê + o ganho de mandar + UM botão
-  $('r-ponte-txt').textContent = textoCTA(!dorId);   // a dor só se repete aqui se não apareceu nos recortes
-  $('r-cta-nota').textContent = 'Abre o WhatsApp com o seu código';   // 08/11: WhatsApp em primeiro também com ?lv=
+  // 4. o cartão do Dr. Lucca (tela final): título com o nome e o incômodo dela, texto com o desejo de 10 anos, UM botão
+  $('r-ponte-tit').textContent = tituloCTA();
+  $('r-ponte-txt').textContent = textoCTA();
 
   // complete: o que a Caixa lê (codigo, idade, sexo, faixa, caso, respostas, angulos/enviadas para as 3 fotos, desejo)
   track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:caso,
@@ -535,22 +527,33 @@ function montarResultado(j, f){
   if (window.__peleResultado) window.__peleResultado(j);
 }
 function respostasLimpa(){ const { nome, ...r } = R; return r; }
-// "{Nome}, você disse que {incômodo}." (só quando a dor não apareceu nos recortes) "Mande o seu resultado: o Dr. Lucca junta a foto e as suas respostas e te explica o que
-// pode estar pesando por dentro e por onde começar para {objetivo de 10 anos}." Sem nome: começa em "Você"; sem incômodo:
-// a 1ª frase sai. Fim B: "olha" no lugar de "junta… e te explica" (como antes); nenhum dos dois fala em vídeo.
-function textoCTA(comDor = true){
-  const nome = nomeBonito(), dor = comDor ? DOR_FRASE[R.espelho]?.() || '' : '', d = desejo(FUT_VOCE);
-  const partes = [];
-  if (dor) partes.push(`${nome ? `${nome}, você` : 'Você'} disse que ${dor}.`);
-  const para = d ? ` para ${d}` : '';
-  partes.push(FIM === 'B' ? `Mande o seu resultado: o Dr. Lucca olha a foto com as respostas e explica o que pode estar pesando por dentro e por onde começar${para}.`
-                          : `Mande o seu resultado: o Dr. Lucca junta a foto e as respostas e te explica o que pode estar pesando por dentro e por onde começar${para}.`);
-  return partes.join(' ');
+// 11/11 23h (Lucca: “chamada fraquíssima, pouco apelo, letras miúdas”): título curto em pergunta, com o nome e o incômodo
+// do espelho nas palavras do botão que ela tocou; no “pareço mais velha”, com os números dela quando o rosto deu mais
+// (o público diz com número: “tenho 43 mas parece que tenho 80”, voz-pele-potencia.md A6). Texto: o que o Dr. Lucca faz
+// (analisa e explica) e o desejo de 10 anos. Igual no fim A e no B (o A/B só falava em vídeo, e isso saiu em 09/11;
+// props.fim segue na medição).
+const DOR_TIT = {
+  cansada:() => `da cara de ${fem() ? 'cansada' : 'cansado'}`,
+  caindo:() => 'do rosto caindo',
+  pescoco:() => 'do pescoço e da papada',
+  palpebra:() => 'da pálpebra pesando',   // leads antigos
+  manchas:() => 'das manchas e das rugas',
+  velho:() => resultado?.caso === 'mais_velho' && resultado.faixa && R.idade ? `de um rosto de ${resultado.faixa.min} a ${resultado.faixa.max} aos ${R.idade} anos` : 'do que você vê no espelho',
+  outro:() => 'do que você vê no espelho',
+};
+function tituloCTA(){
+  const nome = nomeBonito(), t = `o que pode estar por trás ${DOR_TIT[R.espelho]?.() || 'do que o seu rosto mostra'}?`;
+  return nome ? `${nome}, ${t}` : cap(t);
+}
+function textoCTA(){
+  const d = desejo(FUT_VOCE);
+  return `O Dr. Lucca analisa a sua foto com as suas respostas e te explica por onde começar${d ? ` para ${d}` : ''}.`;
 }
 
 // =====================================================================
-// FECHAMENTO: igual ao de antes (1 passo, 3ª pessoa): WhatsApp com o código na mensagem pronta, Direct como alternativa;
-// link marcado (?lv=) volta ao Instagram. Medição: cta_click com props.canal whatsapp/direct.
+// FECHAMENTO (11/11 23h: dentro do cartão do resultado, que é a tela final): WhatsApp com o código na mensagem pronta,
+// Direct como alternativa. Medição igual à da antiga tela final: cta_click com props.canal whatsapp/direct (a Caixa lê
+// os canais por sessão; o funil, por props.canal), noPrazo, escolha e código; agora com stepId 'resultado'.
 // =====================================================================
 const souA = () => R.sexo === 'm' ? 'o' : 'a';
 const sou = () => nomeBonito() ? `Sou ${souA()} ${nomeBonito()}` : '';
@@ -562,18 +565,8 @@ function mensagem(){
 }
 const linkWA = () => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 function prepararFechamento(){
-  const nome = nomeBonito();
-  $('cod').textContent = meuCodigo();
-  // 09/11 (Lucca): A = "vai te explicar por onde começar para {objetivo}", sem o parágrafo do vídeo; B = "vai olhar o seu
-  // resultado". O "sem custo" saiu dos dois títulos: mora na frase do prazo, logo acima do botão. O código fica na última linha.
-  const d = desejo();
-  const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado.' : `o Dr. Lucca vai te explicar por onde começar${d ? ` para ${d}` : ''}.`;
-  $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
-  $('f-sub').textContent = '';   // 09/11: decisão de 03/11 do Lucca, nada de "vídeo/grava um por um" nem "responde em até 24 h"
-  $('f-sub').hidden = FIM !== 'B';
-  $('cta-wa').href = linkWA();
-  $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
-  $('cta-dm').hidden = false;
+  $('cod').textContent = meuCodigo();   // o código fica na última linha do cartão
+  $('r-cta').href = linkWA();
 }
 const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo() });
 
@@ -607,21 +600,20 @@ function prazoResta(){   // ms que faltam (null = o resultado ainda não aparece
 function noPrazo(){ const r = prazoResta(); return r == null || r > 0; }
 function linhaPrazo(){ return noPrazo() ? '(enviado no prazo da análise sem custo)' : '(enviado depois do prazo)'; }
 const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+// 11/11 23h: o relógio fica no cartão do resultado, logo acima do botão; vencido, a frase da antiga tela final
 function pintarPrazo(){
   const r = prazoResta(), ok = r == null || r > 0;
-  $('r-prazo').hidden = cur !== 'resultado' || r == null || !ok;
+  $('r-prazo').hidden = cur !== 'resultado' || r == null;
   if (r == null) return;
-  if (ok) $('r-prazo').innerHTML = `Análise sem custo se enviar em <b>${mmss(r)}</b>`;
-  $('f-prazo').classList.toggle('acabou', !ok);
-  const txt = ok ? 'Envie a solicitação de análise para o Dr. Lucca. Se enviar nos próximos 30 minutos, será sem custo.'
-                 : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
-  if ($('f-prazo-txt').textContent !== txt) $('f-prazo-txt').textContent = txt;
-  $('f-prazo-rel').hidden = !ok; $('f-prazo-rel').textContent = ok ? `Faltam ${mmss(r)}` : '';
-  if (cur === 'fechar') $('cta-wa').href = linkWA();
+  $('r-prazo').classList.toggle('acabou', !ok);
+  const txt = ok ? 'Análise sem custo se enviar em' : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  if ($('r-prazo-txt').textContent !== txt) $('r-prazo-txt').textContent = txt;
+  $('r-prazo-rel').hidden = !ok; $('r-prazo-rel').textContent = ok ? mmss(r) : '';
+  if (cur === 'resultado') $('r-cta').href = linkWA();
 }
 const fimValor = () => `explicar|fim${FIM}`;
 // o href é refeito no toque: a linha do prazo vale para o momento do envio, não para quando a tela abriu
-$('cta-wa').addEventListener('click', () => { $('cta-wa').href = linkWA(); track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'whatsapp', noPrazo:noPrazo(), ...fimProps() } }); });
+$('r-cta').addEventListener('click', () => { $('r-cta').href = linkWA(); track('cta_click', { stepId:'resultado', valueText:fimValor(), props:{ canal:'whatsapp', noPrazo:noPrazo(), ...fimProps() } }); });
 $('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 
 // Direct: o Instagram não aceita texto pronto. Copia DENTRO do toque (exigência do iOS), avisa e deixa o link abrir o app.
@@ -636,14 +628,14 @@ let toastT = null;
 const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // navegador de dentro do app: ig.me abre como página e pede login
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, noPrazo:noPrazo(), ...fimProps() } });
+  track('cta_click', { stepId:'resultado', valueText:fimValor(), props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, noPrazo:noPrazo(), ...fimProps() } });
   if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem:txt, copiou, voz:true }); return; }
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }
   e.preventDefault();
   $('aviso-msg').textContent = txt; $('aviso-link').href = $('cta-dm').href; $('aviso-dm').hidden = false;
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
-$('aviso-link').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor() + '|abrir', props:{ canal:'direct', ...fimProps() } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
+$('aviso-link').addEventListener('click', () => { track('cta_click', { stepId:'resultado', valueText:fimValor() + '|abrir', props:{ canal:'direct', ...fimProps() } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 // 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
 // volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
 // O lv continua indo nos eventos (props.lv, pelo funnel-analytics).

@@ -8,12 +8,13 @@
 <title>Que idade o seu rosto mostra? · Dr. Lucca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="pele.css?v=6">
+<link rel="stylesheet" href="pele.css?v=7">
 </head>
 <body>
 <!-- livowa.com/pele v2 (04/11/2026, refeito depois da reprovação do Lucca): segue À RISCA
      livowa-empresa/tarefas/pele-idade-vitalidade/desenho-v2.md (tela a tela). Frases de saúde só de evidencia.md / desenho-v2.md.
-     Sistema visual: 1 família (IBM Plex Sans), 3 tamanhos (28 / 17 / 13) + 56 só no número do resultado, 1 estilo de cartão,
+     Sistema visual: 1 família (IBM Plex Sans), 3 tamanhos (28 / 17 / 13) + 56 só no número do resultado + 20 só no cartão
+     final do Dr. Lucca (11/11 23h, “letras miúdas”), 1 estilo de cartão,
      sem vermelho. Barra no topo: log(passo)/log(total) sobre todas as telas da capa ao resultado (Conrad 2010; Villar 2013). -->
 <div class="app">
   <div class="top" id="top">
@@ -43,10 +44,12 @@
 
   <!-- 2 · interstício 1: responde à idade (Christensen 2009) -->
   <section class="screen q inter" data-s="reforco1" hidden>
-    <h2><span class="dest"><span class="v-idade">40</span> anos</span> é o ponto de partida. A foto mostra se seu rosto acompanha sua idade.</h2>
+    <!-- 11/11 23h (Lucca): o número é a idade que ela rolou na tela anterior (R.idade, pintado em show()); o título diz isso
+         sem o “ponto de partida”; o cartão perde o “mesmo tendo a mesma idade” (texto dele, exato) -->
+    <h2>Você tem <span class="dest"><span class="v-idade">40</span> anos</span>. A foto vai mostrar se o seu rosto acompanha essa idade.</h2>
     <div class="cartao prova">
       <p class="num">O rosto mostra a idade do corpo!</p>
-      <p>Quem parece mais velho na foto, mesmo tendo a mesma idade, geralmente tem menos força e memória mais fraca.</p>
+      <p>Quem parece mais velho na foto, geralmente tem menos força e memória mais fraca.</p>
     </div>
     <p class="nota">Fonte: Christensen et al., BMJ 2009</p>
   </section>
@@ -232,35 +235,25 @@
        1. o que a foto mostrou (número + régua + 1 frase que liga a idade do rosto ao corpo, Christensen 2009)
        2. o que a foto mostra, por região (a dor dela primeiro)
        3. o que pode estar por trás do rosto: só o que ela tem ou marcou (nunca o hábito que ela não tem)
-       4. o que a foto não vê + o ganho de mandar → UM botão, destacado. Sem “Ver os estudos”. -->
+       4. o que a foto não vê + o ganho de mandar → UM botão, destacado. Sem “Ver os estudos”.
+       11/11 23h (Lucca: “se esse card vai estar nessa tela, não faz sentido ter uma tela final, esta seria a tela final”;
+       “chamada fraquíssima, pouco apelo, letras miúdas”): o resultado É a tela final. O cartão verde faz o que a tela 17
+       fazia (WhatsApp com a mensagem pronta e o código, Direct, código à vista, cronômetro real de 30 min), sem nota
+       embaixo do botão, com o nome e o incômodo dela no título e letra maior (--tg 20 px no texto e no botão). -->
   <section class="screen res" data-s="resultado" hidden>
     <div class="cartao r-num" id="r-num"></div>
     <div class="cartao" id="r-foto-bloco"></div>
     <div class="cartao" id="r-fatores"></div>
     <div class="cartao r-ponte" id="r-ponte">
       <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span class="nota">Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
-      <h2 id="r-ponte-tit">O que a foto não vê, o Dr. Lucca vê com você.</h2>
-      <p id="r-ponte-txt">Mande o seu resultado: o Dr. Lucca junta a foto e as respostas e te explica o que pode estar pesando por dentro e por onde começar.</p>
-      <p class="prazo-mini" id="r-prazo" hidden></p>
-      <button class="btn" id="r-cta" type="button">Quero a análise do Dr. Lucca</button>
-      <p class="nota" id="r-cta-nota">Abre o WhatsApp com o seu código</p>
-    </div>
-  </section>
-
-  <!-- 15 · tela final: UM passo, em 3ª pessoa (WhatsApp com o código, Direct como alternativa) -->
-  <section class="screen fim" data-s="fechar" hidden>
-    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
-      <div><b>Dr. Lucca Marques</b><span class="nota">Médico · CRM-GO 33.990</span></div></div>
-    <h2 id="f-tit">O Dr. Lucca vai te explicar por onde começar.</h2>
-    <p id="f-sub" hidden></p>
-    <div class="f-acao">
+      <h2 id="r-ponte-tit">O que pode estar por trás do que o seu rosto mostra?</h2>
+      <p class="r-ponte-txt" id="r-ponte-txt">O Dr. Lucca analisa a sua foto com as suas respostas e te explica por onde começar.</p>
       <!-- 09/11 (Lucca): urgência real, 30 min contados da 1ª vez que a pessoa vê o resultado (app.js, PRAZO); fim A e B -->
-      <p class="prazo" id="f-prazo"><span id="f-prazo-txt">Envie a solicitação de análise para o Dr. Lucca. Se enviar nos próximos 30 minutos, será sem custo.</span> <span class="prazo-rel" id="f-prazo-rel">Faltam 30:00</span></p>
-      <a class="btn ico" id="cta-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="wa-txt">Enviar meu código pelo WhatsApp</span></a>
-      <p class="nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
+      <p class="r-prazo" id="r-prazo" hidden><span id="r-prazo-txt">Análise sem custo se enviar em</span> <b id="r-prazo-rel">30:00</b></p>
+      <a class="btn ico" id="r-cta" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="r-cta-txt">Quero minha análise</span></a>
       <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
+      <p class="r-cod" id="f-cod">Seu código: <b id="cod">LV-0000</b></p>
     </div>
-    <p class="nota cod-ref" id="f-cod">Seu código: <b id="cod">LV-0000</b></p>
   </section>
 
   <div class="cta" id="cta-bar"><div>
@@ -276,6 +269,6 @@
   </div></div>
 </div>
 <script defer src="/assets/js/ponte.js?v=2"></script>
-<script type="module" src="app.js?v=8"></script>
+<script type="module" src="app.js?v=9"></script>
 </body>
 </html>
