@@ -798,12 +798,13 @@ const CONVERSA_PI = [
   { min:'6-8', titulo:'O que já tentou', fala:'O que você já tentou para {desejo}? Por quanto tempo? Como foi? E além disso, o que mais?', nota:'Depois tire a culpa: "Pelo que você contou, não faltou esforço. Faltou olhar o conjunto."' },
   { min:'8-9', titulo:'Resumo', fala:'Deixa eu ver se entendi: você quer {desejo}, já tentou {x e y}, e o que mais pesa é {incomodo}. É isso?', nota:'Sem o "é isso", não seguir. Depois: "Então cuidar disso agora é prioridade para você. É justo dizer isso?"' },
   { min:'9-12', titulo:'Como eu acompanho', fala:'Posso te contar como eu acompanho?', nota:'Até 3 minutos, ligando cada parte ao que ela contou. Sem promessa: "a ideia é você saber o que pesa por dentro e ter alguém olhando isso com você, todo mês".' },
-  // 12/11 noite (Lucca mudou de ideia): o valor do online NÃO está decidido; fica a lacuna destacada para ele preencher
+  // 12/11 19h40 (d-20261112-oferta-online-1000-ancora-12mil): o valor do online NÃO está decidido (lacuna destacada para ele
+  // preencher); a âncora presencial de Goiânia vale para todos na conversa (âncora real, MM pdf 88); garantia em decisão
   { min:'12-14', titulo:'A oferta', itens:[
-    'Goiânia, a âncora primeiro (só para Goiânia, só falada por você, nunca por escrito): "O mais completo é o presencial: eu vou até a sua casa e organizo toda a sua saúde comigo. Fica em R$ 12 mil por mês." Pausa.',
-    'Online (o padrão de quem vem do Instagram): {valor do online: ainda não decidido}: acompanhamento e, se for indicado, reposição hormonal; exames e medicação ela paga direto aos fornecedores, nunca a você.',
+    'Âncora, para todos, só falada por você (nunca por escrito): "O mais completo é o presencial, aqui em Goiânia: eu vou até a sua casa e organizo toda a sua saúde comigo. Fica em R$ 12 mil por mês." Pausa.',
+    'Online: {valor do online: ainda não decidido}: acompanhamento e, se for indicado, reposição hormonal; exames e medicação ela paga direto aos fornecedores, nunca a você.',
     'Pedir: "Você prefere começar esta semana ou na próxima?"',
-    'Garantia e duração: em pesquisa; nada disso entra antes de você escolher.',
+    'Garantia e duração: em decisão (cartão da oferta na Central).',
     'Objeção ao valor: "Qual é a sua principal preocupação?" Nunca baixar o preço.',
     'Downsell: o app anual, sem o acompanhamento ao vivo (valor exato e prescrição pelo app ainda não decididos).'] },
   { min:'14-15', titulo:'Fechar', itens:[
