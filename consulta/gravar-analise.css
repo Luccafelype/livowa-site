@@ -1,0 +1,55 @@
+/* Gravador da análise (12/11/2026): tela cheia, fundo preto, quadro 9:16 no alto e os controles embaixo.
+   O teleprompter (.ga-prompt) é DOM por cima do canvas: aparece só na tela, não no vídeo. */
+body.ga-aberto{overflow:hidden;overscroll-behavior:none}
+.ga{position:fixed;inset:0;z-index:80;background:#000;color:#fff;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font:16px/1.4 system-ui,-apple-system,sans-serif}
+.ga[hidden]{display:none}
+.ga button,.ga a{touch-action:manipulation}
+.ga-palco{position:relative;flex:1;min-height:0}
+.ga-quadro{position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;background:#0b100e;border-radius:0}
+.ga-tela{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.ga-tela[hidden]{display:none}
+/* o círculo da câmera na tela é o próprio <video> (o iOS só entrega quadro de <video> visível), no mesmo lugar do círculo do canvas */
+.ga-cam{position:absolute;left:63.333%;top:79.375%;width:33.333%;height:18.75%;border-radius:50%;object-fit:cover;transform:scaleX(-1);
+  border:2px solid #fff;pointer-events:none;background:#1b2420}
+.ga-prompt{position:absolute;left:0;right:0;top:0;padding:10px 14px 12px;background:linear-gradient(rgba(0,0,0,.9),rgba(0,0,0,.62) 75%,rgba(0,0,0,0));
+  pointer-events:none;max-height:46%;overflow:hidden;--fs:22px}
+.ga-prompt[hidden]{display:none}
+.ga-p-topo{display:flex;align-items:center;gap:10px;font-size:.78rem;color:#cfe3da;text-transform:uppercase;letter-spacing:.04em}
+.ga-p-topo b{color:#8fe0bd;flex:1;min-width:0}
+.ga-aa{pointer-events:auto;min-height:36px;min-width:44px;padding:4px 10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.35);background:rgba(0,0,0,.45);color:#fff;font:700 .9rem system-ui;text-transform:none;letter-spacing:0}
+.ga-p-txt{margin:4px 0 0;font-size:var(--fs);line-height:1.32;font-weight:650;text-shadow:0 1px 2px #000}
+.ga-p-dep{margin:6px 0 0;font-size:.78rem;color:#b7c7c0}
+.ga-conta{position:absolute;inset:0;display:grid;place-items:center;font:800 7rem/1 system-ui;color:#fff;text-shadow:0 2px 12px #000;pointer-events:none}
+.ga-conta[hidden]{display:none}
+.ga-aviso{position:absolute;left:12px;right:12px;bottom:24%;background:rgba(138,82,0,.95);color:#fff;border-radius:12px;padding:8px 12px;font-size:.9rem;font-weight:600;pointer-events:none}
+.ga-aviso[hidden]{display:none}
+.ga-ver{position:absolute;inset:0;width:100%;height:100%;background:#000;object-fit:contain}
+.ga-ver[hidden]{display:none}
+.ga-msg{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:24px;background:rgba(0,0,0,.86);text-align:center}
+.ga-msg[hidden]{display:none}
+.ga-msg p{margin:0;font-size:1rem;line-height:1.45}
+.ga-msg button{background:#fff;color:#000;border:0;border-radius:12px;padding:12px 18px;font:700 1rem system-ui}
+.ga-barra{flex:none;display:flex;flex-direction:column;gap:8px;padding:8px 10px 8px;background:#0d0f0e}
+.ga-l1{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ga-fotos{display:flex;gap:6px}
+.ga-b{min-height:44px;white-space:nowrap;background:#252b28;color:#fff;border:1.5px solid #3a423e;border-radius:12px;padding:8px 12px;font:600 .92rem system-ui;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.ga-b[aria-pressed="true"]{background:#fff;color:#000;border-color:#fff}
+.ga-b:disabled{opacity:.35}
+.ga-fechar{margin-left:auto}
+.ga-fechar.conf{background:#9a2c1c;border-color:#9a2c1c}
+.ga-l2{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px}
+.ga-l2[hidden]{display:none}
+.ga-fim{grid-template-columns:1.6fr 1fr}
+.ga-rec-b{min-height:56px;padding:0 10px;white-space:nowrap;border:0;border-radius:16px;background:#c62828;color:#fff;font:800 1.05rem system-ui;display:flex;align-items:center;justify-content:center;gap:10px;font-variant-numeric:tabular-nums;cursor:pointer}
+.ga-rec-b i{width:16px;height:16px;border-radius:50%;background:#fff;flex:none}
+.ga-rec-b.on i{border-radius:3px}
+.ga-rec-b.on{background:#7f1d1d}
+.ga-rec-b.fim-perto{background:#b45309}
+.ga-rec-b:disabled{opacity:.45}
+.ga-enviar,.ga-marcar{background:#0d6a4d;border-color:#0d6a4d}
+.ga-info{margin:0;height:2.6em;overflow:hidden;font-size:.8rem;line-height:1.3;color:#b7c7c0;text-align:center}
+.ga-fechar{min-width:44px;font-size:1.05rem}
+.ga :focus-visible{outline:3px solid #fff;outline-offset:2px}
+@media (max-height:700px){.ga-b{min-height:40px;padding:6px 10px}.ga-rec-b{min-height:48px}}

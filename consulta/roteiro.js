@@ -185,7 +185,7 @@ function montar(e){
 let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o botão do Claude)
 async function carregaEstoque(){
   if (EST) return EST;
-  try { const r = await fetch('roteiros-estoque.json?v=20261104b', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
+  try { const r = await fetch('roteiros-estoque.json?v=20261112a', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
   return EST;
 }
 const TEMPO = ['0-8 s', '8-30 s', '30-45 s', '45-52 s', '52-60 s'];
@@ -272,10 +272,11 @@ function rotPeleIdade(d, c, E){
   }
   const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = d.idade ?? r.idade;
   const V = { futuro:c?.vars?.futuro || window.KITS?.['pele-idade']?.futuro?.[r.futuro] || null, idade:idade != null ? String(idade) : null, min:mF ? mF[1] : null, max:mF ? mF[2] : null,
-    espelho:c?.vars?.espelho || null };
-  // v3: a abertura cita a dor do espelho com as palavras dela; o desejo de 10 anos passa para a ponte
-  const ab = V.espelho ? P.abertura.com_espelho : V.futuro ? P.abertura.com_futuro : P.abertura.sem_futuro;
-  out.push(blocoE('abertura', TEMPO[0], ab, V, { f:P.abertura.f, circular:V.espelho ? 'a resposta "o que mais incomoda no espelho" na tela' : V.futuro ? 'a resposta "daqui a 10 anos" na tela' : null }));
+    espelho:c?.vars?.espelho || null, resposta:RESP[CODIGO] || null };
+  // v3: a abertura cita a dor do espelho com as palavras dela; o desejo de 10 anos passa para a ponte.
+  // 12/11 (v3, etapa 2): se ela respondeu o áudio antes e ele colou a resposta no passo 2, a abertura usa a resposta.
+  const ab = V.resposta && P.abertura.com_resposta ? P.abertura.com_resposta : V.espelho ? P.abertura.com_espelho : V.futuro ? P.abertura.com_futuro : P.abertura.sem_futuro;
+  out.push(blocoE('abertura', TEMPO[0], ab, V, { f:P.abertura.f, circular:V.resposta ? null : V.espelho ? 'a resposta "o que mais incomoda no espelho" na tela' : V.futuro ? 'a resposta "daqui a 10 anos" na tela' : null }));
   // a idade do rosto: com número só se a página mostrou e a regra deixa (mais de 5 anos acima: sem número)
   const caso = c?.caso || 'sem_numero', dizer = !!(c?.idadeFaixa?.dizer && mF);
   const chave = caso === 'sem_numero' ? 'sem_numero' : caso === 'mais_velho' && !dizer ? 'mais_velho_sem_numero' : caso;
@@ -306,7 +307,10 @@ function rotPeleIdade(d, c, E){
   const mec = hab[0] || 'gemeos';
   out.push(blocoE('mecanismo', TEMPO[2], P.mecanismo[mec], V, { f:P.mecanismo.f }));
   out.push(blocoE('ponte', TEMPO[3], V.espelho && V.futuro ? P.ponte.com_futuro : P.ponte.texto, V, { f:P.ponte.f }));
-  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  // 12/11 (v3, bloco 6): a pergunta de interesse no lugar da pergunta de 1 toque; troca pelo que ela marcou
+  const PI6 = P.interesse;
+  if (PI6) out.push(blocoE('interesse', TEMPO[4], PI6[V.espelho && V.futuro ? 'com_ambos' : V.futuro ? 'sem_incomodo' : V.espelho ? 'sem_desejo' : 'sem_nada'], V, { f:PI6.f, fixo:true }));
+  else out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
   if (['pressao', 'glicose', 'ambas'].includes(r.metabolico)) avisos.push('Ela marcou pressão ou glicose alta: sinal de saúde (regra 17). Vale olhar com exame; fale com ela também por escrito. Sem nome de doença nem de remédio.');
   if (r.cigarro === 'hoje') avisos.push('Fuma hoje: tom de alívio e explicação, sem cobrança (regra 22).');
   if (caso === 'sem_numero' && !c?.refazer) avisos.push('A página não mostrou número. Se ela quiser o número, mande o atalho /pirefazer.');
@@ -424,7 +428,9 @@ function htmlEstoque(i){
     const n = bl.opcoes.length, j = idx(b, bl), txt = nome ? esc(bl.opcoes[j].replace(/\{nome\}/g, nome)) : destaca(bl.opcoes[j]);
     return `<div class="rot-l${bl.fixo ? ' fixo' : ''}"><span class="rot-t">${esc(bl.tempo)}</span><span class="rot-f">${txt}${bl.circular ? ` <mark class="rot-c">circular: ${esc(bl.circular)}</mark>` : ''}${bl.fixo ? ' <small class="rot-fix">frase fixa</small>' : ''}</span>${n > 1 ? `<button type="button" class="rot-trocar" data-rot="${i}" data-k="${k}" aria-label="Trocar variação (${j + 1} de ${n})">Trocar <small>${j + 1}/${n}</small></button>` : '<span></span>'}</div>`;
   }).join('');
-  const p = palavras(b), alvo = R.blocos.some(bl => /^refazer/.test(bl.id)) ? '' : p < 70 ? ' (curto)' : p > 160 ? ' (passa de 160)' : '';
+  // 12/11 (v3): o vídeo da pele nova vai de 60 a 75 s com a pergunta de interesse (~190 palavras a 150 por minuto); os outros, ~1 min
+  const teto = b.teste === 'pele-idade' ? 190 : 160;
+  const p = palavras(b), alvo = R.blocos.some(bl => /^refazer/.test(bl.id)) ? '' : p < 70 ? ' (curto)' : p > teto ? ` (passa de ${teto})` : '';
   return `<div class="rot-txt">${linhas}</div><p class="rot-info">${p} palavras faladas${alvo} · montado do estoque, sem custo</p>
     ${R.avisos.length ? `<div class="rot-av"><b>Avisos para você</b><ul>${R.avisos.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : ''}`;
 }
@@ -568,12 +574,21 @@ async function preencheParecidos(){
 
 // Modo revisão da pele-idade: os passos são os blocos do roteiro montado, com a variação escolhida na tela.
 const ROT_BLOCO = { abertura:'Abertura', idade:'Idade do rosto', bem:'O que está bem', 'habito-cigarro':'Cigarro', 'habito-sol':'Sol', 'habito-metabolico':'Pressão e glicose',
-  'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', ponte:'Ponte', pergunta:'Pergunta', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
+  'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', ponte:'Ponte', pergunta:'Pergunta', interesse:'Pergunta de interesse', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
 function passosReact(e){
   const b = B.find(x => x.e === e);
   if (!b || !b.est || !b.est.blocos.length) return [{ bloco:'Foto', foto:'frente', tempo:'', tela:'Foto de frente inteira', fala:'', nota:'O roteiro do estoque não carregou: use o cartão.' }];
-  return b.est.blocos.map(bl => ({ bloco:ROT_BLOCO[bl.id] || bl.id, foto:'frente', tempo:bl.tempo, tela:bl.circular ? 'Circular: ' + bl.circular : 'Foto de frente inteira',
+  return b.est.blocos.map(bl => ({ id:bl.id, bloco:ROT_BLOCO[bl.id] || bl.id, foto:'frente', tempo:bl.tempo, tela:bl.circular ? 'Circular: ' + bl.circular : 'Foto de frente inteira',
     fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, nota:bl.fixo ? 'Frase fixa: não cortar.' : '' }));
+}
+/** 12/11: a resposta dela ao áudio antes (colada pelo Lucca no passo 2) abre o roteiro do pele-idade. Só nesta tela. */
+let RESP = {};
+function resposta(c, txt){
+  const t = String(txt || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+  if (t) RESP[c] = t; else delete RESP[c];
+  if (c !== CODIGO || !EST) return;
+  B.forEach(b => { if (b.teste === 'pele-idade'){ try { b.est = doEstoque(b.e); } catch (err) { console.error(err); } } });
+  redesenhaTodos();
 }
 /** Chamado pela Caixa depois de desenhar os cartões de um código. */
 function depois(c){ CODIGO = c; montarTodos(); lerGravados(c); preencheParecidos(); }
@@ -626,5 +641,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
+return { montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
 })();

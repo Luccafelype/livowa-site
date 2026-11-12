@@ -764,6 +764,49 @@ const atalhosPeleIdade = PI_ATALHOS.map(id => T.atalhos.pele.find(a => a.id === 
   return a;
 });
 
+// ---------- 12/11 (v3): o que o Lucca manda em cada etapa da pele nova ----------
+// Texto de tarefas/venda-pele-conversa/roteiro-v3-1211.md (livowa-empresa), como está; a Caixa só encaixa as variáveis.
+// Regras: sem promessa, sem "consulta", sem "grátis", sem preço por escrito, sem prometer vídeo nem prazo.
+const V3_PI = {
+  audioTexto:'{nome}, recebi o seu teste ({lv}).',
+  audioFala:'Oi! Aqui é o Lucca. Recebi o seu teste e eu mesmo vou olhar com calma a sua foto e o que você respondeu. Enquanto isso, me conta: o que te fez fazer o teste agora?',
+  audioDica:'Grave uma vez (uns 15 s, sem nome), deixe salvo e reenvie sempre o mesmo: grave na conversa "Eu" (você mesmo) do WhatsApp Business e encaminhe.',
+  depoisVideo:'Você se interessaria? Pode me responder sim ou não, do jeito que for melhor para você.',
+  convite:'Que bom, {nome}. Vamos conversar 15 minutos por vídeo: eu entendo melhor o seu caso e te mostro como funciona. Tenho {h1} ou {h2}. Qual fica melhor? Se preferir outro horário, escolha aqui: {link}',
+  conviteAgora:'Se ela disser que pode agora: ligue agora ("show rate de agora é 100%", LN pdf 21).',
+  preco:'Depende do que você precisa, por isso eu prefiro te mostrar na conversa. São 15 minutos e você decide com calma. Tenho {h1} ou {h2}.',
+  nutrir:'Tudo bem, {nome}. Você já tem a sua análise. Se quiser ver mais um pedaço do quadro, tem um teste de 2 minutos {tema}: {teste}. Depois eu te conto o que ele mostrou.',
+  naoQuis:'Obrigado por me contar, {nome}. A análise é sua. Se um dia quiser retomar, é só me chamar.',
+  toque1:'{nome}, conseguiu ver a sua análise?',
+  toque3:'Áudio curto seu: retome 1 coisa da análise e repita a pergunta.',
+  toque7:'{nome}, você ainda quer {desejo}?',
+};
+// Agora não → o próximo teste pelo desejo dela (v3, proposta do Claude). 'entender' não está no mapa da v3: vai ao quiz.
+const NUTRIR_PI = { braco:{ teste:'livowa.com/braco', tema:'sobre a sua idade muscular' }, longevidade:{ teste:'livowa.com/longevidade', tema:'sobre o que pesa nos seus próximos 10 anos' } };
+const NUTRIR_DE = { chegar10:'braco', aos70:'braco', independente:'braco', disposicao:'braco', reconhecer:'longevidade', parecer:'longevidade', devagar:'longevidade', cuidar:'longevidade', antes:'longevidade', entender:'longevidade' };
+const nutrirPI = d => NUTRIR_PI[NUTRIR_DE[(d && d.respostas || {}).futuro] || 'longevidade'];
+// A conversa de 15 min (v3, etapa 4; os minutos 1-12 e o "não" são do v2, B1 e B4). Só para ele ler; nada disto vai por escrito.
+const CONVERSA_PI = [
+  { min:'antes', titulo:'Abra a ficha dela', itens:['Desejo de 10 anos: {desejo}', 'O que mais incomoda: {incomodo}', 'Idade: {idade}', 'Resposta ao áudio: {resposta}'] },
+  { min:'0-1', titulo:'O combinado', fala:'Obrigado por separar esse tempo, {nome}. Um combinado antes: eu vou te fazer umas perguntas e te mostrar como eu acompanho. Se não fizer sentido para você, me diz não, sem problema nenhum. Se fizer, a gente já decide hoje. Pode ser?' },
+  { min:'1-4', titulo:'Por que agora', fala:'Você me disse que daqui a 10 anos quer {desejo}. Por que isso importa agora?', itens:['O que te fez fazer o teste agora?', 'Há quanto tempo isso te incomoda?'] },
+  { min:'4-6', titulo:'Onde pesa no dia', fala:'Hoje, onde isso aparece no seu dia: na disposição, no sono, no espelho de manhã?', itens:['E os exames: quando você mediu pressão e glicose pela última vez?'] },
+  { min:'6-8', titulo:'O que já tentou', fala:'O que você já tentou para {desejo}? Por quanto tempo? Como foi? E além disso, o que mais?', nota:'Depois tire a culpa: "Pelo que você contou, não faltou esforço. Faltou olhar o conjunto."' },
+  { min:'8-9', titulo:'Resumo', fala:'Deixa eu ver se entendi: você quer {desejo}, já tentou {x e y}, e o que mais pesa é {incomodo}. É isso?', nota:'Sem o "é isso", não seguir. Depois: "Então cuidar disso agora é prioridade para você. É justo dizer isso?"' },
+  { min:'9-12', titulo:'Como eu acompanho', fala:'Posso te contar como eu acompanho?', nota:'Até 3 minutos, ligando cada parte ao que ela contou. Sem promessa: "a ideia é você saber o que pesa por dentro e ter alguém olhando isso com você, todo mês".' },
+  { min:'12-14', titulo:'A oferta', itens:[
+    'Online (o padrão de quem vem do Instagram): o acompanhamento de R$ 2.000 por mês: acompanhamento e, se for indicado, reposição hormonal; exames e medicação ela paga direto aos fornecedores, nunca a você.',
+    'Pedir: "Você prefere começar esta semana ou na próxima?"',
+    'Goiânia: você fala primeiro do acompanhamento de R$ 12 mil e depois do online, como âncora real. Só na conversa, nunca por escrito.',
+    'Objeção ao valor: "Qual é a sua principal preocupação?" Nunca baixar o preço.',
+    'Downsell: o app anual, sem o acompanhamento ao vivo (valor exato e prescrição pelo app ainda não decididos).'] },
+  { min:'14-15', titulo:'Fechar', itens:[
+    'Sim: "Antes de eu te mandar o próximo passo: você quer fazer só você, ou você e mais alguém da sua casa?" (a segunda pessoa sai por 60% do valor) e o próximo passo em 48 h.',
+    'Não: "Sem problema nenhum. Só para eu aprender: o que pesou?" e depois "Você já tem a análise e pode seguir com ela. Posso te chamar no dia {data}? Fica bom?"',
+    '"Vou pensar": "Claro. Para a gente pensar junto: qual é a sua principal preocupação?"',
+    '"Preciso falar com meu marido / minha esposa": "Faz sentido. Ele já sabe que isso te incomoda? E concorda que vale cuidar?"'] },
+];
+
 const NOME_TESTE = { braco:'Idade muscular (braço)', pernas:'Pernas', pele:'Pele', pele2:'Pele 2', 'pele-idade':'Pele: idade e vitalidade' };
 return {
   T, T2, REF, preencher, pedacos, NOME_TESTE,
@@ -772,6 +815,6 @@ return {
   pele:{ classifica:classificaPele, mensagens:(c) => mensagensPele(c.perfil), react:reactPeleComRegiao, atalhos:T.atalhos.pele, perfis:PERFIL_TXT },
   pele2:{ classifica:classificaPele2, mensagens:(c) => mensagensPele(c.perfil), react:reactPele2, atalhos:atalhosPele2, perfis:PERFIL_TXT, norm:normPele2, acne:d => acnePele2(normPele2(d)) },
   // react: os passos vêm do roteiro do estoque (ROTEIRO.passosReact, em roteiro.js), para a fala ser uma só
-  'pele-idade':{ classifica:classificaPeleIdade, mensagens:mensagensPeleIdade, atalhos:atalhosPeleIdade, caso:CASO_PI, futuro:FUTURO_PI },
+  'pele-idade':{ classifica:classificaPeleIdade, mensagens:mensagensPeleIdade, atalhos:atalhosPeleIdade, caso:CASO_PI, futuro:FUTURO_PI, v3:V3_PI, nutrir:nutrirPI, conversa:CONVERSA_PI },
 };
 })();

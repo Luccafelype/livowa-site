@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Leads">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Caixa de leads</title>
+<link rel="stylesheet" href="gravar-analise.css?v=20261112a">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    Quatro abas: Caixa (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX), Portas (tema e % de
@@ -20,7 +21,12 @@
    chaves novas cigarro parou|as_vezes e futuro chegar10|antes (com props.desejo); v3 (04/11 noite): espelho (o que mais incomoda) e futuro reconhecer|independente; as velhas continuam com o rótulo de antes: cartão com a foto ligada, a idade do rosto ao lado
    da idade real, as respostas e os sinais ligados à idade; roteiro do estoque (bloco pele-idade) e kit sem perfil de cuidado.
    05/11: detalhe legível (função detalhe/DET): rótulo de leigo por funil, uma resposta por linha, valor traduzido, técnico num
-   bloco fechado; nada de JSON nem rolagem lateral. */
+   bloco fechado; nada de JSON nem rolagem lateral.
+   12/11 (Lucca: "uma estrutura para eu gerir bem, para eu não me perder se muita gente responder"): etapas novas (novo ·
+   áudio · análise · respondeu · conversa · comprou · nutrir · não quis · sumiu; com a edge velha grava a equivalente e mostra
+   a certa), fila "Responder agora" (mais antigo primeiro, próxima ação, 24 h, foto que apaga), passo a passo na pele nova
+   com a copy da v3 (livowa-empresa/tarefas/venda-pele-conversa/roteiro-v3-1211.md) e o gravador da análise
+   (gravar-analise.js: foto + câmera dele num círculo + faixa, teleprompter só na tela, nada sai do aparelho). */
 :root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
@@ -147,6 +153,56 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .fn-vazio{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
 .fn-vazio .sec{background:var(--s);color:var(--a);border:1.5px solid var(--l)}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+/* 12/11: fila "Responder agora", etapas e passo a passo */
+.filtro button small{font-weight:500;opacity:.75}
+.lead.fila{border-left:5px solid var(--a)}
+.lead.tarde{border-left-color:var(--r)}
+.espera{font-size:.85rem;color:var(--m);white-space:nowrap;font-weight:600}
+.espera.tarde{color:var(--r)}
+.prox{font-weight:700;font-size:1rem;color:var(--a);margin:4px 0 2px}
+.lead.tarde .prox{color:var(--r)}
+.apaga{font-size:.82rem;color:var(--w);margin:2px 0 4px}
+.l-acoes{display:flex;gap:8px;align-items:stretch;margin-top:6px;flex-wrap:wrap}
+.l-acoes>button{flex:1 1 140px;padding:11px 10px;font-size:.95rem}
+.l-acoes .sec{background:var(--s);color:var(--a);border:1.5px solid var(--l)}
+.et-sel{flex:1 1 150px;font:600 .95rem system-ui;padding:10px 8px;border:1.5px solid var(--l);border-radius:12px;background:var(--bg);color:var(--fg);min-width:0}
+.st.et9{grid-template-columns:repeat(3,1fr)}
+.tag.e{background:var(--fg);color:var(--bg);border-color:transparent}
+.espera-h{margin:18px 0 8px;font-size:1rem}
+.toque{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:10px 12px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px}
+.toque .topo b{font-size:1rem}
+.passo{border:1px solid var(--l);border-radius:14px;background:var(--s)}
+.passo>summary{display:flex;align-items:center;gap:8px;padding:12px;font-weight:700;cursor:pointer;list-style:none}
+.passo>summary::-webkit-details-marker{display:none}
+.passo>summary small{margin-left:auto;font-weight:600;color:var(--m);font-size:.8rem}
+.passo.feito>summary small{color:var(--a)}
+.passo.agora{border:2px solid var(--a)}
+.passo.agora>summary small{color:var(--a)}
+.passo>div{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
+.pi-marca{background:var(--a);color:#fff;padding:12px 14px;font-size:.98rem}
+.pi-marca.feito{background:var(--a2);color:var(--a)}
+.ga-abrir{background:#c62828;color:#fff;padding:14px;font-size:1.05rem}
+.ga-abrir:disabled{opacity:.45}
+.pi-r3{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pi-r3 button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:10px 4px;font-size:.88rem}
+.pi-r3 button[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:#fff}
+.pi-campos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pi-campos label,.pi-resp-l{display:flex;flex-direction:column;gap:3px;font-size:.8rem;color:var(--m);font-weight:600}
+.pi-campos input,.pi-resp{font:400 1rem system-ui;letter-spacing:0;text-transform:none;padding:10px 11px;border:1.5px solid var(--l);border-radius:10px;background:var(--bg);color:var(--fg);width:100%}
+.pi-resp{min-height:44px;resize:vertical}
+.kit details.pi-preco{background:var(--bg)}
+.conv{position:fixed;inset:0;z-index:70;background:var(--s);color:var(--fg);overflow:auto;-webkit-overflow-scrolling:touch;padding:max(12px,env(safe-area-inset-top)) 16px 40px}
+.conv[hidden]{display:none}
+.conv-cab{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--s);padding:6px 0 10px;border-bottom:1px solid var(--l);margin-bottom:8px}
+.conv-cab h2{margin:0;font-size:1.15rem}
+.conv-b{max-width:640px;margin:0 auto}
+.conv-s{padding:12px 0;border-bottom:1px solid var(--l)}
+.conv-s h3{margin:0 0 6px;font-size:1rem;display:flex;gap:8px;align-items:baseline}
+.conv-s h3 span{font:700 .78rem ui-monospace,monospace;color:var(--a);background:var(--a2);border-radius:6px;padding:1px 6px}
+.conv-f{margin:0;font-size:1.2rem;line-height:1.45;font-weight:600}
+.conv-s ul{margin:6px 0 0;padding-left:1.1em;font-size:1.02rem;line-height:1.45}
+.conv-n{margin:6px 0 0;color:var(--m);font-size:.92rem}
+.conv mark{background:var(--w2);color:var(--w);border-radius:4px;padding:0 2px}
 /* Kit de resposta (01/11): faixa, mensagens prontas e modo react. Tudo na página; nada vai para o servidor. */
 .kit{margin-top:14px;padding-top:12px;border-top:2px solid var(--l);display:flex;flex-direction:column;gap:10px}
 .kit-h{margin:0;font-size:1.05rem}
@@ -272,12 +328,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   </div>
 
   <section id="caixa">
-    <div class="conta"><div><b id="n-hoje">–</b><span>chegaram hoje</span></div><div><b id="n-sem">–</b><span>sem resposta</span></div></div>
-    <div class="filtro" id="filtro">
-      <button type="button" data-f="abertos" aria-pressed="true">Sem resposta</button>
-      <button type="button" data-f="todos" aria-pressed="false">Todos</button>
-      <button type="button" data-f="testes" aria-pressed="false">Mostrar testes</button>
-    </div>
+    <div class="conta tres"><div><b id="n-esperam">–</b><span>esperam você</span></div><div><b id="n-conversa">–</b><span>em conversa</span></div><div><b id="n-nutrir">–</b><span>em nutrição</span></div></div>
+    <div class="filtro" id="filtro" role="group" aria-label="Filtro"></div>
     <div id="lista"><p class="aviso">Carregando…</p></div>
   </section>
 
@@ -328,8 +380,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   </div>
   <div class="react-nav"><button type="button" id="react-ant">Anterior</button><button type="button" class="sec" id="react-texto" aria-pressed="false">Só a foto</button><button type="button" id="react-prox">Próximo</button></div>
 </div>
-<script src="kits.js?v=20261104b"></script>
-<script src="roteiro.js?v=20261104b"></script>
+<div id="conv" class="conv" role="dialog" aria-modal="true" aria-labelledby="conv-tit" hidden>
+  <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
+</div>
+<script src="kits.js?v=20261112a"></script>
+<script src="roteiro.js?v=20261112a"></script>
+<script src="gravar-analise.js?v=20261112a"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -339,10 +395,44 @@ const post = corpo => fetch(API, { method:'POST', headers:{ 'content-type':'appl
 const TZ = 'America/Sao_Paulo';
 
 // ---------- Caixa ----------
-const STATUS = [['novo','Novo'],['respondi','Respondi'],['consulta','Em conversa'],['nao_quis','Não quis']];
+// 12/11 (cartão p24): as etapas do lead. A edge velha só aceita novo|respondi|consulta|nao_quis: se ela recusar (erro
+// 'status'), a Caixa grava a equivalente velha (VELHA) e guarda a fina neste aparelho (FINO: só código → etapa), para mostrar
+// a certa; com a edge nova no ar, grava a fina direto. Lead antigo: respondi → analisei, consulta → conversa.
+const ETAPAS = [['novo','Novo'],['audio','Áudio enviado'],['analisei','Análise enviada'],['respondeu','Respondeu'],['conversa','Conversa marcada'],['comprou','Comprou'],['nutrir','Nutrir'],['nao_quis','Não quis'],['sumiu','Sumiu']];
+const NOME_ET = Object.fromEntries(ETAPAS);
+const VELHA = { novo:'novo', audio:'respondi', analisei:'respondi', respondeu:'respondi', nutrir:'respondi', conversa:'consulta', comprou:'consulta', sumiu:'nao_quis', nao_quis:'nao_quis' };
+const DE_VELHA = { respondi:'analisei', consulta:'conversa' };
+const FILA = ['novo', 'audio', 'respondeu'];
+const FINO_K = 'livowa_caixa_etapa';
+let FINO = {}, SERV_VELHO = 0;   // SERV_VELHO = quando a edge recusou etapa nova (tenta a nova de novo depois de 10 min)
+try { FINO = JSON.parse(localStorage.getItem(FINO_K) || '{}') || {}; } catch { FINO = {}; }
+const gravaFino = () => { try { localStorage.setItem(FINO_K, JSON.stringify(FINO)); } catch { /* sem armazenamento: vale só nesta aba */ } };
+const etapaDe = l => { const s = l?.status || 'novo'; if (NOME_ET[s] && s !== 'novo' && s !== 'nao_quis') return s;
+  const f = FINO[l?.codigo]; if (f && VELHA[f] === s) return f; return DE_VELHA[s] || s || 'novo'; };
+const temPele = l => (l.partes || []).some(p => p.funil === 'pele-idade' || p.funil === 'pele2' || p.etapa === 'pele-resultado');
+const ehPI = l => (l.partes || []).some(p => p.funil === 'pele-idade');
+function proxAcao(l, et){
+  const pi = ehPI(l);
+  if (et === 'novo') return pi ? 'Mandar o áudio antes' : 'Responder (kit do teste)';
+  if (et === 'audio') return pi ? 'Gravar a análise' : 'Mandar a análise';
+  if (et === 'respondeu') return 'Mandar o convite';
+  if (et === 'analisei'){ const d = diasDesde(l.atualizado_em); return d >= 7 ? 'Toque do dia 7 (sumiu?)' : d >= 3 ? 'Toque do dia 3: áudio curto' : d >= 1 ? 'Toque do dia 1: “conseguiu ver?”' : 'Esperar a resposta dela'; }
+  return { conversa:'Fazer a conversa', comprou:'Cliente', nutrir:'Nutrir: próximo teste mandado', nao_quis:'Não insistir', sumiu:'Sem ação' }[et] || '';
+}
+const diasDesde = d => d ? Math.floor((Date.now() - new Date(d).getTime()) / 86400e3) : 0;
+function espera(d){
+  const m = Math.max(0, Math.round((Date.now() - new Date(d).getTime()) / 60000));
+  return m < 60 ? `há ${m} min` : m < 48 * 60 ? `há ${Math.round(m / 60)} h` : `há ${Math.round(m / 1440)} dias`;
+}
+function apagaFoto(l){
+  const p = (l.partes || []).filter(x => x.funil === 'pele-idade' || x.funil === 'pele2' || x.etapa === 'pele-resultado').map(x => new Date(x.quando).getTime()).sort((a, b) => b - a)[0];
+  if (!p) return '';
+  const dias = Math.ceil((p + 7 * 86400e3 - Date.now()) / 86400e3);
+  return dias <= 0 ? 'A foto já apagou (7 dias)' : dias === 1 ? 'A foto apaga em 1 dia' : `A foto apaga em ${dias} dias`;
+}
 const NOME_PI = 'Pele: idade e vitalidade';   // livowa.com/pele (funnelId pele-idade, 04/11)
 const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'pele-idade' ? NOME_PI : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
-let LEADS = [], filtro = 'abertos', CARREGOU = false;
+let LEADS = [], filtro = 'fila', CARREGOU = false;
 const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '');
 function origem(o){
   if (!o || !o.source) return 'Direto';
@@ -370,30 +460,59 @@ function resumo(l){
     return `${n}: ${p.resumo || ''}`;
   }).join(' · ');
 }
-const hojeSP = () => new Date().toLocaleDateString('pt-BR', { timeZone:TZ });
 function desenhaCaixa(){
-  const reais = LEADS.filter(l => !ehTeste(l));
-  $('n-hoje').textContent = reais.filter(l => new Date(l.chegou).toLocaleDateString('pt-BR', { timeZone:TZ }) === hojeSP()).length;
-  $('n-sem').textContent = reais.filter(l => l.status === 'novo').length;
-  const xs = filtro === 'testes' ? LEADS : filtro === 'todos' ? reais : reais.filter(l => l.status === 'novo');
-  if (!xs.length){ $('lista').innerHTML = `<p class="aviso">${filtro === 'abertos' ? 'Ninguém esperando resposta.' : 'Nenhum lead nos últimos 30 dias.'}</p>`; return; }
-  $('lista').innerHTML = xs.map(l => {
-    const quando = new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-    const funis = [...new Set((l.partes || []).map(NOME_FUNIL))];
-    const canais = (l.canais || []).map(c => c === 'whatsapp' ? 'WhatsApp' : 'Direct'), nm = nomeLead(l);
-    return `<article class="lead ${l.status === 'novo' ? 'novo' : ''}" data-c="${esc(l.codigo)}">
-      <div class="topo"><span class="quem">${nm ? `<b class="nm-l">${esc(nm)}</b>` : ''}${l.instagram ? `<span class="ig">@${esc(l.instagram)}</span>` : `<span class="cod">${esc(l.codigo)}</span>`}</span><span class="quando">${esc(quando)}</span></div>
+  const reais = LEADS.filter(l => !ehTeste(l)), n = e => reais.filter(l => etapaDe(l) === e).length;
+  const naFila = reais.filter(l => FILA.includes(etapaDe(l)));
+  $('n-esperam').textContent = naFila.length; $('n-conversa').textContent = n('conversa'); $('n-nutrir').textContent = n('nutrir');
+  const fs = [['fila', 'Responder agora', naFila.length], ...ETAPAS.map(([e, t]) => [e, t, n(e)]).filter(([e, , q]) => q || filtro === e), ['todos', 'Todos', reais.length], ['testes', 'Mostrar testes', null]];
+  $('filtro').innerHTML = fs.map(([f, t, q]) => `<button type="button" data-f="${f}" aria-pressed="${filtro === f}">${esc(t)}${q != null ? ` <small>${q}</small>` : ''}</button>`).join('');
+  const xs = filtro === 'fila' ? [...naFila].sort((a, b) => new Date(a.chegou) - new Date(b.chegou))
+    : filtro === 'testes' ? LEADS : filtro === 'todos' ? reais : reais.filter(l => etapaDe(l) === filtro);
+  let h = xs.length ? xs.map(l => cartaoLead(l, filtro === 'fila')).join('')
+    : `<p class="aviso">${filtro === 'fila' ? 'Ninguém esperando você.' : filtro === 'todos' || filtro === 'testes' ? 'Nenhum lead nos últimos 30 dias.' : 'Ninguém nesta etapa.'}</p>`;
+  // quem recebeu a análise e não respondeu: o toque do dia 1, 3 ou 7 (v3)
+  if (filtro === 'fila'){
+    const esp = reais.filter(l => etapaDe(l) === 'analisei' && diasDesde(l.atualizado_em) >= 1).sort((a, b) => new Date(a.atualizado_em) - new Date(b.atualizado_em));
+    if (esp.length) h += `<h2 class="espera-h">Análise enviada, sem resposta (${esp.length})</h2>` + esp.map(cartaoToque).join('');
+  }
+  $('lista').innerHTML = h;
+}
+function quemHtml(l){
+  const nm = nomeLead(l);
+  return `<span class="quem">${nm ? `<b class="nm-l">${esc(nm)}</b>` : ''}${l.instagram ? `<span class="ig">@${esc(l.instagram)}</span>` : `<span class="cod">${esc(l.codigo)}</span>`}</span>`;
+}
+function cartaoLead(l, naFila){
+  const quando = new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const funis = [...new Set((l.partes || []).map(NOME_FUNIL))], et = etapaDe(l);
+  const canais = (l.canais || []).map(c => c === 'whatsapp' ? 'WhatsApp' : 'Direct');
+  const tarde = naFila && Date.now() - new Date(l.chegou).getTime() > 24 * 3600e3, ap = temPele(l) ? apagaFoto(l) : '';
+  const copiaAudio = naFila && et === 'novo' && ehPI(l) && !!nomeLead(l);   // sem nome, abre o lead (o nome se digita lá)
+  return `<article class="lead ${naFila ? 'fila' : et === 'novo' ? 'novo' : ''}${tarde ? ' tarde' : ''}" data-c="${esc(l.codigo)}">
+      <div class="topo">${quemHtml(l)}${naFila ? `<span class="espera${tarde ? ' tarde' : ''}" title="${esc(quando)}">chegou ${esc(espera(l.chegou))}${tarde ? ' · passou de 24 h' : ''}</span>` : `<span class="quando">${esc(quando)}</span>`}</div>
       ${l.instagram ? `<div class="sub-ig">veio pelo Direct · ${esc(l.codigo)}</div>` : l.lv ? `<div class="sub-ig">veio pelo Direct (o @ aparece quando o OpenReply responder)</div>` : ''}
-      <div class="tags">${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
+      <div class="prox">${esc(proxAcao(l, et))}</div>
+      ${ap ? `<div class="apaga">${esc(ap)}</div>` : ''}
+      <div class="tags"><span class="tag e">${esc(NOME_ET[et] || et)}</span>${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
         <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
       <div class="resumo">${esc(resumo(l))}</div>
-      ${botoes(l)}${aceiteBox(l)}
+      <div class="l-acoes"><button type="button" data-ver="${esc(l.codigo)}">${naFila ? 'Responder' : 'Ver resultado completo'}</button>
+        ${copiaAudio ? `<button type="button" class="sec l-copiar" data-copia="audio" data-c="${esc(l.codigo)}">Copiar “recebi o seu teste”</button>` : ''}
+        ${etapaSel(l)}</div>
+      ${aceiteBox(l)}
       <textarea class="nota" data-c="${esc(l.codigo)}" maxlength="500" rows="1" placeholder="Nota (ex.: mandei áudio, volta segunda)">${esc(l.nota || '')}</textarea>
-      <div class="acoes"><small id="ok-${esc(l.codigo)}">${l.atualizado_em ? 'Marcado ' + esc(new Date(l.atualizado_em).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })) : ''}</small>
-        <button type="button" class="ver" data-ver="${esc(l.codigo)}">Ver resultado completo</button></div>
+      <div class="acoes"><small id="ok-${esc(l.codigo)}">${l.atualizado_em ? 'Marcado ' + esc(new Date(l.atualizado_em).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })) : ''}</small></div>
     </article>`;
-  }).join('');
 }
+function cartaoToque(l){
+  const d = diasDesde(l.atualizado_em), K = window.KITS?.['pele-idade'], nm = nomeLead(l);
+  const desejo = (() => { const p = (l.partes || []).find(x => x.funil === 'pele-idade'), r = p?.dados?.respostas || {}; try { return r.futuro ? valPI('futuro', r.futuro, p.dados) : ''; } catch { return ''; } })();
+  const qual = d >= 7 ? 'toque7' : d >= 3 ? 'toque3' : 'toque1', txt = K ? KITS.preencher(K.v3[qual], { nome:nm || null, desejo:desejo || null }) : '';
+  return `<div class="toque" data-c="${esc(l.codigo)}"><div class="topo">${quemHtml(l)}<span class="espera">análise ${d === 1 ? 'há 1 dia' : `há ${d} dias`}</span></div>
+    <div class="prox">${esc(proxAcao(l, 'analisei'))}</div>${txt ? `<div class="kit-txt">${esc(txt)}</div>` : ''}
+    <div class="l-acoes">${qual !== 'toque3' && txt ? `<button type="button" class="sec l-copiar" data-copia="${qual}" data-c="${esc(l.codigo)}">Copiar</button>` : ''}<button type="button" data-ver="${esc(l.codigo)}">Abrir</button>${etapaSel(l)}</div>
+    <small id="ok-${esc(l.codigo)}"></small></div>`;
+}
+const etapaSel = l => `<select class="et-sel" data-c="${esc(l.codigo)}" aria-label="Etapa">${ETAPAS.map(([e, t]) => `<option value="${e}"${etapaDe(l) === e ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
 // 03/11 (decisão do Lucca: "você deveria saber quem concordou e quem recusou"): aceita orientações e novos testes?
 // Ele pergunta na conversa e marca aqui. sim | nao | '' (sem resposta) + a data em que mudou. Só aparece quando o banco
 // já devolve o campo (script aplicar_aceite_caixa.sh); antes disso a Caixa fica igual.
@@ -416,7 +535,7 @@ async function marcarAceite(c, v){
     Object.assign(l, antes); pinta(); info().forEach(e => { e.textContent = 'Não salvou. Tente de novo.'; });
   }
 }
-const botoes = l => `<div class="st" role="group" aria-label="Status">${STATUS.map(([s, t]) => `<button type="button" data-s="${s}" data-c="${esc(l.codigo)}" aria-pressed="${l.status === s}">${t}</button>`).join('')}</div>`;
+const botoes = l => `<div class="st et9" role="group" aria-label="Etapa">${ETAPAS.map(([s, t]) => `<button type="button" data-s="${s}" data-c="${esc(l.codigo)}" aria-pressed="${etapaDe(l) === s}">${t}</button>`).join('')}</div>`;
 async function carregar(){
   if (!K){ $('lista').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
   try {
@@ -427,36 +546,63 @@ async function carregar(){
     LEADS = j.leads || []; CARREGOU = true; desenhaCaixa();
   } catch { $('lista').innerHTML = '<p class="aviso">Não consegui carregar a caixa agora. Puxe para atualizar.</p>'; }
 }
-async function marcar(c, status, nota){
+// grava a etapa (e a nota) de um código; devolve true quando o servidor aceitou
+async function marcar(c, etapa, nota){
   const l = LEADS.find(x => x.codigo === c) || { codigo:c, status:'novo', nota:'' };
-  const antes = { status:l.status, nota:l.nota };
-  if (status) l.status = status; if (nota !== undefined) l.nota = nota;
-  const ok = $('ok-' + c); if (ok) ok.textContent = 'Salvando…';
+  const antes = { status:l.status, nota:l.nota, fino:FINO[c] };
+  const alvo = etapa || etapaDe(l);
+  if (nota !== undefined) l.nota = nota;
+  if (etapa){ if (VELHA[etapa] === etapa) delete FINO[c]; else FINO[c] = etapa; l.status = etapa; pintaEtapa(c, etapa); }
+  const oks = () => document.querySelectorAll(`[id="ok-${c}"]`), diz = t => oks().forEach(e => { e.textContent = t; });
+  diz('Salvando…');
   try {
-    const r = await post({ acao:'status', c, status:l.status, nota:l.nota || '' });
-    const j = await r.json(); if (!j.ok) throw 0;
+    const manda = async st => { const r = await post({ acao:'status', c, status:st, nota:l.nota || '' }); return r.json().catch(() => ({ ok:false })); };
+    let st = Date.now() - SERV_VELHO < 600e3 ? VELHA[alvo] : alvo, j = await manda(st);
+    if (!j.ok && j.erro === 'status' && st !== VELHA[alvo]){ SERV_VELHO = Date.now(); st = VELHA[alvo]; j = await manda(st); }   // edge velha: a equivalente
+    if (!j.ok) throw 0;
+    l.status = j.gestao?.status || st;
+    if (l.status === alvo || VELHA[alvo] === alvo) delete FINO[c]; else FINO[c] = alvo;
+    gravaFino();
     l.atualizado_em = j.gestao?.atualizado_em || new Date().toISOString();
-    if (status && filtro !== 'abertos') desenhaCaixa();
-    if (status && filtro === 'abertos') setTimeout(desenhaCaixa, 700);   // deixa ver o toque antes de sair da lista
-    const ok2 = $('ok-' + c); if (ok2) ok2.textContent = 'Salvo';
-    if (codigoAtual === c) desenhaGestao(c);
-    document.querySelectorAll(`.st button[data-c="${c}"]`).forEach(b => b.setAttribute('aria-pressed', b.dataset.s === l.status));
     if (!LEADS.includes(l)) LEADS.unshift(l);
-    const sem = LEADS.filter(x => !ehTeste(x) && x.status === 'novo').length; $('n-sem').textContent = sem;
+    diz('Salvo');
+    if (etapa) setTimeout(() => { if (!$('caixa').hidden) desenhaCaixa(); }, filtro === 'fila' ? 700 : 0);   // deixa ver o toque antes de sair da lista
+    if (codigoAtual === c && etapa){ desenhaGestao(c); redesenhaKitsPI(); }
+    pintaEtapa(c, etapaDe(l));
+    return true;
   } catch {
-    Object.assign(l, antes);
-    const ok3 = $('ok-' + c); if (ok3) ok3.textContent = 'Não salvou. Tente de novo.';
-    document.querySelectorAll(`.st button[data-c="${c}"]`).forEach(b => b.setAttribute('aria-pressed', b.dataset.s === l.status));
+    l.status = antes.status; l.nota = antes.nota; if (antes.fino) FINO[c] = antes.fino; else delete FINO[c];
+    diz('Não salvou. Tente de novo.'); pintaEtapa(c, etapaDe(l));
+    return false;
   }
+}
+function pintaEtapa(c, et){
+  document.querySelectorAll(`.st button[data-c="${c}"]`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === et)));
+  document.querySelectorAll(`.et-sel[data-c="${c}"]`).forEach(s => { s.value = et; });
+}
+function copiaTexto(txt, btn){
+  const volta = btn.dataset.volta || (btn.dataset.volta = btn.textContent);
+  const feito = m => { btn.textContent = m; btn.classList.add('feito'); clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = volta; btn.classList.remove('feito'); }, 1500); };
+  try { if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(() => feito('Copiado'), () => feito('Não copiou')); else feito('Não copiou'); }
+  catch { feito('Não copiou'); }
+}
+function copiaDaLista(btn){
+  const l = LEADS.find(x => x.codigo === btn.dataset.c), K = window.KITS?.['pele-idade']; if (!l || !K) return;
+  const p = (l.partes || []).find(x => x.funil === 'pele-idade'), r = p?.dados?.respostas || {};
+  let desejo = null; try { desejo = r.futuro ? valPI('futuro', r.futuro, p.dados) : null; } catch { desejo = null; }
+  const tpl = btn.dataset.copia === 'audio' ? K.v3.audioTexto : K.v3[btn.dataset.copia];
+  copiaTexto(KITS.preencher(tpl, { nome:nomeLead(l) || null, lv:l.codigo, desejo }), btn);
 }
 document.addEventListener('click', ev => {
   const a = ev.target.closest('.ac button'); if (a){ marcarAceite(a.dataset.c, a.dataset.a); return; }
   const s = ev.target.closest('.st button');
   if (s){ s.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === s)); marcar(s.dataset.c, s.dataset.s); return; }
+  const cp = ev.target.closest('.l-copiar'); if (cp){ copiaDaLista(cp); return; }
   const v = ev.target.closest('[data-ver]'); if (v){ abrirCodigo(v.dataset.ver, true); return; }
   const f = ev.target.closest('#filtro button');
   if (f){ filtro = f.dataset.f; document.querySelectorAll('#filtro button').forEach(b => b.setAttribute('aria-pressed', b === f)); CARREGOU ? desenhaCaixa() : carregar(); }
 });
+document.addEventListener('change', ev => { const s = ev.target.closest('.et-sel'); if (s) marcar(s.dataset.c, s.value); });
 const timers = {};
 document.addEventListener('input', ev => {
   const t = ev.target; if (!t.classList.contains('nota')) return;
@@ -655,7 +801,7 @@ $('voltar').onclick = () => aba('caixa');
 function abrirCodigo(c, daCaixa){ aba('cod'); $('voltar').hidden = !daCaixa; $('c').value = c; ver(c); }
 function desenhaGestao(c){
   const l = LEADS.find(x => x.codigo === c);
-  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2><div class="q">Status</div>${botoes(l || { codigo:c, status:'novo' })}${aceiteBox(l)}
+  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2><div class="q">Etapa</div>${botoes(l || { codigo:c, status:'novo' })}${aceiteBox(l)}
     <textarea class="nota" data-c="${esc(c)}" maxlength="500" rows="1" placeholder="Nota">${esc(l?.nota || '')}</textarea>
     <div class="acoes"><small id="ok-${esc(c)}"></small></div></div>`;
 }
@@ -1003,7 +1149,7 @@ function kitBloco(e){
     return `<section class="kit" data-kb="${i}" aria-label="Responder">${kitCorpo(i)}</section>`;
   } catch (err) { console.error(err); return ''; }
 }
-const kitVars = m => ({ ...(m.raw ? {} : KB[m.b].c.vars), nome:m.raw ? null : KIT_NOME.trim() });
+const kitVars = m => ({ ...(m.raw ? {} : { ...KB[m.b].c.vars, ...(KB[m.b].extra || {}) }), nome:m.raw ? null : KIT_NOME.trim() });
 const kitTexto = k => KITS.preencher(KM[k].tpl, kitVars(KM[k]));
 const kitHtml = k => KM[k].raw ? esc(KM[k].tpl) : KITS.pedacos(KM[k].tpl, kitVars(KM[k])).map(p => p.falta ? `<mark>${esc(p.s)}</mark>` : esc(p.s)).join('');
 function kitMsg(tpl, b, o = {}){
@@ -1043,22 +1189,100 @@ function kitCorpo(i){
   return h;
 }
 // Pele: idade e vitalidade (04/11): sem perfil de cuidado nem pergunta do pescoço; o modo revisão segue o roteiro do estoque.
+// 12/11: "Responder passo a passo" com a copy da v3 (KITS['pele-idade'].v3): 1 áudio antes · 2 gravar a análise · 3 ela
+// respondeu · 4 a conversa. Cada passo tem o texto pronto (nome, código, desejo e incômodo dela) e o botão da etapa.
+const AGENDA = 'https://agenda.livowa.com/drluccamarques/conversa';
+const ORDEM_ET = { novo:0, audio:1, analisei:2, respondeu:3, conversa:4, comprou:5, nutrir:5, nao_quis:5, sumiu:5 };
+const PASSO_DE = { novo:1, audio:2, analisei:3, respondeu:3, nutrir:3, nao_quis:3, sumiu:3, conversa:4, comprou:4 };
+const R3_DE = { respondeu:'sim', conversa:'sim', comprou:'sim', nutrir:'agora', nao_quis:'nao', sumiu:'sumiu' };
+const R3_ETAPA = { sim:'respondeu', agora:'nutrir', nao:'nao_quis' };
 function kitCorpoPI(i, b, K, c, atalho){
-  let h = '<h3 class="kit-h">Responder</h3>';
+  const V3 = K.v3, l = LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual, status:'novo' }, et = etapaDe(l), ord = ORDEM_ET[et] ?? 0;
+  const nt = K.nutrir(b.d), r = b.d.respostas || {};
+  b.extra = { h1:'', h2:'', ...(b.extra || {}), lv:codigoAtual, link:`${AGENDA}?notes=${encodeURIComponent(codigoAtual)}`, teste:nt.teste, tema:nt.tema,
+    desejo:c.vars.futuro || null, incomodo:c.vars.espelho || null, idade:b.d.idade != null ? `${b.d.idade} anos` : null };
+  if (!b.r3) b.r3 = R3_DE[et] || '';
+  let h = '<h3 class="kit-h">Responder passo a passo</h3>';
   h += `<div class="kit-faixa ${c.cor}"><b>${esc(c.titulo[0].toUpperCase() + c.titulo.slice(1))}</b><span>${esc(c.simples)}</span></div>`;
   if (c.refazer) h += `<div class="kit-refazer"><b>Foto duvidosa: peça para refazer</b><p>${esc(c.motivo)}</p>
     ${kitMsg(atalho(c.atalhoRefazer), i, { rotulo:'Atalho /' + c.atalhoRefazer, quando:'Mandar este e parar aí' })}</div>`;
   h += `<label class="kit-nome-l"><span>Nome<small>${NOME_G ? 'veio do teste' : 'só nesta tela'}</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
-  const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
-  h += `<button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>${fotos.length ? 'Modo revisão (iPad: caneta e zoom)' : 'Modo revisão (sem fotos: apagadas ou não carregaram)'}</button>
-    <p class="kit-sub">Idade do rosto no vídeo: ${esc(c.idadeFaixa.txt)}</p>`;
-  const ms = K.mensagens(c);
-  h += ms.map(m => kitMsg(m.texto, i, { n:m.ordem || '', rotulo:m.rotulo, quando:m.quando, nota:m.nota })).join('');
+  const marca = (e, t) => `<button type="button" class="pi-marca${ord >= ORDEM_ET[e] && (et === e || ORDEM_ET[e] < 5) ? ' feito' : ''}" data-et="${e}" data-kb="${i}">${et === e ? '✓ ' : ''}${esc(t)}</button>`;
+  const passo = (n, tit, corpo) => { const agora = PASSO_DE[et] === n && ord < 5 || (n === 3 && ord === 5 && et !== 'comprou'), feito = PASSO_DE[et] > n || (n === 4 && et === 'comprou');
+    return `<details class="passo${agora ? ' agora' : ''}${feito ? ' feito' : ''}" data-p="${n}"${agora ? ' open' : ''}><summary><span class="kit-n" aria-hidden="true">${n}</span>${esc(tit)}<small>${agora ? 'agora' : feito ? 'feito' : ''}</small></summary><div>${corpo}</div></details>`; };
+  // 1 · áudio antes
+  h += passo(1, 'Áudio antes', kitMsg(V3.audioTexto, i, { rotulo:'Texto (mande e, logo depois, o áudio)' })
+    + kitMsg(V3.audioFala, i, { raw:true, rotulo:'Fala do áudio', quando:'Grave uma vez e reenvie sempre o mesmo' }) + `<p class="kit-sub">${esc(V3.audioDica)}</p>` + marca('audio', 'Marcar: áudio enviado'));
+  // 2 · gravar a análise
+  const fotos = FOTOS.filter(f => f.grupo === b.g && f.url), resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
+  h += passo(2, 'Gravar a análise', `<label class="pi-resp-l">Resposta dela ao áudio (opcional: abre o roteiro)<textarea class="pi-resp" rows="2" maxlength="200" placeholder="do jeito que você vai falar: quer se cuidar antes dos 50">${esc(resp)}</textarea></label>
+    <button type="button" class="ga-abrir" data-kb="${i}" ${fotos.length && window.GRAVADOR ? '' : 'disabled'}>${fotos.length ? 'Gravar análise' : 'Gravar análise (sem fotos: apagadas ou não carregaram)'}</button>
+    <p class="kit-sub">O gravador usa o roteiro acima (com a variação escolhida) como teleprompter. Idade do rosto no vídeo: ${esc(c.idadeFaixa.txt)}</p>
+    <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>Modo revisão (iPad: caneta e zoom)</button>`
+    + kitMsg(V3.depoisVideo, i, { rotulo:'Logo depois do vídeo, por escrito' }) + marca('analisei', 'Marcar: análise enviada'));
+  // 3 · ela respondeu
+  const R3 = [['sim', 'Sim'], ['agora', 'Agora não'], ['nao', 'Não quis'], ['sumiu', 'Sumiu']];
+  let c3 = `<div class="pi-r3" role="group" aria-label="O que ela respondeu">${R3.map(([k, t]) => `<button type="button" data-r3="${k}" data-kb="${i}" aria-pressed="${b.r3 === k}">${t}</button>`).join('')}</div>`;
+  if (b.r3 === 'sim') c3 += `<div class="pi-campos"><label>Horário 1<input class="kit-var" data-kb="${i}" data-v="h1" value="${esc(b.extra.h1)}" placeholder="amanhã às 19h" autocomplete="off"></label><label>Horário 2<input class="kit-var" data-kb="${i}" data-v="h2" value="${esc(b.extra.h2)}" placeholder="sexta às 8h" autocomplete="off"></label></div>`
+    + kitMsg(V3.convite, i, { rotulo:'Convite (2 horários em até 3 dias)' }) + `<p class="kit-sub">${esc(V3.conviteAgora)} O link já leva o código ${esc(codigoAtual)} nas notas da agenda.</p>`
+    + `<details class="pi-preco"><summary>Se ela perguntar o preço por escrito (proposta do Claude, ainda não aprovada por você)</summary><div>${kitMsg(V3.preco, i, {})}</div></details>`
+    + marca('conversa', 'Marcar: conversa marcada');
+  else if (b.r3 === 'agora') c3 += kitMsg(V3.nutrir, i, { rotulo:'Nutrir: o próximo teste pelo desejo dela' }) + `<p class="kit-sub">Desejo: ${esc(c.vars.futuro || 'não respondeu')} → ${esc(nt.teste)}.</p>`;
+  else if (b.r3 === 'nao') c3 += kitMsg(V3.naoQuis, i, { rotulo:'Não quis' }) + '<p class="kit-sub">Não insistir.</p>';
+  else if (b.r3 === 'sumiu') c3 += kitMsg(V3.toque1, i, { rotulo:'Dia 1, por escrito' }) + `<div class="kit-m audio"><div class="kit-rot"><b>Dia 3, áudio</b></div><div class="kit-txt">${esc(V3.toque3)}</div></div>`
+    + kitMsg(V3.toque7, i, { rotulo:'Dia 7, por escrito' }) + marca('sumiu', 'Marcar: sumiu (depois dos 3 toques)');
+  else c3 += '<p class="kit-sub">Toque no que ela respondeu: o texto certo aparece e a etapa fica marcada.</p>';
+  h += passo(3, 'Ela respondeu', c3);
+  // 4 · a conversa
+  h += passo(4, 'A conversa (15 min)', `<button type="button" class="pi-conv" data-kb="${i}">Abrir o roteiro da conversa</button>
+    <p class="kit-sub">Depois da conversa:</p><div class="pi-r3" style="grid-template-columns:repeat(3,1fr)">${[['comprou', 'Comprou'], ['nutrir', 'Nutrir'], ['nao_quis', 'Não quis']].map(([e, t]) => `<button type="button" class="pi-depois" data-et="${e}" data-kb="${i}" aria-pressed="${et === e}">${t}</button>`).join('')}</div>`);
   h += `<details><summary>Ver atalhos do WhatsApp (${K.atalhos.length})</summary><div>
     <p class="kit-sub">Para cadastrar em WhatsApp Business › Configurações › Ferramentas comerciais › Respostas rápidas. O app não preenche {nome}.</p>
     ${K.atalhos.map(a => kitMsg(a.texto, i, { raw:true, rotulo:'/' + a.id, quando:[a.quando, a.nota].filter(Boolean).join(' · ') })).join('')}</div></details>`;
   return h;
 }
+function redesenhaKitsPI(){
+  document.querySelectorAll('#out .kit[data-kb]').forEach(sec => {
+    const i = +sec.dataset.kb; if (KB[i]?.t !== 'pele-idade') return;
+    const abertos = [...sec.querySelectorAll('details[open]')].map(d => d.dataset.p).filter(Boolean);
+    sec.innerHTML = kitCorpo(i);
+    abertos.forEach(p => sec.querySelector(`details.passo[data-p="${p}"]`)?.setAttribute('open', ''));
+  });
+}
+// a faixa do vídeo: o dado do bloco que ela está ouvindo (rótulos do cartão; sem número quando a régua não deixa)
+const ESTUDO_PI = { cigarro:'Estudo: gêmeos idênticos (Guyuron 2009)', sol:'Estudo: gêmeos idênticos (Guyuron 2009)', metabolico:'Estudos: Gunn 2012 e Noordam 2011',
+  sono:'Estudo: Oyetakin-White 2015', movimento:'Estudo: Mayes 2010', gemeos:'Estudo: gêmeos de 70 anos ou mais (Christensen 2009)' };
+function faixaPI(id, b){
+  const d = b.d, r = d.respostas || {}, c = b.c, mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = d.idade ?? r.idade;
+  const v = k => r[k] != null && r[k] !== '' ? valPI(k, r[k], d) : null;
+  if (id === 'abertura') return window.ROTEIRO?.respostaDe(codigoAtual) ? null : r.espelho && r.espelho !== 'nada' ? 'No espelho: ' + v('espelho') : r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
+  if (id === 'idade') return c.idadeFaixa?.dizer && mF ? `Rosto: ${mF[1]} a ${mF[2]} anos · você tem ${idade}` : idade != null && c.caso !== 'sem_numero' ? `Você tem ${idade} anos` : null;
+  if (id === 'bem'){ const bons = [r.cigarro === 'nunca' && 'nunca fumou', r.sol === 'quase_nenhum' && 'quase sem sol no rosto', r.metabolico === 'nao_medi' && 'pressão e glicose normais', r.sono === 'bem' && 'dorme bem',
+    ['2a5', 'mais5'].includes(r.movimento) && 'se mexe ' + v('movimento')].filter(Boolean); return bons.length ? 'O que está bem: ' + bons.slice(0, 2).join(' · ') : null; }
+  const m = /^habito-(\w+)$/.exec(id || ''); if (m && ROTPI[m[1]]) return `${ROTPI[m[1]][0]}: ${v(m[1]) || '—'}`;
+  if (id === 'mecanismo'){ const hab = ['cigarro', 'sol', 'metabolico', 'sono', 'movimento'].find(k => (b.ids || []).includes('habito-' + k)); return ESTUDO_PI[hab || 'gemeos']; }
+  if (id === 'ponte') return r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
+  return null;
+}
+function abreGravador(i){
+  const b = KB[i]; if (!b || !window.GRAVADOR) return;
+  const fotos = fotosDoGrupo(b.g, b.e).filter(f => f.url).map(f => ({ rot:f.rot, url:f.url, chave:f.chave }));
+  const passos = window.ROTEIRO?.passosReact(b.e) || [], nome = KIT_NOME.trim();
+  b.ids = passos.map(p => p.id);
+  const blocos = passos.map(p => ({ titulo:p.bloco, fala:KITS.preencher(p.fala, { ...b.c.vars, nome:nome || null }), faixa:faixaPI(p.id, b) }));
+  const c = codigoAtual, volta = document.querySelector(`.ga-abrir[data-kb="${i}"]`);
+  GRAVADOR.abrir({ codigo:c, fotos, blocos, foto:'frente', aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
+}
+// a conversa de 15 min numa tela legível (v3, etapa 4)
+function abreConversa(i){
+  const b = KB[i], K = KITS['pele-idade']; if (!b || !K) return;
+  const vars = { ...b.c.vars, ...(b.extra || {}), resposta:window.ROTEIRO?.respostaDe(codigoAtual) || null, nome:KIT_NOME.trim() || null };
+  const tx = t => KITS.pedacos(t, vars).map(p => p.falta ? `<mark>${esc(p.s)}</mark>` : esc(p.s)).join('');
+  $('conv-corpo').innerHTML = K.conversa.map(x => `<section class="conv-s"><h3><span>${esc(x.min === 'antes' ? 'antes' : x.min + ' min')}</span>${esc(x.titulo)}</h3>
+    ${x.fala ? `<p class="conv-f">“${tx(x.fala)}”</p>` : ''}${x.itens ? `<ul>${x.itens.map(t => `<li>${tx(t)}</li>`).join('')}</ul>` : ''}${x.nota ? `<p class="conv-n">${tx(x.nota)}</p>` : ''}</section>`).join('');
+  $('conv').hidden = false; document.body.style.overflow = 'hidden'; $('conv').scrollTop = 0; $('conv-fechar').focus();
+}
+$('conv-fechar').onclick = () => { $('conv').hidden = true; document.body.style.overflow = ''; document.querySelector('.pi-conv')?.focus(); };
 function kitCopiar(btn){
   const k = +btn.dataset.k, txt = kitTexto(k), el = $('km-' + k);
   const feito = msg => { btn.textContent = msg; btn.classList.add('feito'); clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('feito'); }, 1500); };
@@ -1073,9 +1297,20 @@ $('out').addEventListener('click', ev => {
   const cp = ev.target.closest('.kit-copiar'); if (cp){ kitCopiar(cp); return; }
   const pf = ev.target.closest('.kit-perfil button');
   if (pf){ const i = +pf.dataset.kb; KB[i].forcar = pf.dataset.perfil; const sec = pf.closest('.kit'); sec.innerHTML = kitCorpo(i); sec.querySelector(`.kit-perfil [data-perfil="${pf.dataset.perfil}"]`)?.focus(); return; }
-  const rc = ev.target.closest('.kit-react'); if (rc) reactAbrir(+rc.dataset.react, rc);
+  const rc = ev.target.closest('.kit-react'); if (rc){ reactAbrir(+rc.dataset.react, rc); return; }
+  // 12/11: passo a passo da pele nova
+  const mk = ev.target.closest('.pi-marca, .pi-depois'); if (mk){ if (mk.classList.contains('pi-depois')) KB[+mk.dataset.kb].r3 = ''; marcar(codigoAtual, mk.dataset.et); return; }
+  const r3 = ev.target.closest('.pi-r3 button[data-r3]');
+  if (r3){ const b = KB[+r3.dataset.kb]; if (!b) return; b.r3 = r3.dataset.r3; redesenhaKitsPI();
+    const et = R3_ETAPA[b.r3]; if (et) marcar(codigoAtual, et); return; }
+  const ga = ev.target.closest('.ga-abrir'); if (ga){ abreGravador(+ga.dataset.kb); return; }
+  const cv = ev.target.closest('.pi-conv'); if (cv) abreConversa(+cv.dataset.kb);
 });
+let respT = 0;
 $('out').addEventListener('input', ev => {
+  if (ev.target.classList.contains('kit-var')){ const b = KB[+ev.target.dataset.kb]; if (!b) return; (b.extra ||= {})[ev.target.dataset.v] = ev.target.value.trim();
+    document.querySelectorAll('.kit-txt[id^="km-"]').forEach(el => { const k = +el.id.slice(3); if (KM[k] && !KM[k].raw) el.innerHTML = kitHtml(k); }); return; }
+  if (ev.target.classList.contains('pi-resp')){ const v = ev.target.value; clearTimeout(respT); respT = setTimeout(() => window.ROTEIRO?.resposta(codigoAtual, v), 400); return; }
   if (!ev.target.classList.contains('kit-nome')) return;
   KIT_NOME = ev.target.value;
   document.querySelectorAll('.kit-nome').forEach(x => { if (x !== ev.target) x.value = KIT_NOME; });

@@ -290,6 +290,9 @@
   "_sobre": "04/11/2026 · livowa.com/pele (funnelId pele-idade): a idade que o rosto aparenta ao lado da idade real, e a vitalidade pelas respostas. Não é análise de pele: nada de produto, rotina, procedimento ou programa (regras 4, 5 e 23). Frases com número só de livowa-empresa/tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11); no máximo um número de estudo por vídeo, no mecanismo (regra 15).",
   "abertura": {
    "f": "regra 6 (o nome e o que ela respondeu, nas palavras dela); tarefas/pele-idade-vitalidade/quiz.md §3.3 (o vídeo abre repetindo o 'daqui a 10 anos'); v3 (04/11 noite): com a dor do espelho, abre por ela (pesquisa/voz-pele-potencia.md, tema A: espelho, cara de cansada, rosto caindo, papada, pálpebra); CL pdf 16",
+   "com_resposta": [
+    "{nome}, você me contou que fez o teste porque {resposta}."
+   ],
    "com_espelho": [
     "{nome}, aqui é o Lucca. Você me contou que o que mais te incomoda no espelho é {espelho}.",
     "{nome}, aqui é o Lucca. Você disse que, no espelho, o que mais te incomoda hoje é {espelho}."
@@ -456,6 +459,21 @@
    "com_futuro": [
     "Daqui a 10 anos você quer {futuro}. O rosto é a parte que dá para ver; força, sono e exames eu só sei medindo.",
     "A foto mostra a idade por fora. Daqui a 10 anos você quer {futuro}, e o resto do corpo eu só sei medindo."
+   ]
+  },
+  "interesse": {
+   "f": "12/11 (v3, decisão d-20261112-proximo-passo-analise, nas palavras do Lucca): o vídeo fecha com a pergunta de interesse; liga o desejo e o incômodo e pede só interesse, sem preço (tarefas/venda-pele-conversa/roteiro-v3-1211.md, Etapa 2, bloco 6). Substitui a pergunta de 1 toque no pele-idade; o 'o que você já tentou?' vai para a conversa.",
+   "com_ambos": [
+    "{nome}, isso dá para trabalhar: o que pesa por dentro e {espelho}, pensando em {futuro}. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+   ],
+   "sem_incomodo": [
+    "{nome}, isso dá para trabalhar, pensando em {futuro}. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+   ],
+   "sem_desejo": [
+    "{nome}, isso dá para trabalhar: o que pesa por dentro e {espelho}. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+   ],
+   "sem_nada": [
+    "{nome}, isso dá para trabalhar. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
    ]
   }
  }
