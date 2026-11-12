@@ -413,7 +413,8 @@ function montarResultado(){
     props:{ codigo:meuCodigo(), perfil:R.acontece, imc:m?.imc ?? null, faixa:m?.faixa ?? null, sinais:S.map(s => s.id).join('+') || 'nenhum', respostas:respostasLimpa() } });
   window.__emagResultado?.({ m, perfil:R.acontece, sinais:S.map(s => s.id) });
 }
-function respostasLimpa(){ const { nome, faseAuto, ...r } = R; const o = { ...r }; VARIAS.forEach(k => { o[k] = R[k].join('+'); }); return o; }
+// 12/11 (Lucca): o primeiro nome vai em respostas.nome, com a mesma proteção das respostas (só a Caixa lê, pela chave).
+function respostasLimpa(){ const { nome, faseAuto, ...r } = R; const o = { ...r, nome:nomeBonito().slice(0, 40) }; VARIAS.forEach(k => { o[k] = R[k].join('+'); }); return o; }
 
 
 // =====================================================================

@@ -585,7 +585,8 @@ function montarResultado(j, f){
             sinais:Object.entries(sinais).map(([id, s]) => ({ id, visivel:s.visivel, nivel:s.visivel ? s.nivel : null, ...(s.comedoes != null ? { comedoes:s.comedoes } : {}), ...(s.regioes.length ? { regioes:s.regioes.join('+') } : {}), ...(s.tipo ? { tipo:s.tipo } : {}) })) } });
   if (window.__pele2Resultado) window.__pele2Resultado(j);
 }
-function respostasLimpa(){ const { nome, ...r } = R; return { ...r, incomoda:R.incomoda.join('+') }; }
+// 12/11 (Lucca): o primeiro nome vai em respostas.nome, com a mesma proteção das respostas (só a Caixa lê, pela chave).
+function respostasLimpa(){ const { nome, ...r } = R; return { ...r, incomoda:R.incomoda.join('+'), nome:nomeBonito().slice(0, 40) }; }
 
 // =====================================================================
 // FECHAMENTO (02/11, v2): o resultado tem um botão só (o Dr. Lucca explica); o link do lembrete de 4 semanas saiu (02/11).

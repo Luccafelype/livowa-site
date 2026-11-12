@@ -517,7 +517,7 @@ function montarResultado(j, f){
   $('r-ponte-tit').textContent = tituloCTA();
   $('r-ponte-txt').textContent = textoCTA();
 
-  // complete: o que a Caixa lê (codigo, idade, sexo, faixa, caso, respostas, angulos/enviadas para as 3 fotos, desejo)
+  // complete: o que a Caixa lê (codigo, idade, sexo, faixa, caso, respostas com o primeiro nome, angulos/enviadas para as 3 fotos, desejo)
   track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:caso,
     props:{ codigo:meuCodigo(), idade, sexo:R.sexo || null, faixa:daParaDizer ? `${fx.min} a ${fx.max} anos` : null, caso, respostas:respostasLimpa(),
             desejo:desejo() || null, espelho_regiao:dorId, confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null, origem:fr.origem,
@@ -526,7 +526,9 @@ function montarResultado(j, f){
             sinais:Object.entries(sinais).map(([id, s]) => ({ id, visivel:s.visivel, nivel:s.visivel ? s.nivel : null })) } });
   if (window.__peleResultado) window.__peleResultado(j);
 }
-function respostasLimpa(){ const { nome, ...r } = R; return r; }
+// 12/11 (Lucca: "por que não fica aqui? só ficar seguro"): o primeiro nome vai em respostas.nome, junto das respostas e
+// com a mesma proteção delas (o site só grava; quem lê é a Caixa, pela chave). '' = pulou o nome. O ntfy segue sem nome.
+function respostasLimpa(){ const { nome, ...r } = R; return { ...r, nome:nomeBonito().slice(0, 40) }; }
 // 11/11 23h (Lucca: “chamada fraquíssima, pouco apelo, letras miúdas”): título curto em pergunta, com o nome e o incômodo
 // do espelho nas palavras do botão que ela tocou; no “pareço mais velha”, com os números dela quando o rosto deu mais
 // (o público diz com número: “tenho 43 mas parece que tenho 80”, voz-pele-potencia.md A6). Texto: o que o Dr. Lucca faz

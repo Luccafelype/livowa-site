@@ -92,6 +92,8 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .fotos-pe button.conf{background:var(--r);color:#fff;border-color:var(--r)}
 .mais{width:100%;background:var(--s);color:var(--a);border:1.5px solid var(--l)}
 .ig{font-weight:700;font-size:1.15rem;color:var(--a);overflow-wrap:anywhere}
+.quem{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
+.nm-l{font-weight:700;font-size:1.15rem;overflow-wrap:anywhere}
 .sub-ig{font-size:.8rem;color:var(--m);margin-top:-4px}
 /* Portas (01/11) */
 .porta{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;flex-direction:column;gap:12px}
@@ -378,9 +380,9 @@ function desenhaCaixa(){
   $('lista').innerHTML = xs.map(l => {
     const quando = new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
     const funis = [...new Set((l.partes || []).map(NOME_FUNIL))];
-    const canais = (l.canais || []).map(c => c === 'whatsapp' ? 'WhatsApp' : 'Direct');
+    const canais = (l.canais || []).map(c => c === 'whatsapp' ? 'WhatsApp' : 'Direct'), nm = nomeLead(l);
     return `<article class="lead ${l.status === 'novo' ? 'novo' : ''}" data-c="${esc(l.codigo)}">
-      <div class="topo">${l.instagram ? `<span class="ig">@${esc(l.instagram)}</span>` : `<span class="cod">${esc(l.codigo)}</span>`}<span class="quando">${esc(quando)}</span></div>
+      <div class="topo"><span class="quem">${nm ? `<b class="nm-l">${esc(nm)}</b>` : ''}${l.instagram ? `<span class="ig">@${esc(l.instagram)}</span>` : `<span class="cod">${esc(l.codigo)}</span>`}</span><span class="quando">${esc(quando)}</span></div>
       ${l.instagram ? `<div class="sub-ig">veio pelo Direct · ${esc(l.codigo)}</div>` : l.lv ? `<div class="sub-ig">veio pelo Direct (o @ aparece quando o OpenReply responder)</div>` : ''}
       <div class="tags">${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
         <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
@@ -680,6 +682,13 @@ const ROT2 = {
   objetivo:['Objetivo', { confianca:'Me sentir bem e confiante com a minha pele', sem_maquiagem:'Sair sem maquiagem nem filtro, sem me preocupar', sem_filtro:'Sair sem filtro na foto', fotos:'Gostar de me ver em foto de perto', prevenir:'Cuidar agora, antes que piore', parar_gastar:'Parar de gastar com o que não funciona', outro:'O que você me contar' }],
 };
 const ALERTA2 = { seguranca:['gravida', 'amamentando', 'tentando'], alergia:['sensivel', 'reacao'] };
+// 12/11 (Lucca: "por que não fica aqui? só ficar seguro"): o primeiro nome vem em respostas.nome do 'complete' (pele,
+// pele2, emagrecimento), com a mesma proteção das respostas e das fotos (só a edge, com a chave, lê). '' = não informou
+// (a pele tem Pular); sem a chave = resultado de antes de 12/11, quando o nome não era guardado.
+const nomeDe = e => { const n = e?.dados?.respostas?.nome; return typeof n === 'string' ? n.trim().slice(0, 40) : null; };
+const nomeLead = l => (l?.partes || []).map(nomeDe).find(Boolean) || '';
+const linhaNome = e => { const n = nomeDe(e);
+  return `<div class="l"><span>Nome</span><b>${n ? esc(n) : n === '' ? 'não informou' : 'não guardado (resultado anterior a 12/11); veja no Direct ou no WhatsApp'}</b></div>`; };
 function cartaoPele2(e, quando, g){
   const d = e.dados || {}, sin = window.KITS ? KITS.pele2.norm(d).sinais : (d.sinais || []), S = Object.fromEntries(sin.map(s => [s.id, s]));
   // itens com grau, um por sinal (espinhas e cravos separados); acne vai para cada região que a análise marcou
@@ -705,7 +714,7 @@ function cartaoPele2(e, quando, g){
   const r = d.respostas || {};
   const val = (k, v) => k === 'incomoda' ? String(v || '').split('+').filter(Boolean).map(x => ROT2.incomoda[1][x] || x).join(', ') : (ROT2[k][1][v] ?? v);
   const resp = `<div class="p2"><h3>Respostas do quiz</h3>
-    <div class="l"><span>Nome</span><b>não vai para o servidor (fica só no celular dela); veja no Direct ou no WhatsApp</b></div>
+    ${linhaNome(e)}
     ${Object.keys(ROT2).map(k => `<div class="l${(ALERTA2[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROT2[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(val(k, r[k])) : '—'}</b></div>`).join('')}${respostasExtras(r, Object.keys(ROT2))}</div>`;
   const ORIG = { camera:'câmera', galeria:'galeria' };
   const sobre = [['Faixa de idade da pele', d.faixa], ['Confiança', d.confianca], ['Qualidade da foto', d.qualidade], ['Fotos enviadas', d.enviadas],
@@ -739,7 +748,7 @@ function cartaoPeleIdade(e, quando, g){
   const caso = c ? c.titulo : (d.caso || '');
   const res = d.faixa ? `Rosto aparenta ${d.faixa}${d.idade != null ? ` · tem ${d.idade}` : ''}${caso ? ` · ${caso}` : ''}` : `Sem número na página${d.idade != null ? ` · tem ${d.idade}` : ''}`;
   const resp = `<div class="p2"><h3>Respostas do quiz</h3>
-    <div class="l"><span>Nome</span><b>não vai para o servidor (fica só no celular dela); veja no Direct ou no WhatsApp</b></div>
+    ${linhaNome(e)}
     <div class="l"><span>Idade real</span><b>${d.idade != null ? esc(d.idade) + ' anos' : '—'}</b></div>
     ${Object.keys(ROTPI).map(k => `<div class="l${(ALERTAPI[k] || []).includes(r[k]) ? ' alerta' : ''}"><span>${esc(ROTPI[k][0])}</span><b>${r[k] != null && r[k] !== '' ? esc(valPI(k, r[k], d)) : '—'}</b></div>`).join('')}${respostasExtras(r, [...Object.keys(ROTPI), 'espelho_texto'])}</div>`;
   const frases = String(d.frases || '').split('+').filter(Boolean).map(x => FRASEPI[x] || x);
@@ -821,7 +830,7 @@ const DET = {
       ['forca', 'Exercício de força', { '0':'ainda não faz', '1':'1 vez por semana', '2mais':'2 vezes ou mais por semana' }],
       ['proteina', 'Proteína (até 03/11)', { '1menos':'em 1 refeição ou menos', '2':'em 2 refeições', '3mais':'em 3 refeições ou mais' }],
       ['objetivo', 'Objetivo', { roupas:'voltar a usar as roupas que gosta', nao_voltar:'parar de engordar tudo de novo', disposicao:'ter mais disposição no dia a dia', saude:'cuidar da saúde e dos exames', corpo:'se sentir bem com o corpo', outro:'outro' }]],
-    ocultoResp:['nome', 'faseAuto'],
+    ocultoResp:['nome', 'faseAuto'], nome:true,   // 12/11: o nome vai na linha Nome (linhaNome), no topo das respostas
   },
   'teste-pernas': {
     res:(e, d) => d.faixa || e.resumo ? `Pernas com a força de quem tem ${d.faixa || e.resumo}` : '',
@@ -875,7 +884,7 @@ function detalhe(e){
     + Object.keys(d).filter(k => !usados.has(k)).map(k => linhas(humano(k), d[k], null, d)).join('');
   if (r){
     const rs = S.respostas || [], conh = rs.map(x => x[0]), ocu = S.ocultoResp || [];
-    const so = rs.filter(([k]) => !(k === 'fase' && r.sexo === 'm' && r.fase === 'nenhuma')   // homem: fase vem 'nenhuma' sozinha
+    const so = (S.nome ? linhaNome(e) : '') + rs.filter(([k]) => !(k === 'fase' && r.sexo === 'm' && r.fase === 'nenhuma')   // homem: fase vem 'nenhuma' sozinha
         && !(k === 'acontece' && d.perfil && r.acontece === d.perfil))                       // já está no alto como perfil
       .map(x => um(x, r)).join('') + Object.keys(r).filter(k => !conh.includes(k) && !ocu.includes(k)).map(k => linhas(humano(k), r[k], null, d)).join('');
     if (so) h += `<div class="p2"><h3>Respostas do teste</h3>${so}</div>`;
@@ -933,6 +942,9 @@ async function ver(c){
     const j = await r.json();
     if (!j.ok) return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`;
     FOTOS = j.fotos || []; KB = []; KM = []; window.ROTEIRO?.zerar(c);
+    // 12/11: o kit e o roteiro começam com o nome guardado no teste; outro código não herda o nome do anterior
+    NOME_G = (j.lista || []).map(nomeDe).find(Boolean) || '';
+    if (c !== KIT_COD){ KIT_COD = c; KIT_NOME = NOME_G; } else if (!KIT_NOME.trim()) KIT_NOME = NOME_G;
     const usados = new Set();
     if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return $('out').innerHTML = `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`; }
     $('out').innerHTML = j.lista.map(e => {
@@ -982,7 +994,7 @@ $('out').addEventListener('click', async ev => {
   } catch { b.disabled = false; b.classList.remove('conf'); b.textContent = 'Não apagou. Tente de novo'; b.dataset.t = b.textContent; }
 });
 // ---------- Kit de resposta (01/11): faixa, mensagens prontas e modo react; tudo local, nada vai para o servidor ----------
-let KB = [], KM = [], KIT_NOME = '', R = null;   // KB = blocos da tela; KM = mensagens desenhadas; KIT_NOME só nesta tela
+let KB = [], KM = [], KIT_NOME = '', KIT_COD = '', NOME_G = '', R = null;   // KB = blocos da tela; KM = mensagens desenhadas; KIT_NOME começa com o nome guardado (NOME_G, 12/11) e o que ele digitar fica só nesta tela
 const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'pele-idade' ? 'pele-idade' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas' : null;
 function kitBloco(e){
   const t = window.KITS && kitTeste(e); if (!t) return '';
@@ -1011,7 +1023,7 @@ function kitCorpo(i){
   h += `<div class="kit-faixa ${pele ? (c.perfil === 'A' ? 'ok' : 'meh') : COR_FAIXA[c.faixa] || 'meh'}"><b>${pele ? 'Perfil ' + esc(c.titulo) : c.faixa ? `Faixa ${c.faixa} de 4 · ${esc(c.titulo)}` : 'Faixa não calculada'}</b><span>${esc(c.simples || '')}</span></div>`;
   if (c.refazer) h += `<div class="kit-refazer"><b>${pele ? 'Foto duvidosa' : 'Medição duvidosa'}: peça para refazer</b><p>${esc(c.motivo)}</p>
     ${kitMsg(atalho(c.atalhoRefazer), i, { rotulo:'Atalho /' + c.atalhoRefazer, quando:'Mandar este e parar aí' })}</div>`;
-  h += `<label class="kit-nome-l"><span>Nome<small>só nesta tela</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
+  h += `<label class="kit-nome-l"><span>Nome<small>${NOME_G ? 'veio do teste' : 'só nesta tela'}</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
   if (pele){
     const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
     h += `<div><div class="kit-perfil" role="group" aria-label="Perfil">${Object.keys(K.perfis).map(p => `<button type="button" data-perfil="${p}" data-kb="${i}" aria-pressed="${c.perfil === p}">${p}</button>`).join('')}</div>
@@ -1036,7 +1048,7 @@ function kitCorpoPI(i, b, K, c, atalho){
   h += `<div class="kit-faixa ${c.cor}"><b>${esc(c.titulo[0].toUpperCase() + c.titulo.slice(1))}</b><span>${esc(c.simples)}</span></div>`;
   if (c.refazer) h += `<div class="kit-refazer"><b>Foto duvidosa: peça para refazer</b><p>${esc(c.motivo)}</p>
     ${kitMsg(atalho(c.atalhoRefazer), i, { rotulo:'Atalho /' + c.atalhoRefazer, quando:'Mandar este e parar aí' })}</div>`;
-  h += `<label class="kit-nome-l"><span>Nome<small>só nesta tela</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
+  h += `<label class="kit-nome-l"><span>Nome<small>${NOME_G ? 'veio do teste' : 'só nesta tela'}</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
   const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
   h += `<button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>${fotos.length ? 'Modo revisão (iPad: caneta e zoom)' : 'Modo revisão (sem fotos: apagadas ou não carregaram)'}</button>
     <p class="kit-sub">Idade do rosto no vídeo: ${esc(c.idadeFaixa.txt)}</p>`;
