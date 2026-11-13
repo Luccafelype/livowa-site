@@ -439,6 +439,8 @@ const NOME_PI = 'Pele: idade e vitalidade';   // livowa.com/pele (funnelId pele-
 const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'pele-idade' ? NOME_PI : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
 let LEADS = [], filtro = 'fila', CARREGOU = false;
 const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '');
+// 12/11 (treino do Lucca com leads fictícios: utm_source=teste_treino, utm_campaign=treino): filtro próprio, fora da fila real e dos números
+const ehTreino = l => /treino/i.test(l.origem?.source || '') || /treino/i.test(l.origem?.campaign || '');
 function origem(o){
   if (!o || !o.source) return 'Direto';
   const s = o.source, c = o.campaign || '';
@@ -469,12 +471,16 @@ function desenhaCaixa(){
   const reais = LEADS.filter(l => !ehTeste(l)), n = e => reais.filter(l => etapaDe(l) === e).length;
   const naFila = reais.filter(l => FILA.includes(etapaDe(l)));
   $('n-esperam').textContent = naFila.length; $('n-conversa').textContent = n('conversa'); $('n-nutrir').textContent = n('nutrir');
-  const fs = [['fila', 'Responder agora', naFila.length], ...ETAPAS.map(([e, t]) => [e, t, n(e)]).filter(([e, , q]) => q || filtro === e), ['todos', 'Todos', reais.length], ['testes', 'Mostrar testes', null]];
+  const treino = LEADS.filter(ehTreino);
+  const fs = [['fila', 'Responder agora', naFila.length], ...(treino.length || filtro === 'treino' ? [['treino', 'Treino', treino.length]] : []),
+    ...ETAPAS.map(([e, t]) => [e, t, n(e)]).filter(([e, , q]) => q || filtro === e), ['todos', 'Todos', reais.length], ['testes', 'Mostrar testes', null]];
   $('filtro').innerHTML = fs.map(([f, t, q]) => `<button type="button" data-f="${f}" aria-pressed="${filtro === f}">${esc(t)}${q != null ? ` <small>${q}</small>` : ''}</button>`).join('');
+  // Treino: como a fila (mais antigo primeiro, próxima ação, passo a passo), mas com todas as etapas, para ele ir até o fim
   const xs = filtro === 'fila' ? [...naFila].sort((a, b) => new Date(a.chegou) - new Date(b.chegou))
+    : filtro === 'treino' ? [...treino].sort((a, b) => new Date(a.chegou) - new Date(b.chegou))
     : filtro === 'testes' ? LEADS : filtro === 'todos' ? reais : reais.filter(l => etapaDe(l) === filtro);
-  let h = xs.length ? xs.map(l => cartaoLead(l, filtro === 'fila')).join('')
-    : `<p class="aviso">${filtro === 'fila' ? 'Ninguém esperando você.' : filtro === 'todos' || filtro === 'testes' ? 'Nenhum lead nos últimos 30 dias.' : 'Ninguém nesta etapa.'}</p>`;
+  let h = xs.length ? xs.map(l => cartaoLead(l, filtro === 'fila' || filtro === 'treino')).join('')
+    : `<p class="aviso">${filtro === 'fila' ? 'Ninguém esperando você.' : filtro === 'treino' ? 'Nenhum lead de treino.' : filtro === 'todos' || filtro === 'testes' ? 'Nenhum lead nos últimos 30 dias.' : 'Ninguém nesta etapa.'}</p>`;
   // quem recebeu a análise e não respondeu: o toque do dia 1, 3 ou 7 (v3)
   if (filtro === 'fila'){
     const esp = reais.filter(l => etapaDe(l) === 'analisei' && diasDesde(l.atualizado_em) >= 1).sort((a, b) => new Date(a.atualizado_em) - new Date(b.atualizado_em));
@@ -498,7 +504,7 @@ function cartaoLead(l, naFila){
       <div class="prox">${esc(proxAcao(l, et))}</div>
       ${ap ? `<div class="apaga">${esc(ap)}</div>` : ''}
       <div class="tags"><span class="tag e">${esc(NOME_ET[et] || et)}</span>${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
-        <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
+        <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTreino(l) ? '<span class="tag t">treino</span>' : ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
       <div class="resumo">${esc(resumo(l))}</div>
       <div class="l-acoes"><button type="button" data-ver="${esc(l.codigo)}">${naFila ? 'Responder' : 'Ver resultado completo'}</button>
         ${copiaAudio ? `<button type="button" class="sec l-copiar" data-copia="audio" data-c="${esc(l.codigo)}">Copiar “recebi o seu teste”</button>` : ''}
