@@ -772,7 +772,7 @@ const atalhosPeleIdade = PI_ATALHOS.map(id => T.atalhos.pele.find(a => a.id === 
 // Texto de tarefas/venda-pele-conversa/roteiro-v3-1211.md (livowa-empresa), como está; a Caixa só encaixa as variáveis.
 // Regras: sem promessa, sem "consulta", sem "grátis", sem preço por escrito, sem prometer vídeo nem prazo.
 const V3_PI = {
-  audioTexto:'{nome}, recebi o seu teste ({lv}).',
+  audioTexto:'{nome}, recebi o seu teste ({lv}). Nas próximas horas eu te mando a sua análise.',   // 13/11: texto do Lucca ("Confirmar recebimento")
   audioFala:'Oi! Aqui é o Lucca. Recebi o seu teste e eu mesmo vou olhar com calma a sua foto e o que você respondeu. Enquanto isso, me conta: o que te fez fazer o teste agora?',
   audioDica:'Grave uma vez (uns 15 s, sem nome), deixe salvo e reenvie sempre o mesmo: grave na conversa "Eu" (você mesmo) do WhatsApp Business e encaminhe.',
   depoisVideo:'Você se interessaria? Pode me responder sim ou não, do jeito que for melhor para você.',

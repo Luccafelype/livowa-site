@@ -7,6 +7,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-title" content="CRM">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f2f4f1">
+<script>try { var t = localStorage.getItem('livowa_crm_tema'); if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t; } catch (e) { /* sem armazenamento: segue o sistema */ }</script>
 <title>CRM</title>
 <link rel="stylesheet" href="gravar-analise.css?v=20261112c">
 <style>
@@ -28,9 +30,19 @@
    a certa), fila "Responder agora" (mais antigo primeiro, próxima ação, 24 h, foto que apaga), passo a passo na pele nova
    com a copy da v3 (livowa-empresa/tarefas/venda-pele-conversa/roteiro-v3-1211.md) e o gravador da análise
    (gravar-analise.js: foto + câmera dele num círculo + faixa, teleprompter só na tela, nada sai do aparelho). */
-:root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;color-scheme:light}
+:root{--bg:#f2f4f1;--s:#fff;--fg:#141c17;--m:#5f6d65;--l:#dbe1dc;--a:#0d6a4d;--a2:#d9efe5;--w:#8a5200;--w2:#f7ecdc;--r:#9a2c1c;--on-a:#fff;--rb:#e3b9b1;color-scheme:light}
+/* 13/11 (pedido do Lucca): modo escuro. Segue o sistema; o botão sol/lua do topo força claro ou escuro (data-tema, guardado
+   no aparelho). Contraste AA conferido (scratchpad/contraste.py). O modo revisão do iPad e o gravador já são escuros. */
+@media (prefers-color-scheme:dark){:root:not([data-tema="claro"]){--bg:#0e1311;--s:#171e1a;--fg:#e6ece8;--m:#a0aea6;--l:#2d3732;--a:#5cc99c;--a2:#173a2d;--w:#e8ad57;--w2:#3a2b14;--r:#ff8f7a;--on-a:#04160e;--rb:#6e2c22;color-scheme:dark}}
+:root[data-tema="escuro"]{--bg:#0e1311;--s:#171e1a;--fg:#e6ece8;--m:#a0aea6;--l:#2d3732;--a:#5cc99c;--a2:#173a2d;--w:#e8ad57;--w2:#3a2b14;--r:#ff8f7a;--on-a:#04160e;--rb:#6e2c22;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,sans-serif}
+.topo{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.topo .tema{flex:none;width:40px;height:40px;padding:0;border-radius:50%;background:var(--s);color:var(--fg);border:1.5px solid var(--l);display:grid;place-items:center}
+.topo .tema svg{width:20px;height:20px}
+/* 13/11: a faixa do "copiado" no cartão (só o fato e o Desfazer; sem instrução) */
+.lc .l-faixa{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding:6px 6px 6px 12px;border-radius:10px;background:var(--a2);color:var(--a);font-weight:700}
+.lc .l-faixa button{background:transparent;color:var(--a);border:1.5px solid var(--a);padding:6px 14px;font-size:.92rem}
 main{max-width:560px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 16px 48px}
 h1{font-size:1.4rem;margin:0 0 12px}
 .abas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:4px;margin-bottom:14px}
@@ -38,7 +50,7 @@ h1{font-size:1.4rem;margin:0 0 12px}
 .abas button[aria-selected="true"]{background:var(--a);color:#fff}
 form{display:flex;gap:8px;margin-bottom:18px}
 input{flex:1;min-width:0;font:700 1.2rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;padding:12px;border:1.5px solid var(--l);border-radius:12px;background:var(--s);color:var(--fg)}
-button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;background:var(--a);color:#fff;cursor:pointer}
+button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;background:var(--a);color:var(--on-a);cursor:pointer}
 .conta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .conta div{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:10px 12px}
 .conta b{display:block;font-size:1.6rem;line-height:1.1}
@@ -64,7 +76,7 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .resumo{font-size:.95rem;margin:2px 0 8px}
 .st{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .st button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:10px 4px;font-size:.82rem;font-weight:600;border-radius:10px;line-height:1.2}
-.st button[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:#fff}
+.st button[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:var(--on-a)}
 .st button[data-s="nao_quis"][aria-pressed="true"]{background:var(--m);border-color:var(--m)}
 .ac{margin-top:8px;display:flex;flex-direction:column;gap:5px}
 .ac>span{font-size:.82rem;color:var(--m);display:flex;justify-content:space-between;gap:8px}
@@ -92,7 +104,7 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .interp{border-radius:14px;padding:12px;margin:8px 0 10px;background:var(--bg,#f2f4f1);border:1px solid var(--l)}
 .interp h3{margin:0 0 4px;font-size:.95rem}
 .interp.ok{border-color:#0d6a4d55}.interp.meh{border-color:#8a520066}.interp.bad{border-color:#a3271b66}
-.interp .alerta{margin:8px 0 0;color:#8a5200;font-weight:600;font-size:.9rem}
+.interp .alerta{margin:8px 0 0;color:var(--w);font-weight:600;font-size:.9rem}
 .interp .rot{margin:8px 0 0;font-size:.92rem}
 .interp .fonte{margin:6px 0 0;font-size:.78rem;color:var(--m)}
 .si .din{display:block;font-size:.9rem;margin-top:2px}
@@ -101,8 +113,8 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .fotos img{width:100%;border-radius:10px;background:#808080;display:block}
 .fotos.n1{max-width:240px;margin-inline:auto}
 .fotos-pe{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.85rem;color:var(--m);margin-bottom:6px}
-.fotos-pe button{background:var(--s);color:var(--r);border:1.5px solid #e3b9b1;padding:8px 14px;font-size:.9rem}
-.fotos-pe button.conf{background:var(--r);color:#fff;border-color:var(--r)}
+.fotos-pe button{background:var(--s);color:var(--r);border:1.5px solid var(--rb);padding:8px 14px;font-size:.9rem}
+.fotos-pe button.conf{background:var(--r);color:var(--s);border-color:var(--r)}
 .mais{width:100%;background:var(--s);color:var(--a);border:1.5px solid var(--l)}
 .ig{font-weight:700;font-size:1.15rem;color:var(--a);overflow-wrap:anywhere}
 .quem{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0}
@@ -392,7 +404,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </head>
 <body>
 <main>
-  <h1 id="tit">CRM</h1>
+  <div class="topo"><h1 id="tit">CRM</h1><button type="button" class="tema" id="tema" aria-label="Usar o modo escuro"></button></div>
   <div class="abas" role="tablist">
     <button role="tab" id="t-caixa" aria-selected="true">Leads</button>
     <button role="tab" id="t-cod" aria-selected="false">Código</button>
@@ -459,7 +471,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
 <script src="uso.js?v=20261113b"></script>
-<script src="kits.js?v=20261113b"></script>
+<script src="kits.js?v=20261113c"></script>
 <script src="roteiro.js?v=20261113a"></script>
 <script src="gravar-analise.js?v=20261113a"></script>
 <script>
@@ -481,7 +493,7 @@ const TZ = 'America/Sao_Paulo';
 // 12/11 (cartão p24): as etapas do lead. A edge velha só aceita novo|respondi|consulta|nao_quis: se ela recusar (erro
 // 'status'), a Caixa grava a equivalente velha (VELHA) e guarda a fina neste aparelho (FINO: só código → etapa), para mostrar
 // a certa; com a edge nova no ar, grava a fina direto. Lead antigo: respondi → analisei, consulta → conversa.
-const ETAPAS = [['novo','Novo'],['audio','Áudio enviado'],['analisei','Análise enviada'],['respondeu','Respondeu'],['conversa','Conversa marcada'],['faltou','Faltou'],['comprou','Comprou'],['nutrir','Nutrir'],['nao_quis','Não quis'],['sumiu','Sumiu']];
+const ETAPAS = [['novo','Novo'],['audio','Recebimento confirmado'],['analisei','Análise enviada'],['respondeu','Respondeu'],['conversa','Conversa marcada'],['faltou','Faltou'],['comprou','Comprou'],['nutrir','Nutrir'],['nao_quis','Não quis'],['sumiu','Sumiu']];
 // 13/11 (CRM v3): faltou = não compareceu. A edge de hoje recusa: grava conversa (QUASE) e guarda a fina neste aparelho
 const QUASE = { faltou:'conversa' };
 const NOME_ET = Object.fromEntries(ETAPAS);
@@ -505,7 +517,7 @@ const soSemAnalise = l => { const ps = (l.partes || []).filter(p => p.funil === 
 function proxAcao(l, et){
   const pi = ehPI(l);
   if (pi && soSemAnalise(l) && (et === 'novo' || et === 'audio')) return 'Pedir a foto no WhatsApp (a análise automática não rodou)';
-  if (et === 'novo') return pi ? 'Mandar o áudio antes' : 'Responder (kit do teste)';
+  if (et === 'novo') return pi ? 'Confirmar recebimento' : 'Responder (kit do teste)';
   if (et === 'audio') return pi ? 'Gravar a análise' : 'Mandar a análise';
   if (et === 'respondeu') return 'Mandar o convite';
   if (et === 'analisei'){ const d = diasDesde(l.atualizado_em); return d >= 7 ? 'Toque do dia 7 (sumiu?)' : d >= 3 ? 'Toque do dia 3: áudio curto' : d >= 1 ? 'Toque do dia 1: “conseguiu ver?”' : 'Esperar a resposta dela'; }
@@ -528,6 +540,9 @@ let LEADS = [], filtro = 'fila', CARREGOU = false;
 // 13/11 (CRM v3): o banco devolve conversa_em, proximo_toque_em e primeira_resposta_em (sql-crm-v3.sql)? Sem isso, a
 // página esconde as datas e funciona como antes
 let DATAS_OK = false;
+// 13/11 (1º uso real: "copiado" e o botão mudou, ele não soube o que aconteceu): por 4 s, embaixo do botão do cartão,
+// "Copiado ✓" e, quando a cópia mudou alguma coisa, "Desfazer". O cartão fica onde está até a faixa sair.
+let FAIXA = null;   // { c, desfaz, t }
 // 13/11 (decisão d-20261113-leads-ate-1211-testes): TODO código que chegou até 12/11/2026 (horário de Brasília) foi teste
 // do próprio Lucca. Mesma data da fila ("chegou há" = l.chegou). Sai da fila, dos números e do "Todos"; fica em "Mostrar
 // testes" com a etiqueta "teste seu". O treino segue no filtro Treino (ehTreino vem antes).
@@ -661,7 +676,7 @@ function acaoDe(l, et){
   const pd = pendencia(l, et); if (pd) return [pd.rot, pd.acao];
   const pi = ehPI(l);
   if (pi && soSemAnalise(l) && (et === 'novo' || et === 'audio')) return ['Pedir a foto', 'foto'];
-  if (pi && et === 'novo') return ['Mandar áudio', 'audio'];
+  if (pi && et === 'novo') return ['Confirmar recebimento', 'audio'];   // 13/11: o id 'audio' no banco continua
   if (pi && et === 'audio') return ['Gravar análise', 'gravar'];
   if (pi && et === 'respondeu') return ['Mandar convite', 'convite'];
   if (pi && et === 'analisei'){ const d = diasDesde(l.atualizado_em); return d >= 7 ? ['Copiar toque do dia 7', 'toque7'] : d >= 3 ? ['Toque do dia 3 (áudio)', 'toque3'] : d >= 1 ? ['Copiar toque do dia 1', 'toque1'] : ['Abrir', 'abrir']; }
@@ -681,6 +696,7 @@ function cartaoLead(l, modo){
         <span class="l-t${!toque && tCls ? ' ' + tCls : ''}" title="${esc(quando)}">${toque ? 'análise ' + esc(espera(l.atualizado_em)) : esc(tTxt)}</span></div>
       ${inc ? `<div class="l2">${esc(inc)}</div>` : ''}
       <div class="l-bt"><button type="button" class="l-acao" data-acao="${acao}" data-c="${esc(c)}">${esc(rot)}</button><button type="button" class="l-mais" data-ver="${esc(c)}" aria-label="Abrir o lead inteiro">⋯</button></div>
+      ${FAIXA && FAIXA.c === c ? `<div class="l-faixa" role="status"><span>Copiado ✓</span>${FAIXA.desfaz ? `<button type="button" class="l-desfazer" data-c="${esc(c)}">Desfazer</button>` : ''}</div>` : ''}
     </article>`;
 }
 const cartaoToque = l => cartaoLead(l, 'toque');
@@ -746,13 +762,14 @@ async function marcar(c, etapa, nota, datas){
     if (!LEADS.includes(l)) LEADS.unshift(l);
     diz(semData ? 'Salvo, mas sem a data (falta publicar a edge nova)' : 'Salvo'); if (etapa) window.USO?.acao('etapa:' + etapa); else if (nota !== undefined) window.USO?.acao('nota-salva');
     if (codigoAtual === c) carregaHistorico(c);
-    if (etapa) setTimeout(() => { if (!$('caixa').hidden) desenhaCaixa(); }, filtro === 'fila' ? 700 : 0);   // deixa ver o toque antes de sair da lista
+    if (etapa && FAIXA?.c === c) trocaCartao(c);
+    else if (etapa) setTimeout(() => { if (!$('caixa').hidden){ if (FAIXA) fimFaixa(); else desenhaCaixa(); } }, filtro === 'fila' ? 700 : 0);   // deixa ver o toque antes de sair da lista; outra etapa encerra a faixa
     if (codigoAtual === c && etapa){ desenhaGestao(c); redesenhaKitsPI(); }
     pintaEtapa(c, etapaDe(l));
     return true;
   } catch {
     l.status = antes.status; l.nota = antes.nota; if (antes.fino) FINO[c] = antes.fino; else delete FINO[c];
-    diz('Não salvou. Tente de novo.'); pintaEtapa(c, etapaDe(l)); window.USO?.sinal('erro', { onde:'etapa' });
+    diz('Não salvou. Tente de novo.'); pintaEtapa(c, etapaDe(l)); window.USO?.sinal('erro', { onde:'etapa' }); if (FAIXA?.c === c) trocaCartao(c);
     return false;
   }
 }
@@ -778,21 +795,31 @@ function copiaDaLista(btn, qual = btn.dataset.copia, extra = {}){
   return copiaTexto(txt, btn);
 }
 // 13/11: o botão grande do cartão faz a próxima ação: copia (e marca a etapa) ou abre o lead no passo certo
+function trocaCartao(c){
+  const a = [...document.querySelectorAll('#lista article.lead')].find(x => x.dataset.c === c), l = LEADS.find(x => x.codigo === c); if (!a || !l) return;
+  a.outerHTML = cartaoLead(l, a.classList.contains('l-toque') ? 'toque' : filtro === 'fila' || filtro === 'treino');
+}
+function mostraFaixa(c, desfaz){
+  if (FAIXA){ clearTimeout(FAIXA.t); const velho = FAIXA.c; FAIXA = null; if (velho !== c) desenhaCaixa(); }
+  FAIXA = { c, desfaz, t:setTimeout(fimFaixa, 4000) };
+  trocaCartao(c);
+}
+function fimFaixa(){ if (!FAIXA) return; clearTimeout(FAIXA.t); FAIXA = null; if (!$('caixa').hidden) desenhaCaixa(); }
 async function acaoLista(btn){
   const c = btn.dataset.c, a = btn.dataset.acao, l = LEADS.find(x => x.codigo === c); if (!l) return;
-  if (a === 'audio'){
-    if (!nomeLead(l)) return abreLead(c, 1);   // sem nome: o nome se digita no passo 1
-    if (await copiaDaLista(btn, 'audio')) marcar(c, 'audio');
+  if (a === 'audio'){   // 13/11: "Confirmar recebimento"; sem nome, o texto começa em "Recebi o seu teste"
+    const antes = etapaDe(l);
+    if (await copiaDaLista(btn, 'audio')){ marcar(c, 'audio'); mostraFaixa(c, () => marcar(c, antes)); }
     return;
   }
-  if (a === 'foto' || a === 'toque1' || a === 'toque7'){ if (await copiaDaLista(btn, a === 'foto' ? 'pedirFoto' : a) === null) abreLead(c, a === 'foto' ? 1 : 3); return; }
+  if (a === 'foto' || a === 'toque1' || a === 'toque7'){ const r = await copiaDaLista(btn, a === 'foto' ? 'pedirFoto' : a); if (r === null) abreLead(c, a === 'foto' ? 1 : 3); else if (r) mostraFaixa(c); return; }
   // 13/11 (CRM v3)
   if (a === 'data') return marcarEtapa(c, etapaDe(l));
   if (a === 'fechou') return fechouFaltou(c);
   if (a === 'vespera' || a === 'hora'){
     const conv = l.conversa_em, ok = await copiaDaLista(btn, a === 'hora' ? 'lembreteHora' : 'lembreteVespera', { quando:quandoConversa(conv), hora:horaBR(conv) });
     if (ok === null) return abreLead(c, 1);   // sem nome: o nome se digita no passo 1
-    if (ok){ marcaLembrou(c, a === 'hora' ? 'h' : 'v', conv); setTimeout(() => { if (!$('caixa').hidden) desenhaCaixa(); }, 700); }
+    if (ok){ const q = a === 'hora' ? 'h' : 'v'; marcaLembrou(c, q, conv); mostraFaixa(c, () => marcaLembrou(c, q, null)); }
     return;
   }
   if (a === 'nutrir' || a === 'faltou'){
@@ -833,6 +860,7 @@ document.addEventListener('click', ev => {
     marcarEtapa(c, s.dataset.s).then(ok => { if (ok === false) pintaEtapa(c, etapaDe(LEADS.find(x => x.codigo === c) || { codigo:c })); }); return; }
   const cp = ev.target.closest('.l-copiar'); if (cp){ copiaDaLista(cp); return; }
   const ac = ev.target.closest('.l-acao'); if (ac){ acaoLista(ac); return; }
+  const dz = ev.target.closest('.l-desfazer'); if (dz){ const f = FAIXA; if (f){ clearTimeout(f.t); FAIXA = null; f.desfaz?.(); desenhaCaixa(); } return; }
   const gm = ev.target.closest('.g-mudar'); if (gm){ marcarEtapa(gm.dataset.c, gm.dataset.et); return; }
   const v = ev.target.closest('[data-ver]'); if (v){ abrirCodigo(v.dataset.ver, true); return; }
   const f = ev.target.closest('#filtro button, .f-testes');
@@ -1612,13 +1640,13 @@ function kitCorpoPI(i, b, K, c, atalho){
   const passo = (n, tit, corpo) => { const agora = PASSO_DE[et] === n && ord < 5 || (n === 3 && ord === 5 && et !== 'comprou'), feito = PASSO_DE[et] > n || (n === 4 && et === 'comprou');
     return `<details class="passo${agora ? ' agora' : ''}${feito ? ' feito' : ''}" data-p="${n}"${agora ? ' open' : ''}><summary><span class="kit-n" aria-hidden="true">${n}</span>${esc(tit)}<small>${agora ? 'agora' : feito ? 'feito' : ''}</small></summary><div>${corpo}</div></details>`; };
   // 1 · áudio antes
-  h += passo(1, 'Áudio antes', kitMsg(V3.audioTexto, i, { rotulo:'Texto (mande e, logo depois, o áudio)' })
-    + kitMsg(V3.audioFala, i, { raw:true, rotulo:'Fala do áudio', quando:'Grave uma vez e reenvie sempre o mesmo' }) + `<p class="kit-sub">${esc(V3.audioDica)}</p>` + marca('audio', 'Marcar: áudio enviado'));
+  h += passo(1, 'Confirmar recebimento', kitMsg(V3.audioTexto, i, { rotulo:'Texto' })
+    + kitMsg(V3.audioFala, i, { raw:true, rotulo:'Fala do áudio', quando:'Grave uma vez e reenvie sempre o mesmo' }) + `<p class="kit-sub">${esc(V3.audioDica)}</p>` + marca('audio', 'Marcar: recebimento confirmado'));
   // 2 · gravar a análise
   const fotos = FOTOS.filter(f => f.grupo === b.g && f.url), resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
   // 12/11: o roteiro do Claude (pedido sozinho ao abrir) manda no gravador; a área .pi-claude se redesenha sozinha quando
   // o Claude responde, sem mexer no campo da resposta
-  h += passo(2, 'Gravar a análise', `<label class="pi-resp-l">Resposta dela ao áudio (opcional: abre o roteiro)<textarea class="pi-resp" rows="2" maxlength="200" placeholder="do jeito que você vai falar: quer se cuidar antes dos 50">${esc(resp)}</textarea></label>
+  h += passo(2, 'Gravar a análise', `<label class="pi-resp-l">Resposta dela (usa no vídeo)<textarea class="pi-resp" rows="2" maxlength="200" placeholder="do jeito que você vai falar: quer se cuidar antes dos 50">${esc(resp)}</textarea></label>
     <div class="pi-claude" data-kb="${i}">${claudeHtml(i)}</div>
     <p class="kit-sub">Idade do rosto no vídeo: ${esc(c.idadeFaixa.txt)}</p>
     <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>Modo revisão (iPad: caneta e zoom)</button>`
@@ -2185,6 +2213,23 @@ $('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').va
 // volta ao app (iPhone): recarrega a caixa
 document.addEventListener('visibilitychange', () => { if (document.hidden) return; if (!$('caixa').hidden) carregar(); else if (!$('funil').hidden) carregaFunil(); });
 carregar();
+// 13/11: sol/lua (força claro ou escuro neste aparelho; sem escolha, segue o sistema)
+const SOL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
+const LUA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
+const MQ_ESCURO = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+const escuroAgora = () => { const t = document.documentElement.dataset.tema; return t ? t === 'escuro' : !!MQ_ESCURO?.matches; };
+function pintaTema(){
+  const e = escuroAgora(), b = $('tema');
+  b.innerHTML = e ? SOL : LUA; b.setAttribute('aria-label', e ? 'Usar o modo claro' : 'Usar o modo escuro');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', e ? '#0e1311' : '#f2f4f1');
+}
+$('tema').addEventListener('click', () => {
+  const novo = escuroAgora() ? 'claro' : 'escuro'; document.documentElement.dataset.tema = novo;
+  try { localStorage.setItem('livowa_crm_tema', novo); } catch { /* vale nesta aba */ }
+  pintaTema();
+});
+MQ_ESCURO?.addEventListener?.('change', pintaTema);
+pintaTema();
 window.USO?.tela('leads');
 </script>
 </body>
