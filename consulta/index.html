@@ -412,9 +412,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div id="conv" class="conv" role="dialog" aria-modal="true" aria-labelledby="conv-tit" hidden>
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
+<script src="uso.js?v=20261113a"></script>
 <script src="kits.js?v=20261113a"></script>
 <script src="roteiro.js?v=20261113a"></script>
-<script src="gravar-analise.js?v=20261112e"></script>
+<script src="gravar-analise.js?v=20261113a"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -606,7 +607,7 @@ async function carregar(){
     const j = await r.json();
     if (!j.ok) throw 0;
     LEADS = j.leads || []; CARREGOU = true; desenhaCaixa();
-  } catch { $('lista').innerHTML = '<p class="aviso">Não consegui carregar os leads agora. Puxe para atualizar.</p>'; }
+  } catch { window.USO?.sinal('erro', { onde:'lista' }); $('lista').innerHTML = '<p class="aviso">Não consegui carregar os leads agora. Puxe para atualizar.</p>'; }
 }
 // grava a etapa (e a nota) de um código; devolve true quando o servidor aceitou
 async function marcar(c, etapa, nota){
@@ -627,14 +628,14 @@ async function marcar(c, etapa, nota){
     gravaFino();
     l.atualizado_em = j.gestao?.atualizado_em || new Date().toISOString();
     if (!LEADS.includes(l)) LEADS.unshift(l);
-    diz('Salvo');
+    diz('Salvo'); if (etapa) window.USO?.acao('etapa:' + etapa); else if (nota !== undefined) window.USO?.acao('nota-salva');
     if (etapa) setTimeout(() => { if (!$('caixa').hidden) desenhaCaixa(); }, filtro === 'fila' ? 700 : 0);   // deixa ver o toque antes de sair da lista
     if (codigoAtual === c && etapa){ desenhaGestao(c); redesenhaKitsPI(); }
     pintaEtapa(c, etapaDe(l));
     return true;
   } catch {
     l.status = antes.status; l.nota = antes.nota; if (antes.fino) FINO[c] = antes.fino; else delete FINO[c];
-    diz('Não salvou. Tente de novo.'); pintaEtapa(c, etapaDe(l));
+    diz('Não salvou. Tente de novo.'); pintaEtapa(c, etapaDe(l)); window.USO?.sinal('erro', { onde:'etapa' });
     return false;
   }
 }
@@ -646,8 +647,8 @@ function pintaEtapa(c, et){
 async function copiaTexto(txt, btn){
   const volta = btn.dataset.volta || (btn.dataset.volta = btn.textContent);
   const feito = m => { btn.textContent = m; btn.classList.add('feito'); clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = volta; btn.classList.remove('feito'); }, 1500); };
-  try { if (!navigator.clipboard?.writeText) throw 0; await navigator.clipboard.writeText(txt); feito('Copiado'); return true; }
-  catch { feito('Não copiou'); return false; }
+  try { if (!navigator.clipboard?.writeText) throw 0; await navigator.clipboard.writeText(txt); feito('Copiado'); window.USO?.acao('copiou'); return true; }
+  catch { feito('Não copiou'); window.USO?.sinal('erro', { onde:'copiar' }); return false; }
 }
 function copiaDaLista(btn, qual = btn.dataset.copia){
   const l = LEADS.find(x => x.codigo === btn.dataset.c), K = window.KITS?.['pele-idade']; if (!l || !K) return Promise.resolve(false);
@@ -677,7 +678,7 @@ async function abreLead(c, passo, gravar){
   await abrirCodigo(c, true);
   if (codigoAtual !== c || $('busca').hidden) return;
   const d = passo && document.querySelector(`#out details.passo[data-p="${passo}"]`);
-  if (d){ document.querySelectorAll('#out details.passo').forEach(x => { if (x !== d) x.open = false; }); d.open = true; d.scrollIntoView({ block:'start', behavior:'smooth' }); }
+  if (d){ document.querySelectorAll('#out details.passo').forEach(x => { if (x !== d) x.open = false; }); d.open = true; d.scrollIntoView({ block:'start', behavior:'smooth' }); window.USO?.tela('passo-' + passo); }
   if (gravar) gravarQuandoPronto(c);
 }
 // "Gravar análise" da lista: abre o gravador quando o roteiro estiver pronto (o do Claude, se vier em até 30 s; senão, o do estoque)
@@ -711,7 +712,8 @@ document.addEventListener('input', ev => {
 });
 
 // ---------- Abas ----------
-function aba(qual){
+function aba(qual, quieto){
+  if (!quieto) window.USO?.tela({ caixa:'leads', cod:'codigo', portas:'portas', funil:'funil' }[qual]);   // 13/11: registro de uso (uso.js)
   $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod'); $('t-portas').setAttribute('aria-selected', qual === 'portas'); $('t-funil').setAttribute('aria-selected', qual === 'funil');
   $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod'; $('portas').hidden = qual !== 'portas'; $('funil').hidden = qual !== 'funil';
   $('tit').textContent = qual === 'caixa' ? 'CRM' : qual === 'portas' ? 'Portas' : qual === 'funil' ? 'Funil' : 'Consulta por código';
@@ -835,7 +837,7 @@ function opcoesSelect(sel, itens, atual){
 function desenhaFunil(){
   const { opcoes, etapas } = FN.dados, f = FN.funil;
   const qtd = Object.fromEntries((opcoes.funis || []).map(x => [x.id, x.pessoas]));
-  const lista = [...FUNIS, ...(opcoes.funis || []).filter(x => !FUNIS.some(([id]) => id === x.id)).map(x => [x.id, x.id])];
+  const lista = [...FUNIS, ...(opcoes.funis || []).filter(x => x.id !== 'crm-uso' && !FUNIS.some(([id]) => id === x.id)).map(x => [x.id, x.id])];   // 13/11: crm-uso = registro de uso, não é funil
   $('fn-funis').innerHTML = lista.map(([id, nome]) => `<button type="button" data-funil="${esc(id)}" aria-pressed="${id === f}">${esc(nome)} <small>${qtd[id] || 0}</small></button>`).join('');
   document.querySelectorAll('#fn-dias button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.d === FN.dias));
   // origens: Direct (todas) aparece quando há alguma campanha do Direct
@@ -900,7 +902,7 @@ $('fn-corpo').addEventListener('click', ev => {
 });
 
 $('voltar').onclick = () => aba('caixa');
-function abrirCodigo(c, daCaixa){ aba('cod'); $('voltar').hidden = !daCaixa; $('c').value = c; return ver(c); }
+function abrirCodigo(c, daCaixa){ aba('cod', true); $('voltar').hidden = !daCaixa; $('c').value = c; return ver(c); }
 // 13/11: o lead aberto mostra tudo, em seções recolhidas (só o passo atual do passo a passo vem aberto)
 const secao = (titulo, sub, corpo, cls = '') => `<details class="sec${cls ? ' ' + cls : ''}"><summary><b>${esc(titulo)}</b>${sub ? `<span>${esc(sub)}</span>` : ''}</summary><div class="sec-c">${corpo}</div></details>`;
 function desenhaGestao(c){
@@ -1205,7 +1207,7 @@ async function ver(c){
     const r = await post({ c });
     if (r.status === 404) return $('out').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>';
     const j = await r.json();
-    if (!j.ok) return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`;
+    if (!j.ok){ window.USO?.sinal('erro', { onde:'lead' }); return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`; }
     FOTOS = j.fotos || []; KB = []; KM = []; window.ROTEIRO?.zerar(c);
     (j.lista || []).forEach(e => { if (e.funil === 'pele-idade' && e.etapa === 'limite' && e.dados) e.dados.sem_analise = true; });   // 12/11: complete do limite
     // 12/11: o kit e o roteiro começam com o nome guardado no teste; outro código não herda o nome do anterior
@@ -1224,7 +1226,10 @@ async function ver(c){
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : '');
     window.ROTEIRO?.depois(c);
-  } catch { $('out').innerHTML = '<p class="aviso">Sem conexão.</p>'; }
+    // 13/11: registro de uso: só o tipo do teste e se é treino (o código fica na memória da aba, para contar reaberturas)
+    const e0 = (j.lista || [])[0], lx = LEADS.find(x => x.codigo === c);
+    window.USO?.abriuLead(c, e0 ? (e0.etapa === 'pele-resultado' ? 'pele' : { 'teste-pernas':'pernas', 'teste-braco':'braco', 'quiz-longevidade':'quiz', 'teste-emagrecimento':'emagrecimento' }[e0.funil] || e0.funil) : 'nenhum', lx ? ehTreino(lx) : false);
+  } catch { window.USO?.sinal('erro', { onde:'lead' }); $('out').innerHTML = '<p class="aviso">Sem conexão.</p>'; }
 }
 // Fotos de um grupo, com a chave certa: pele antiga = repouso/sorriso/sobrancelhas; pele2 = frente/esquerda/direita.
 // A edge só nomeia por ângulo quando chegam as 3 fotos; com 1 ou 2 ela usa os nomes antigos, aí vale a ordem dos ângulos.
@@ -1525,6 +1530,7 @@ async function abreGravador(i){
 }
 // a conversa de 15 min numa tela legível (v3, etapa 4)
 function abreConversa(i){
+  window.USO?.tela('conversa');
   const b = KB[i], K = KITS['pele-idade']; if (!b || !K) return;
   const vars = { ...b.c.vars, ...(b.extra || {}), resposta:window.ROTEIRO?.respostaDe(codigoAtual) || null, nome:KIT_NOME.trim() || null };
   const tx = t => KITS.pedacos(t, vars).map(p => p.falta ? `<mark>${esc(p.s)}</mark>` : esc(p.s)).join('');
@@ -1532,10 +1538,11 @@ function abreConversa(i){
     ${x.fala ? `<p class="conv-f">“${tx(x.fala)}”</p>` : ''}${x.itens ? `<ul>${x.itens.map(t => `<li>${tx(t)}</li>`).join('')}</ul>` : ''}${x.nota ? `<p class="conv-n">${tx(x.nota)}</p>` : ''}</section>`).join('');
   $('conv').hidden = false; document.body.style.overflow = 'hidden'; $('conv').scrollTop = 0; $('conv-fechar').focus();
 }
-$('conv-fechar').onclick = () => { $('conv').hidden = true; document.body.style.overflow = ''; document.querySelector('.pi-conv')?.focus(); };
+$('conv-fechar').onclick = () => { window.USO?.volta(); $('conv').hidden = true; document.body.style.overflow = ''; document.querySelector('.pi-conv')?.focus(); };
 function kitCopiar(btn){
   const k = +btn.dataset.k, txt = kitTexto(k), el = $('km-' + k);
-  const feito = msg => { btn.textContent = msg; btn.classList.add('feito'); clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('feito'); }, 1500); };
+  const feito = msg => { btn.textContent = msg; btn.classList.add('feito'); clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('feito'); }, 1500);
+    if (msg === 'Copiado') window.USO?.acao('copiou'); else if (msg !== 'Selecionado') window.USO?.sinal('erro', { onde:'copiar' }); };   // 13/11: registro de uso
   const selecionar = () => {   // reserva: deixa o texto selecionado (e tenta o copiar antigo)
     try { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); feito(document.execCommand('copy') ? 'Copiado' : 'Selecionado'); }
     catch { feito('Selecione e copie'); }
@@ -1655,6 +1662,7 @@ function passosMov(b){
 // ----- abrir, passos e fotos -----
 function reactAbrir(i, volta, chave){
   const b = KB[i]; if (!b) return;
+  window.USO?.tela('revisao-ipad');
   const foto = b.t === 'pele' || b.t === 'pele2' || b.t === 'pele-idade';
   const telas = foto ? fotosDoGrupo(b.g, b.e).filter(f => f.url) : (b.quadros ||= quadrosMov(b));
   if (!telas.length) return;
@@ -1707,7 +1715,7 @@ function mostrarTela(k){
   desenhaDestaque(); botoesDesenho();
 }
 function reactFechar(){
-  if (!R) return; const volta = R.volta; cancelaTraco(); ptrs.clear(); gesto = null; R = null;
+  if (!R) return; window.USO?.volta(); const volta = R.volta; cancelaTraco(); ptrs.clear(); gesto = null; R = null;
   $('react').hidden = true; rvImg.removeAttribute('src'); document.body.style.overflow = '';
   tela.width = tela.height = 0; dest.innerHTML = '';
   if (volta?.isConnected) volta.focus();
@@ -1902,6 +1910,7 @@ $('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').va
 // volta ao app (iPhone): recarrega a caixa
 document.addEventListener('visibilitychange', () => { if (document.hidden) return; if (!$('caixa').hidden) carregar(); else if (!$('funil').hidden) carregaFunil(); });
 carregar();
+window.USO?.tela('leads');
 </script>
 </body>
 </html>

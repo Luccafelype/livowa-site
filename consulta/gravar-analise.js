@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1211e';
+const VERSAO = '1311a';
 const W = 720, H = 1280, FPS = 30, MAX_S = 90;
 const CIRC = { cx:W - 24 - 120, cy:H - 24 - 120, r:120 };   // câmera dele
 const TOPO = 150;                                           // nome e CRM no alto do vídeo
@@ -532,7 +532,7 @@ function prompter(){
   D.pDep.textContent = G.bloco < n - 1 ? 'Depois: ' + (bs[G.bloco + 1].titulo || '') : 'Último bloco';
   D.prompt.style.setProperty('--fs', fsPrompt + 'px');
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
-  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); }   // a cena do bloco começa agora
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); if (G.estado === 'rec') (G.blocosVistos ||= new Set()).add(G.bloco); }   // a cena do bloco começa agora
   nota();
 }
 function aviso(t){ D.aviso.textContent = t; D.aviso.hidden = !t; }
@@ -547,6 +547,7 @@ function estado(e){
   D.tela.hidden = rev; D.cam.style.visibility = rev || !G.mostraCam || !G.cam ? 'hidden' : '';
   D.prompt.hidden = rev; D.ver.hidden = !rev;
   D.rec.classList.toggle('on', e === 'rec');
+  if (e === 'rev') window.USO?.tela('revisao'); else if (e === 'prep' || e === 'conta' || e === 'rec') window.USO?.tela('gravador');
   D.recT.textContent = e === 'rec' ? '0:00 / ' + mmss(MAX_S * 1000) : e === 'conta' ? 'Cancelar' : 'Gravar';
   D.rec.setAttribute('aria-label', e === 'rec' ? 'Parar a gravação' : e === 'conta' ? 'Cancelar a contagem' : 'Começar a gravar');
   D.rec.disabled = e === 'prep' && !G.pronto;
@@ -564,6 +565,7 @@ async function abrir(o){
     stream:null, rec:null, chunks:[], t0:0, take:null, anel:null, ptrs:new Map(), gesto:null, quadros:0, camQuadros:0, camUlt:0, camParada:false, camParadas:0, camParadaS:null, iv:0, relogio:0, wake:null };
   const k = G.fotos.findIndex(f => f.chave === (o.foto || 'frente')); if (k > 0) G.foto = k;
   D.el.hidden = false; document.body.classList.add('ga-aberto');
+  window.USO?.tela('gravador');   // 13/11: registro de uso do CRM (uso.js)
   D.fotos.innerHTML = G.fotos.length > 1 ? G.fotos.map((f, i) => `<button type="button" class="ga-b" data-f="${i}" aria-pressed="${i === G.foto}" aria-label="Foto: ${esc(f.rot)}">${esc(CURTO[f.chave] || f.rot)}</button>`).join('') : '';
   D.msg.hidden = true; aviso(''); info('Abrindo a câmera e a foto…');
   D.cami.setAttribute('aria-pressed', 'true');
@@ -615,7 +617,7 @@ function erroCamera(e){
   if (n === 'NotFoundError' || n === 'OverconstrainedError') return 'Não achei câmera nem microfone neste aparelho.';
   return 'Não consegui abrir a câmera (' + (n || 'erro') + ').';
 }
-function falha(t){ if (!G) return; D.msg.querySelector('p').textContent = t; D.msg.hidden = false; info(''); G.pronto = false; estado('prep'); }
+function falha(t){ if (!G) return; window.USO?.sinal('erro', { onde:'gravador' }); D.msg.querySelector('p').textContent = t; D.msg.hidden = false; info(''); G.pronto = false; estado('prep'); }
 function liberaTake(){
   if (!G || !G.take) return;
   D.ver.pause?.(); D.ver.removeAttribute('src'); try { D.ver.load(); } catch (e) { /* ok */ }
@@ -625,6 +627,8 @@ function liberaTake(){
 function fechar(){
   if (!G) return;
   const g = G;
+  if (['conta', 'rec', 'rev'].includes(g.estado) && !g.enviado) window.USO?.sinal('gravacao-abandonada', { estado:g.estado });
+  window.USO?.volta();
   try { if (g.rec && g.rec.state !== 'inactive'){ g.descartar = true; g.rec.stop(); } } catch (e) { /* ok */ }
   clearInterval(g.iv); clearInterval(g.relogio); clearInterval(g.camIv); clearTimeout(g.contaT);
   g.stream?.getTracks().forEach(t => t.stop());
@@ -641,6 +645,7 @@ function fechar(){
 // ---------- gravação ----------
 function conta(){
   if (!G || !G.pronto) return;
+  const ms = window.USO?.desdeLead(); if (ms != null) window.USO.sinal('abrir-ate-gravar', { ms });
   estado('conta'); liberaTake(); G.bloco = 0; prompter();
   pedeTelaAcesa();
   let n = 3; D.conta.textContent = n; D.conta.hidden = false;
@@ -705,6 +710,7 @@ function terminou(g){
   info(`${mmss(g.take.ms)} · ${fmtMB(blob.size)} · ${extOf(type)}. Assista antes de mandar.`);
   duracao(g.take).then(d => { if (G && G.take && G.take.url === url){ G.take.dur = d; confere(G.take); } });
   diag('fim', g);
+  window.USO?.sinal('gravacao-fim', { ms:g.ms || 0, anel:g.anelUsos || 0, pinca:g.pincas || 0, blocos:(g.blocosVistos || new Set()).size });
 }
 // duração real do arquivo (o webm do Chrome vem com Infinity até buscar o fim)
 function duracao(t){
@@ -754,7 +760,7 @@ async function enviar(){
   }
   D.baixar.click();   // sem compartilhar arquivo: baixa
   ok('Baixado: ' + t.nome + '. Mande pelo WhatsApp e depois apague o arquivo.');
-  function ok(msg){ if (!G) return; estado('fim'); info(msg || 'Mandou. Marque a etapa; ao fechar, o vídeo sai da memória.'); D.marcar.focus(); }
+  function ok(msg){ if (!G) return; G.enviado = true; estado('fim'); info(msg || 'Mandou. Marque a etapa; ao fechar, o vídeo sai da memória.'); D.marcar.focus(); }
 }
 
 // ---------- toque: segurar = anel; pinça = zoom; nada disso no teleprompter ----------
@@ -776,6 +782,7 @@ function baixou(ev){
   if (G.ptrs.size === 2 && f && f.img){
     clearTimeout(G.seguraT); if (G.anel && G.anel.ativo){ G.anel.ativo = false; G.anel.solto = performance.now(); }
     const [a, b] = [...G.ptrs.values()];
+    G.pincas = (G.pincas || 0) + 1;
     G.gesto = { d0:Math.hypot(a.x - b.x, a.y - b.y) || 1, m0:{ x:(a.x + b.x) / 2, y:(a.y + b.y) / 2 }, z0:{ ...f.z } };
     return;
   }
@@ -832,7 +839,7 @@ function liga(){
     }
     D.fechar.classList.remove('conf'); fechar();
   };
-  D.refazer.onclick = () => { if (!G) return; liberaTake(); G.bloco = 0; prompter(); estado('prep'); info('Toque em Gravar quando quiser.'); requestAnimationFrame(encaixa); };
+  D.refazer.onclick = () => { if (!G) return; window.USO?.sinal('refazer'); liberaTake(); G.bloco = 0; prompter(); estado('prep'); info('Toque em Gravar quando quiser.'); requestAnimationFrame(encaixa); };
   D.enviar.onclick = enviar; D.denovo.onclick = enviar;
   D.marcar.onclick = () => { const fn = G && G.o.aoMarcar; fechar(); try { fn?.(); } catch (e) { /* ok */ } };
   D.tentar.onclick = () => { if (!G) return; const o = G.o; fechar(); abrir(o); };
