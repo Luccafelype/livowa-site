@@ -351,6 +351,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .kit-perfil button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:9px 4px;font-size:.9rem}
 .kit-perfil button[aria-pressed="true"]{background:var(--a);border-color:var(--a);color:var(--on-a)}
 .kit-sub{margin:0;font-size:.82rem;color:var(--m)}
+.ass{margin:0 0 10px;padding:10px 12px;border:1px solid var(--l);border-radius:12px;background:var(--bg)}
+.ass b{font-size:.9rem}.ass ul,.ass-d ul{margin:6px 0 0;padding-left:1.1em;font-size:.95rem;line-height:1.45}
 .kit-react{width:100%}
 .kit-react:disabled{opacity:.45;cursor:not-allowed}
 /* Pele 2 (02/11): achados por região e respostas do quiz */
@@ -514,8 +516,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
 <script src="uso.js?v=20261113y"></script>
-<script src="kits.js?v=20261113p"></script>
-<script src="roteiro.js?v=20261113w"></script>
+<script src="kits.js?v=20261113v4"></script>
+<script src="roteiro.js?v=20261113v4"></script>
 <script src="gravar-analise.js?v=20261113z"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
@@ -720,7 +722,7 @@ const naFilaV3 = l => !!pendencia(l, etapaDe(l));
 // coorte (treino, campanha, origem) → teste (funil do lead) → geral → o padrão de hoje (kits.js). Guardado no banco
 // (crm_config; edge config_ler / config_salvar): iPhone e Mac veem o mesmo. Sem o banco novo, a aba só mostra.
 const CFG = { linhas:{}, ok:false };   // linhas[escopo][chave] = valor
-const AJ_MSGS = [['audioTexto', 'Confirmação de recebimento'], ['audioFala', 'Fala do áudio de recebimento'], ['depoisVideo', 'Pergunta por escrito depois do vídeo'],
+const AJ_MSGS = [['audioTexto', 'Confirmação de recebimento'], ['audioFala', 'Fala do áudio de recebimento'], ['depoisVideo', 'Por escrito depois do vídeo'],
   ['convite', 'Convite para a conversa'], ['preco', 'Preço por escrito'], ['nutrir', 'Nutrir: o próximo teste'], ['naoQuis', 'Não quis'], ['pedirFoto', 'Pedir a foto'],
   ['toque1', 'Toque D1'], ['toque3', 'Toque D3 (o áudio: o que você fala)'], ['toque7', 'Toque D7'], ['combinado', 'Combinado da conversa'],
   ['lembreteVespera', 'Lembrete na véspera'], ['lembreteHora', 'Lembrete 1 h antes'], ['faltou', 'Faltou: remarcar']];
@@ -755,7 +757,12 @@ function cfgDe(k, l, cadeia){
 }
 const cfg = (k, l, funil) => cfgDe(k, l, escoposDe(l, funil)).v;
 // texto de kit: coorte do lead → o teste dono do texto → geral → o de hoje
-const cadeiaTexto = (k, l) => { const tx = window.KITS?.texto?.(k); return tx ? [...coortesDe(l).map(c => 'coorte:' + c), ...(tx.dono ? ['teste:' + tx.dono] : []), 'geral'] : escoposDe(l); };
+// 13/11 (v4): texto comum marcado "porTeste" (a pergunta do fecho): o teste do roteiro que está sendo montado, se houver
+const cadeiaTexto = (k, l) => { const tx = window.KITS?.texto?.(k); if (!tx) return escoposDe(l);
+  const ts = tx.dono ? [tx.dono] : tx.porTeste ? (window.KITS.funilAtual ? [window.KITS.funilAtual] : testesDe(l)) : [];
+  return [...coortesDe(l).map(c => 'coorte:' + c), ...ts.map(t => 'teste:' + t), 'geral']; };
+// 13/11 (v4): o roteiro do estoque lê os textos do CRM (o "Pode me responder sim ou não." de depois do vídeo)
+window.cfgTexto = (k, funil) => { const l = LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual }; return cfgDe(k, l, escoposDe(l, funil)).v; };
 window.KITS?.ligar?.((chave, padrao) => {
   const l = LEADS.find(x => x.codigo === codigoAtual) || null;
   for (const e of cadeiaTexto(chave, l)){ const v = CFG.linhas[e]?.[chave]; if (typeof v === 'string' && v) return v; }
@@ -1405,7 +1412,7 @@ function cartaoPele2(e, quando, g){
     ['Ângulos', Array.isArray(d.angulos) ? d.angulos.join(', ') : d.angulos], ['Origem da foto', ORIG[d.origem] || d.origem], ['Marca do Direct', d.lv]]
     .filter(([, v]) => v != null && v !== '').map(([k, v]) => `<div class="l"><span>${esc(k)}</span><b>${esc(num(v))}</b></div>`).join('');
   return `<div class="card"><h2>Pele 2</h2><div class="q">${esc(quando)}</div>${secao('Resultado', resumoAch, `${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
-    <div class="res">${esc(resumoAch)}</div>${achados}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>`, 'sec-res')}${rotP(e)}${secao('Respostas', '', resp, 'sec-resp')}${rotSec(e)}${kitBloco(e)}</div>`;
+    <div class="res">${esc(resumoAch)}</div>${achados}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>`, 'sec-res')}${rotP(e)}${secao('Respostas', '', resp, 'sec-resp')}${rotSec(e)}${assSec(e)}${kitBloco(e)}</div>`;
 }
 // ---------- Pele: idade e vitalidade (04/11): livowa.com/pele, funnelId pele-idade (rótulos de pele/index.html) ----------
 const ROTPI = {
@@ -1446,7 +1453,7 @@ function cartaoPeleIdade(e, quando, g){
     ['Fotos enviadas', d.enviadas], ['Ângulos', Array.isArray(d.angulos) ? d.angulos.join(', ') : d.angulos], ['Origem da foto', ORIG[d.origem] || d.origem], ['Fim sorteado', { A:'A (fala em vídeo)', B:'B (sem falar em vídeo)' }[d.fim] || d.fim], ['Marca do Direct', d.lv]]
     .filter(([, v]) => v != null && v !== '').map(([k, v]) => `<div class="l"><span>${esc(k)}</span><b>${esc(num(v))}</b></div>`).join('');
   return `<div class="card"><h2>${esc(NOME_PI)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado', res, `${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
-    <div class="res">${esc(res)}</div>${sinais}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>`, 'sec-res')}${secao('Respostas', '', resp, 'sec-resp')}${rotSec(e)}${kitBloco(e)}</div>`;
+    <div class="res">${esc(res)}</div>${sinais}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>`, 'sec-res')}${secao('Respostas', '', resp, 'sec-resp')}${rotSec(e)}${assSec(e)}${kitBloco(e)}</div>`;
 }
 const EXPR = { olhos:'sorriso', linhas_testa:'sobrancelhas' };
 // Roteiro do react pelo Claude e "Parecido com isto" (03/11, roteiro.js); sem o arquivo, nada aparece.
@@ -1640,7 +1647,7 @@ async function ver(c){
     if (r.status === 404) return poeOut('<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>');
     const j = await r.json();
     if (!j.ok){ window.USO?.sinal('erro', { onde:'lead' }); return poeOut(`<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`); }
-    FOTOS = j.fotos || []; KB = []; KM = []; window.ROTEIRO?.zerar(c);
+    FOTOS = j.fotos || []; KB = []; KM = []; ASS = []; window.ROTEIRO?.zerar(c);
     (j.lista || []).forEach(e => { if (e.funil === 'pele-idade' && e.etapa === 'limite' && e.dados) e.dados.sem_analise = true; });   // 12/11: complete do limite
     // 12/11: o kit e o roteiro começam com o nome guardado no teste; outro código não herda o nome do anterior
     NOME_G = (j.lista || []).map(nomeDe).find(Boolean) || '';
@@ -1653,7 +1660,7 @@ async function ver(c){
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2' || e.funil === 'pele-idade') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
       if (e.funil === 'pele-idade') return cartaoPeleIdade(e, quando, g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado e respostas', resDet(e) || '', `${g ? blocoFotos(g, e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${detalhe(e)}`, 'sec-res')}${g ? rotP(e) : ''}${rotSec(e)}${kitBloco(e)}</div>`;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado e respostas', resDet(e) || '', `${g ? blocoFotos(g, e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${detalhe(e)}`, 'sec-res')}${g ? rotP(e) : ''}${rotSec(e)}${assSec(e)}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : ''));
@@ -1818,7 +1825,7 @@ function kitCorpoPI(i, b, K, c, atalho){
   else c3 += '<p class="kit-sub">Toque no que ela respondeu: o texto certo aparece e a etapa fica marcada.</p>';
   h += passo(3, 'Ela respondeu', c3);
   // 4 · a conversa
-  h += passo(4, 'A conversa (15 min)', `<button type="button" class="pi-conv" data-kb="${i}">Abrir o roteiro da conversa</button>
+  h += passo(4, 'A conversa (15 min)', `<div class="pi-ass" data-kb="${i}">${assuntosHtml(b.e)}</div><button type="button" class="pi-conv" data-kb="${i}">Abrir o roteiro da conversa</button>
     <p class="kit-sub">Depois da conversa:</p><div class="pi-r3" style="grid-template-columns:repeat(4,1fr)">${[['comprou', 'Comprou'], ['nutrir', 'Nutrir'], ['nao_quis', 'Não quis'], ['faltou', 'Faltou']].map(([e, t]) => `<button type="button" class="pi-depois" data-et="${e}" data-kb="${i}" aria-pressed="${et === e}">${t}</button>`).join('')}</div>`);
   if (K.atalhos?.length) h += `<details><summary>Ver atalhos do WhatsApp (${K.atalhos.length})</summary><div>
     <p class="kit-sub">Para cadastrar em WhatsApp Business › Configurações › Ferramentas comerciais › Respostas rápidas. O app não preenche {nome}.</p>
@@ -1843,12 +1850,31 @@ function claudeHtml(i){
   if (resp && cl && cl.estado !== 'gerando' && resp !== cl.respUsada && !b.d.sem_analise && !b.c.refazer) bts.push(`<button type="button" class="sec pi-cl-refazer" data-kb="${i}">Refazer com a resposta dela</button>`);
   if (cl?.tem && cl.estado !== 'gerando') bts.push(`<button type="button" class="sec pi-cl-estoque" data-kb="${i}">${cl.usarEstoque ? 'Usar o do Claude' : 'Usar o do estoque'}</button>`);
   if (bts.length) h += `<div class="l-acoes">${bts.join('')}</div>`;
-  const escrito = cl?.usar && cl.partes.porEscrito.length ? cl.partes.porEscrito : [V3.depoisVideo];
+  const est = window.ROTEIRO?.doEstoque?.(b.e);
+  const escrito = cl?.usar && cl.partes.porEscrito.length ? cl.partes.porEscrito : [V3.depoisVideo, ...(est?.porEscrito || [])];   // 13/11 (v4)
   h += escrito.map((t, k) => kitMsg(t, i, { rotulo:k ? 'Por escrito também' : 'Logo depois do vídeo, por escrito' })).join('');
   return h;
 }
 function pintaClaudePI(){
   document.querySelectorAll('#out .pi-claude[data-kb]').forEach(el => { const i = +el.dataset.kb; if (PASSO_KIT.has(KB[i]?.t)) el.innerHTML = claudeHtml(i); });
+  pintaAssuntos();
+}
+// 13/11 (v4): "Assuntos para a conversa": os do roteiro do Claude (ASSUNTOS PARA A CONVERSA) ou, sem ele, os das respostas
+// (sono, pressão e glicose, movimento, sol, cigarro; mulher de 40 a 60, a fase hormonal). No passo da conversa, nos Detalhes
+// e na tela da conversa. Só leitura: os textos vêm do estoque (Ajustes) ou do Claude.
+let ASS = [];
+function assuntosHtml(e){
+  const a = e && window.ROTEIRO?.assuntos?.(e);
+  if (!a || !a.lista.length) return '';
+  return `<div class="ass"><b>Assuntos para a conversa</b><ul>${a.lista.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+}
+const assSec = e => { const n = ASS.push(e) - 1; return secao('Assuntos para a conversa', '', `<div class="ass-d" data-ass="${n}"></div>`, 'sec-ass'); };
+function pintaAssuntos(){
+  document.querySelectorAll('#out .ass-d[data-ass]').forEach(el => { const e = ASS[+el.dataset.ass], a = e && window.ROTEIRO?.assuntos?.(e), sec = el.closest('details');
+    el.innerHTML = a?.lista.length ? `<ul>${a.lista.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="kit-sub">Nada marcado para medir.</p>';
+    const sp = sec?.querySelector('summary span'), sub = a?.lista.length ? `${a.lista.length} · ${a.de === 'claude' ? 'do roteiro do Claude' : 'das respostas'}` : '';
+    if (sec && sub){ if (sp) sp.textContent = sub; else sec.querySelector('summary').insertAdjacentHTML('beforeend', `<span>${esc(sub)}</span>`); } });
+  document.querySelectorAll('#out .pi-ass[data-kb]').forEach(el => { const b = KB[+el.dataset.kb]; if (b) el.innerHTML = assuntosHtml(b.e); });
 }
 window.aoMudarClaude = () => { pintaClaudePI(); trocaRoteiroGravador(); };   // 13/11: o do Claude chegou com o gravador aberto: troca
 function redesenhaKitsPI(){
@@ -1870,10 +1896,11 @@ function faixaPI(id, b, p){
   if (id === 'cl-abertura') return faixaPI('abertura', b);
   if (id === 'cl-idade') return faixaPI('idade', b);
   if (id === 'cl-foto' || id === 'foto') return p?.aponte?.length ? 'Na foto: ' + p.aponte.join(' · ').replace(/(o que muita gente chama de )?bigode chin[eê]s/gi, 'do nariz à boca') : faixaPI('bem', b);   // "bigode chinês" nunca no vídeo (o-que-importa-idade.json)
-  if (id === 'cl-dentro' || id === 'dentro'){   // o hábito que o bloco cita primeiro (entre os que ela tem); sem citação, a prioridade das regras
+  if (id === 'cl-dentro' || id === 'dentro' || id === 'cl-habito' || id === 'habito'){   // o hábito que o bloco cita primeiro (13/11 v4: também o bloco do hábito) (entre os que ela tem); sem citação, a prioridade das regras
     const tem = temPI(r), PAL = HAB_PAL;
-    const fala = String(p?.fala || ''), achados = Object.keys(PAL).filter(k => tem[k]).map(k => [k, fala.search(PAL[k])]).filter(([, x]) => x >= 0).sort((x, y) => x[1] - y[1]);
-    const k = achados[0]?.[0] || ['metabolico', 'cigarro', 'sono', 'sol', 'movimento'].find(x => tem[x]);
+    const fala = String(p?.fala || ''), cita = Object.keys(PAL).filter(k => r[k] != null && r[k] !== '').map(k => [k, fala.search(PAL[k])]).filter(([, x]) => x >= 0).sort((x, y) => x[1] - y[1]);
+    // o que ela tem e o bloco cita; senão, o que o bloco cita ("mesmo se mexendo", v4); sem citação, a prioridade das regras
+    const k = cita.find(([x]) => tem[x])?.[0] || cita[0]?.[0] || ['metabolico', 'cigarro', 'sono', 'sol', 'movimento'].find(x => tem[x]);
     return k ? `${ROTPI[k][0]}: ${v(k)}` : null; }
   if (id === 'cl-desejo') return faixaPI('ponte', b);
   if (id === 'cl-importa' || id === 'importa') return idade != null ? `O que conserva aos ${idade}` : null;
@@ -1962,7 +1989,7 @@ function cenaPI(id, b, p, fala){
       ...ids.map(k => [k, rotuloDe(k)]).filter(([, v]) => v?.acompanha && v?.fonte).map(([k, v]) => `Se quiser, ${rotuloSinal(k).toLowerCase()}: ${v.acompanha}`)];
     return { tipo:'foto', lupas:ids.map(k => ({ id:k, parte_de:rotuloDe(k)?.parte_de || null, nome:rotuloSinal(k), nivel:N[k] })), notas };
   }
-  if (id === 'cl-dentro' || id === 'dentro' || id === 'bem' || /^habito-\w+$/.test(id)){
+  if (id === 'cl-dentro' || id === 'dentro' || id === 'cl-habito' || id === 'habito' || id === 'bem' || /^habito-\w+$/.test(id)){
     const m = /^habito-(\w+)$/.exec(id), txt = String(fala ?? p?.fala ?? ''), tem = temPI(r);
     const ks = m ? [m[1]] : Object.keys(HAB_PAL).map(k => [k, txt.search(HAB_PAL[k])]).filter(([k, x]) => x >= 0 && r[k] != null && r[k] !== '').sort((x, y) => x[1] - y[1]).map(([k]) => k);
     const habitos = ks.filter(k => HAB_CURTO[k] && r[k] != null).slice(0, 3).map(k => ({ id:k, nome:HAB_CURTO[k][0](r),
@@ -2058,7 +2085,8 @@ function abreConversa(i){
   const vars = { ...b.c.vars, ...(b.extra || {}), resposta:window.ROTEIRO?.respostaDe(codigoAtual) || null, nome:KIT_NOME.trim() || null };
   const tx = t => KITS.pedacos(t, vars).map(p => p.falta ? `<mark>${esc(p.s)}</mark>` : esc(p.s)).join('');
   const comb = cfg('combinado', LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual }, 'pele-idade');   // 13/11: Ajustes
-  $('conv-corpo').innerHTML = K.conversa.map(x => x.titulo === 'O combinado' ? { ...x, fala:comb } : x).map(x => `<section class="conv-s"><h3><span>${esc(x.min === 'antes' ? 'antes' : x.min + ' min')}</span>${esc(x.titulo)}</h3>
+  const as = window.ROTEIRO?.assuntos?.(b.e)?.lista || [];   // 13/11 (v4): o que ficou para medir, antes do roteiro
+  $('conv-corpo').innerHTML = (as.length ? `<section class="conv-s"><h3><span>antes</span>Assuntos para a conversa</h3><ul>${as.map(t => `<li>${esc(t)}</li>`).join('')}</ul></section>` : '') + K.conversa.map(x => x.titulo === 'O combinado' ? { ...x, fala:comb } : x).map(x => `<section class="conv-s"><h3><span>${esc(x.min === 'antes' ? 'antes' : x.min + ' min')}</span>${esc(x.titulo)}</h3>
     ${x.fala ? `<p class="conv-f">“${tx(x.fala)}”</p>` : ''}${x.itens ? `<ul>${x.itens.map(t => `<li>${tx(t)}</li>`).join('')}</ul>` : ''}${x.nota ? `<p class="conv-n">${tx(x.nota)}</p>` : ''}</section>`).join('');
   $('conv').hidden = false; document.body.style.overflow = 'hidden'; $('conv').scrollTop = 0; $('conv-fechar').focus();
 }
@@ -2485,7 +2513,7 @@ function desenhaAjustes(){
   $('aj-aviso').hidden = CFG.ok; $('aj-aviso').textContent = 'Só para ler: o banco ainda não guarda os ajustes.';
   const abertos = [...document.querySelectorAll('#aj-corpo details[open]')].map(d => [...d.classList].find(c => /^aj-/.test(c)));
   // 13/11: num teste, primeiro os textos dele (kits.js), por grupo
-  const dono = AJ.escopo.startsWith('teste:') ? AJ.escopo.slice(6) : AJ.escopo === 'geral' ? '' : null, tx = dono != null ? (window.KITS?.textos || []).filter(t => t.dono === dono) : [];
+  const dono = AJ.escopo.startsWith('teste:') ? AJ.escopo.slice(6) : AJ.escopo === 'geral' ? '' : null, tx = dono != null ? (window.KITS?.textos || []).filter(t => t.dono === dono || (dono && t.porTeste)) : [];   // 13/11 (v4): a pergunta do fecho também em cada teste
   const deste = tx.length ? `<div class="card aj-teste"><h2>${dono ? 'Textos deste teste' : 'Textos comuns a todos os roteiros'}</h2>${[...new Set(tx.map(t => t.grupo))].map(g => `<h3 class="aj-g">${esc(g)}</h3>` + tx.filter(t => t.grupo === g).map(t => campoAj(t.chave, t.rotulo)).join('')).join('')}</div>` : '';
   $('aj-corpo').innerHTML = `${deste}<div class="card"><h2>${tx.length ? 'Mensagens gerais' : 'Mensagens'}</h2>${AJ_MSGS.map(([k, t]) => campoAj(k, t)).join('')}</div>
     <div class="card"><h2>Números</h2>${AJ_PARAMS.map(([k, t]) => campoAj(k, t)).join('')}</div>`;

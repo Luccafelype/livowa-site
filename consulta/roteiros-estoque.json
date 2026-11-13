@@ -1,6 +1,6 @@
 {
- "versao": "estoque-v3 · 13/11/2026 (narrativa em 6 blocos em todos os testes, pele nova no PROMPT-PELE-IDADE v3)",
- "sobre": "Blocos prontos do roteiro do react (vídeo de ~1 min). A Caixa (roteiro.js) monta o roteiro de cada lead na hora, sem API: abertura [0-8 s], o que o resultado mostra [8-30 s], mecanismo [30-45 s], ponte [45-52 s], pergunta de 1 toque [52-60 s]. Cada bloco tem 2 ou 3 variações (botão Trocar). Regras: livowa-empresa/tarefas/revisao-entrega-nutricao/roteiro-lead/regras-roteiro-v1.md (o número entre parênteses em 'f' é a regra de lá). Entre chaves, o que a Caixa preenche com o dado do lead. Frases de segurança são fixas (regra 20): não têm variação. 13/11 (d-20261113-narrativa-analise-todas-iscas): UMA narrativa em 6 blocos para todos os testes (abertura, resultado com a referência da idade, o que está conservado e onde aparece, o que pesa, o que conserva na idade, desejo e pergunta de interesse); muda só o que entra nas lacunas (tarefas/venda-pele-conversa/video-analise-duracao-roteiro.md, 3A e 3B). A pergunta de interesse fecha todos, no lugar da pergunta de 1 toque. Nome na abertura: doutor Lucca Marques.",
+ "versao": "estoque-v4 · 13/11/2026 (o fio narrativo em todos os testes; fecho \"estaria disposta a investir nisso\"; assuntos para a conversa)",
+ "sobre": "Blocos do roteiro do vídeo de análise, montado na hora pela Caixa (roteiro.js), sem API. Desde 13/11 (v4, d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md) o FIO em 6 blocos, um respondendo ao anterior: 1 incômodo dela + \"acho que sei por quê\"; 2 boa notícia, o número dela ao lado da idade e a ponte \"vem daqui:\"; 3 onde aparece; 4 \"E por que…?\" com as respostas dela ligadas; 5 o outro hábito e a imagem do kit (mesmo sexo, idade perto); 6 o que dá pra ver × o que só medindo e a pergunta do Lucca. Entre chaves, o que a Caixa preenche com o dado do lead; frase sem o dado sai do bloco. Toda frase é editável nos Ajustes (e_<teste>_<caminho>). Chaves com \"_\" na frente (as versões antigas) e \"f\" (a fonte) ficam fora dos Ajustes.",
  "comum": {
   "seguranca": {
    "f": "regras 20 e 25 (frase de segurança palavra por palavra; nunca cortar)",
@@ -8,54 +8,6 @@
    "movimento": "Se no teste você sentiu dor no peito, falta de ar ou tontura, não repete e me avisa por aqui."
   },
   "refazer_pergunta": "Consegue refazer hoje?",
-  "narrativa": {
-   "f": "d-20261113-narrativa-analise-todas-iscas; video-analise-duracao-roteiro.md 3A (frases fixas; ele diz do jeito dele); MM pdf 49 (permissão); frases de até 15 palavras, zero promessa, sem preço, consulta nem grátis; exemplo (d-20261113-exemplos-por-imagem): só a imagem do kit, sem nome nem número de estudo na fala",
-   "abertura": [
-    "{nome}, aqui é o doutor Lucca Marques. Vamos olhar o seu teste juntos."
-   ],
-   "contou": [
-    "Você me contou que {rotulo}."
-   ],
-   "quis": [
-    "Você quis saber {rotulo}."
-   ],
-   "conservado": [
-    "Primeiro, o que está conservado: {conserva}."
-   ],
-   "importa_idade": [
-    "Aos {idade} anos, o que mais conserva a sua saúde é {item}."
-   ],
-   "importa_faixa": [
-    "Na sua idade, o que mais conserva a sua saúde é {item}."
-   ],
-   "desejo": [
-    "Daqui a 10 anos você quer {desejo}."
-   ],
-   "desejo_agora": [
-    "Você quer {desejo}."
-   ],
-   "parte": [
-    "{mostra}; o resto eu só sei medindo."
-   ],
-   "trabalhar": [
-    "Isso dá para trabalhar: {rotulo_curto} e o que pesa por dentro."
-   ],
-   "interesse": [
-    "Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
-   ],
-   "contou_resposta": [
-    "Você me contou: \"{rotulo}\"."
-   ],
-   "exemplo": [
-    "Olha este exemplo: {ex_fala}."
-   ],
-   "exemplo_idade": [
-    "Olha este exemplo, de gente da sua idade: {ex_fala}."
-   ],
-   "importa_geral": [
-    "O que mais conserva a sua saúde, em qualquer idade, é {item}."
-   ]
-  },
   "_antes_1311": {
    "ponte": {
     "f": "regra 6 (ponte, até 20 palavras, sem produto, preço, prazo ou vaga); base §3.1 de pesquisa-playbooks.md; L pdf 41",
@@ -76,6 +28,201 @@
     ]
    },
    "nota": "Frases da estrutura de 5 blocos (até 12/11), fora do uso desde a narrativa única de 13/11. Não aparecem nos Ajustes."
+  },
+  "_v3_1311": {
+   "narrativa": {
+    "f": "d-20261113-narrativa-analise-todas-iscas; video-analise-duracao-roteiro.md 3A (frases fixas; ele diz do jeito dele); MM pdf 49 (permissão); frases de até 15 palavras, zero promessa, sem preço, consulta nem grátis; exemplo (d-20261113-exemplos-por-imagem): só a imagem do kit, sem nome nem número de estudo na fala",
+    "abertura": [
+     "{nome}, aqui é o doutor Lucca Marques. Vamos olhar o seu teste juntos."
+    ],
+    "contou": [
+     "Você me contou que {rotulo}."
+    ],
+    "quis": [
+     "Você quis saber {rotulo}."
+    ],
+    "conservado": [
+     "Primeiro, o que está conservado: {conserva}."
+    ],
+    "importa_idade": [
+     "Aos {idade} anos, o que mais conserva a sua saúde é {item}."
+    ],
+    "importa_faixa": [
+     "Na sua idade, o que mais conserva a sua saúde é {item}."
+    ],
+    "desejo": [
+     "Daqui a 10 anos você quer {desejo}."
+    ],
+    "desejo_agora": [
+     "Você quer {desejo}."
+    ],
+    "parte": [
+     "{mostra}; o resto eu só sei medindo."
+    ],
+    "trabalhar": [
+     "Isso dá para trabalhar: {rotulo_curto} e o que pesa por dentro."
+    ],
+    "interesse": [
+     "Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+    ],
+    "contou_resposta": [
+     "Você me contou: \"{rotulo}\"."
+    ],
+    "exemplo": [
+     "Olha este exemplo: {ex_fala}."
+    ],
+    "exemplo_idade": [
+     "Olha este exemplo, de gente da sua idade: {ex_fala}."
+    ],
+    "importa_geral": [
+     "O que mais conserva a sua saúde, em qualquer idade, é {item}."
+    ]
+   },
+   "nota": "Frases da narrativa v3 (6 blocos soltos, até 13/11 15h50), fora do uso desde o fio v4. Não aparecem nos Ajustes."
+  },
+  "fio": {
+   "f": "d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md; PROMPT-NARRATIVA v4 (regras-narrativa-geral.md): cada bloco responde ao anterior e termina com a ponte; frases curtas, \"pra\", \"dá pra\"; zero promessa; a pergunta do fecho é a do Lucca, palavra por palavra",
+   "abertura": [
+    "{nome}, aqui é o doutor Lucca Marques."
+   ],
+   "contou_resposta": [
+    "Você me contou: \"{resposta}\"."
+   ],
+   "quis": [
+    "Você quis saber {rotulo}."
+   ],
+   "ponte_foto": [
+    "Olhando sua foto e suas respostas, acho que sei por quê."
+   ],
+   "ponte_respostas": [
+    "Olhando suas respostas, acho que sei por quê."
+   ],
+   "ponte_teste": [
+    "Olhando seu teste, acho que sei por quê."
+   ],
+   "ponte_quis": [
+    "Olhando seu teste, dá pra te dizer bastante coisa."
+   ],
+   "ponte_comecar": [
+    "Olhando suas respostas, acho que sei por onde começar."
+   ],
+   "boa": [
+    "Primeiro, a boa notícia: {bem}."
+   ],
+   "um": [
+    "Você me contou que {l1}."
+   ],
+   "dois": [
+    "Você {l1} e {l2}: essas duas andam juntas."
+   ],
+   "tres": [
+    "Você {l1}, {l2} e {l3}: essas três andam juntas."
+   ],
+   "exame": [
+    "Isso vale olhar com exame, com calma."
+   ],
+   "hormonio": [
+    "E aos {idade} o hormônio dessa fase mexe no sono de muita mulher."
+   ],
+   "hormonio_faixa": [
+    "E nessa fase o hormônio mexe no sono de muita mulher."
+   ],
+   "exemplo": [
+    "Olha esse exemplo: {ex_fala}."
+   ],
+   "exemplo_idade": [
+    "Olha esse exemplo, de gente da sua idade: {ex_fala}."
+   ],
+   "solucao": {
+    "sol": "Por isso o protetor todo dia.",
+    "cigarro": "Por isso, longe do cigarro.",
+    "sono": "Por isso o sono conta tanto."
+   },
+   "importa_idade": [
+    "Aos {idade} anos, o que mais conserva a sua saúde é {item}."
+   ],
+   "importa_faixa": [
+    "Na sua idade, o que mais conserva a sua saúde é {item}."
+   ],
+   "importa_geral": [
+    "O que mais conserva a sua saúde, em qualquer idade, é {item}."
+   ],
+   "ver": [
+    "O que dá pra ver, eu vi."
+   ],
+   "ver_respostas": [
+    "O que as respostas mostram, eu vi."
+   ],
+   "medir": [
+    "O que pesa por dentro, {medir}, só medindo."
+   ],
+   "medir_sem": [
+    "O que pesa por dentro, eu só sei medindo."
+   ],
+   "trabalhar": [
+    "Isso dá pra trabalhar."
+   ],
+   "pergunta": "{nome}, se hoje existisse um plano feito pra você, que você confiasse pra seguir e que coubesse no seu bolso, você estaria {disposta} a investir nisso pra {desejo}?",
+   "medir_itens": {
+    "sono": "sono",
+    "glicose": "glicose",
+    "hormonio": "hormônio",
+    "pressao": "pressão",
+    "musculo": "o músculo",
+    "exames": "os exames"
+   }
+  },
+  "assuntos": {
+   "f": "ASSUNTOS PARA A CONVERSA (PROMPT-NARRATIVA v4): sem o roteiro do Claude, o que ela marcou e o vídeo deixou para medir ou conversar, até 5; mulher de 40 a 60, sempre a fase hormonal (o sintoma primeiro; nunca ligada a pele, rosto ou envelhecer: reposicao-hormonal-mulher.md, Res. CFM 1.999/2012)",
+   "hormonal": "fase hormonal: perguntar calorão e suor à noite; se houver, avaliar reposição para o sintoma (histórico pessoal e familiar de câncer, trombose)",
+   "resposta": "no áudio: \"{resposta}\"",
+   "queixa": "o que incomoda: {queixa}",
+   "sono_cansado": "sono que não recupera",
+   "sono_curto": "sono curto: {sono}",
+   "ronco": "ronca e acorda {cansada}",
+   "pressao_glicose_nunca": "pressão e glicose nunca medidas",
+   "pressao_alta": "pressão alta: já disseram",
+   "glicose_alta": "glicose alta: já disseram",
+   "ambas_altas": "pressão e glicose altas: já disseram",
+   "exames": "já ouviu de médico ou exame: {exames}",
+   "sem_exames": "faz tempo sem exames",
+   "tireoide": "sente {sintomas}: olhar com exame",
+   "hormonios": "{ciclo_pelos}: olhar os hormônios com exame",
+   "menopausa": "menopausa ou chegando nela",
+   "remedio": "remédio todo dia: não parar nem trocar por conta própria",
+   "movimento": "movimento baixo: {movimento}",
+   "forca": "ainda não faz exercício de força",
+   "sol": "sol sem protetor: {sol}",
+   "sol_pele": "sol por dia: {sol}",
+   "cigarro": "cigarro: {cigarro}",
+   "incomoda": "incomoda: {incomoda}",
+   "atrapalha": "o que trava: {atrapalha}",
+   "ajuda": "prefere: {ajuda}",
+   "forca_teste": "força: {resultado}",
+   "v": {
+    "sono": {
+     "6h": "umas 6 horas",
+     "curto": "5 horas ou menos",
+     "5menos": "5 horas ou menos",
+     "6": "umas 6 horas",
+     "4a5": "4 a 5 horas"
+    },
+    "movimento": {
+     "quase_nada": "quase nada na semana",
+     "ate2": "até 2 horas por semana"
+    },
+    "sol": {
+     "todo_dia": "quase todo dia",
+     "fds": "no fim de semana",
+     "1a3h": "1 a 3 horas",
+     "mais_3h": "mais de 3 horas"
+    },
+    "cigarro": {
+     "hoje": "fuma hoje",
+     "as_vezes": "fuma ou usa vape às vezes",
+     "parou_menos10": "parou há menos de 10 anos"
+    }
+   }
   }
  },
  "pele": {
@@ -122,189 +269,53 @@
     null
    ]
   },
-  "bem": {
-   "f": "regras 6 (primeiro o que está bem) e 7 (elogio verdadeiro); kit-pele §2.1",
-   "com_lista": [
-    "Primeiro o que está bem: {bem} não apareceram na foto.",
-    "Começo pelo que está bom: {bem} estão sem nada a apontar.",
-    "A parte boa: {bem} estão bem na sua foto."
-   ],
-   "sem_lista": [
-    "As fotos ficaram boas, e deu para ver o rosto inteiro.",
-    "Você fez as fotos do jeito certo, e isso ajuda muito."
-   ]
-  },
   "achados": {
    "acne_ativa": {
     "nome": "as espinhas",
     "onde_fixo": null,
-    "f": "regra 25 pele2 (espinha); kit-pele §2.5",
-    "leve": [
-     "Aparecem algumas espinhas, mais {onde}.",
-     "Na foto dá para ver poucas espinhas, {onde}."
-    ],
-    "forte": [
-     "O que mais aparece são as espinhas, {onde}.",
-     "As espinhas são o que mais pesa na foto, {onde}.",
-     "Aqui aparecem várias espinhas, mais {onde}."
-    ],
-    "mecanismo": [
-     "A espinha nasce dentro do poro: o hormônio aumenta o óleo, o poro entope e inflama.",
-     "Espinha começa dentro do poro. O hormônio aumenta o óleo, o poro entope, e aí inflama."
-    ]
+    "f": "regra 25 pele2 (espinha); kit-pele §2.5"
    },
    "comedoes": {
     "nome": "os cravos",
     "onde_fixo": null,
-    "f": "kit-pele §2.5 (T2.cravo)",
-    "leve": [
-     "Aparecem alguns cravos, {onde}.",
-     "Tem uns cravos pequenos, {onde}."
-    ],
-    "forte": [
-     "Os cravos aparecem bastante, {onde}.",
-     "O que chama atenção são os cravos, {onde}."
-    ],
-    "mecanismo": [
-     "Cravo é o poro entupido. Quando inflama, vira a bolinha vermelha.",
-     "O cravo é o começo da espinha: o poro entupido, antes de inflamar."
-    ]
+    "f": "kit-pele §2.5 (T2.cravo)"
    },
    "cicatriz_acne": {
     "nome": "as marcas de espinhas antigas",
     "onde_fixo": null,
     "f": "regra 25 pele2 (marca de espinha); kit-pele §2.5 (T2.marcas, T2.marcaCor sem a frase de 'clarear', regra 18)",
-    "leve": [
-     "Aparecem marcas de espinhas antigas, {onde}.",
-     "Ficaram algumas marcas de espinhas antigas, {onde}."
-    ],
-    "forte": [
-     "As marcas de espinhas antigas aparecem bem, {onde}.",
-     "Tem bastante marca de espinha antiga, {onde}."
-    ],
-    "cor": "Essa marca parece ser de cor, e não de relevo.",
-    "mecanismo": [
-     "Foto de frente costuma esconder o relevo. Pela tela não dá para saber a profundidade.",
-     "Pela tela não dá para saber a profundidade da marca. A foto de frente esconde o relevo."
-    ]
+    "cor": "Essa marca parece ser de cor, e não de relevo."
    },
    "manchas": {
     "nome": "as manchas",
     "onde_fixo": "nas bochechas",
-    "f": "regra 25 pele (mancha: 'na foto parece mancha; pela foto não dá para dizer o tipo'); kit-pele §2.2; mancha 2 ou 3 pede a frase de segurança",
-    "leve": [
-     "Na bochecha aparecem manchas leves. Na foto parece mancha; pela foto não dá para dizer o tipo.",
-     "Tem umas manchas leves nas bochechas. Pela foto não dá para dizer o tipo."
-    ],
-    "forte": [
-     "Nas bochechas aparecem manchas. Na foto parece mancha; pela foto não dá para dizer o tipo.",
-     "O que mais aparece são as manchas nas bochechas. Pela foto não dá para dizer o tipo."
-    ],
-    "mecanismo": [
-     "O sol do dia a dia é o que mais pesa na pele, somado ao tempo.",
-     "Mancha na bochecha costuma vir do sol de todo dia, que vai somando com os anos."
-    ]
+    "f": "regra 25 pele (mancha: 'na foto parece mancha; pela foto não dá para dizer o tipo'); kit-pele §2.2; mancha 2 ou 3 pede a frase de segurança"
    },
    "textura_poros": {
     "nome": "a textura e os poros",
     "onde_fixo": "na zona T e no nariz",
-    "f": "kit-pele §2.2 (bochecha: manchas e textura; o sol como fator com mais prova, perfil B)",
-    "leve": [
-     "Na zona T a textura e os poros aparecem um pouco.",
-     "No nariz e na testa os poros aparecem de leve."
-    ],
-    "forte": [
-     "Na zona T os poros e a textura aparecem bastante.",
-     "O poro aberto aparece mais no nariz e na zona T."
-    ],
-    "mecanismo": [
-     "O sol do dia a dia é o que mais pesa na textura da pele, junto com o tempo.",
-     "Pele mais oleosa costuma mostrar mais o poro, e o sol de todo dia soma."
-    ]
+    "f": "kit-pele §2.2 (bochecha: manchas e textura; o sol como fator com mais prova, perfil B)"
    },
    "linhas_testa": {
     "nome": "as linhas da testa",
     "onde_fixo": "na testa",
-    "f": "kit-pele §2.2 (testa; T2.testaLeve)",
-    "leve": [
-     "Na testa aparecem linhas leves. Isso é o esperado.",
-     "As linhas da testa estão leves, dentro do esperado."
-    ],
-    "forte": [
-     "Na testa as linhas já ficam um pouco marcadas, mesmo parada.",
-     "As linhas da testa aparecem mesmo com o rosto parado."
-    ],
-    "mecanismo": [
-     "Linha da testa é músculo, mais tempo, mais sol.",
-     "A linha nasce do movimento da testa, somado ao tempo e ao sol."
-    ]
+    "f": "kit-pele §2.2 (testa; T2.testaLeve)"
    },
    "olhos": {
     "nome": "a região dos olhos",
     "onde_fixo": "no canto do olho",
-    "f": "regra 25 pele (olheira: 'quase sempre vem de família'); kit-pele §2.2 e T2.olhoCanto",
-    "leve": [
-     "No canto do olho aparecem linhas leves, que são as primeiras que a gente ganha.",
-     "Ao redor dos olhos aparecem linhas leves, as primeiras que todo mundo ganha."
-    ],
-    "forte": [
-     "Ao redor dos olhos as linhas e a olheira aparecem mais.",
-     "O que mais aparece está ao redor dos olhos: as linhas do canto e a olheira."
-    ],
-    "mecanismo": [
-     "A olheira quase sempre vem de família.",
-     "As linhas do canto vêm do sorriso, com o tempo. A olheira quase sempre vem de família."
-    ]
+    "f": "regra 25 pele (olheira: 'quase sempre vem de família'); kit-pele §2.2 e T2.olhoCanto"
    },
    "sulco_nasolabial": {
     "nome": "o sulco do nariz à boca",
     "onde_fixo": "do nariz à boca",
-    "f": "kit-pele §2.2 (sulco e contorno)",
-    "leve": [
-     "O sulco do nariz à boca aparece leve. Esse sulco todo mundo tem.",
-     "Do nariz à boca aparece um sulco leve, que todo mundo tem."
-    ],
-    "forte": [
-     "O sulco do nariz à boca aparece mais fundo.",
-     "Do nariz à boca o sulco já aparece marcado."
-    ],
-    "mecanismo": [
-     "Esse sulco todo mundo tem. Com os anos, o osso e a gordura da bochecha mudam de lugar.",
-     "O que muda com os anos é a profundidade, porque o osso e a gordura da bochecha mudam de lugar."
-    ]
+    "f": "kit-pele §2.2 (sulco e contorno)"
    },
    "flacidez": {
     "nome": "o contorno do rosto",
     "onde_fixo": "no contorno do rosto",
-    "f": "kit-pele §2.2 (sulco e contorno)",
-    "leve": [
-     "O contorno do rosto aparece um pouco menos firme.",
-     "Na borda da mandíbula o contorno está levemente menos firme."
-    ],
-    "forte": [
-     "O contorno do rosto aparece menos firme.",
-     "Na borda da mandíbula o contorno já aparece menos firme."
-    ],
-    "mecanismo": [
-     "O contorno depende muito mais de tempo e de peso do que de sol.",
-     "Firmeza do contorno tem mais a ver com tempo e com peso do que com sol."
-    ]
+    "f": "kit-pele §2.2 (sulco e contorno)"
    }
-  },
-  "faixa_idade": {
-   "f": "regra 25 pele (faixa: só se a regra do kit deixa dizer; 'é estimativa, erra uns 4 a 5 anos para cada lado'); kit-pele §2.3",
-   "texto": [
-    "A estimativa da sua pele ficou entre {min} e {max}. É estimativa, erra uns 4 a 5 anos para cada lado.",
-    "A ferramenta estimou a pele entre {min} e {max} anos. É estimativa: erra uns 4 a 5 anos."
-   ]
-  },
-  "idade_aparente": {
-   "f": "pele2 (03/11): a página abre com a idade aparente do rosto; regra 25 ('é estimativa, erra uns 4 a 5 anos'; confiança baixa ou foto regular: sem número; sem idade real, sem comparar); kit-pele §2.3; vitalidade: Christensen 2009, BMJ (PMID 20008378), sem número do estudo no vídeo (regra 15)",
-   "texto": [
-    "Pela foto, o seu rosto aparenta entre {min} e {max} anos. É estimativa: erra uns 4 a 5 anos para cada lado.",
-    "A idade aparente do seu rosto ficou entre {min} e {max} anos. É uma estimativa pela foto, com erro de uns 4 a 5 anos.",
-    "O rosto aparenta entre {min} e {max} anos na foto. É estimativa, e o rosto é só uma parte da vitalidade."
-   ]
   },
   "refazer": {
    "f": "regra 16 (dado fraco: o roteiro inteiro vira pedido para refazer, sem achado); kit-pele §3.5 (atalho pelerefazer)",
@@ -318,7 +329,6 @@
     "padrao": "difícil de ler"
    }
   },
-  "mostra": "A foto mostra uma parte",
   "contou": [
    "Você me contou que te incomoda {queixa}."
   ],
@@ -342,20 +352,287 @@
     ]
    }
   },
-  "sem_numero": [
-   "A foto não deu segurança para estimar a idade da pele, então não vou te dar número."
-  ]
+  "_v3_1311": {
+   "bem": {
+    "f": "regras 6 (primeiro o que está bem) e 7 (elogio verdadeiro); kit-pele §2.1",
+    "com_lista": [
+     "Primeiro o que está bem: {bem} não apareceram na foto.",
+     "Começo pelo que está bom: {bem} estão sem nada a apontar.",
+     "A parte boa: {bem} estão bem na sua foto."
+    ],
+    "sem_lista": [
+     "As fotos ficaram boas, e deu para ver o rosto inteiro.",
+     "Você fez as fotos do jeito certo, e isso ajuda muito."
+    ]
+   },
+   "faixa_idade": {
+    "f": "regra 25 pele (faixa: só se a regra do kit deixa dizer; 'é estimativa, erra uns 4 a 5 anos para cada lado'); kit-pele §2.3",
+    "texto": [
+     "A estimativa da sua pele ficou entre {min} e {max}. É estimativa, erra uns 4 a 5 anos para cada lado.",
+     "A ferramenta estimou a pele entre {min} e {max} anos. É estimativa: erra uns 4 a 5 anos."
+    ]
+   },
+   "idade_aparente": {
+    "f": "pele2 (03/11): a página abre com a idade aparente do rosto; regra 25 ('é estimativa, erra uns 4 a 5 anos'; confiança baixa ou foto regular: sem número; sem idade real, sem comparar); kit-pele §2.3; vitalidade: Christensen 2009, BMJ (PMID 20008378), sem número do estudo no vídeo (regra 15)",
+    "texto": [
+     "Pela foto, o seu rosto aparenta entre {min} e {max} anos. É estimativa: erra uns 4 a 5 anos para cada lado.",
+     "A idade aparente do seu rosto ficou entre {min} e {max} anos. É uma estimativa pela foto, com erro de uns 4 a 5 anos.",
+     "O rosto aparenta entre {min} e {max} anos na foto. É estimativa, e o rosto é só uma parte da vitalidade."
+    ]
+   },
+   "sem_numero": [
+    "A foto não deu segurança para estimar a idade da pele, então não vou te dar número."
+   ],
+   "mostra": "A foto mostra uma parte",
+   "achados": {
+    "acne_ativa": {
+     "leve": [
+      "Aparecem algumas espinhas, mais {onde}.",
+      "Na foto dá para ver poucas espinhas, {onde}."
+     ],
+     "forte": [
+      "O que mais aparece são as espinhas, {onde}.",
+      "As espinhas são o que mais pesa na foto, {onde}.",
+      "Aqui aparecem várias espinhas, mais {onde}."
+     ],
+     "mecanismo": [
+      "A espinha nasce dentro do poro: o hormônio aumenta o óleo, o poro entope e inflama.",
+      "Espinha começa dentro do poro. O hormônio aumenta o óleo, o poro entope, e aí inflama."
+     ]
+    },
+    "comedoes": {
+     "leve": [
+      "Aparecem alguns cravos, {onde}.",
+      "Tem uns cravos pequenos, {onde}."
+     ],
+     "forte": [
+      "Os cravos aparecem bastante, {onde}.",
+      "O que chama atenção são os cravos, {onde}."
+     ],
+     "mecanismo": [
+      "Cravo é o poro entupido. Quando inflama, vira a bolinha vermelha.",
+      "O cravo é o começo da espinha: o poro entupido, antes de inflamar."
+     ]
+    },
+    "cicatriz_acne": {
+     "leve": [
+      "Aparecem marcas de espinhas antigas, {onde}.",
+      "Ficaram algumas marcas de espinhas antigas, {onde}."
+     ],
+     "forte": [
+      "As marcas de espinhas antigas aparecem bem, {onde}.",
+      "Tem bastante marca de espinha antiga, {onde}."
+     ],
+     "mecanismo": [
+      "Foto de frente costuma esconder o relevo. Pela tela não dá para saber a profundidade.",
+      "Pela tela não dá para saber a profundidade da marca. A foto de frente esconde o relevo."
+     ]
+    },
+    "manchas": {
+     "leve": [
+      "Na bochecha aparecem manchas leves. Na foto parece mancha; pela foto não dá para dizer o tipo.",
+      "Tem umas manchas leves nas bochechas. Pela foto não dá para dizer o tipo."
+     ],
+     "forte": [
+      "Nas bochechas aparecem manchas. Na foto parece mancha; pela foto não dá para dizer o tipo.",
+      "O que mais aparece são as manchas nas bochechas. Pela foto não dá para dizer o tipo."
+     ],
+     "mecanismo": [
+      "O sol do dia a dia é o que mais pesa na pele, somado ao tempo.",
+      "Mancha na bochecha costuma vir do sol de todo dia, que vai somando com os anos."
+     ]
+    },
+    "textura_poros": {
+     "leve": [
+      "Na zona T a textura e os poros aparecem um pouco.",
+      "No nariz e na testa os poros aparecem de leve."
+     ],
+     "forte": [
+      "Na zona T os poros e a textura aparecem bastante.",
+      "O poro aberto aparece mais no nariz e na zona T."
+     ],
+     "mecanismo": [
+      "O sol do dia a dia é o que mais pesa na textura da pele, junto com o tempo.",
+      "Pele mais oleosa costuma mostrar mais o poro, e o sol de todo dia soma."
+     ]
+    },
+    "linhas_testa": {
+     "leve": [
+      "Na testa aparecem linhas leves. Isso é o esperado.",
+      "As linhas da testa estão leves, dentro do esperado."
+     ],
+     "forte": [
+      "Na testa as linhas já ficam um pouco marcadas, mesmo parada.",
+      "As linhas da testa aparecem mesmo com o rosto parado."
+     ],
+     "mecanismo": [
+      "Linha da testa é músculo, mais tempo, mais sol.",
+      "A linha nasce do movimento da testa, somado ao tempo e ao sol."
+     ]
+    },
+    "olhos": {
+     "leve": [
+      "No canto do olho aparecem linhas leves, que são as primeiras que a gente ganha.",
+      "Ao redor dos olhos aparecem linhas leves, as primeiras que todo mundo ganha."
+     ],
+     "forte": [
+      "Ao redor dos olhos as linhas e a olheira aparecem mais.",
+      "O que mais aparece está ao redor dos olhos: as linhas do canto e a olheira."
+     ],
+     "mecanismo": [
+      "A olheira quase sempre vem de família.",
+      "As linhas do canto vêm do sorriso, com o tempo. A olheira quase sempre vem de família."
+     ]
+    },
+    "sulco_nasolabial": {
+     "leve": [
+      "O sulco do nariz à boca aparece leve. Esse sulco todo mundo tem.",
+      "Do nariz à boca aparece um sulco leve, que todo mundo tem."
+     ],
+     "forte": [
+      "O sulco do nariz à boca aparece mais fundo.",
+      "Do nariz à boca o sulco já aparece marcado."
+     ],
+     "mecanismo": [
+      "Esse sulco todo mundo tem. Com os anos, o osso e a gordura da bochecha mudam de lugar.",
+      "O que muda com os anos é a profundidade, porque o osso e a gordura da bochecha mudam de lugar."
+     ]
+    },
+    "flacidez": {
+     "leve": [
+      "O contorno do rosto aparece um pouco menos firme.",
+      "Na borda da mandíbula o contorno está levemente menos firme."
+     ],
+     "forte": [
+      "O contorno do rosto aparece menos firme.",
+      "Na borda da mandíbula o contorno já aparece menos firme."
+     ],
+     "mecanismo": [
+      "O contorno depende muito mais de tempo e de peso do que de sol.",
+      "Firmeza do contorno tem mais a ver com tempo e com peso do que com sol."
+     ]
+    }
+   }
+  },
+  "sem_queixa": [
+   "Você quis olhar a sua pele com calma."
+  ],
+  "ponte_so_foto": [
+   "Olhando sua foto, acho que sei por quê."
+  ],
+  "ponte_sem_queixa": [
+   "Olhando sua foto, dá pra te mostrar bastante coisa."
+  ],
+  "boa": {
+   "f": "PROMPT-NARRATIVA v4, pele e pele2: bloco 2, a boa notícia (o que a foto mostrou sem nada)",
+   "linhas_testa": "a testa está lisa",
+   "olhos": "o canto dos olhos está liso",
+   "textura_poros": "a textura está uniforme",
+   "manchas": "o tom da pele está uniforme",
+   "sulco_nasolabial": "o vinco do nariz à boca quase não aparece",
+   "flacidez": "o contorno está firme",
+   "acne_ativa": "não aparecem espinhas",
+   "comedoes": "não aparecem cravos",
+   "cicatriz_acne": "não aparecem marcas de espinhas antigas"
+  },
+  "idade_aparente": {
+   "f": "PROMPT-NARRATIVA v4, pele e pele2: a âncora (a idade aparente, como estimativa, ao lado da idade)",
+   "texto": [
+    "Pela foto, o rosto aparenta, numa estimativa, de {min} a {max} anos."
+   ],
+   "com_idade": [
+    "Pela foto, o rosto aparenta, numa estimativa, de {min} a {max}; você tem {idade}."
+   ]
+  },
+  "faixa_idade": {
+   "f": "PROMPT-NARRATIVA v4, pele e pele2: a âncora da pele antiga (a faixa estimada)",
+   "texto": [
+    "A estimativa da sua pele ficou de {min} a {max} anos."
+   ],
+   "com_idade": [
+    "A estimativa da sua pele ficou de {min} a {max}; você tem {idade}."
+   ]
+  },
+  "ponte_idade": {
+   "f": "PROMPT-NARRATIVA v4, pele e pele2: a ponte do bloco 2 pela faixa (como a da pele nova)",
+   "acima": "Um pouco acima, e esse pouco vem daqui:",
+   "acima_fora": "Mostra um pouco mais, e esse pouco vem daqui:",
+   "igual": "Está na sua idade, e o que mais aparece vem daqui:",
+   "abaixo": "Mostra menos que a sua idade. O que mais aparece vem daqui:",
+   "sem_idade": "O que mais aparece vem daqui:"
+  },
+  "sem_faixa": [
+   "O que mais aparece na foto vem daqui:"
+  ],
+  "sem_achado": [
+   "Na foto, nada chamou atenção."
+  ],
+  "onde": {
+   "f": "PROMPT-NARRATIVA v4, pele e pele2: bloco 3 (fecha o \"daqui\", com nome neutro)",
+   "acne_ativa": "das espinhas, mais {onde}",
+   "comedoes": "dos cravos, mais {onde}",
+   "cicatriz_acne": "das marcas de espinhas antigas, mais {onde}",
+   "manchas": "das manchas nas bochechas",
+   "textura_poros": "dos poros, na zona T e no nariz",
+   "linhas_testa": "das linhas da testa",
+   "olhos": "do canto dos olhos",
+   "sulco_nasolabial": "do vinco do nariz à boca",
+   "flacidez": "do contorno do rosto"
+  },
+  "e_o_que": {
+   "queixa": "É o que te incomoda.",
+   "padrao": "É o que mais aparece na foto."
+  },
+  "tipo_mancha": [
+   "Pela foto não dá pra dizer o tipo da mancha."
+  ],
+  "porque": {
+   "f": "PROMPT-NARRATIVA v4, pele e pele2: bloco 4 (o porquê do achado principal, com \"porque\"; os hábitos das respostas, ligados)",
+   "pergunta": [
+    "E por que aparece mais aí?"
+   ],
+   "acne_ativa": "Porque a espinha nasce dentro do poro: o hormônio aumenta o óleo, o poro entope e inflama.",
+   "comedoes": "Porque o cravo é o poro entupido; quando inflama, vira espinha.",
+   "cicatriz_acne": "Porque a marca fica das espinhas antigas; pela tela não dá pra ver a profundidade.",
+   "manchas": "Porque o sol de todo dia vai somando com os anos.",
+   "textura_poros": "Porque pele mais oleosa mostra mais o poro, e o sol de todo dia soma.",
+   "linhas_testa": "Porque a linha nasce do movimento da testa, somado ao tempo e ao sol.",
+   "olhos": "Porque as linhas do canto vêm do sorriso, com o tempo.",
+   "sulco_nasolabial": "Porque com os anos o osso e a gordura da bochecha mudam de lugar.",
+   "flacidez": "Porque o contorno depende mais de tempo e de peso do que de sol.",
+   "liga": {
+    "sono": {
+     "4a5": "dorme de 4 a 5 horas",
+     "6": "dorme umas 6 horas"
+    }
+   }
+  },
+  "habito": {
+   "f": "PROMPT-NARRATIVA v4, pele e pele2: bloco 5 (o sol que ela marcou, ligado ao achado; a imagem do kit)",
+   "sol": {
+    "1a3h": "E o sol pesa na pele: você pega de 1 a 3 horas por dia.",
+    "mais_3h": "E o sol pesa na pele: você pega mais de 3 horas por dia."
+   },
+   "sol_manchas": {
+    "1a3h": "As manchas vêm muito do sol: você pega de 1 a 3 horas por dia.",
+    "mais_3h": "As manchas vêm muito do sol: você pega mais de 3 horas por dia."
+   }
+  },
+  "desejo": {
+   "f": "PROMPT-NARRATIVA v4, pele e pele2: o objetivo dela (pele2) como verbo, na pergunta do fecho",
+   "confianca": "se sentir bem e confiante com a sua pele",
+   "sem_maquiagem": "sair sem maquiagem nem filtro, sem se preocupar",
+   "sem_filtro": "sair sem filtro na foto",
+   "fotos": "gostar de se ver em foto de perto",
+   "prevenir": "cuidar agora, antes que piore",
+   "parar_gastar": "parar de gastar com o que não funciona"
+  },
+  "desejo_sem": "cuidar {de_queixa}",
+  "desejo_pele": "cuidar da sua pele"
  },
  "pernas": {
   "abertura": {
    "f": "regra 6 (abertura com o que ela fez, o número dela); regra 25 pernas"
-  },
-  "mecanismo": {
-   "f": "regra 25 pernas (potência é força com velocidade, das primeiras coisas que o músculo perde); kit-movimento §1.2",
-   "texto": [
-    "Potência é força com velocidade. Costuma ser das primeiras coisas que o músculo perde com os anos.",
-    "O teste mede potência, que é força com velocidade. É das primeiras coisas que o músculo perde com o tempo."
-   ]
   },
   "refazer": {
    "f": "regra 16; kit-movimento §0 (atalho refazerp)",
@@ -370,29 +647,6 @@
    }
   },
   "rotulo": "a idade das suas pernas",
-  "mostra": "O teste das pernas mostra uma parte",
-  "conservado": "as suas pernas",
-  "resultado": {
-   "f": "3B pernas: o tempo das 5 levantadas e o percentil na idade (kit-movimento §1); a faixa parecida é estimativa; faixas 3 e 4 abrem com \"Calma\" (regra 22)",
-   "1": [
-    "A potência das suas pernas: 5 levantadas da cadeira em {tempo} segundos. Você ficou melhor que {pc} de cada 100 pessoas da sua idade. É estimativa.",
-    "A potência das suas pernas: 5 levantadas da cadeira em {tempo} segundos. Para a sua idade, ficou na metade de cima. É estimativa."
-   ],
-   "2": [
-    "A potência das suas pernas: 5 levantadas da cadeira em {tempo} segundos. Para a sua idade, ficou no meio: melhor que {pc} de cada 100. É estimativa.",
-    "A potência das suas pernas: 5 levantadas da cadeira em {tempo} segundos. Para a sua idade, ficou no meio. É estimativa."
-   ],
-   "3": [
-    "Calma, isso tem explicação. As 5 levantadas levaram {tempo} segundos, abaixo do meio para a sua idade. É estimativa.",
-    "Calma, isso tem explicação. As 5 levantadas ficaram abaixo do meio para a sua idade. É estimativa."
-   ],
-   "4": [
-    "Calma, não é motivo de susto. As 5 levantadas levaram mais tempo que o esperado. Isso vale medir com calma."
-   ]
-  },
-  "parecida": [
-   "As suas pernas ficaram parecidas com as de quem tem {faixa_idade}."
-  ],
   "_antes_1311": {
    "abertura": {
     "texto": [
@@ -420,18 +674,92 @@
      "Calma, não é motivo de susto. O tempo ficou mais longo do que o esperado, e vale medir."
     ]
    }
-  }
+  },
+  "_v3_1311": {
+   "resultado": {
+    "f": "3B pernas: o tempo das 5 levantadas e o percentil na idade (kit-movimento §1); a faixa parecida é estimativa; faixas 3 e 4 abrem com \"Calma\" (regra 22)",
+    "1": [
+     "A potência das suas pernas: 5 levantadas da cadeira em {tempo} segundos. Você ficou melhor que {pc} de cada 100 pessoas da sua idade. É estimativa.",
+     "A potência das suas pernas: 5 levantadas da cadeira em {tempo} segundos. Para a sua idade, ficou na metade de cima. É estimativa."
+    ],
+    "2": [
+     "A potência das suas pernas: 5 levantadas da cadeira em {tempo} segundos. Para a sua idade, ficou no meio: melhor que {pc} de cada 100. É estimativa.",
+     "A potência das suas pernas: 5 levantadas da cadeira em {tempo} segundos. Para a sua idade, ficou no meio. É estimativa."
+    ],
+    "3": [
+     "Calma, isso tem explicação. As 5 levantadas levaram {tempo} segundos, abaixo do meio para a sua idade. É estimativa.",
+     "Calma, isso tem explicação. As 5 levantadas ficaram abaixo do meio para a sua idade. É estimativa."
+    ],
+    "4": [
+     "Calma, não é motivo de susto. As 5 levantadas levaram mais tempo que o esperado. Isso vale medir com calma."
+    ]
+   },
+   "mostra": "O teste das pernas mostra uma parte",
+   "conservado": "as suas pernas",
+   "mecanismo": {
+    "f": "regra 25 pernas (potência é força com velocidade, das primeiras coisas que o músculo perde); kit-movimento §1.2",
+    "texto": [
+     "Potência é força com velocidade. Costuma ser das primeiras coisas que o músculo perde com os anos.",
+     "O teste mede potência, que é força com velocidade. É das primeiras coisas que o músculo perde com o tempo."
+    ]
+   },
+   "parecida": [
+    "As suas pernas ficaram parecidas com as de quem tem {faixa_idade}."
+   ]
+  },
+  "boa": {
+   "1": "as suas pernas estão conservadas",
+   "2": "as suas pernas responderam bem"
+  },
+  "calma": {
+   "3": "Calma, isso tem explicação.",
+   "4": "Calma, não é motivo de susto."
+  },
+  "resultado": {
+   "f": "PROMPT-NARRATIVA v4, braco e pernas: a âncora (as 5 levantadas e o tempo, \"melhor que\" o percentil, \"parecidas com as de quem tem\" a faixa)",
+   "1": [
+    "As 5 levantadas da cadeira levaram {tempo} segundos: melhor que {pc} de cada 100 pessoas da sua idade.",
+    "As 5 levantadas da cadeira levaram {tempo} segundos, na metade de cima pra sua idade."
+   ],
+   "2": [
+    "As 5 levantadas da cadeira levaram {tempo} segundos: melhor que {pc} de cada 100 pessoas da sua idade.",
+    "As 5 levantadas da cadeira levaram {tempo} segundos, no meio pra sua idade."
+   ],
+   "3": [
+    "As 5 levantadas levaram {tempo} segundos, abaixo do meio pra sua idade.",
+    "As 5 levantadas ficaram abaixo do meio pra sua idade."
+   ],
+   "4": [
+    "As 5 levantadas levaram mais tempo que o esperado. Isso vale medir com calma."
+   ]
+  },
+  "parecida": [
+   "São pernas parecidas com as de quem tem {faixa_idade}."
+  ],
+  "ponte": {
+   "dentro": "Está bem pra sua idade, e vem daqui:",
+   "acima": "Está no meio, e o que mais pesa vem daqui:",
+   "abaixo": "E vem daqui:"
+  },
+  "onde": [
+   "do tempo de levantar."
+  ],
+  "e_o_que": {
+   "resposta": "É daí que vem o que você me contou.",
+   "padrao": "É o número que mais diz sobre as suas pernas."
+  },
+  "desejo": "cuidar da força das suas pernas",
+  "porque": {
+   "f": "PROMPT-NARRATIVA v4, braco e pernas: o porquê (potência), sem hábito: o teste não pergunta",
+   "pergunta": "E por que, se você ainda faz tudo?",
+   "pergunta_bem": "E por que isso importa?",
+   "mecanismo": "Porque potência é força com velocidade, e é das primeiras coisas que o músculo perde com os anos."
+  },
+  "medir": "pressão, glicose, o músculo"
  },
  "braco": {
   "abertura": {
    "f": "regra 6; regra 25 braço (circule as roscas em 10 s e a faixa)"
-  },
-  "mecanismo": {
-   "f": "regra 25 braço (mesmo mecanismo das pernas); kit-movimento §1.2",
-   "texto": [
-    "Potência é força com velocidade. Costuma ser das primeiras coisas que o músculo perde com os anos.",
-    "O teste mede velocidade do músculo, e ela costuma ser das primeiras coisas que caem com o tempo."
-   ]
   },
   "refazer": {
    "f": "regras 16 e 25 braço ('celular firme, cotovelo colado no corpo'); kit-movimento §0",
@@ -447,29 +775,6 @@
    }
   },
   "rotulo": "a idade do seu músculo",
-  "mostra": "O teste do braço mostra uma parte",
-  "conservado": "a velocidade do seu braço",
-  "resultado": {
-   "f": "3B braço: a âncora é o número dela ao lado da idade real (idade muscular de medidaBraco); faixas 3 e 4 abrem com \"Calma\" (regra 22); no vídeo \"faixa mais baixa\", nunca \"frágil\"",
-   "1": [
-    "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. Você tem {idade} anos: está dentro do esperado. É estimativa.",
-    "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. É estimativa.",
-    "Idade muscular estimada, pela velocidade do braço: {idade_m}. É estimativa."
-   ],
-   "2": [
-    "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. Você tem {idade} anos: ficou um pouco acima. É estimativa.",
-    "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}, um pouco acima. É estimativa.",
-    "Idade muscular estimada, pela velocidade do braço: {idade_m}, um pouco acima. É estimativa.",
-    "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Ficou um pouco abaixo do esperado para a idade. É estimativa."
-   ],
-   "3": [
-    "Calma, isso tem explicação. A velocidade do seu braço ficou abaixo do esperado para {idade} anos. É estimativa.",
-    "Calma, isso tem explicação. A velocidade do seu braço ficou abaixo do esperado para a idade. É estimativa."
-   ],
-   "4": [
-    "Calma, não é motivo de susto. A velocidade do braço ficou na faixa mais baixa. Isso vale medir com calma."
-   ]
-  },
   "_antes_1311": {
    "abertura": {
     "texto": [
@@ -498,86 +803,90 @@
     ]
    }
   },
-  "conservado_2": "o braço respondeu bem"
+  "_v3_1311": {
+   "resultado": {
+    "f": "3B braço: a âncora é o número dela ao lado da idade real (idade muscular de medidaBraco); faixas 3 e 4 abrem com \"Calma\" (regra 22); no vídeo \"faixa mais baixa\", nunca \"frágil\"",
+    "1": [
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. Você tem {idade} anos: está dentro do esperado. É estimativa.",
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. É estimativa.",
+     "Idade muscular estimada, pela velocidade do braço: {idade_m}. É estimativa."
+    ],
+    "2": [
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. Você tem {idade} anos: ficou um pouco acima. É estimativa.",
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}, um pouco acima. É estimativa.",
+     "Idade muscular estimada, pela velocidade do braço: {idade_m}, um pouco acima. É estimativa.",
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Ficou um pouco abaixo do esperado para a idade. É estimativa."
+    ],
+    "3": [
+     "Calma, isso tem explicação. A velocidade do seu braço ficou abaixo do esperado para {idade} anos. É estimativa.",
+     "Calma, isso tem explicação. A velocidade do seu braço ficou abaixo do esperado para a idade. É estimativa."
+    ],
+    "4": [
+     "Calma, não é motivo de susto. A velocidade do braço ficou na faixa mais baixa. Isso vale medir com calma."
+    ]
+   },
+   "mostra": "O teste do braço mostra uma parte",
+   "conservado": "a velocidade do seu braço",
+   "conservado_2": "o braço respondeu bem",
+   "mecanismo": {
+    "f": "regra 25 braço (mesmo mecanismo das pernas); kit-movimento §1.2",
+    "texto": [
+     "Potência é força com velocidade. Costuma ser das primeiras coisas que o músculo perde com os anos.",
+     "O teste mede velocidade do músculo, e ela costuma ser das primeiras coisas que caem com o tempo."
+    ]
+   }
+  },
+  "boa": {
+   "1": "a velocidade está conservada",
+   "2": "o braço respondeu bem"
+  },
+  "calma": {
+   "3": "Calma, isso tem explicação.",
+   "4": "Calma, não é motivo de susto."
+  },
+  "resultado": {
+   "f": "PROMPT-NARRATIVA v4, braco e pernas: a âncora (a idade muscular estimada, pela velocidade do braço, ao lado da idade); nunca \"frágil\"",
+   "1": [
+    "Pela velocidade do braço, a idade muscular estimada é {idade_m}; você tem {idade}.",
+    "Pela velocidade do braço, a idade muscular estimada é {idade_m}."
+   ],
+   "2": [
+    "Pela velocidade do braço, a idade muscular estimada é {idade_m}; você tem {idade}.",
+    "Pela velocidade do braço, a idade muscular estimada é {idade_m}."
+   ],
+   "3": [
+    "A velocidade ficou abaixo do esperado para {idade} anos.",
+    "A velocidade ficou abaixo do esperado para a idade."
+   ],
+   "4": [
+    "A velocidade ficou na faixa mais baixa. Isso vale medir com calma."
+   ]
+  },
+  "ponte": {
+   "dentro": "Está dentro do esperado, e vem daqui:",
+   "acima": "Um pouco acima, e esse pouco vem daqui:",
+   "abaixo": "E vem daqui:"
+  },
+  "onde": [
+   "da velocidade do braço."
+  ],
+  "e_o_que": {
+   "resposta": "É daí que vem o que você me contou.",
+   "padrao": "É o número que mais diz sobre o seu músculo."
+  },
+  "desejo": "cuidar da força do seu braço",
+  "porque": {
+   "f": "PROMPT-NARRATIVA v4, braco e pernas: o porquê (potência), sem hábito: o teste não pergunta",
+   "pergunta": "E por que, se você ainda faz tudo?",
+   "pergunta_bem": "E por que isso importa?",
+   "mecanismo": "Porque potência é força com velocidade, e é das primeiras coisas que o músculo perde com os anos."
+  },
+  "medir": "pressão, glicose, o músculo"
  },
  "quiz-emagrecimento": {
   "abertura": {
    "f": "regras 6 e 25 quizzes (abrir com a resposta dela entre aspas: 'Você contou: ...')"
   },
-  "bem": {
-   "f": "regras 6 (primeiro o que está bem) e 7 (elogio verdadeiro); respostas do emagrecimento v2",
-   "exames_ok": [
-    "Primeiro o que está bem: nenhum exame te apontou pressão, glicose ou gordura alta.",
-    "Uma coisa boa: nenhum médico te disse que tem pressão ou glicose alta."
-   ],
-   "sono_ok": [
-    "Você dorme {sono}, e isso ajuda muito.",
-    "Uma coisa boa: você dorme {sono} por noite."
-   ],
-   "forca_ok": [
-    "Você já faz exercício de força, e isso conta muito.",
-    "Uma coisa boa: você já faz força {forca}."
-   ],
-   "geral": [
-    "Você respondeu tudo com cuidado, e isso me ajuda a ver o seu caso.",
-    "Você respondeu tudo com calma, e deu para entender bem o seu caso."
-   ]
-  },
-  "sinais": {
-   "f": "regras 17 e 24 (sinal de saúde: 'vale olhar com exame'; sem nome de doença); relatório emagrecimento v2 §3.1",
-   "sop": [
-    "Você marcou {ciclo_pelos}. Isso pede olhar alguns hormônios com exame.",
-    "Você contou {ciclo_pelos}. Vale olhar os hormônios com exame; não é motivo de susto."
-   ],
-   "menopausa": [
-    "Você contou que está na menopausa ou chegando nela. Nessa fase o músculo começa a cair, mesmo com a balança parada.",
-    "Você está na menopausa ou chegando nela. É quando o que funcionava antes pode parar de funcionar."
-   ],
-   "tireoide": [
-    "Você marcou {sintomas}. Isso aparece em muitas situações; quem decide é o exame de sangue.",
-    "Você contou que sente {sintomas}. Vale olhar com exame de sangue, não pelo sintoma."
-   ],
-   "metabolica": [
-    "Você já ouviu que tem {exames}. Vale olhar isso junto com o peso, com exame.",
-    "Algum exame já te mostrou {exames}. Isso pesa junto com o peso, e vale olhar."
-   ],
-   "sem_exames": [
-    "Faz tempo que você não faz exames. Pressão e glicose não doem quando sobem; só o exame mostra.",
-    "Você contou que faz tempo sem exames. O que sobe no sangue não dói: só o exame mostra."
-   ],
-   "remedio": [
-    "Você toma remédio todo dia. Vários mexem no peso. Não pare nem troque por conta própria.",
-    "Você contou que toma remédio de uso contínuo. Não pare nem troque por conta própria; isso eu olho com você."
-   ],
-   "ronco": [
-    "Você ronca e acorda {cansada}. Vale olhar o sono com exame.",
-    "Você contou que ronca e acorda {cansada}. O sono merece um olhar com exame."
-   ]
-  },
-  "mecanismo": {
-   "f": "regra 25 quizzes (um mecanismo só, do perfil principal); relatório emagrecimento v2 §3.1 (Polidori 2016, Tasali 2022, Kreitzman 1992, Dansinger 2005; sem número, regra 15)",
-   "volta": [
-    "Quando o peso cai, o corpo aumenta a vontade de comer. Não é falta de força de vontade: é o corpo se defendendo.",
-    "O corpo tenta voltar ao peso de antes. Quando o peso cai, a vontade de comer aumenta."
-   ],
-   "vontade": [
-    "A vontade de comer não é só cabeça. O sono pesa muito nela.",
-    "Vontade de comer não é fraqueza. Sono curto, por exemplo, deixa ela mais forte."
-   ],
-   "balanca": [
-    "A balança pesa tudo junto: água, gordura e músculo. Sozinha, ela não mostra o que muda por dentro.",
-    "O número da balança sobe e desce com a água. Ele não separa gordura de músculo."
-   ],
-   "constancia": [
-    "Quem mais perde peso é quem consegue manter, e não quem escolhe esta ou aquela dieta.",
-    "O plano certo é o que cabe na sua rotina. Manter pesa mais do que a dieta escolhida."
-   ],
-   "comeco": [
-    "O começo mais seguro é entender o que está por trás do peso, antes de escolher a dieta.",
-    "Antes de escolher dieta, vale saber o que está por trás do peso. É por aí que se começa."
-   ]
-  },
-  "mostra": "As suas respostas mostram uma parte",
   "contou": [
    "Você me contou: \"{acontece}\"."
   ],
@@ -589,9 +898,6 @@
    "constancia": "manter o que você começa",
    "comeco": "saber por onde começar"
   },
-  "resultado": [
-   "Pelas suas respostas, o que mais pesa no seu caso é {rotulo}."
-  ],
   "objetivo": {
    "f": "o objetivo dela (emagrecimento v2), em 2ª pessoa, para o bloco 6",
    "roupas": "voltar a usar as roupas que você gosta",
@@ -609,9 +915,143 @@
     ]
    }
   },
-  "resultado_sem": [
-   "Este teste não mede um número; são as suas respostas."
-  ]
+  "_v3_1311": {
+   "bem": {
+    "f": "regras 6 (primeiro o que está bem) e 7 (elogio verdadeiro); respostas do emagrecimento v2",
+    "exames_ok": [
+     "Primeiro o que está bem: nenhum exame te apontou pressão, glicose ou gordura alta.",
+     "Uma coisa boa: nenhum médico te disse que tem pressão ou glicose alta."
+    ],
+    "sono_ok": [
+     "Você dorme {sono}, e isso ajuda muito.",
+     "Uma coisa boa: você dorme {sono} por noite."
+    ],
+    "forca_ok": [
+     "Você já faz exercício de força, e isso conta muito.",
+     "Uma coisa boa: você já faz força {forca}."
+    ],
+    "geral": [
+     "Você respondeu tudo com cuidado, e isso me ajuda a ver o seu caso.",
+     "Você respondeu tudo com calma, e deu para entender bem o seu caso."
+    ]
+   },
+   "sinais": {
+    "f": "regras 17 e 24 (sinal de saúde: 'vale olhar com exame'; sem nome de doença); relatório emagrecimento v2 §3.1",
+    "sop": [
+     "Você marcou {ciclo_pelos}. Isso pede olhar alguns hormônios com exame.",
+     "Você contou {ciclo_pelos}. Vale olhar os hormônios com exame; não é motivo de susto."
+    ],
+    "menopausa": [
+     "Você contou que está na menopausa ou chegando nela. Nessa fase o músculo começa a cair, mesmo com a balança parada.",
+     "Você está na menopausa ou chegando nela. É quando o que funcionava antes pode parar de funcionar."
+    ],
+    "tireoide": [
+     "Você marcou {sintomas}. Isso aparece em muitas situações; quem decide é o exame de sangue.",
+     "Você contou que sente {sintomas}. Vale olhar com exame de sangue, não pelo sintoma."
+    ],
+    "metabolica": [
+     "Você já ouviu que tem {exames}. Vale olhar isso junto com o peso, com exame.",
+     "Algum exame já te mostrou {exames}. Isso pesa junto com o peso, e vale olhar."
+    ],
+    "sem_exames": [
+     "Faz tempo que você não faz exames. Pressão e glicose não doem quando sobem; só o exame mostra.",
+     "Você contou que faz tempo sem exames. O que sobe no sangue não dói: só o exame mostra."
+    ],
+    "remedio": [
+     "Você toma remédio todo dia. Vários mexem no peso. Não pare nem troque por conta própria.",
+     "Você contou que toma remédio de uso contínuo. Não pare nem troque por conta própria; isso eu olho com você."
+    ],
+    "ronco": [
+     "Você ronca e acorda {cansada}. Vale olhar o sono com exame.",
+     "Você contou que ronca e acorda {cansada}. O sono merece um olhar com exame."
+    ]
+   },
+   "mecanismo": {
+    "f": "regra 25 quizzes (um mecanismo só, do perfil principal); relatório emagrecimento v2 §3.1 (Polidori 2016, Tasali 2022, Kreitzman 1992, Dansinger 2005; sem número, regra 15)",
+    "volta": [
+     "Quando o peso cai, o corpo aumenta a vontade de comer. Não é falta de força de vontade: é o corpo se defendendo.",
+     "O corpo tenta voltar ao peso de antes. Quando o peso cai, a vontade de comer aumenta."
+    ],
+    "vontade": [
+     "A vontade de comer não é só cabeça. O sono pesa muito nela.",
+     "Vontade de comer não é fraqueza. Sono curto, por exemplo, deixa ela mais forte."
+    ],
+    "balanca": [
+     "A balança pesa tudo junto: água, gordura e músculo. Sozinha, ela não mostra o que muda por dentro.",
+     "O número da balança sobe e desce com a água. Ele não separa gordura de músculo."
+    ],
+    "constancia": [
+     "Quem mais perde peso é quem consegue manter, e não quem escolhe esta ou aquela dieta.",
+     "O plano certo é o que cabe na sua rotina. Manter pesa mais do que a dieta escolhida."
+    ],
+    "comeco": [
+     "O começo mais seguro é entender o que está por trás do peso, antes de escolher a dieta.",
+     "Antes de escolher dieta, vale saber o que está por trás do peso. É por aí que se começa."
+    ]
+   },
+   "mostra": "As suas respostas mostram uma parte",
+   "resultado": [
+    "Pelas suas respostas, o que mais pesa no seu caso é {rotulo}."
+   ],
+   "resultado_sem": [
+    "Este teste não mede um número; são as suas respostas."
+   ]
+  },
+  "ponte": {
+   "comeco": "Olhando suas respostas, acho que sei por onde começar."
+  },
+  "boa": {
+   "f": "PROMPT-NARRATIVA v4, quiz-emagrecimento: a boa notícia (o que está bem nas respostas)",
+   "exames_ok": "nenhum exame te apontou pressão, glicose ou gordura alta",
+   "sono_ok": "você dorme {sono} por noite",
+   "forca_ok": "você já faz exercício de força"
+  },
+  "resultado": [
+   "Pelas suas respostas, o que mais pesa no seu caso é {rotulo}."
+  ],
+  "ponte_tentou": [
+   "E não é por falta de tentar:"
+  ],
+  "tentou": {
+   "com": "você já tentou {tentou}, {mesmo}",
+   "sem": "Você ainda não tentou nenhum caminho, então dá pra começar do zero, com calma."
+  },
+  "mesmo": {
+   "volta": "e o peso volta mesmo assim.",
+   "vontade": "e a vontade vence mesmo assim.",
+   "balanca": "e a balança não desce mesmo assim.",
+   "constancia": "e fica difícil manter mesmo assim.",
+   "comeco": "e ainda não sabe por onde começar."
+  },
+  "porque": {
+   "f": "PROMPT-NARRATIVA v4, quiz-emagrecimento: o porquê do perfil ligado aos sinais dela, sem nome de doença",
+   "pergunta": "E por que, mesmo tentando?",
+   "pergunta_sem": "E por que isso acontece?",
+   "volta": "Porque, quando o peso cai, o corpo aumenta a vontade de comer: ele se defende.",
+   "vontade": "Porque a vontade de comer não é só cabeça: o sono pesa muito nela.",
+   "balanca": "Porque a balança pesa tudo junto, água, gordura e músculo, e não mostra o que muda.",
+   "constancia": "Porque o plano que dura é o que cabe na sua rotina.",
+   "comeco": "Porque o começo mais seguro é entender o que está por trás do peso.",
+   "liga": {
+    "sono": {
+     "5menos": "dorme 5 horas ou menos",
+     "6": "dorme umas 6 horas"
+    },
+    "ronco": "ronca e acorda {cansada}",
+    "metabolica": "já ouviu que tem {exames}",
+    "sem_exames": "faz tempo que não faz exames",
+    "tireoide": "sente {sintomas}",
+    "sop": "tem {ciclo_pelos}",
+    "menopausa": "está na menopausa ou chegando nela"
+   }
+  },
+  "habito": {
+   "forca": "E o músculo conta: você ainda não faz exercício de força."
+  },
+  "remedio": [
+   "Você toma remédio todo dia: não pare nem troque por conta própria."
+  ],
+  "desejo_sem": "cuidar do seu peso"
  },
  "quiz-longevidade": {
   "abertura": {
@@ -647,13 +1087,21 @@
   "atrapalha": {
    "f": "frase da VSL agenda-cheia e dor-medo (longevidade/config.js)",
    "tempo": [
-    "E você marcou falta de tempo. Não precisa de duas horas por dia; precisa caber na sua semana."
+    "E você marcou falta de tempo: precisa caber na sua semana."
    ],
    "dor": [
-    "E você marcou medo de se machucar. Por isso o começo é pelo que não machuca."
+    "E você marcou medo de se machucar: o começo é pelo que não machuca."
+   ],
+   "constancia": [
+    "E você começa bem e larga na segunda semana: o plano precisa caber na sua rotina."
+   ],
+   "comecar": [
+    "E você não sabe por onde começar: o começo é pelo mais simples."
+   ],
+   "clinica": [
+    "E perder meio dia em clínica trava: o começo precisa caber na sua semana."
    ]
   },
-  "mostra": "As suas respostas mostram uma parte",
   "contou_incomoda": [
    "Você me contou que te incomoda {rotulo}."
   ],
@@ -685,19 +1133,283 @@
     ]
    }
   },
-  "_resultado_f": "PROMPT-NARRATIVA, quiz-longevidade: a âncora sem número (\"Este teste não mede um número; são as suas respostas. Você tem\" + a idade)",
-  "acompanha": {
-   "f": "PROMPT-NARRATIVA, quiz-longevidade (acompanha); regra 25 (potência)",
-   "texto": [
-    "O caminho passa pelas pernas: força com velocidade é das primeiras coisas que o músculo perde."
-   ]
-  },
   "contou_objetivo": [
    "Você me contou que quer {objetivo}."
-  ]
+  ],
+  "_v3_1311": {
+   "mostra": "As suas respostas mostram uma parte",
+   "_resultado_f": "PROMPT-NARRATIVA, quiz-longevidade: a âncora sem número (\"Este teste não mede um número; são as suas respostas. Você tem\" + a idade)",
+   "acompanha": {
+    "f": "PROMPT-NARRATIVA, quiz-longevidade (acompanha); regra 25 (potência)",
+    "texto": [
+     "O caminho passa pelas pernas: força com velocidade é das primeiras coisas que o músculo perde."
+    ]
+   }
+  },
+  "contou_nada": [
+   "Você me contou que nada te incomoda por enquanto e quer se cuidar antes."
+  ],
+  "boa_nada": "é o melhor momento pra cuidar",
+  "ponte": [
+   "E elas mostram muito."
+  ],
+  "porque": {
+   "f": "PROMPT-NARRATIVA v4, quiz-longevidade: o porquê (o caminho passa pelas pernas) + o que atrapalha, ligado",
+   "pergunta": "E por onde se começa?",
+   "caminho": "O caminho passa pelas pernas: força com velocidade é das primeiras coisas que o músculo perde."
+  },
+  "objetivo": {
+   "f": "PROMPT-NARRATIVA v4, quiz-longevidade: o objetivo de 10 anos como verbo, na pergunta do fecho",
+   "escada": "subir escada e carregar peso sem pensar",
+   "familia": "ter disposição com filhos e netos",
+   "trabalho": "trabalhar sem chegar no limite no fim do dia",
+   "viajar": "viajar e andar o dia inteiro",
+   "esporte": "continuar no esporte",
+   "independente": "não depender de ninguém"
+  },
+  "medir": "pressão, glicose, o músculo",
+  "desejo_sem": "cuidar {de_rotulo}"
  },
  "pele-idade": {
   "_sobre": "04/11/2026 · livowa.com/pele (funnelId pele-idade): a idade que o rosto aparenta ao lado da idade real, e a vitalidade pelas respostas. Não é análise de pele: nada de produto, rotina, procedimento ou programa (regras 4, 5 e 23). Frases com número só de livowa-empresa/tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11); no máximo um número de estudo por vídeo, no mecanismo (regra 15).",
+  "abertura": {
+   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 1 (o incômodo do espelho nas palavras dela + \"acho que sei por quê\")",
+   "contou": {
+    "cansada": "Você me contou que acorda com cara de {cansada}, mesmo dormindo.",
+    "caindo": "Você me contou que te incomoda o rosto caindo, na bochecha e no bigode chinês.",
+    "pescoco": "Você me contou que te incomodam o pescoço e a papada.",
+    "palpebra": "Você me contou que te incomoda a pálpebra pesando.",
+    "manchas": "Você me contou que te incomodam as manchas e as rugas.",
+    "velho": "Você me contou que acha que parece mais {velha} do que é.",
+    "nada": "Você me contou que quer saber a idade que o seu rosto mostra.",
+    "outro": "Você me contou: {espelho}."
+   },
+   "ponte": [
+    "Olhando sua foto e suas respostas, acho que sei por quê."
+   ],
+   "ponte_nada": [
+    "Olhando sua foto e suas respostas, dá pra te mostrar bastante coisa."
+   ],
+   "ponte_sem_foto": [
+    "Olhando suas respostas, acho que sei por quê."
+   ]
+  },
+  "rotulo": {
+   "f": "o rótulo do bloco 1, em destaque no teleprompter (o mesmo nome curto do incômodo)",
+   "cansada": "cara de {cansada}",
+   "caindo": "rosto caindo",
+   "pescoco": "pescoço e a papada",
+   "palpebra": "pálpebra pesando",
+   "manchas": "manchas e as rugas",
+   "velho": "parece mais {velha}"
+  },
+  "idade": {
+   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 2 (a boa notícia, a idade do rosto pela FAIXA e a ponte \"esse pouco vem daqui\"); regra 25 (estimativa; mais de 5 anos acima: sem número)",
+   "numero": [
+    "O rosto aparenta, numa estimativa, de {min} a {max}; você tem {idade}."
+   ],
+   "acima": [
+    "Um pouco acima, e esse pouco vem daqui:"
+   ],
+   "acima_fora": [
+    "O rosto mostra um pouco mais, e esse pouco vem daqui:"
+   ],
+   "igual": [
+    "Está na sua idade, e o que mais aparece vem daqui:"
+   ],
+   "abaixo": [
+    "O rosto mostra menos que a sua idade. O que mais aparece vem daqui:"
+   ],
+   "sem_numero_mais": [
+    "Pela foto, o rosto mostra mais que os seus {idade} anos, e vem daqui:"
+   ],
+   "fim": {
+    "acima": "Um pouco acima.",
+    "acima_fora": "O rosto mostra um pouco mais.",
+    "igual": "Está na sua idade.",
+    "abaixo": "O rosto mostra menos que a sua idade.",
+    "sem_numero_mais": "Pela foto, o rosto mostra um pouco mais que os seus {idade} anos."
+   },
+   "sem_numero": [
+    "Pela foto, não deu pra estimar a idade do rosto com segurança, então não vou te dar número."
+   ],
+   "sem_foto": [
+    "Desta vez a análise da foto não rodou, então não vou te dar número."
+   ],
+   "boa_um": [
+    "Primeiro, a boa notícia: {bem} está bem."
+   ],
+   "boa_dois": [
+    "Primeiro, a boa notícia: {bem} estão bem."
+   ]
+  },
+  "foto": {
+   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 3 (fecha o \"daqui\": a região do incômodo, com nome neutro; pouco ali = alívio)",
+   "onde": {
+    "linhas_testa": "das linhas da testa",
+    "olhos": "do canto dos olhos",
+    "sulco_nasolabial": "do vinco do nariz à boca",
+    "manchas": "dessas manchinhas",
+    "flacidez": "do contorno do rosto",
+    "glabela": "da marca entre as sobrancelhas",
+    "olheira": "da sombra abaixo dos olhos",
+    "papada": "da linha da mandíbula"
+   },
+   "solta": [
+    "O que mais aparece na foto vem {regioes}."
+   ],
+   "bom": {
+    "linhas_testa": "a testa",
+    "olhos": "o canto dos olhos",
+    "sulco_nasolabial": "o vinco do nariz à boca",
+    "manchas": "o tom da pele",
+    "flacidez": "o contorno",
+    "glabela": "o meio da testa",
+    "olheira": "a área abaixo dos olhos",
+    "papada": "a linha da mandíbula"
+   },
+   "e_o_que": {
+    "cansada": "É o que dá a cara de {cansada}.",
+    "caindo": "É o que dá a sensação de rosto caindo.",
+    "pescoco": "É o que aparece no pescoço e na papada.",
+    "palpebra": "É o que dá a sensação de pálpebra pesando.",
+    "manchas": "É o que você vê no espelho.",
+    "velho": "É o que dá a impressão de mais idade.",
+    "padrao": "É o que mais aparece no rosto."
+   },
+   "alivio": [
+    "Onde você se preocupa, a foto mostrou pouco."
+   ],
+   "sem_nada": [
+    "Na foto, nenhuma região chamou atenção."
+   ],
+   "sinal": {
+    "linhas_testa": [
+     "a testa aparece lisa",
+     "aparecem linhas leves na testa",
+     "aparecem linhas visíveis na testa",
+     "aparecem linhas bem marcadas na testa"
+    ],
+    "olhos": [
+     "o canto dos olhos aparece liso",
+     "aparecem linhas leves no canto dos olhos",
+     "aparecem linhas visíveis no canto dos olhos",
+     "aparecem linhas bem marcadas no canto dos olhos"
+    ],
+    "sulco_nasolabial": [
+     "o vinco do nariz à boca quase não aparece",
+     "o vinco do nariz à boca aparece leve",
+     "o vinco do nariz à boca aparece visível",
+     "o vinco do nariz à boca aparece bem marcado"
+    ],
+    "manchas": [
+     "o tom da pele aparece uniforme",
+     "aparecem poucas manchas, discretas",
+     "aparecem algumas manchas visíveis",
+     "aparecem manchas bem visíveis"
+    ],
+    "flacidez": [
+     "o contorno do rosto aparece firme",
+     "o contorno do rosto aparece levemente menos firme",
+     "o contorno do rosto aparece menos firme",
+     "o contorno do rosto aparece bem menos firme"
+    ],
+    "glabela": [
+     "o espaço entre as sobrancelhas aparece liso",
+     "aparece uma marca leve entre as sobrancelhas",
+     "aparece uma marca visível entre as sobrancelhas",
+     "a marca entre as sobrancelhas aparece bem visível"
+    ],
+    "olheira": [
+     "a área abaixo dos olhos aparece lisa",
+     "aparece uma sombra leve abaixo dos olhos",
+     "aparece uma sombra visível abaixo dos olhos",
+     "aparece uma sombra bem visível abaixo dos olhos"
+    ],
+    "papada": [
+     "a linha da mandíbula aparece firme",
+     "a linha da mandíbula aparece levemente menos firme",
+     "a linha da mandíbula aparece menos firme",
+     "a linha da mandíbula aparece bem menos firme"
+    ]
+   }
+  },
+  "porque": {
+   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 4 (o porquê com as respostas DELA ligadas: pressão ou glicose alta > sono > movimento > nunca mediu; mulher de 40 a 60, o hormônio da fase)",
+   "pergunta": {
+    "cansada": "E por que, mesmo dormindo?",
+    "ja": "E por que, mesmo {ja}?",
+    "padrao": "E por que isso aparece?"
+   },
+   "ja": {
+    "cigarro": "sem fumar",
+    "sol": "se protegendo do sol",
+    "movimento": "se mexendo",
+    "sono": "dormindo bem"
+   },
+   "mecanismo": {
+    "cansada": "Porque dormir não é o mesmo que descansar.",
+    "padrao": "Porque o rosto mostra por fora muito do que pesa por dentro."
+   },
+   "liga": {
+    "metabolico": {
+     "pressao": "já ouviu que a pressão está alta",
+     "glicose": "já ouviu que a glicose está alta",
+     "ambas": "já ouviu que a pressão e a glicose estão altas",
+     "nunca": "nunca mediu a glicose"
+    },
+    "sono": {
+     "cansado": "acorda {cansada}",
+     "curto": "dorme 5 horas ou menos",
+     "6h": "dorme umas 6 horas"
+    },
+    "movimento": {
+     "quase_nada": "se mexe quase nada na semana",
+     "ate2": "se mexe até duas horas por semana"
+    }
+   },
+   "a_favor": [
+    "A seu favor: {bem}."
+   ]
+  },
+  "habito": {
+   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 5 (o outro hábito que pesa no rosto, ligado ao achado; a imagem do kit; a solução quando a imagem mostra só o problema)",
+   "sol": {
+    "todo_dia": "E o sol de todo dia sem protetor pesa no rosto.",
+    "fds": "E o sol sem protetor, mesmo só no fim de semana, vai somando no rosto."
+   },
+   "sol_manchas": {
+    "todo_dia": "As manchinhas vêm muito do sol de todo dia sem protetor.",
+    "fds": "As manchinhas vêm muito do sol sem protetor, mesmo só no fim de semana."
+   },
+   "cigarro": {
+    "hoje": "E o cigarro também aparece no rosto, com os anos.",
+    "as_vezes": "E o cigarro, mesmo às vezes, também aparece no rosto."
+   }
+  },
+  "importa": {
+   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): sem hábito nem imagem, o bloco 5 é o item de O QUE CONSERVA (cigarro e sono ruim marcados na frente)",
+   "texto": [
+    "Aos {idade} anos, o que mais conserva a sua saúde e o rosto é {item}."
+   ],
+   "sem_idade": [
+    "O que mais conserva a sua saúde e o rosto é {item}."
+   ]
+  },
+  "fecho": {
+   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 6 (o que dá pra ver × o que só medindo; o desejo de 10 anos dela como verbo, na pergunta do Lucca); \"parecer a idade que sente\" vira \"se reconhecer no espelho\"",
+   "desejo": {
+    "parecer": "se reconhecer no espelho",
+    "devagar": "cuidar da saúde com o passar dos anos"
+   },
+   "desejo_sem": "cuidar da sua saúde e do seu rosto"
+  },
+  "escrito": {
+   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): POR ESCRITO DEPOIS (pressão ou glicose alta marcada)",
+   "pressao": "A pressão alta vale olhar com exame, com calma.",
+   "glicose": "A glicose alta vale olhar com exame, com calma.",
+   "ambas": "A pressão e a glicose altas valem olhar com exame, com calma."
+  },
   "bem": {
    "f": "regras 6 e 7 (primeiro o que está bem; elogio só verdadeiro); respostas de pele/app.js",
    "itens": {
@@ -851,178 +1563,122 @@
     "Nas suas respostas tem coisa boa: {bem}."
    ]
   },
-  "abertura": {
-   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 1; d-20261113-nome-dr-lucca-marques",
-   "texto": [
-    "{nome}, aqui é o doutor Lucca Marques. Vamos olhar o seu rosto juntos."
-   ],
-   "com_resposta": [
-    "Você me contou: \"{resposta}\"."
-   ],
-   "com_espelho": [
-    "Você me contou o que mais te incomoda no espelho: {espelho}.",
-    "Você me disse o que mais te incomoda hoje no espelho: {espelho}."
-   ]
-  },
-  "idade": {
-   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 2, a leitura pela FAIXA; regra 25 (toda idade é estimativa; mais de 5 anos acima: sem número)",
-   "igual": [
-    "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: está na sua idade. É estimativa."
-   ],
-   "mais_novo": [
-    "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto mostra menos. É estimativa."
-   ],
-   "mais_velho": [
-    "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto mostra um pouco mais. É estimativa."
-   ],
-   "mais_velho_sem_numero": [
-    "Pela sua foto, o rosto mostra um pouco mais que os seus {idade} anos. É estimativa."
-   ],
-   "sem_numero": [
-    "Pela foto, não deu para estimar a idade do rosto com segurança, então não vou te dar número."
-   ],
-   "sem_foto": [
-    "Desta vez a análise da foto não rodou, então não vou te dar número."
-   ]
-  },
-  "foto": {
-   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 3 (o conservado antes; a região do incômodo primeiro, pouco = alívio; achado com nome neutro); nomes de pele/app.js",
-   "conservado": [
-    "Primeiro, o que está conservado: {bem}."
-   ],
-   "mais": [
-    "Onde a foto mostra mais é aqui: {achado}."
-   ],
-   "alivio": [
-    "Onde você se preocupa, a foto mostrou pouco: {achado}."
-   ],
-   "tambem": [
-    "Aqui também {achado}."
-   ],
-   "sem_nada": [
-    "Primeiro, uma coisa boa: você quis olhar para isso com calma."
-   ],
-   "sinal": {
-    "linhas_testa": [
-     "a testa aparece lisa",
-     "aparecem linhas leves na testa",
-     "aparecem linhas visíveis na testa",
-     "aparecem linhas bem marcadas na testa"
+  "_v3_1311": {
+   "abertura": {
+    "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 1; d-20261113-nome-dr-lucca-marques",
+    "texto": [
+     "{nome}, aqui é o doutor Lucca Marques. Vamos olhar o seu rosto juntos."
     ],
-    "olhos": [
-     "o canto dos olhos aparece liso",
-     "aparecem linhas leves no canto dos olhos",
-     "aparecem linhas visíveis no canto dos olhos",
-     "aparecem linhas bem marcadas no canto dos olhos"
+    "com_resposta": [
+     "Você me contou: \"{resposta}\"."
     ],
-    "sulco_nasolabial": [
-     "o vinco do nariz à boca quase não aparece",
-     "o vinco do nariz à boca aparece leve",
-     "o vinco do nariz à boca aparece visível",
-     "o vinco do nariz à boca aparece bem marcado"
-    ],
-    "manchas": [
-     "o tom da pele aparece uniforme",
-     "aparecem poucas manchas, discretas",
-     "aparecem algumas manchas visíveis",
-     "aparecem manchas bem visíveis"
-    ],
-    "flacidez": [
-     "o contorno do rosto aparece firme",
-     "o contorno do rosto aparece levemente menos firme",
-     "o contorno do rosto aparece menos firme",
-     "o contorno do rosto aparece bem menos firme"
-    ],
-    "glabela": [
-     "o espaço entre as sobrancelhas aparece liso",
-     "aparece uma marca leve entre as sobrancelhas",
-     "aparece uma marca visível entre as sobrancelhas",
-     "a marca entre as sobrancelhas aparece bem visível"
-    ],
-    "olheira": [
-     "a área abaixo dos olhos aparece lisa",
-     "aparece uma sombra leve abaixo dos olhos",
-     "aparece uma sombra visível abaixo dos olhos",
-     "aparece uma sombra bem visível abaixo dos olhos"
-    ],
-    "papada": [
-     "a linha da mandíbula aparece firme",
-     "a linha da mandíbula aparece levemente menos firme",
-     "a linha da mandíbula aparece menos firme",
-     "a linha da mandíbula aparece bem menos firme"
+    "com_espelho": [
+     "Você me contou o que mais te incomoda no espelho: {espelho}.",
+     "Você me disse o que mais te incomoda hoje no espelho: {espelho}."
     ]
-   }
-  },
-  "dentro": {
-   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 4 (até 2 hábitos: pressão ou glicose alta > fuma > sono > sol > movimento; sem dado de estudo nem nome de doença)",
-   "um": [
-    "Do que você me contou, {h1}."
-   ],
-   "dois": [
-    "Do que você me contou, {h1}. E {h2}."
-   ],
-   "exame": [
-    "Isso vale olhar com exame, com calma."
-   ],
-   "a_favor": [
-    "Do que você me contou, tem coisa a favor: {b1}."
-   ],
-   "frase": {
-    "cigarro": {
-     "hoje": "você fuma hoje",
-     "as_vezes": "você fuma ou usa vape às vezes",
-     "parou_menos10": "você parou de fumar há menos de 10 anos",
-     "parou_mais10": "você parou de fumar há mais de 10 anos",
-     "parou": "você já fumou e parou"
-    },
-    "sol": {
-     "todo_dia": "o seu rosto pega sol sem protetor quase todo dia",
-     "fds": "o seu rosto pega um pouco de sol sem protetor"
-    },
-    "metabolico": {
-     "pressao": "já te disseram que a pressão estava alta",
-     "glicose": "já te disseram que a glicose estava alta",
-     "ambas": "já te disseram que a pressão e a glicose estavam altas",
-     "nunca": "você nunca mediu a pressão e a glicose, ou não lembra"
-    },
-    "sono": {
-     "curto": "você dorme 5 horas ou menos",
-     "cansado_f": "você acorda cansada mesmo dormindo",
-     "cansado_m": "você acorda cansado mesmo dormindo",
-     "cansado": "você acorda sem descanso mesmo dormindo"
-    },
-    "movimento": {
-     "quase_nada": "você se mexe quase nada numa semana comum",
-     "ate2": "você se mexe até 2 horas numa semana comum"
-    }
    },
-   "a_favor_2": [
-    "E {b2}."
-   ]
-  },
-  "importa": {
-   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 5 (1 item de O QUE CONSERVA; cigarro e sono ruim marcados na frente; o exemplo é a imagem do kit)",
-   "texto": [
-    "Aos {idade} anos, o que mais conserva a sua saúde e o rosto é {item}."
-   ],
-   "sem_idade": [
-    "O que mais conserva a sua saúde e o rosto é {item}."
-   ]
-  },
-  "interesse": {
-   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 6 (o desejo uma vez; o rótulo do bloco 1 volta; d-20261112-proximo-passo-analise)",
-   "desejo": [
-    "Daqui a 10 anos você quer {futuro}."
-   ],
-   "parte": [
-    "O rosto é o que dá para ver; o que pesa por dentro eu só sei medindo."
-   ],
-   "trabalhar": [
-    "Isso dá para trabalhar: {espelho} e o que pesa por dentro."
-   ],
-   "trabalhar_sem": [
-    "Isso dá para trabalhar: o que pesa por dentro."
-   ]
+   "idade": {
+    "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 2, a leitura pela FAIXA; regra 25 (toda idade é estimativa; mais de 5 anos acima: sem número)",
+    "igual": [
+     "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: está na sua idade. É estimativa."
+    ],
+    "mais_novo": [
+     "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto mostra menos. É estimativa."
+    ],
+    "mais_velho": [
+     "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto mostra um pouco mais. É estimativa."
+    ],
+    "mais_velho_sem_numero": [
+     "Pela sua foto, o rosto mostra um pouco mais que os seus {idade} anos. É estimativa."
+    ],
+    "sem_numero": [
+     "Pela foto, não deu para estimar a idade do rosto com segurança, então não vou te dar número."
+    ],
+    "sem_foto": [
+     "Desta vez a análise da foto não rodou, então não vou te dar número."
+    ]
+   },
+   "dentro": {
+    "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 4 (até 2 hábitos: pressão ou glicose alta > fuma > sono > sol > movimento; sem dado de estudo nem nome de doença)",
+    "um": [
+     "Do que você me contou, {h1}."
+    ],
+    "dois": [
+     "Do que você me contou, {h1}. E {h2}."
+    ],
+    "exame": [
+     "Isso vale olhar com exame, com calma."
+    ],
+    "a_favor": [
+     "Do que você me contou, tem coisa a favor: {b1}."
+    ],
+    "frase": {
+     "cigarro": {
+      "hoje": "você fuma hoje",
+      "as_vezes": "você fuma ou usa vape às vezes",
+      "parou_menos10": "você parou de fumar há menos de 10 anos",
+      "parou_mais10": "você parou de fumar há mais de 10 anos",
+      "parou": "você já fumou e parou"
+     },
+     "sol": {
+      "todo_dia": "o seu rosto pega sol sem protetor quase todo dia",
+      "fds": "o seu rosto pega um pouco de sol sem protetor"
+     },
+     "metabolico": {
+      "pressao": "já te disseram que a pressão estava alta",
+      "glicose": "já te disseram que a glicose estava alta",
+      "ambas": "já te disseram que a pressão e a glicose estavam altas",
+      "nunca": "você nunca mediu a pressão e a glicose, ou não lembra"
+     },
+     "sono": {
+      "curto": "você dorme 5 horas ou menos",
+      "cansado_f": "você acorda cansada mesmo dormindo",
+      "cansado_m": "você acorda cansado mesmo dormindo",
+      "cansado": "você acorda sem descanso mesmo dormindo"
+     },
+     "movimento": {
+      "quase_nada": "você se mexe quase nada numa semana comum",
+      "ate2": "você se mexe até 2 horas numa semana comum"
+     }
+    },
+    "a_favor_2": [
+     "E {b2}."
+    ]
+   },
+   "interesse": {
+    "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 6 (o desejo uma vez; o rótulo do bloco 1 volta; d-20261112-proximo-passo-analise)",
+    "desejo": [
+     "Daqui a 10 anos você quer {futuro}."
+    ],
+    "parte": [
+     "O rosto é o que dá para ver; o que pesa por dentro eu só sei medindo."
+    ],
+    "trabalhar": [
+     "Isso dá para trabalhar: {espelho} e o que pesa por dentro."
+    ],
+    "trabalhar_sem": [
+     "Isso dá para trabalhar: o que pesa por dentro."
+    ]
+   },
+   "foto": {
+    "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 3 (o conservado antes; a região do incômodo primeiro, pouco = alívio; achado com nome neutro); nomes de pele/app.js",
+    "conservado": [
+     "Primeiro, o que está conservado: {bem}."
+    ],
+    "mais": [
+     "Onde a foto mostra mais é aqui: {achado}."
+    ],
+    "alivio": [
+     "Onde você se preocupa, a foto mostrou pouco: {achado}."
+    ],
+    "tambem": [
+     "Aqui também {achado}."
+    ],
+    "sem_nada": [
+     "Primeiro, uma coisa boa: você quis olhar para isso com calma."
+    ]
+   },
+   "nota": "Frases da v3 (6 blocos do PROMPT-PELE-IDADE v3), fora do uso desde o fio v4 de 13/11. Não aparecem nos Ajustes."
   }
  }
 }

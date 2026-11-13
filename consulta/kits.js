@@ -775,7 +775,7 @@ const V3_PI = {
   audioTexto:'{nome}, recebi o seu teste ({lv}). Nas próximas horas eu te mando a sua análise.',   // 13/11: texto do Lucca ("Confirmar recebimento")
   audioFala:'Oi! Aqui é o doutor Lucca Marques. Recebi o seu teste e eu mesmo vou olhar com calma o seu resultado e o que você respondeu. Enquanto isso, me conta: o que te fez fazer o teste agora?',   // 13/11: o nome decidido; sem "foto" (vale para todos os testes)
   audioDica:'Grave uma vez (uns 15 s, sem nome), deixe salvo e reenvie sempre o mesmo: grave na conversa "Eu" (você mesmo) do WhatsApp Business e encaminhe.',
-  depoisVideo:'Você se interessaria? Pode me responder sim ou não, do jeito que for melhor para você.',
+  depoisVideo:'Pode me responder sim ou não.',   // 13/11 (v4, d-20261113-fio-narrativo-fecho-investimento): a pergunta agora é a do fim do vídeo
   convite:'Que bom, {nome}. Vamos conversar 15 minutos por vídeo: eu entendo melhor o seu caso e te mostro como funciona. Tenho {h1} ou {h2}. Qual fica melhor? Se preferir outro horário, escolha aqui: {link}',
   conviteAgora:'Se ela disser que pode agora: ligue agora ("show rate de agora é 100%", LN pdf 21).',
   preco:'Depende do que você precisa, por isso eu prefiro te mostrar na conversa. São 15 minutos e você decide com calma. Tenho {h1} ou {h2}.',
@@ -831,10 +831,10 @@ const TEXTOS = [], POR_CHAVE = new Map();
 let ler = (chave, padrao) => padrao;
 const chaveOk = c => { c = String(c).replace(/[^A-Za-z0-9_]/g, '_'); if (c.length <= 40) return c;
   let h = 5381; for (const ch of c) h = ((h * 33) ^ ch.charCodeAt(0)) >>> 0; return c.slice(0, 34) + '_' + h.toString(36).slice(0, 5); };
-function editavel(obj, prop, chave, dono, grupo, rotulo){
+function editavel(obj, prop, chave, dono, grupo, rotulo, extra){   // extra.porTeste (13/11 v4): texto comum que um teste pode ter o seu
   const padrao = obj && obj[prop]; if (typeof padrao !== 'string') return;
   chave = chaveOk(chave); if (POR_CHAVE.has(chave)) return;
-  const t = { chave, dono, grupo, rotulo, padrao }; TEXTOS.push(t); POR_CHAVE.set(chave, t);
+  const t = { chave, dono, grupo, rotulo, padrao, ...(extra || {}) }; TEXTOS.push(t); POR_CHAVE.set(chave, t);
   Object.defineProperty(obj, prop, { get(){ return ler(chave, padrao, dono); }, enumerable:true, configurable:true });
 }
 for (const [t, dono] of [['braco', 'teste-braco'], ['pernas', 'teste-pernas']]) for (const [f, x] of Object.entries(T[t])){
