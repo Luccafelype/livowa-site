@@ -1,47 +1,58 @@
-/* Gravador da análise (12/11/2026): tela cheia, fundo preto, quadro 9:16 no alto e os controles embaixo.
-   O teleprompter (.ga-prompt) é DOM por cima do canvas: aparece só na tela, não no vídeo. */
+/* Gravador da análise (12/11/2026): tela cheia, fundo preto.
+   13/11 19h45 (Lucca: "informações sobrepostas, não vejo o que tô falando atrás"): NADA fica por cima do vídeo. O quadro 9:16
+   mostra só o que vai para o arquivo; o teleprompter (.ga-prompt, só DOM) é um painel fora dele: acima do quadro na tela
+   estreita (iPhone), ao lado na tela larga (Mac, iPad). As alturas não dependem do texto: o quadro não muda de tamanho
+   quando o bloco troca (o iOS não aceita o <video> da câmera mudando de tamanho durante a gravação). */
 body.ga-aberto{overflow:hidden;overscroll-behavior:none}
-.ga{position:fixed;inset:0;z-index:80;background:#000;color:#fff;display:flex;flex-direction:column;
+.ga{position:fixed;inset:0;z-index:80;background:#000;color:#fff;display:grid;grid-template-columns:minmax(0,1fr);
+  grid-template-rows:minmax(150px,30%) minmax(0,1fr) auto;grid-template-areas:"prompt" "palco" "barra";
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font:16px/1.4 system-ui,-apple-system,sans-serif}
 .ga[hidden]{display:none}
 .ga button,.ga a{touch-action:manipulation}
-.ga-palco{position:relative;flex:1;min-height:0}
+.ga[data-estado="rev"],.ga[data-estado="fim"]{grid-template-rows:0 minmax(0,1fr) auto}   /* revisão: sem teleprompter, o vídeo cresce */
+.ga-palco{grid-area:palco;position:relative;min-height:0;min-width:0}
+.ga .vsc-controller{display:none!important}   /* extensão de velocidade de vídeo do Chrome: o "1.00" que aparecia em cima do rosto */
 .ga-quadro{position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;background:#0b100e;border-radius:0}
 .ga-tela{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 .ga-tela[hidden]{display:none}
 /* o círculo da câmera na tela é o próprio <video> (o iOS só entrega quadro de <video> visível), no mesmo lugar do círculo do canvas */
 .ga-cam{position:absolute;left:63.333%;top:79.375%;width:33.333%;height:18.75%;border-radius:50%;object-fit:cover;transform:scaleX(-1);
   border:2px solid #fff;pointer-events:none;background:#1b2420}
-.ga-prompt{position:absolute;left:0;right:0;top:0;padding:10px 14px 12px;background:linear-gradient(#000 0,#000 var(--topo,90px),rgba(0,0,0,.86) calc(var(--topo,90px) + 24px),rgba(0,0,0,.62) 85%,rgba(0,0,0,0));
-  pointer-events:none;max-height:46%;overflow:hidden;--fs:22px}
+.ga-prompt{grid-area:prompt;display:flex;flex-direction:column;min-height:0;min-width:0;padding:8px 14px 8px;background:#0d0f0e;--fs:22px;--k:1}
 .ga-prompt[hidden]{display:none}
-.ga-p-topo{display:flex;align-items:center;gap:10px;font-size:.78rem;color:#cfe3da;text-transform:uppercase;letter-spacing:.04em}
-.ga-p-topo b{color:#8fe0bd;flex:1;min-width:0}
-.ga-aa{pointer-events:auto;min-height:36px;min-width:44px;padding:4px 10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.35);background:rgba(0,0,0,.45);color:#fff;font:700 .9rem system-ui;text-transform:none;letter-spacing:0}
-.ga-p-txt{margin:4px 0 0;font-size:var(--fs);line-height:1.32;font-weight:650;text-shadow:0 1px 2px #000}
-.ga-dica{display:inline-block;margin:0 4px;padding:0 8px;border-radius:8px;background:#ffd60a;color:#000;font-size:.72em;font-weight:800;vertical-align:.12em;text-shadow:none}
-.ga-p-dep{margin:6px 0 0;font-size:var(--fs);line-height:1.32;font-weight:650;color:#fff;opacity:.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000}
+/* os passos: um traço por bloco; os já falados cheios, o atual enche no tempo do bloco */
+.ga-p-topo{flex:none;display:flex;align-items:center;gap:10px}
+.ga-p-passos{flex:1;min-width:0;display:flex;gap:4px}
+.ga-p-passos i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.16);overflow:hidden}
+.ga-p-passos i.agora{background:rgba(255,255,255,.34)}
+.ga-p-passos i.feito{background:#8fe0bd}
+.ga-p-passos u{display:block;height:100%;width:0;background:#8fe0bd;transition:width .25s linear;text-decoration:none}
+.ga-p-pos{flex:none;font-size:.78rem;color:#b7c7c0;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ga-aa{flex:none;min-height:32px;min-width:44px;padding:2px 10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.3);background:transparent;color:#fff;font:700 .9rem system-ui}
+.ga-p-tit{flex:none;display:block;margin:2px 0 0;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8fe0bd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ga-p-rola{flex:1;min-height:0;margin:4px 0 0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.ga-p-txt{margin:0;max-width:30em;font-size:calc(var(--fs) * var(--k));line-height:1.3;font-weight:650}
+.ga-dica{display:inline-block;margin:0 4px;padding:0 8px;border-radius:8px;background:#ffd60a;color:#000;font-size:.72em;font-weight:800;vertical-align:.12em}
+/* a 1ª linha do próximo bloco: separada, pequena, no pé do painel */
+.ga-p-dep{flex:none;margin:6px 0 0;padding:6px 0 0;border-top:1px solid rgba(255,255,255,.12);font-size:.84rem;line-height:1.3;color:rgba(255,255,255,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ga-p-dep:empty{display:none}
-/* 13/11: o texto é o alvo grande do "próximo"; a linha fina enche no tempo do bloco */
-.ga-p-txt,.ga-p-dep{pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.ga-p-barra{height:3px;margin:8px 0 0;border-radius:2px;background:rgba(255,255,255,.18);overflow:hidden}
-.ga-p-barra[hidden]{display:none}
-.ga-p-barra i{display:block;height:100%;width:0;background:#8fe0bd;transition:width .25s linear}
+.ga-p-dep:not(:empty)::before{content:"Depois: ";color:rgba(255,255,255,.36)}
+/* 13/11: o texto é o alvo grande do "próximo" */
+.ga-p-txt,.ga-p-dep{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .ga-prox.pulsa{border-color:#8fe0bd;animation:ga-pulsa 1.6s ease-in-out infinite}
 @keyframes ga-pulsa{0%,100%{box-shadow:0 0 0 0 rgba(143,224,189,0)}50%{box-shadow:0 0 0 6px rgba(143,224,189,.45)}}
 @media (prefers-reduced-motion:reduce){.ga-prox.pulsa{animation:none;box-shadow:0 0 0 3px rgba(143,224,189,.6)}}
 /* 12/11: notas só para ele (nome popular, o que acompanha a idade, o porquê do cartão) */
-.ga-p-opc{margin:6px 0 0;font-size:calc(var(--fs) * .66);line-height:1.3;color:#cfe3da;font-weight:600;text-shadow:0 1px 2px #000}
+.ga-p-opc{margin:8px 0 0;max-width:44em;font-size:max(12px,calc(var(--fs) * .6));line-height:1.3;color:#b7c7c0;font-weight:500}
 .ga-p-opc p{margin:3px 0 0}
 .ga-p-opc[hidden]{display:none}
 .ga-conta{position:absolute;inset:0;display:grid;place-items:center;font:800 7rem/1 system-ui;color:#fff;text-shadow:0 2px 12px #000;pointer-events:none}
 .ga-conta[hidden]{display:none}
 .ga-aviso{position:absolute;left:12px;right:12px;bottom:24%;background:rgba(138,82,0,.95);color:#fff;border-radius:12px;padding:8px 12px;font-size:.9rem;font-weight:600;pointer-events:none}
 .ga-aviso[hidden]{display:none}
-/* 12/11: aviso da montagem (sem lupa, cartão em pesquisa): só na tela, nunca no vídeo */
-.ga-nota{position:absolute;left:7%;right:7%;top:50%;padding:12px 14px;border:2px dashed rgba(255,214,10,.85);border-radius:14px;background:rgba(10,15,13,.86);
-  color:#fff;font:600 .92rem/1.35 system-ui,-apple-system,sans-serif;text-align:center;pointer-events:none}
+/* 12/11: aviso da montagem (sem lupa, cartão em pesquisa): só na tela, nunca no vídeo; 13/11: dentro do painel do teleprompter */
+.ga-nota{flex:none;margin:6px 0 0;padding:6px 10px;border:1.5px dashed rgba(255,214,10,.7);border-radius:10px;color:#ffe9a8;font:600 .82rem/1.3 system-ui,-apple-system,sans-serif}
 .ga-nota[hidden]{display:none}
 .ga-ver{position:absolute;inset:0;width:100%;height:100%;background:#000;object-fit:contain}
 .ga-ver[hidden]{display:none}
@@ -49,7 +60,7 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
 .ga-msg[hidden]{display:none}
 .ga-msg p{margin:0;font-size:1rem;line-height:1.45}
 .ga-msg button{background:#fff;color:#000;border:0;border-radius:12px;padding:12px 18px;font:700 1rem system-ui}
-.ga-barra{flex:none;display:flex;flex-direction:column;gap:8px;padding:8px 10px 8px;background:#0d0f0e}
+.ga-barra{grid-area:barra;position:relative;z-index:2;display:flex;flex-direction:column;gap:8px;padding:8px 10px 8px;background:#0d0f0e}
 .ga-l1{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .ga-fotos{display:flex;gap:6px}
 .ga-b{min-height:44px;white-space:nowrap;background:#252b28;color:#fff;border:1.5px solid #3a423e;border-radius:12px;padding:8px 12px;font:600 .92rem system-ui;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
@@ -74,3 +85,19 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
 
 /* 13/11: o rótulo do bloco 1 em destaque no teleprompter */
 .ga-rot{background:rgba(143,224,189,.28);color:#fff;border-radius:4px;padding:0 3px}
+
+/* tela larga (Mac, iPad, iPhone deitado): o quadro à esquerda na altura toda, o teleprompter e os controles à direita */
+@media (min-width:700px){
+  .ga{grid-template-columns:min(48vw,56.25vh) minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"palco prompt" "palco barra"}
+  .ga[data-estado="rev"],.ga[data-estado="fim"]{grid-template-rows:minmax(0,1fr) auto}
+  .ga-prompt{padding:22px 32px 12px;--k:1.4}
+  .ga-p-topo{gap:14px}
+  .ga-p-passos i{height:5px}
+  .ga-p-tit{margin-top:14px;font-size:.8rem}
+  .ga-p-rola{margin-top:8px}
+  .ga-p-dep{font-size:.95rem;padding-top:10px}
+  .ga-nota{font-size:.9rem}
+  .ga-barra{padding:12px 32px 14px}
+  .ga-l2{max-width:640px}
+}
+@supports (height:100dvh){@media (min-width:700px){.ga{grid-template-columns:min(48vw,56.25dvh) minmax(0,1fr)}}}

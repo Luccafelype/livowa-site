@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f2f4f1">
 <script>try { var t = localStorage.getItem('livowa_crm_tema'); if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t; } catch (e) { /* sem armazenamento: segue o sistema */ }</script>
 <title>CRM</title>
-<link rel="stylesheet" href="gravar-analise.css?v=20261113z">
+<link rel="stylesheet" href="gravar-analise.css?v=20261113zb">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    13/11: o nome passou a ser CRM (pedido do Lucca); a aba dos leads é "Leads".
@@ -518,7 +518,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <script src="uso.js?v=20261113y"></script>
 <script src="kits.js?v=20261113v4"></script>
 <script src="roteiro.js?v=20261113v4"></script>
-<script src="gravar-analise.js?v=20261113z"></script>
+<script src="gravar-analise.js?v=20261113zb"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -957,20 +957,33 @@ async function abreLead(c, passo, gravar){
   await abrirCodigo(c, true);
   if (codigoAtual !== c || $('busca').hidden) return;
   const d = passo && document.querySelector(`#out details.passo[data-p="${passo}"]`);
-  if (d){ document.querySelectorAll('#out details.passo').forEach(x => { if (x !== d) x.open = false; }); d.open = true; d.scrollIntoView({ block:'start', behavior:'smooth' }); window.USO?.tela('passo-' + passo); }
+  if (d){ document.querySelectorAll('#out details.passo').forEach(x => { if (x !== d) x.open = false; }); d.open = true; d.scrollIntoView({ block:'start', behavior:gravar ? 'auto' : 'smooth' }); window.USO?.tela('passo-' + passo); }
   if (gravar) gravarQuandoPronto(c);
 }
-// "Gravar análise" da lista: abre o gravador quando o roteiro estiver pronto (o do Claude, se vier em até 30 s; senão, o do estoque)
+// "Gravar análise" da lista. 13/11 19h45 (Lucca: "clico em gravar, o sistema entra no card, rola para uma parte"): o gravador
+// abre na hora, por cima do lead. Se o roteiro do Claude ainda não chegou, abre com o do estoque e o Gravar segurado
+// ("Roteiro chegando…"); quando chega, troca os blocos e libera; vencido o prazo dos Ajustes, libera com o do estoque.
 async function gravarQuandoPronto(c){
-  const t0 = Date.now(), espera = ms => new Promise(r => setTimeout(r, ms));
-  for (;;){
-    if (codigoAtual !== c || $('busca').hidden || window.GRAVADOR?._estado()) return;   // saiu do lead ou o gravador já abriu
-    const bt = document.querySelector('#out .pi-claude .ga-abrir'); if (bt && bt.disabled) return;   // sem fotos: fica no passo 2, com o aviso
-    const i = bt ? +bt.dataset.kb : -1, cl = KB[i] ? window.ROTEIRO?.claude(KB[i].e) : null;
-    if (bt && (KB[i]?.t !== 'pele-idade' || Date.now() - t0 > cfgN('roteiro_espera_s', LEADS.find(x => x.codigo === c)) * 1000 || (cl && cl.lido && cl.estado !== 'gerando' && cl.estado !== 'lendo'))) return abreGravador(i);
-    if (Date.now() - t0 > cfgN('roteiro_espera_s', LEADS.find(x => x.codigo === c)) * 1000 + 5000) return;
-    await espera(300);
+  const t0 = Date.now(), espera = ms => new Promise(r => setTimeout(r, ms)), prazo = () => cfgN('roteiro_espera_s', LEADS.find(x => x.codigo === c)) * 1000;
+  const saiu = () => codigoAtual !== c || $('busca').hidden;
+  let bt = null;
+  for (;;){   // o passo 2 ainda está sendo desenhado
+    if (saiu() || window.GRAVADOR?._estado()) return;
+    bt = document.querySelector('#out .pi-claude .ga-abrir'); if (bt) break;
+    if (Date.now() - t0 > prazo() + 5000) return;
+    await espera(100);
   }
+  if (bt.disabled) return;   // sem fotos: fica no passo 2, com o aviso
+  const i = +bt.dataset.kb, b = KB[i];
+  for (let k = 0; k < 30 && !window.ROTEIRO?.passosReact(b.e)?.[0]?.id; k++){ await espera(100); if (saiu() || KB[i] !== b) return; }   // o estoque (arquivo do site) ainda lendo: até 3 s
+  const chegou = () => { const cl = KB[i] ? window.ROTEIRO?.claude(KB[i].e) : null; return KB[i]?.t !== 'pele-idade' || !!(cl && cl.lido && cl.estado !== 'gerando' && cl.estado !== 'lendo'); };
+  if (chegou()) return abreGravador(i);
+  await abreGravador(i, true);
+  const meu = () => { const g = window.GRAVADOR?._estado(); return !!g && KB[i] === b && g.o?.codigo === c && g.aguarda; };
+  while (meu() && !chegou() && Date.now() - t0 < prazo()) await espera(300);
+  if (!meu()) return;
+  await trocaRoteiroGravador(true);
+  window.GRAVADOR.liberar();
 }
 document.addEventListener('click', ev => {
   const a = ev.target.closest('.ac button'); if (a){ marcarAceite(a.dataset.c, a.dataset.a); return; }
@@ -2062,12 +2075,12 @@ function cenaOutro(id, b){
   return null;
 }
 let GRAV_KB = -1;   // o kit cujo gravador está aberto (para trocar o roteiro se o do Claude chegar depois)
-async function trocaRoteiroGravador(){
+async function trocaRoteiroGravador(conferir){   // conferir = antes de liberar o Gravar: se o que está aberto não é o roteiro de agora (o estoque chegou depois), troca também
   const i = GRAV_KB, b = KB[i], g = window.GRAVADOR?._estado(); if (!b || !g || g.estado !== 'prep' || g.o?.codigo !== codigoAtual) return;
   const { blocos, fonte } = await blocosGravador(b);
-  if (fonte === 'claude' && g.o.fonte !== 'claude') GRAVADOR.trocarBlocos(blocos, fonte);
+  if ((fonte === 'claude' && g.o.fonte !== 'claude') || (conferir && g.o.fonte !== 'claude' && blocos.length !== g.o.blocos.length)) GRAVADOR.trocarBlocos(blocos, fonte);
 }
-async function abreGravador(i){
+async function abreGravador(i, aguarda){
   const b = KB[i]; if (!b || !window.GRAVADOR) return;
   const fotos = telasKit(b);
   const { blocos, fonte } = await blocosGravador(b);   // [APONTE: …] fica na fala: o gravador mostra só no teleprompter
@@ -2076,7 +2089,7 @@ async function abreGravador(i){
   GRAV_KB = i;
   const lg = LEADS.find(x => x.codigo === c) || { codigo:c };   // 13/11: os números do gravador (Ajustes)
   const params = { ritmo:cfgN('gravar_ritmo_palavras_s', lg), salto:cfgN('gravar_salto_fecho_s', lg), alvo:cfgN('gravar_alvo_s', lg), teto:cfgN('gravar_teto_s', lg) };
-  GRAVADOR.abrir({ codigo:c, fotos, blocos, fonte, params, foto:FOTO_KIT.has(b.t) ? 'frente' : fotos[0]?.chave, aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
+  GRAVADOR.abrir({ codigo:c, fotos, blocos, fonte, params, aguarda:!!aguarda && fonte !== 'claude', foto:FOTO_KIT.has(b.t) ? 'frente' : fotos[0]?.chave, aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
 }
 // a conversa de 15 min numa tela legível (v3, etapa 4)
 function abreConversa(i){

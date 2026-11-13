@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1311z';
+const VERSAO = '1311zb';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -84,14 +84,19 @@ function monta(){
   el.className = 'ga'; el.hidden = true;
   el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Gravar a análise');
   el.innerHTML = `
+  <div class="ga-prompt" aria-live="polite">
+    <div class="ga-p-topo"><div class="ga-p-passos" aria-hidden="true"></div><span class="ga-p-pos"></span><button type="button" class="ga-aa" aria-label="Tamanho do texto">Aa</button></div>
+    <b class="ga-p-tit"></b>
+    <div class="ga-p-rola"><p class="ga-p-txt"></p><div class="ga-p-opc" hidden></div></div>
+    <div class="ga-nota" hidden></div>
+    <p class="ga-p-dep" aria-hidden="true"></p>
+  </div>
   <div class="ga-palco">
     <div class="ga-quadro">
       <canvas class="ga-tela" width="${W}" height="${H}" aria-label="Vídeo que vai ser gravado"></canvas>
       <video class="ga-cam" playsinline muted autoplay aria-hidden="true"></video>
-      <div class="ga-prompt" aria-live="polite"><div class="ga-p-topo"><b class="ga-p-tit"></b><span class="ga-p-pos"></span><button type="button" class="ga-aa" aria-label="Tamanho do texto">Aa</button></div><p class="ga-p-txt"></p><div class="ga-p-barra" hidden><i></i></div><div class="ga-p-opc" hidden></div><p class="ga-p-dep" aria-hidden="true"></p></div>
       <div class="ga-conta" hidden></div>
       <div class="ga-aviso" hidden></div>
-      <div class="ga-nota" hidden></div>
       <video class="ga-ver" playsinline controls hidden></video>
       <div class="ga-msg" hidden><p></p><button type="button" class="ga-tentar">Tentar de novo</button></div>
     </div>
@@ -121,7 +126,7 @@ function monta(){
   </div>`;
   document.body.append(el);
   const q = s => el.querySelector(s);
-  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pBarra:q('.ga-p-barra'), pBarraI:q('.ga-p-barra i'),
+  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'),
     conta:q('.ga-conta'), aviso:q('.ga-aviso'), nota:q('.ga-nota'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
     fechar:q('.ga-fechar'), ant:q('.ga-ant'), rec:q('.ga-rec-b'), recT:q('.ga-rec-t'), prox:q('.ga-prox'), grav:q('.ga-grav'), rev:q('.ga-rev'), fim:q('.ga-fim'),
     refazer:q('.ga-refazer'), enviar:q('.ga-enviar'), baixar:q('.ga-baixar'), marcar:q('.ga-marcar'), denovo:q('.ga-denovo'), info:q('.ga-info'), tentar:q('.ga-tentar') };
@@ -139,7 +144,16 @@ function encaixa(){
   let w = p.width, h = w * H / W;
   if (h > p.height){ h = p.height; w = h * W / H; }
   Object.assign(D.quadro.style, { width:w + 'px', height:h + 'px', left:((p.width - w) / 2) + 'px', top:((p.height - h) / 2) + 'px' });
-  D.prompt.style.setProperty('--topo', Math.ceil(h * TOPO / H) + 'px');   // 13/11: até aqui o teleprompter é opaco (o nome e o CRM do vídeo não aparecem por trás)
+  cabeTexto();
+}
+// 13/11 19h45: o teleprompter é um painel fora do quadro (ao lado no Mac, acima no iPhone). A letra parte do tamanho do "Aa"
+// e diminui até a fala do bloco caber inteira no painel (o fecho saía cortado); no limite de 14 px, o painel rola.
+function cabeTexto(){
+  if (!G || !D || D.prompt.hidden) return;
+  let fs = fsPrompt; const r = D.pRola;
+  D.prompt.style.setProperty('--fs', fs + 'px');
+  while (fs > 14 && D.pTxt.offsetHeight > r.clientHeight + 1){ fs--; D.prompt.style.setProperty('--fs', fs + 'px'); }   // só a fala decide; as notas ficam com o que sobrar (rolam)
+  r.scrollTop = 0;
 }
 
 // ---------- fotos: baixadas para a memória (blob), para o canvas não ficar "sujo" e o link de 10 min não vencer no meio ----------
@@ -207,7 +221,8 @@ function pinta(){
   ctx.fillStyle = '#0b100e'; ctx.fillRect(0, 0, W, H);
   if (f && f.img){ const z = f.z; try { ctx.drawImage(f.img, z.ox, z.oy, f.bw * z.s, f.bh * z.s); } catch (e) { /* foto ainda não pronta */ } }
   // montagem do bloco (12/11): números, lupas, ícones ou cartão, por cima da foto e por baixo do anel, do nome e da faixa
-  try { montagem(ctx, agora); } catch (e) { G.erroMontagem = String(e && e.message || e).slice(0, 80); }
+  let temCena = false;
+  try { temCena = montagem(ctx, agora); } catch (e) { G.erroMontagem = String(e && e.message || e).slice(0, 80); }
   // realce: escurece em volta e marca o anel onde o dedo está
   const al = anelAlfa();
   if (al > 0){
@@ -225,8 +240,10 @@ function pinta(){
   ctx.fillStyle = '#fff'; ctx.font = `700 34px ${FONTE}`; ctx.textBaseline = 'alphabetic'; ctx.fillText('Dr. Lucca Marques', 32, 62);
   ctx.fillStyle = 'rgba(255,255,255,.72)'; ctx.font = `500 24px ${FONTE}`; ctx.fillText('CRM-GO 33.990', 32, 96);
   // faixa do bloco: o dado que ela está ouvindo
+  // 13/11 19h45: só quando a cena do bloco não desenhou nada; com a cena, a faixa repetia o mesmo dado por cima dela
   const fx = (G.o.blocos[G.bloco] || {}).faixa;
-  if (fx){
+  G.faixaNoVideo = !!fx && !temCena;
+  if (fx && !temCena){
     const x0 = 24, larg = (G.mostraCam && G.cam ? CIRC.cx - CIRC.r - 18 : W - 24) - x0;
     ctx.font = `650 31px ${FONTE}`;
     const ls = quebra(ctx, fx, larg - 36, 3), h = ls.length * 40 + 26, y0 = H - 24 - h;
@@ -264,16 +281,21 @@ function vigiaCam(){
 const lim = (v, a, b) => Math.max(a, Math.min(b, v));
 function escurece(ctx, al){ if (al > 0){ ctx.fillStyle = `rgba(4,7,6,${al.toFixed(3)})`; ctx.fillRect(0, 0, W, H); } }
 function montagem(ctx, agora){
-  const b = G.o.blocos[G.bloco], c = b && b.cena; if (!c) return;
+  const b = G.o.blocos[G.bloco], c = b && b.cena; if (!c) return false;
   const t = agora - (G.blocoT || agora);
+  let fez = false;   // a cena desenhou alguma coisa (então a faixa verde não entra)
   ctx.save();
-  if (c.tipo === 'idade') cenaIdade(ctx, c, t);
-  else if (c.tipo === 'foto') cenaFoto(ctx, c, agora);
-  else if (c.tipo === 'dentro') cenaDentro(ctx, c, t);
-  else if (c.tipo === 'desejo') cenaDesejo(ctx, c, t);
-  else if (c.tipo === 'exemplo') cenaExemplo(ctx, c, t);
-  ctx.restore();
-  ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  try {
+    if (c.tipo === 'idade') fez = cenaIdade(ctx, c, t);
+    else if (c.tipo === 'foto') fez = cenaFoto(ctx, c, agora);
+    else if (c.tipo === 'dentro') fez = cenaDentro(ctx, c, t);
+    else if (c.tipo === 'desejo') fez = cenaDesejo(ctx, c, t);
+    else if (c.tipo === 'exemplo') fez = cenaExemplo(ctx, c, t);
+  } finally {
+    ctx.restore();
+    ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
+  return !!fez;
 }
 // aviso da montagem só na tela (DOM): nunca entra no vídeo
 function nota(){
@@ -289,6 +311,7 @@ function nota(){
     else if (G.foto !== r.k) t = 'As lupas aparecem na foto de frente.';
   }
   D.nota.textContent = t; D.nota.hidden = !t || G.estado === 'rev' || G.estado === 'fim';
+  cabeTexto();   // o aviso divide o painel com a fala
 }
 
 // idade: "Rosto 45–52" (amarelo) × "Você 45" (azul) e a régua de traço fino; entra em 0,5 s
@@ -317,6 +340,7 @@ function cenaIdade(ctx, c, t){
   ctx.strokeStyle = AZUL; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xv, yR - 52); ctx.lineTo(xv, yR + 12); ctx.stroke();
   ctx.fillStyle = AZUL; ctx.beginPath(); ctx.arc(xv, yR, 9, 0, Math.PI * 2); ctx.fill();
   ctx.globalAlpha = p; ctx.font = `700 26px ${MONO}`; ctx.fillText(String(c.idade), xv, yR - 62);
+  return true;
 }
 
 // foto: lupas nos sinais. Pontos do rosto (FaceLandmarker do /pele) na foto de frente; posição = pixel da foto, então
@@ -406,7 +430,7 @@ function arrumaLupas(c, f){
 }
 function cenaFoto(ctx, c, agora){
   const R0 = G.rosto, f = G.fotos[G.foto];
-  if (!R0 || R0.estado !== 'ok' || G.foto !== R0.k || !f || !f.img || !c.lupas || !c.lupas.length) return;
+  if (!R0 || R0.estado !== 'ok' || G.foto !== R0.k || !f || !f.img || !c.lupas || !c.lupas.length) return false;
   const chave = G.bloco + ':' + (G.mostraCam && G.cam ? 1 : 0);
   if (!G.lupasLay || G.lupasLay.chave !== chave) G.lupasLay = { chave, ...arrumaLupas(c, f) };
   const L = G.lupasLay, t = agora - Math.max(G.blocoT || 0, G.rostoT || 0), a = escala(f, f.z);
@@ -422,6 +446,7 @@ function cenaFoto(ctx, c, agora){
     ctx.fill('evenodd');
   }
   vis.forEach(v => lupa(ctx, f, v, L.r, a));
+  return L.postos.length > 0;
 }
 // pedaço da imagem com a origem dentro dos limites (o Safari não desenha nada se a origem sai da imagem)
 function pedaco(ctx, img, sx, sy, sw, sh, dx, dy, dw, dh){
@@ -500,7 +525,7 @@ function lua(ctx){   // lua crescente de traço: arco longo do círculo de fora 
   ctx.beginPath(); arco(A, ang(A, p1), ang(A, p2), B, true); arco(B, ang(B, p2), ang(B, p1), A, false); ctx.closePath(); ctx.stroke();
 }
 function cenaDentro(ctx, c, t){
-  const hs = (c.habitos || []).slice(0, 3); if (!hs.length) return;
+  const hs = (c.habitos || []).slice(0, 3); if (!hs.length) return false;
   escurece(ctx, .82 * sai(t / 250));
   const alto = 190, y0 = Math.round((TOPO + 40 + 880 - hs.length * alto) / 2);
   hs.forEach((hb, k) => {
@@ -515,11 +540,12 @@ function cenaDentro(ctx, c, t){
     quebra(ctx, hb.valor || '', 460, 2).forEach((l, i) => ctx.fillText(l, 226, yc + 34 + i * 36));
   });
   ctx.globalAlpha = 1;
+  return true;
 }
 
 // desejo: cartão "O que importa aos {idade}" com 3 itens (o "t" do arquivo da pesquisa) e as fontes curtas no pé; sem itens, nada no canvas (a nota avisa)
 function cenaDesejo(ctx, c, t){
-  const its = (c.itens || []).slice(0, 3); if (!its.length) return;
+  const its = (c.itens || []).slice(0, 3); if (!its.length) return false;
   escurece(ctx, .82 * sai(t / 250));
   const x0 = 40, w = 640;
   ctx.font = `700 44px ${FONTE}`; const tl = quebra(ctx, c.titulo || '', w - 64, 2);
@@ -547,6 +573,7 @@ function cenaDesejo(ctx, c, t){
   });
   if (ft.length){ ctx.globalAlpha = p; ctx.fillStyle = APAGADO; ctx.font = `500 21px ${FONTE}`; ft.forEach((l, i) => ctx.fillText(l, x0 + 32, y + 4 + i * 28)); }
   ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
+  return true;
 }
 
 // exemplo (13/11, d-20261113-exemplos-por-imagem): a imagem do estudo só recortada pelo kit (nenhuma outra edição), grande:
@@ -595,7 +622,7 @@ function layoutExemplo(c, img){
   return cheias.length ? cheias.reduce((a, b) => b.area > a.area ? b : a) : maior;
 }
 function cenaExemplo(ctx, c, t){
-  const img = c.img; if (!img || !img.naturalWidth) return;
+  const img = c.img; if (!img || !img.naturalWidth) return false;
   const L = c.lay || (c.lay = layoutExemplo(c, img)), p = sai(t / 400), y1 = CIRC.cy - CIRC.r - 12;
   const top = EX.y0 + Math.max(0, (y1 - EX.y0 - L.h) / 2);   // centrado na vertical, entre o nome e a câmera
   escurece(ctx, p);   // fundo liso: nada do quadro de baixo aparece por trás
@@ -609,16 +636,18 @@ function cenaExemplo(ctx, c, t){
   let yP = Math.max(y1 + 14, top + L.h + 10);
   pe.forEach(l => { ctx.fillText(l, xP, yP); yP += 26; });
   ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
+  return true;
 }
 
 // ---------- teleprompter (só DOM) ----------
 function prompter(){
   const bs = G.o.blocos, b = bs[G.bloco] || { titulo:'', fala:'' }, n = bs.length;
   D.pTit.textContent = b.titulo || '';
-  D.pPos.textContent = n ? `${G.bloco + 1} de ${n}${G.o.fonte ? ' · ' + (G.o.fonte === 'claude' ? 'Claude' : 'estoque') : ''}` : '';
+  D.pPos.textContent = n ? `${G.bloco + 1} de ${n}${G.o.fonte === 'estoque' ? ' · estoque' : ''}` : '';
+  if (D.pPassos.childElementCount !== n) D.pPassos.innerHTML = bs.map(() => '<i><u></u></i>').join('');
+  [...D.pPassos.children].forEach((e, k) => { e.className = k < G.bloco ? 'feito' : k === G.bloco ? 'agora' : ''; if (k !== G.bloco) e.firstChild.style.width = ''; });
   // 12/11: [APONTE: região] (roteiro do Claude) vira dica destacada no teleprompter; nunca vai para o canvas
   D.pTxt.textContent = '';
-  if (b.imagem){ const sp = document.createElement('span'); sp.className = 'ga-dica'; sp.textContent = '→ imagem: ' + b.imagem; D.pTxt.append(sp); }   // 13/11: o exemplo na tela
   String(b.fala || '').split(/(\[(?:APONTE|CIRCULAR):[^\]]*\])/i).forEach(pedaco => {
     const m = /^\[(?:APONTE|CIRCULAR):\s*([^\]]*)\]$/i.exec(pedaco);
     if (m){ const sp = document.createElement('span'); sp.className = 'ga-dica'; sp.textContent = '→ ' + m[1].trim(); D.pTxt.append(sp); }   // 13/11: o nome da lupa
@@ -629,7 +658,7 @@ function prompter(){
   D.pOpc.hidden = !(b.notas && b.notas.length);
   // 13/11: a 1ª linha do próximo bloco, apagada (dá para ver que tem mais); no último, nada
   D.pDep.textContent = G.bloco < n - 1 ? String(bs[G.bloco + 1].fala || '').replace(/\[[^\]]*\]/g, ' ').replace(/\{nome\}/g, '').replace(/\s+/g, ' ').replace(/^[\s,]+/, '').trim() : '';
-  D.prompt.style.setProperty('--fs', fsPrompt + 'px');
+  cabeTexto();
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
   if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
   marcaTempo();
@@ -654,10 +683,10 @@ function contaBloco(fim){
 function marcaTempo(){
   if (!G || !D) return;
   const rec = G.estado === 'rec', n = G.o.blocos.length, ult = G.bloco >= n - 1;
-  D.pBarra.hidden = !rec;
-  if (!rec){ D.prox.classList.remove('pulsa'); return; }
+  const u = D.pPassos.children[G.bloco] && D.pPassos.children[G.bloco].firstChild;
+  if (!rec){ if (u) u.style.width = ''; D.prox.classList.remove('pulsa'); return; }
   const fr = Math.min(1, (performance.now() - G.blocoT) / tempoBloco(G.o.blocos[G.bloco], G.p.ritmo));
-  D.pBarraI.style.width = (fr * 100).toFixed(1) + '%';
+  if (u) u.style.width = (fr * 100).toFixed(1) + '%';
   D.prox.classList.toggle('pulsa', fr >= 1 && !ult);
 }
 function aviso(t){ D.aviso.textContent = t; D.aviso.hidden = !t; }
@@ -673,10 +702,10 @@ function estado(e){
   D.prompt.hidden = rev; D.ver.hidden = !rev;
   D.rec.classList.toggle('on', e === 'rec');
   if (e === 'rev') window.USO?.tela('revisao'); else if (e === 'prep' || e === 'conta' || e === 'rec') window.USO?.tela('gravador');
-  D.recT.textContent = e === 'rec' ? '0:00 / ' + mmss(G.p.alvo * 1000) : e === 'conta' ? 'Cancelar' : 'Gravar';
+  D.recT.textContent = e === 'rec' ? '0:00 / ' + mmss(G.p.alvo * 1000) : e === 'conta' ? 'Cancelar' : G.aguarda ? 'Roteiro chegando…' : 'Gravar';
   marcaTempo();
   D.rec.setAttribute('aria-label', e === 'rec' ? 'Parar a gravação' : e === 'conta' ? 'Cancelar a contagem' : 'Começar a gravar');
-  D.rec.disabled = e === 'prep' && !G.pronto;
+  D.rec.disabled = e === 'prep' && (!G.pronto || !!G.aguarda);
   D.fotos.querySelectorAll('button').forEach(b => { b.disabled = rev; });
   D.zoom.disabled = rev; D.cami.disabled = rev || !G.cam;
   nota();
@@ -689,7 +718,7 @@ async function abrir(o){
   monta();
   if (G) fechar();
   G = { o, fotos:(o.fotos || []).filter(f => f.url).map(f => ({ ...f })), foto:0, bloco:0, estado:'prep', pronto:false, cam:false, mic:false, mostraCam:true,
-    stream:null, rec:null, chunks:[], t0:0, take:null, anel:null, ptrs:new Map(), gesto:null, quadros:0, camQuadros:0, camUlt:0, camParada:false, camParadas:0, camParadaS:null, iv:0, relogio:0, wake:null, p:params(o) };
+    stream:null, rec:null, chunks:[], t0:0, take:null, anel:null, ptrs:new Map(), gesto:null, quadros:0, camQuadros:0, camUlt:0, camParada:false, camParadas:0, camParadaS:null, iv:0, relogio:0, wake:null, p:params(o), aguarda:!!o.aguarda };
   const k = G.fotos.findIndex(f => f.chave === (o.foto || 'frente')); if (k > 0) G.foto = k;
   D.el.hidden = false; document.body.classList.add('ga-aberto');
   window.USO?.tela('gravador');   // 13/11: registro de uso do CRM (uso.js)
@@ -708,8 +737,8 @@ async function abrir(o){
   if (!G.mic) return;   // falha() já mostrou o motivo
   if (!window.MediaRecorder) return falha('Este navegador não grava vídeo. Use o Safari do iPhone atualizado.');
   G.pronto = true; estado('prep');
-  info(G.cam ? 'Toque em Gravar. Segure o dedo na foto para marcar; pinça para aproximar.' : 'Sem câmera: o vídeo sai com a foto e a sua voz. Toque em Gravar.');
-  D.rec.focus();
+  info(G.cam ? '' : 'Sem câmera: o vídeo sai com a foto e a sua voz.');
+  if (!G.aguarda) D.rec.focus();
 }
 async function abreCamera(){
   const g0 = G;
@@ -807,7 +836,7 @@ function comeca(){
   G.t0 = performance.now(); G.camUlt = G.camUlt || G.t0; G.blocoT = G.t0;   // a cena do 1º bloco entra no vídeo desde o começo
   G.msBlocos = G.o.blocos.map(() => 0); G.blocoAtivo = G.bloco; G.blocoIni = G.t0; G.saltou = false;
   estado('rec');
-  info('Gravando. Próximo troca o texto e a faixa.');
+  info('');
   G.relogio = setInterval(() => {
     if (!G || G.estado !== 'rec') return;
     const ms = performance.now() - G.t0;
@@ -985,7 +1014,7 @@ function liga(){
     }
     D.fechar.classList.remove('conf'); fechar();
   };
-  D.refazer.onclick = () => { if (!G) return; window.USO?.sinal('refazer'); liberaTake(); G.bloco = 0; prompter(); estado('prep'); info('Toque em Gravar quando quiser.'); requestAnimationFrame(encaixa); };
+  D.refazer.onclick = () => { if (!G) return; window.USO?.sinal('refazer'); liberaTake(); G.bloco = 0; estado('prep'); prompter(); info(''); requestAnimationFrame(encaixa); };
   D.enviar.onclick = enviar; D.denovo.onclick = enviar;
   D.marcar.onclick = () => { const fn = G && G.o.aoMarcar; fechar(); try { fn?.(); } catch (e) { /* ok */ } };
   D.tentar.onclick = () => { if (!G) return; const o = G.o; fechar(); abrir(o); };
@@ -1020,6 +1049,8 @@ function diag(motivo, g){
 }
 
 // 13/11: o roteiro do Claude chegou com o gravador aberto e ainda sem gravar: troca os blocos e volta ao 1º
-function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; prompter(); return true; }
-return { abrir, fechar, trocarBlocos, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo };
+function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; prompter(); return true; }
+// 13/11 19h45: o "Gravar análise" da lista abre o gravador na hora, com o Gravar segurado até o roteiro do Claude chegar (ou o prazo vencer)
+function liberar(){ if (!G || !G.aguarda) return; G.aguarda = false; if (G.estado === 'prep'){ estado('prep'); if (G.pronto) D.rec.focus(); } }
+return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo };
 })();
