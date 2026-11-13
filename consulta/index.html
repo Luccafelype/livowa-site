@@ -131,6 +131,9 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .fn-sel label{display:flex;flex-direction:column;gap:3px;font-size:.8rem;color:var(--m);font-weight:600;min-width:0}
 .fn-sel select{font:16px system-ui;width:100%;min-width:0;padding:9px 8px;border:1.5px solid var(--l);border-radius:10px;background:var(--s);color:var(--fg)}
 .conta.tres{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* 13/11: aberta sem o #k= (a chave): só o aviso, sem números nem filtros (em 05/11 e 12/11 o "0 esperam você" pareceu caixa vazia) */
+.conta.sem,.filtro.sem{display:none}
+.sem-chave{color:inherit;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:14px 16px;font-weight:600;line-height:1.45}
 .conta.tres b{font-size:1.4rem}
 .fn-queda{border-radius:12px;padding:10px 12px;background:var(--w2);color:var(--fg);font-size:.92rem;margin-bottom:12px}
 .fn-queda b{color:var(--w)}
@@ -392,6 +395,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
+// 13/11: sem a chave, a Caixa mostra só isto (nada desenha por cima: desenhaCaixa e carregar param aqui)
+const SEM_CHAVE = 'Este link está sem a sua chave. Abra a Caixa pelo botão “Abrir a Caixa de leads” no topo da Central, ou pelo atalho Leads do iPhone.';
+const avisoSemChave = () => `<p class="aviso sem-chave">${SEM_CHAVE}</p>`;
+function semChave(){
+  document.querySelector('#caixa .conta').classList.add('sem'); $('filtro').classList.add('sem'); $('filtro').innerHTML = '';
+  $('lista').innerHTML = avisoSemChave();
+}
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const post = corpo => fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ k:K, ...corpo }) });
@@ -471,6 +481,7 @@ function resumo(l){
   }).join(' · ');
 }
 function desenhaCaixa(){
+  if (!K) return semChave();
   const reais = LEADS.filter(l => !ehTeste(l)), n = e => reais.filter(l => etapaDe(l) === e).length;
   const naFila = reais.filter(l => FILA.includes(etapaDe(l)));
   $('n-esperam').textContent = naFila.length; $('n-conversa').textContent = n('conversa'); $('n-nutrir').textContent = n('nutrir');
@@ -551,7 +562,7 @@ async function marcarAceite(c, v){
 }
 const botoes = l => `<div class="st et9" role="group" aria-label="Etapa">${ETAPAS.map(([s, t]) => `<button type="button" data-s="${s}" data-c="${esc(l.codigo)}" aria-pressed="${etapaDe(l) === s}">${t}</button>`).join('')}</div>`;
 async function carregar(){
-  if (!K){ $('lista').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
+  if (!K) return semChave();
   try {
     const r = await post({ acao:'lista', dias:30 });
     if (r.status === 404){ $('lista').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
@@ -646,6 +657,7 @@ const NOME_TEMA = { longevidade:'Longevidade', emagrecimento:'Emagrecimento' };
 let PORTAS = null;
 async function carregaPortas(){
   const box = $('portas-corpo');
+  if (!K){ box.innerHTML = avisoSemChave(); return; }
   try {
     const r = await post({ acao:'rotas' }); const j = await r.json();
     if (!j.ok) throw new Error(j.erro || r.status);
@@ -728,6 +740,7 @@ let FN = { funil:'', dias:7, origem:'', variante:'', dados:null, pedido:0 };
 try { const g = JSON.parse(localStorage.getItem('livowa_funil') || '{}'); if (/^[a-z0-9-]{1,40}$/.test(g.funil || '')) FN.funil = g.funil; if (g.dias === 30) FN.dias = 30; } catch {}
 async function carregaFunil(){
   const n = ++FN.pedido, box = $('fn-corpo');
+  if (!K){ box.innerHTML = avisoSemChave(); return; }
   if (!FN.dados) box.innerHTML = '<p class="aviso">Carregando…</p>'; else box.style.opacity = .55;
   try { localStorage.setItem('livowa_funil', JSON.stringify({ funil:FN.funil, dias:FN.dias })); } catch {}
   try {
@@ -1094,7 +1107,9 @@ function interpretaBraco(d){
     <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado (sexo não informado × 0,95).${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e movimentos dobrados para comparar com os 20 s.' : ''}</p></div>`;
 }
 async function ver(c){
-  codigoAtual = c; desenhaGestao(c);
+  codigoAtual = c;
+  if (!K){ $('gestao').innerHTML = ''; $('out').innerHTML = avisoSemChave(); return; }
+  desenhaGestao(c);
   $('out').innerHTML = '<p class="aviso">Buscando…</p>';
   try {
     const r = await post({ c });
