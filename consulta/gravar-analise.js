@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1211d';
+const VERSAO = '1211e';
 const W = 720, H = 1280, FPS = 30, MAX_S = 90;
 const CIRC = { cx:W - 24 - 120, cy:H - 24 - 120, r:120 };   // câmera dele
 const TOPO = 150;                                           // nome e CRM no alto do vídeo
@@ -482,14 +482,15 @@ function cenaDentro(ctx, c, t){
   ctx.globalAlpha = 1;
 }
 
-// desejo: cartão "O que importa aos {idade}" com 3 itens (só o "t" do arquivo da pesquisa); sem itens, nada no canvas (a nota avisa)
+// desejo: cartão "O que importa aos {idade}" com 3 itens (o "t" do arquivo da pesquisa) e as fontes curtas no pé; sem itens, nada no canvas (a nota avisa)
 function cenaDesejo(ctx, c, t){
   const its = (c.itens || []).slice(0, 3); if (!its.length) return;
   escurece(ctx, .82 * sai(t / 250));
   const x0 = 40, w = 640;
   ctx.font = `700 44px ${FONTE}`; const tl = quebra(ctx, c.titulo || '', w - 64, 2);
   ctx.font = `500 31px ${FONTE}`; const il = its.map(s => quebra(ctx, s, w - 140, 3));
-  const h = 34 + tl.length * 54 + 30 + il.reduce((s, l) => s + l.length * 40 + 34, 0) + 18;
+  ctx.font = `500 21px ${FONTE}`; const ft = c.fontes && c.fontes.length ? quebra(ctx, 'Fontes: ' + c.fontes.join(' · '), w - 64, 2) : [];   // "Autor ano" (index.html fonteCurta)
+  const h = 34 + tl.length * 54 + 30 + il.reduce((s, l) => s + l.length * 40 + 34, 0) + (ft.length ? 8 + ft.length * 28 : 0) + 18;
   const y0 = Math.max(TOPO + 20, Math.round((TOPO + 20 + 880 - h) / 2)), p = sai(t / 300);
   ctx.globalAlpha = p;
   ctx.fillStyle = 'rgba(10,15,13,.92)'; caixa(ctx, x0, y0, w, h, 22); ctx.fill();
@@ -509,6 +510,7 @@ function cenaDesejo(ctx, c, t){
     }
     y += bh;
   });
+  if (ft.length){ ctx.globalAlpha = p; ctx.fillStyle = APAGADO; ctx.font = `500 21px ${FONTE}`; ft.forEach((l, i) => ctx.fillText(l, x0 + 32, y + 4 + i * 28)); }
   ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
 }
 

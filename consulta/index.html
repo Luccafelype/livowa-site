@@ -388,7 +388,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </div>
 <script src="kits.js?v=20261112d"></script>
 <script src="roteiro.js?v=20261112c"></script>
-<script src="gravar-analise.js?v=20261112d"></script>
+<script src="gravar-analise.js?v=20261112e"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -896,7 +896,7 @@ const ROTPI = {
   futuro:['Daqui a 10 anos, quer', { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que sente', chegar10:'chegar aos (idade + 10) com força e memória', antes:'cuidar da saúde antes de aparecer problema', reconhecer:'se reconhecer no espelho', independente:'não depender de ninguém', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o corpo já está mostrando', cuidar:'cuidar agora, antes que apareça', devagar:'envelhecer mais devagar' }],   // 11/11: devagar (faixa abaixo de 35)
 };
 const ALERTAPI = { cigarro:['hoje', 'as_vezes'], metabolico:['pressao', 'glicose', 'ambas'] };
-const SINPI = { linhas_testa:'Testa', olhos:'Canto dos olhos', sulco_nasolabial:'Nariz à boca', manchas:'Bochechas', flacidez:'Contorno' };
+const SINPI = { linhas_testa:'Testa', olhos:'Canto dos olhos', sulco_nasolabial:'Do nariz à boca', manchas:'Bochechas', flacidez:'Contorno' };   // 12/11: "Do nariz à boca" = o neutro do arquivo da pesquisa (nunca "bigode chinês" no vídeo)
 const FRASEPI = { cigarro:'cigarro', sol:'sol', metabolico:'pressão e glicose', sono:'sono', movimento:'movimento' };
 // o desejo de 10 anos com a idade (v2 de 04/11: 'chegar aos {idade+10}'): a página manda pronto em d.desejo
 const valPI = (k, v, d) => k === 'espelho' && v === 'outro' ? (d.respostas?.espelho_texto ? `outro: “${d.respostas.espelho_texto}”` : 'outro')
@@ -1348,6 +1348,8 @@ async function carregaImporta(){
   try { const r = await fetch('o-que-importa-idade.json', { cache:'no-cache' }); IMPORTA = r.ok ? await r.json() : null; } catch { IMPORTA = null; }
   return IMPORTA;
 }
+// a fonte do pé do cartão: só "Autor ano" ou "Entidade ano" da 1ª fonte de cada item ("Hughes 2013, Ann Intern Med…" → "Hughes 2013")
+const fonteCurta = f => { const m = String(f || '').split(';')[0].match(/^\s*([^,(;]+?\s(?:19|20)\d{2})\b/); return m ? m[1].trim() : null; };
 const faixaImporta = i => i <= 34 ? 'ate34' : i <= 49 ? '35a49' : i <= 64 ? '50a64' : '65mais';
 const COND_PI = {   // o "quando" de cada condicional, nas respostas do teste
   cigarro:r => ['hoje', 'as_vezes'].includes(r.cigarro),
@@ -1359,10 +1361,10 @@ function importaPara(idade, sexo, r = {}){
   if (!IMPORTA) return { titulo:tit, itens:null, aviso:`${tit}: conteúdo em pesquisa.${fim}` };
   const lista = tem && (sexo === 'f' || sexo === 'm') ? IMPORTA.idade?.[faixaImporta(idade)]?.[sexo] : null;
   if (!Array.isArray(lista) || !lista.length) return { titulo:tit, itens:null, aviso:`${tit}: o arquivo da pesquisa não tem itens para ${tem ? idade + ' anos' : 'esta idade'}${sexo ? '' : ' sem o sexo'}.${fim}` };
-  const its = lista.filter(x => x && x.t).slice(0, 3).map(x => ({ t:x.t, porque:x.porque || null }));
+  const its = lista.filter(x => x && x.t).slice(0, 3).map(x => ({ t:x.t, porque:x.porque || null, fonte:x.fonte || null }));
   const C = IMPORTA.condicionais || {}, k = Object.keys(C).find(k => C[k]?.t && COND_PI[k]?.(r, idade) && !its.some(x => x.t === C[k].t));
-  if (k) its[Math.min(2, its.length)] = { t:C[k].t, porque:C[k].porque || null };
-  return { titulo:tit, itens:its.map(x => x.t), notas:its.map((x, n) => x.porque ? `${n + 1}. Se quiser: ${x.porque}` : null).filter(Boolean), condicional:k || null };
+  if (k) its[Math.min(2, its.length)] = { t:C[k].t, porque:C[k].porque || null, fonte:C[k].fonte || null };
+  return { titulo:tit, itens:its.map(x => x.t), fontes:[...new Set(its.map(x => fonteCurta(x.fonte)).filter(Boolean))], notas:its.map((x, n) => x.porque ? `${n + 1}. Se quiser: ${x.porque}` : null).filter(Boolean), condicional:k || null };
 }
 const rotuloDe = id => { const v = IMPORTA?.rotulos?.[id]; return v && typeof v === 'object' ? v : null; };
 const rotuloSinal = id => rotuloDe(id)?.faixa || SINPI[id] || id;
