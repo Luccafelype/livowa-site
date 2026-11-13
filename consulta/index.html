@@ -274,6 +274,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .passo>summary{display:flex;align-items:center;gap:8px;padding:12px;font-weight:700;cursor:pointer;list-style:none}
 .passo>summary::-webkit-details-marker{display:none}
 .passo>summary small{margin-left:auto;font-weight:600;color:var(--m);font-size:.8rem}
+.passo:not([open])>summary{padding:7px 12px;font-size:.92rem;font-weight:600}
+.passo:not([open])>summary .kit-n{width:20px;height:20px;font-size:.72rem}
+/* 13/11: tudo o que não é o passo a passo fica num único "Detalhes", no fim */
+.det-tudo{margin-top:12px;background:var(--s);border:1px solid var(--l);border-radius:16px;padding:0 14px}
+.det-tudo>summary{padding:12px 0}
+.det-tudo>.sec-c>#gestao .sec:first-child{border-top:0}
+.det-h{margin:14px 0 2px;font-size:.9rem;color:var(--m)}
+.kit-dica{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--l);color:var(--m);font:700 .75rem system-ui;cursor:help}
 .passo.feito>summary small{color:var(--a)}
 .passo.agora{border:2px solid var(--a)}
 .passo.agora>summary small{color:var(--a)}
@@ -292,7 +300,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .kit details.pi-preco{background:var(--bg)}
 .conv{position:fixed;inset:0;z-index:70;background:var(--s);color:var(--fg);overflow:auto;-webkit-overflow-scrolling:touch;padding:max(12px,env(safe-area-inset-top)) 16px 40px}
 .conv[hidden]{display:none}
-.pi-cl-st{margin:0;font-size:.9rem;border-radius:10px;padding:8px 10px;background:var(--bg);color:var(--fg)}
+/* 13/11: indicador pequeno, que quebra a linha e nunca passa da caixa */
+.pi-claude{min-width:0;max-width:100%}
+.pi-cl-st{margin:0;font-size:.88rem;border-radius:999px;padding:5px 12px;background:var(--bg);color:var(--fg);display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;max-width:100%;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere}
+.pi-cl-st small{color:var(--m);font-weight:500}
+.pi-ponto{width:8px;height:8px;border-radius:50%;background:var(--a);display:inline-block;animation:piPonto 1s ease-in-out infinite}
+@keyframes piPonto{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+@media (prefers-reduced-motion:reduce){.pi-ponto{animation:none}}
 .pi-cl-st.ok{background:var(--a2)} .pi-cl-st.erro{background:var(--w2);color:var(--w)} .pi-cl-st.espera{color:var(--m)}
 .pi-cl-av ul{margin:4px 0 0;padding-left:1.1em;font-size:.9rem}
 .conv-cab{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--s);padding:6px 0 10px;border-bottom:1px solid var(--l);margin-bottom:8px}
@@ -498,9 +512,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
 <script src="uso.js?v=20261113b"></script>
-<script src="kits.js?v=20261113d"></script>
-<script src="roteiro.js?v=20261113a"></script>
-<script src="gravar-analise.js?v=20261113a"></script>
+<script src="kits.js?v=20261113e"></script>
+<script src="roteiro.js?v=20261113e"></script>
+<script src="gravar-analise.js?v=20261113b"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -734,7 +748,7 @@ function cfgDe(k, l, cadeia){
 }
 const cfg = (k, l, funil) => cfgDe(k, l, escoposDe(l, funil)).v;
 // texto de kit: coorte do lead → o teste dono do texto → geral → o de hoje
-const cadeiaTexto = (k, l) => { const tx = window.KITS?.texto?.(k); return tx ? [...coortesDe(l).map(c => 'coorte:' + c), 'teste:' + tx.dono, 'geral'] : escoposDe(l); };
+const cadeiaTexto = (k, l) => { const tx = window.KITS?.texto?.(k); return tx ? [...coortesDe(l).map(c => 'coorte:' + c), ...(tx.dono ? ['teste:' + tx.dono] : []), 'geral'] : escoposDe(l); };
 window.KITS?.ligar?.((chave, padrao) => {
   const l = LEADS.find(x => x.codigo === codigoAtual) || null;
   for (const e of cadeiaTexto(chave, l)){ const v = CFG.linhas[e]?.[chave]; if (typeof v === 'string' && v) return v; }
@@ -810,7 +824,11 @@ async function marcarAceite(c, v){
   }
 }
 const botoes = l => `<div class="st et9" role="group" aria-label="Etapa">${ETAPAS.map(([s, t]) => `<button type="button" data-s="${s}" data-c="${esc(l.codigo)}" aria-pressed="${etapaDe(l) === s}">${t}</button>`).join('')}</div>`;
-async function carregar(){
+// 13/11 (erro {onde:'lista'} às 10h32:40: a página recarregou 0,4 s depois e cortou o pedido): saindo, não é erro;
+// falha de rede de verdade tenta mais uma vez antes de avisar
+let SAINDO = false;
+addEventListener('beforeunload', () => { SAINDO = true; }); addEventListener('pagehide', () => { SAINDO = true; }); addEventListener('pageshow', () => { SAINDO = false; });
+async function carregar(tentativa = 0){
   if (!K) return semChave();
   try {
     const r = await post({ acao:'lista', dias:30 });
@@ -818,7 +836,10 @@ async function carregar(){
     const j = await r.json();
     if (!j.ok) throw 0;
     LEADS = j.leads || []; CARREGOU = true; DATAS_OK = LEADS.some(l => 'conversa_em' in l); desenhaCaixa();
-  } catch { window.USO?.sinal('erro', { onde:'lista' }); $('lista').innerHTML = '<p class="aviso">Não consegui carregar os leads agora. Puxe para atualizar.</p>'; }
+  } catch {
+    if (SAINDO) return;
+    if (tentativa < 1) return void setTimeout(() => carregar(tentativa + 1), 1500);
+    window.USO?.sinal('erro', { onde:'lista' }); $('lista').innerHTML = '<p class="aviso">Não consegui carregar os leads agora. Puxe para atualizar.</p>'; }
 }
 // grava a etapa (e a nota) de um código; devolve true quando o servidor aceitou
 async function marcar(c, etapa, nota, datas){
@@ -965,7 +986,7 @@ function aba(qual, quieto){
   $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod'); $('t-portas').setAttribute('aria-selected', qual === 'portas'); $('t-funil').setAttribute('aria-selected', qual === 'funil'); $('t-ajustes').setAttribute('aria-selected', qual === 'ajustes');
   $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod'; $('portas').hidden = qual !== 'portas'; $('funil').hidden = qual !== 'funil'; $('ajustes').hidden = qual !== 'ajustes';
   $('tit').textContent = qual === 'caixa' ? 'CRM' : qual === 'portas' ? 'Portas' : qual === 'funil' ? 'Funil' : qual === 'ajustes' ? 'Ajustes' : 'Consulta por código';
-  if (qual === 'ajustes'){ desenhaAjustes(); carregaConfig().then(desenhaAjustes); }
+  if (qual === 'ajustes'){ desenhaAjustes(); carregaConfig().then(desenhaAjustes); window.ROTEIRO?.carregar?.(); }
   if (qual === 'portas') carregaPortas();
   if (qual === 'funil') carregaFunil();
   if (qual === 'caixa'){ $('voltar').hidden = true; desenhaCaixa(); }
@@ -1193,7 +1214,7 @@ function desenhaGestao(c){
       <small class="aviso">Chegou ${esc(new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }))}${l.atualizado_em ? ' · marcado ' + esc(new Date(l.atualizado_em).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })) : ''}</small>`, 'sec-orig');
   }
   const hist = DATAS_OK && l ? secao('Linha do tempo', HIST[c] ? `${HIST[c].length} marcações` : '', `<div id="hist-${esc(c)}">${HIST[c] ? linhaDoTempo(l, HIST[c]) : '<p class="aviso">Carregando…</p>'}</div>`, 'sec-hist') : '';
-  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2>${secao('Etapa e nota', (NOME_ET[et] || et) + (DATAS_OK && l && ABERTA[et] ? ' · ' + resumoData(l, et) : '') + (l?.nota ? ' · com nota' : ''), `${botoes(lx)}${DATAS_OK && l ? linhaDatas(l, et) : ''}
+  $('gestao').innerHTML = `<div class="g-secs">${secao('Etapa e nota', (NOME_ET[et] || et) + (DATAS_OK && l && ABERTA[et] ? ' · ' + resumoData(l, et) : '') + (l?.nota ? ' · com nota' : ''), `${botoes(lx)}${DATAS_OK && l ? linhaDatas(l, et) : ''}
     <textarea class="nota" data-c="${esc(c)}" maxlength="500" rows="1" placeholder="Nota">${esc(l?.nota || '')}</textarea>
     <div class="acoes"><small id="ok-${esc(c)}"></small></div>`, 'sec-et')}${hist}${ac}${orig}</div>`;
 }
@@ -1208,6 +1229,8 @@ function linhaDatas(l, et){
 }
 // linha do tempo (RPC leads_historico_de pela edge, ação 'historico'); guardada por código nesta aba
 const HIST = {};
+// 13/11: o dia em que o passo n ficou feito (a 1ª etapa depois dele, pela linha do tempo)
+const dataPasso = (c, n) => { const h = (HIST[c] || []).find(x => (PASSO_DE[x.para] ?? 0) > n || (n === 4 && x.para === 'comprou')); return h ? diaCurto(diaBR(h.em)) : ''; };
 async function carregaHistorico(c){
   if (!DATAS_OK) return;
   try {
@@ -1217,6 +1240,7 @@ async function carregaHistorico(c){
     HIST[c] = j.historico; if (l && j.chegou && !l.chegou) l.chegou = j.chegou;
     const box = document.getElementById('hist-' + c); if (!box || codigoAtual !== c) return;
     box.innerHTML = linhaDoTempo(l || { codigo:c, chegou:j.chegou }, j.historico);
+    document.querySelectorAll('#out details.passo.feito').forEach(d => { const dt = dataPasso(c, +d.dataset.p), sm = d.querySelector(':scope > summary small'); if (dt && sm) sm.textContent = 'feito ' + dt; });
     const s = box.closest('details')?.querySelector('summary span'); if (s) s.textContent = `${j.historico.length} marcações`;
   } catch {
     const box = document.getElementById('hist-' + c); if (box && !HIST[c]) box.closest('details')?.remove();
@@ -1587,24 +1611,36 @@ function interpretaBraco(d){
     <p class="rot"><b>Para o áudio (sugestão):</b> ${esc(roteiro)}</p>
     <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado (sexo não informado × 0,95).${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e movimentos dobrados para comparar com os 20 s.' : ''}</p></div>`;
 }
+// 13/11: o #out é reescrito a cada lead; o #gestao (que mora no "Detalhes", dentro dele) volta para casa antes
+function poeOut(html){ const g = $('gestao'), o = $('out'); if (o.contains(g)) o.before(g); o.innerHTML = html; }
+// junta no fim do #out, sob um único "Detalhes": etapa, linha do tempo, aceite e origem (#gestao) e as seções de cada resultado
+function juntaDetalhes(){
+  const o = $('out'), cards = [...o.querySelectorAll(':scope > .card')].filter(c => c.querySelector(':scope > details.sec'));
+  const d = document.createElement('details'); d.className = 'sec sec-det det-tudo';
+  d.innerHTML = '<summary><b>Detalhes</b></summary><div class="sec-c"></div>';
+  const corpo = d.lastElementChild; corpo.append($('gestao'));
+  cards.forEach(c => { const secs = [...c.querySelectorAll(':scope > details.sec')];
+    if (cards.length > 1){ const h = document.createElement('h3'); h.className = 'det-h'; h.textContent = [c.querySelector('h2')?.textContent, c.querySelector('.q')?.textContent].filter(Boolean).join(' · '); corpo.append(h); }
+    corpo.append(...secs); });
+  o.append(d);
+}
 async function ver(c){
   codigoAtual = c;
-  if (!K){ $('gestao').innerHTML = ''; $('out').innerHTML = avisoSemChave(); return; }
-  desenhaGestao(c); carregaHistorico(c);
-  $('out').innerHTML = '<p class="aviso">Buscando…</p>';
+  if (!K){ $('gestao').innerHTML = ''; poeOut(avisoSemChave()); return; }
+  poeOut('<p class="aviso">Buscando…</p>'); desenhaGestao(c); carregaHistorico(c);
   try {
     const r = await post({ c });
-    if (r.status === 404) return $('out').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>';
+    if (r.status === 404) return poeOut('<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>');
     const j = await r.json();
-    if (!j.ok){ window.USO?.sinal('erro', { onde:'lead' }); return $('out').innerHTML = `<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`; }
+    if (!j.ok){ window.USO?.sinal('erro', { onde:'lead' }); return poeOut(`<p class="aviso">${j.erro === 'formato' ? 'Código no formato LV-XXXX.' : 'Não consegui consultar agora.'}</p>`); }
     FOTOS = j.fotos || []; KB = []; KM = []; window.ROTEIRO?.zerar(c);
     (j.lista || []).forEach(e => { if (e.funil === 'pele-idade' && e.etapa === 'limite' && e.dados) e.dados.sem_analise = true; });   // 12/11: complete do limite
     // 12/11: o kit e o roteiro começam com o nome guardado no teste; outro código não herda o nome do anterior
     NOME_G = (j.lista || []).map(nomeDe).find(Boolean) || '';
     if (c !== KIT_COD){ KIT_COD = c; KIT_NOME = NOME_G; } else if (!KIT_NOME.trim()) KIT_NOME = NOME_G;
     const usados = new Set();
-    if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return $('out').innerHTML = `<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`; }
-    $('out').innerHTML = j.lista.map(e => {
+    if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return poeOut(`<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`); }
+    poeOut(j.lista.map(e => {
       const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:TZ, dateStyle:'short', timeStyle:'short' });
       const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'pele-idade' ? NOME_PI : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil === 'teste-emagrecimento' ? 'Emagrecimento' : e.funil;
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2' || e.funil === 'pele-idade') && e.dados?.foto; if (g) usados.add(g);
@@ -1613,12 +1649,13 @@ async function ver(c){
       return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado e respostas', resDet(e) || '', `${g ? blocoFotos(g, e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${detalhe(e)}`, 'sec-res')}${g ? rotP(e) : ''}${rotSec(e)}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
-      + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : '');
+      + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : ''));
+    juntaDetalhes();
     window.ROTEIRO?.depois(c);
     // 13/11: registro de uso: só o tipo do teste e se é treino (o código fica na memória da aba, para contar reaberturas)
     const e0 = (j.lista || [])[0], lx = LEADS.find(x => x.codigo === c);
     window.USO?.abriuLead(c, e0 ? (e0.etapa === 'pele-resultado' ? 'pele' : { 'teste-pernas':'pernas', 'teste-braco':'braco', 'quiz-longevidade':'quiz', 'teste-emagrecimento':'emagrecimento' }[e0.funil] || e0.funil) : 'nenhum', lx ? ehTreino(lx) : false);
-  } catch { window.USO?.sinal('erro', { onde:'lead' }); $('out').innerHTML = '<p class="aviso">Sem conexão.</p>'; }
+  } catch { window.USO?.sinal('erro', { onde:'lead' }); poeOut('<p class="aviso">Sem conexão.</p>'); }
 }
 // Fotos de um grupo, com a chave certa: pele antiga = repouso/sorriso/sobrancelhas; pele2 = frente/esquerda/direita.
 // A edge só nomeia por ângulo quando chegam as 3 fotos; com 1 ou 2 ela usa os nomes antigos, aí vale a ordem dos ângulos.
@@ -1689,9 +1726,9 @@ function kitCorpo(i){
     h += `<div><div class="kit-perfil" role="group" aria-label="Perfil">${Object.keys(K.perfis).map(p => `<button type="button" data-perfil="${p}" data-kb="${i}" aria-pressed="${c.perfil === p}">${p}</button>`).join('')}</div>
       <p class="kit-sub">Calculado pela ficha: ${esc(c.calculado)}. O D (um sinal para medir) só quando você vir o sinal na foto ou ela disser sim à pergunta do pescoço.</p></div>
       ${c.notaAcne ? `<p class="kit-nota">${esc(c.notaAcne)}</p>` : ''}
-      <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>${fotos.length ? 'Modo revisão (iPad: caneta e zoom)' : 'Modo revisão (sem fotos: apagadas ou não carregaram)'}</button>
+      <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>${fotos.length ? 'Revisar' : 'Revisar (sem fotos)'}</button>
       <p class="kit-sub">Faixa de idade no vídeo: ${esc(c.idadeFaixa.txt)}</p>`;
-  } else if (c.faixa) h += `<button type="button" class="kit-react" data-react="${i}">Modo revisão (iPad: números grandes e caneta)</button>`;
+  } else if (c.faixa) h += `<button type="button" class="kit-react" data-react="${i}">Revisar</button>`;
   const ms = K.mensagens(c);
   if (pele && c.perfil !== 'D') ms.splice(ms.findIndex(m => m.ordem === 3), 0, { ordem:0, rotulo:'Pergunta do pescoço (opcional)', quando:'No fim da mensagem 2, só se fizer sentido na conversa', texto:KITS.T.pele.pescoco });
   const corpo = ms.map(m => kitMsg(m.texto, i, { n:m.ordem || '', rotulo:m.rotulo, quando:m.quando, nota:m.nota, audio:m.audio })).join('');
@@ -1723,8 +1760,9 @@ function kitCorpoPI(i, b, K, c, atalho){
   if (c.semAnalise) h += `<div class="kit-refazer"><b>A análise automática não rodou</b><p>Ela bateu no limite de análises do dia: aqui não há foto nem número, só as respostas. Peça a foto no WhatsApp; o roteiro acima usa só as respostas.</p></div>`;
   h += `<label class="kit-nome-l"><span>Nome<small>${NOME_G ? 'veio do teste' : 'só nesta tela'}</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
   const marca = (e, t) => `<button type="button" class="pi-marca${ord >= ORDEM_ET[e] && (et === e || ORDEM_ET[e] < 5) ? ' feito' : ''}" data-et="${e}" data-kb="${i}">${et === e ? '✓ ' : ''}${esc(t)}</button>`;
-  const passo = (n, tit, corpo) => { const agora = PASSO_DE[et] === n && ord < 5 || (n === 3 && ord === 5 && et !== 'comprou'), feito = PASSO_DE[et] > n || (n === 4 && et === 'comprou');
-    return `<details class="passo${agora ? ' agora' : ''}${feito ? ' feito' : ''}" data-p="${n}"${agora ? ' open' : ''}><summary><span class="kit-n" aria-hidden="true">${n}</span>${esc(tit)}<small>${agora ? 'agora' : feito ? 'feito' : ''}</small></summary><div>${corpo}</div></details>`; };
+  const passo = (n, tit, corpo, dica) => { const agora = PASSO_DE[et] === n && ord < 5 || (n === 3 && ord === 5 && et !== 'comprou'), feito = PASSO_DE[et] > n || (n === 4 && et === 'comprou');
+    const dt = feito ? dataPasso(codigoAtual, n) : '';
+    return `<details class="passo${agora ? ' agora' : ''}${feito ? ' feito' : ''}" data-p="${n}"${agora ? ' open' : ''}><summary><span class="kit-n" aria-hidden="true">${n}</span>${esc(tit)}${dica ? `<span class="kit-dica" title="${esc(dica)}" aria-label="${esc(dica)}">?</span>` : ''}<small>${agora ? 'agora' : feito ? 'feito' + (dt ? ' ' + dt : '') : ''}</small></summary><div>${corpo}</div></details>`; };
   // 1 · áudio antes
   h += passo(1, 'Confirmar recebimento', kitMsg(V3.audioTexto, i, { rotulo:'Texto' })
     + kitMsg(V3.audioFala, i, { raw:true, rotulo:'Fala do áudio', quando:'Grave uma vez e reenvie sempre o mesmo' }) + `<p class="kit-sub">${esc(V3.audioDica)}</p>` + marca('audio', 'Marcar: recebimento confirmado'));
@@ -1734,9 +1772,8 @@ function kitCorpoPI(i, b, K, c, atalho){
   // o Claude responde, sem mexer no campo da resposta
   h += passo(2, 'Gravar a análise', `<label class="pi-resp-l">Resposta dela (usa no vídeo)<textarea class="pi-resp" rows="2" maxlength="200" placeholder="do jeito que você vai falar: quer se cuidar antes dos 50">${esc(resp)}</textarea></label>
     <div class="pi-claude" data-kb="${i}">${claudeHtml(i)}</div>
-    <p class="kit-sub">Idade do rosto no vídeo: ${esc(c.idadeFaixa.txt)}</p>
-    <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>Modo revisão (iPad: caneta e zoom)</button>`
-    + marca('analisei', 'Marcar: análise enviada'));
+    <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>Revisar</button>`
+    + marca('analisei', 'Marcar: análise enviada'), 'Idade do rosto no vídeo: ' + c.idadeFaixa.txt);
   // 3 · ela respondeu
   const R3 = [['sim', 'Sim'], ['agora', 'Agora não'], ['nao', 'Não quis'], ['sumiu', 'Sumiu']];
   let c3 = `<div class="pi-r3" role="group" aria-label="O que ela respondeu">${R3.map(([k, t]) => `<button type="button" data-r3="${k}" data-kb="${i}" aria-pressed="${b.r3 === k}">${t}</button>`).join('')}</div>`;
@@ -1763,11 +1800,12 @@ function claudeHtml(i){
   const b = KB[i], V3 = v3De(LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual }, 'pele-idade'), cl = window.ROTEIRO?.claude(b.e) || null, resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
   const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
   let h = '';
-  if (cl?.estado === 'gerando') h += '<p class="pi-cl-st espera">O Claude está escrevendo o roteiro desta pessoa (5 a 20 s). Se quiser, grave já com o do estoque.</p>';
-  else if (cl?.usar){ const n = cl.palavras; h += `<p class="pi-cl-st ok"><b>Roteiro do Claude</b>: ${cl.partes.blocos.length} blocos${n ? `, ${n} palavras (~${Math.round(n / 150 * 60)} s)` : ''}${cl.respUsada ? ', com a resposta dela' : ''}. É o que o gravador usa.</p>`; }
-  else if (cl?.tem && cl.usarEstoque) h += '<p class="pi-cl-st">Usando o roteiro do estoque (o do Claude está guardado).</p>';
-  else if (cl?.erro) h += `<p class="pi-cl-st erro">${esc(cl.erro)} Vale o roteiro do estoque.</p>`;
-  else h += '<p class="pi-cl-st">Roteiro do estoque.</p>';
+  // 13/11 (print do Lucca: a frase estourava a caixa e era instrução): só o estado, numa linha curta que quebra
+  if (cl?.estado === 'gerando') h += '<p class="pi-cl-st espera" role="status"><i class="pi-ponto" aria-hidden="true"></i>Roteiro do Claude…</p>';
+  else if (cl?.usar){ const n = cl.palavras; h += `<p class="pi-cl-st ok" role="status">Roteiro do Claude ✓${n ? ` <small>~${Math.round(n / 150 * 60)} s${cl.respUsada ? ' · com a resposta dela' : ''}</small>` : ''}</p>`; }
+  else if (cl?.tem && cl.usarEstoque) h += '<p class="pi-cl-st" role="status">Roteiro do estoque ✓</p>';
+  else if (cl?.erro) h += `<p class="pi-cl-st erro" role="status" title="${esc(cl.erro)}">Roteiro do Claude não veio · vale o do estoque</p>`;
+  else h += '<p class="pi-cl-st" role="status">Roteiro do estoque ✓</p>';
   const av = cl?.usar ? [...cl.partes.avisos, ...(cl.conferir || []).map(a => 'Conferir: ' + a)] : [];
   if (av.length) h += `<div class="kit-refazer pi-cl-av"><b>Antes de gravar</b><ul>${av.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>`;
   h += `<button type="button" class="ga-abrir" data-kb="${i}" ${fotos.length && window.GRAVADOR ? '' : 'disabled'}>${fotos.length ? 'Gravar análise' : 'Gravar análise (sem fotos: apagadas ou não carregaram)'}</button>`;
@@ -1782,7 +1820,7 @@ function claudeHtml(i){
 function pintaClaudePI(){
   document.querySelectorAll('#out .pi-claude[data-kb]').forEach(el => { const i = +el.dataset.kb; if (KB[i]?.t === 'pele-idade') el.innerHTML = claudeHtml(i); });
 }
-window.aoMudarClaude = () => pintaClaudePI();
+window.aoMudarClaude = () => { pintaClaudePI(); trocaRoteiroGravador(); };   // 13/11: o do Claude chegou com o gravador aberto: troca
 function redesenhaKitsPI(){
   document.querySelectorAll('#out .kit[data-kb]').forEach(sec => {
     const i = +sec.dataset.kb; if (!KB[i]) return;   // 13/11: todos os kits (os Ajustes mudam qualquer frase)
@@ -1904,18 +1942,35 @@ function cenaPI(id, b, p, fala){
   if (id === 'cl-desejo' || id === 'interesse' || id === 'ponte') return { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo, r) };
   return null;
 }
-async function abreGravador(i){
-  const b = KB[i]; if (!b || !window.GRAVADOR) return;
-  const fotos = fotosDoGrupo(b.g, b.e).filter(f => f.url).map(f => ({ rot:f.rot, url:f.url, chave:f.chave }));
+// 13/11: "[APONTE: região dos olhos]" → o nome que a lupa mostra no vídeo (rotulos[id].faixa: "Canto dos olhos")
+function regiaoLupa(txt){
+  const ids = APONTE_PI.map(([k, re]) => [k, String(txt).search(re)]).filter(([, x]) => x >= 0).sort((a, b) => a[1] - b[1]).map(([k]) => k);
+  const nomes = [...new Set(ids.map(rotuloSinal))];
+  return nomes.length ? nomes.join(' · ') : String(txt).trim();
+}
+async function blocosGravador(b){
   const passos = window.ROTEIRO?.passosReact(b.e) || [], nome = KIT_NOME.trim();
   b.ids = passos.map(p => p.id);
   await carregaImporta();
-  if (KB[i] !== b) return;   // trocou de lead enquanto lia o arquivo
-  const blocos = passos.map(p => { const fala = KITS.preencher(p.fala, { ...b.c.vars, nome:nome || null });   // [APONTE: …] fica na fala: o gravador mostra só no teleprompter
-    const cena = cenaPI(p.id, b, p, fala);   // as notas da cena (nome popular, "acompanha", "porque") vão só ao teleprompter
+  const blocos = passos.map(p => { const fala = KITS.preencher(p.fala, { ...b.c.vars, nome:nome || null }).replace(/\[(APONTE|CIRCULAR):\s*([^\]]*)\]/gi, (m, t, x) => `[${t.toUpperCase()}: ${regiaoLupa(x)}]`);
+    const cena = cenaPI(p.id, b, p, fala);
     return { titulo:p.bloco, fala, faixa:faixaPI(p.id, b, p), cena, notas:cena?.notas || [] }; });
+  return { blocos, fonte:passos.some(p => p.claude) ? 'claude' : 'estoque' };
+}
+let GRAV_KB = -1;   // o kit cujo gravador está aberto (para trocar o roteiro se o do Claude chegar depois)
+async function trocaRoteiroGravador(){
+  const i = GRAV_KB, b = KB[i], g = window.GRAVADOR?._estado(); if (!b || !g || g.estado !== 'prep' || g.o?.codigo !== codigoAtual) return;
+  const { blocos, fonte } = await blocosGravador(b);
+  if (fonte === 'claude' && g.o.fonte !== 'claude') GRAVADOR.trocarBlocos(blocos, fonte);
+}
+async function abreGravador(i){
+  const b = KB[i]; if (!b || !window.GRAVADOR) return;
+  const fotos = fotosDoGrupo(b.g, b.e).filter(f => f.url).map(f => ({ rot:f.rot, url:f.url, chave:f.chave }));
+  const { blocos, fonte } = await blocosGravador(b);   // [APONTE: …] fica na fala: o gravador mostra só no teleprompter
+  if (KB[i] !== b) return;   // trocou de lead enquanto lia o arquivo
   const c = codigoAtual, volta = document.querySelector(`.ga-abrir[data-kb="${i}"]`);
-  GRAVADOR.abrir({ codigo:c, fotos, blocos, foto:'frente', aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
+  GRAV_KB = i;
+  GRAVADOR.abrir({ codigo:c, fotos, blocos, fonte, foto:'frente', aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
 }
 // a conversa de 15 min numa tela legível (v3, etapa 4)
 function abreConversa(i){
@@ -2283,7 +2338,7 @@ $('rv-zoom').onclick = () => { if (!R) return; R.z = { s:1, tx:0, ty:0 }; aplica
 // tocar numa foto do cartão abre a revisão já nela
 $('out').addEventListener('click', ev => {
   const im = ev.target.closest('.fotos img[data-chave]'); if (!im) return;
-  const bt = im.closest('.card')?.querySelector('.kit-react:not([disabled])'); if (bt) reactAbrir(+bt.dataset.react, bt, im.dataset.chave);
+  const bt = im.closest('.card')?.querySelector('.kit-react:not([disabled])') || document.querySelector('#out .kit-react:not([disabled])'); if (bt) reactAbrir(+bt.dataset.react, bt, im.dataset.chave);
 });
 document.addEventListener('keydown', ev => {
   if (!R) return;
@@ -2351,8 +2406,8 @@ function desenhaAjustes(){
   $('aj-aviso').hidden = CFG.ok; $('aj-aviso').textContent = 'Só para ler: o banco ainda não guarda os ajustes.';
   const abertos = [...document.querySelectorAll('#aj-corpo details[open]')].map(d => [...d.classList].find(c => /^aj-/.test(c)));
   // 13/11: num teste, primeiro os textos dele (kits.js), por grupo
-  const dono = AJ.escopo.startsWith('teste:') ? AJ.escopo.slice(6) : '', tx = dono ? (window.KITS?.textos || []).filter(t => t.dono === dono) : [];
-  const deste = tx.length ? `<div class="card aj-teste"><h2>Textos deste teste</h2>${[...new Set(tx.map(t => t.grupo))].map(g => `<h3 class="aj-g">${esc(g)}</h3>` + tx.filter(t => t.grupo === g).map(t => campoAj(t.chave, t.rotulo)).join('')).join('')}</div>` : '';
+  const dono = AJ.escopo.startsWith('teste:') ? AJ.escopo.slice(6) : AJ.escopo === 'geral' ? '' : null, tx = dono != null ? (window.KITS?.textos || []).filter(t => t.dono === dono) : [];
+  const deste = tx.length ? `<div class="card aj-teste"><h2>${dono ? 'Textos deste teste' : 'Textos comuns a todos os roteiros'}</h2>${[...new Set(tx.map(t => t.grupo))].map(g => `<h3 class="aj-g">${esc(g)}</h3>` + tx.filter(t => t.grupo === g).map(t => campoAj(t.chave, t.rotulo)).join('')).join('')}</div>` : '';
   $('aj-corpo').innerHTML = `${deste}<div class="card"><h2>${tx.length ? 'Mensagens gerais' : 'Mensagens'}</h2>${AJ_MSGS.map(([k, t]) => campoAj(k, t)).join('')}</div>
     <div class="card"><h2>Números</h2>${AJ_PARAMS.map(([k, t]) => campoAj(k, t)).join('')}</div>`;
   abertos.forEach(c => c && document.querySelector('#aj-corpo .' + c)?.setAttribute('open', ''));
@@ -2403,6 +2458,7 @@ document.addEventListener('click', ev => {
     if (ta) ta.value = v; else document.querySelectorAll(`#aj-corpo .aj-num[data-k="${k}"]`).forEach((i, n) => { i.value = Array.isArray(v) ? v[n] : v; });
   }
 });
+window.addEventListener('kits-textos', () => { if (!$('ajustes').hidden) desenhaAjustes(); });
 $('aj-escopo').addEventListener('change', ev => { AJ.escopo = ev.target.value; AJ.lead = ''; desenhaAjustes(); });
 $('aj-lead').addEventListener('change', ev => { AJ.lead = ev.target.value; AJ_MSGS.forEach(([k]) => { const pv = document.getElementById('ajp-' + k); if (pv) pv.innerHTML = previaAj(k); }); });
 

@@ -829,7 +829,8 @@ const NOME_TESTE = { braco:'Idade muscular (braço)', pernas:'Pernas', pele:'Pel
 // sem isso, vale o texto de hoje. As frases da v3 (V3_PI) e o combinado já têm chave própria no CRM.
 const TEXTOS = [], POR_CHAVE = new Map();
 let ler = (chave, padrao) => padrao;
-const chaveOk = c => String(c).replace(/[^A-Za-z0-9_]/g, '_').slice(0, 40);
+const chaveOk = c => { c = String(c).replace(/[^A-Za-z0-9_]/g, '_'); if (c.length <= 40) return c;
+  let h = 5381; for (const ch of c) h = ((h * 33) ^ ch.charCodeAt(0)) >>> 0; return c.slice(0, 34) + '_' + h.toString(36).slice(0, 5); };
 function editavel(obj, prop, chave, dono, grupo, rotulo){
   const padrao = obj && obj[prop]; if (typeof padrao !== 'string') return;
   chave = chaveOk(chave); if (POR_CHAVE.has(chave)) return;
@@ -865,7 +866,7 @@ CONVERSA_PI.forEach((x, i) => {
 
 return {
   T, T2, REF, preencher, pedacos, NOME_TESTE,
-  textos:TEXTOS, texto:c => POR_CHAVE.get(c), ligar:f => { ler = f; },
+  textos:TEXTOS, texto:c => POR_CHAVE.get(c), ligar:f => { ler = f; }, editavel,
   braco:{ medida:medidaBraco, classifica:classificaBraco, mensagens:(c) => mensagensMov('braco', c.faixa, c.vars.idade), atalhos:T.atalhos.braco },
   pernas:{ classifica:classificaPernas, mensagens:(c) => mensagensMov('pernas', c.faixa, c.vars.idade), atalhos:T.atalhos.pernas },
   pele:{ classifica:classificaPele, mensagens:(c) => mensagensPele(c.perfil), react:reactPeleComRegiao, atalhos:T.atalhos.pele, perfis:PERFIL_TXT },

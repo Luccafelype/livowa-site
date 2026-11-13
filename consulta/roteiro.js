@@ -189,7 +189,24 @@ let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o b
 async function carregaEstoque(){
   if (EST) return EST;
   try { const r = await fetch('roteiros-estoque.json?v=20261112b', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
+  if (EST) estoqueEditavel(EST);
   return EST;
+}
+// 13/11 (regra do Lucca: toda frase que o CRM mostra ou copia é editável nos Ajustes): cada frase do estoque vira uma chave
+// (e_<teste>_<caminho>) no teste dono; a fonte ('f') e as notas ('_sobre') ficam de fora. 'comum' vale para todos (geral).
+const DONO_EST = { comum:['cm', ''], pele:['pl', 'pele'], pernas:['pe', 'teste-pernas'], braco:['br', 'teste-braco'],
+  'quiz-emagrecimento':['qe', 'teste-emagrecimento'], 'quiz-longevidade':['ql', 'quiz-longevidade'], 'pele-idade':['pi', 'pele-idade'] };
+function estoqueEditavel(e){
+  const reg = window.KITS?.editavel; if (!reg) return;
+  const rot = p => p.map(x => /^\d+$/.test(x) ? 'variação ' + (+x + 1) : x.replace(/_/g, ' ')).join(' › ');
+  for (const [t, [ab, dono]] of Object.entries(DONO_EST)){
+    const anda = (o, p) => { for (const [c, v] of Object.entries(o)){ if (c === 'f' || c.startsWith('_')) continue;
+      const q = [...p, c];
+      if (typeof v === 'string') reg(o, c, 'e_' + ab + '_' + q.join('_'), dono, 'Roteiro do react · ' + q[0].replace(/_/g, ' '), rot(q.slice(1)) || q[0]);
+      else if (v && typeof v === 'object') anda(v, q); } };
+    if (e[t]) anda(e[t], []);
+  }
+  window.dispatchEvent(new Event('kits-textos'));   // a aba Ajustes redesenha com as frases do estoque
 }
 const TEMPO = ['0-8 s', '8-30 s', '30-45 s', '45-52 s', '52-60 s'];
 const listaE = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1] : (a[0] || '');
@@ -716,5 +733,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
+return { carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
 })();

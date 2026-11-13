@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1311a';
+const VERSAO = '1311b';
 const W = 720, H = 1280, FPS = 30, MAX_S = 90;
 const CIRC = { cx:W - 24 - 120, cy:H - 24 - 120, r:120 };   // câmera dele
 const TOPO = 150;                                           // nome e CRM no alto do vídeo
@@ -518,12 +518,12 @@ function cenaDesejo(ctx, c, t){
 function prompter(){
   const bs = G.o.blocos, b = bs[G.bloco] || { titulo:'', fala:'' }, n = bs.length;
   D.pTit.textContent = b.titulo || '';
-  D.pPos.textContent = n ? `${G.bloco + 1} de ${n}` : '';
+  D.pPos.textContent = n ? `${G.bloco + 1} de ${n}${G.o.fonte ? ' · ' + (G.o.fonte === 'claude' ? 'Claude' : 'estoque') : ''}` : '';
   // 12/11: [APONTE: região] (roteiro do Claude) vira dica destacada no teleprompter; nunca vai para o canvas
   D.pTxt.textContent = '';
   String(b.fala || '').split(/(\[(?:APONTE|CIRCULAR):[^\]]*\])/i).forEach(pedaco => {
     const m = /^\[(?:APONTE|CIRCULAR):\s*([^\]]*)\]$/i.exec(pedaco);
-    if (m){ const sp = document.createElement('span'); sp.className = 'ga-dica'; sp.textContent = 'aponte: ' + m[1].trim(); D.pTxt.append(sp); }
+    if (m){ const sp = document.createElement('span'); sp.className = 'ga-dica'; sp.textContent = '→ ' + m[1].trim(); D.pTxt.append(sp); }   // 13/11: o nome da lupa
     else if (pedaco) D.pTxt.append(document.createTextNode(pedaco));
   });
   // 12/11: notas só para ele (nome popular do sinal, o que acompanha a idade, o porquê de cada item do cartão): nunca no canvas
@@ -723,6 +723,10 @@ function duracao(t){
     v.src = t.url;
   });
 }
+// 13/11: no Safari (Mac e iPhone) a leitura do mp4 gravado pode repetir o mesmo quadro depois de buscar; se a câmera não
+// parou ao vivo (camera_paradas = 0), a parada que só aparece no arquivo é falso positivo: não avisa (fica no diagnóstico)
+const SAFARI = /^((?!chrome|chromium|crios|fxios|android|edg).)*safari/i.test(navigator.userAgent);
+const decideParada = (parada, paradasAoVivo, safari) => parada != null && !(safari && !paradasAoVivo);
 // conferência do arquivo (como o /gravar): amostras do círculo da câmera; se ficar igual até o fim, a imagem parou
 async function confere(t){
   if (!G || !G.cam || !G.mostraCam || !t.dur || t.dur < 3) return;
@@ -737,6 +741,10 @@ async function confere(t){
     if (!G || G.take !== t) break;
     try { v.currentTime = tt; } catch (e) { break; }
     if (!(await espera('seeked', 3000))) break;
+    // 13/11 (Safari do Mac: "parada a partir de 12 s" com a câmera viva o tempo todo): espera o quadro buscado aparecer
+    // (requestVideoFrameCallback) e descarta a amostra quando a busca não chegou ao tempo pedido
+    if (v.requestVideoFrameCallback) await new Promise(r => { let f = false; v.requestVideoFrameCallback(() => { f = true; r(); }); setTimeout(() => { if (!f) r(); }, 350); });
+    if (Math.abs(v.currentTime - tt) > 1){ ant = null; continue; }
     try { x.drawImage(v, (CIRC.cx - CIRC.r) * v.videoWidth / W, (CIRC.cy - CIRC.r) * v.videoHeight / H, 2 * CIRC.r * v.videoWidth / W, 2 * CIRC.r * v.videoHeight / H, 0, 0, 32, 32); } catch (e) { break; }
     const d = x.getImageData(0, 0, 32, 32).data;
     if (ant){ let s = 0; for (let i = 0; i < d.length; i += 4) s += Math.abs(d[i] - ant[i]) + Math.abs(d[i + 1] - ant[i + 1]) + Math.abs(d[i + 2] - ant[i + 2]); est.push(s / (d.length / 4 * 3) < 0.3); }
@@ -746,8 +754,9 @@ async function confere(t){
   if (!G || G.take !== t || est.length < 3) return;
   let k = est.length; while (k > 0 && est[k - 1]) k--;
   t.parada = est.length - k >= 3 ? Math.round(ts[k]) : null;
-  if (t.parada != null) info(`A imagem da câmera parece parada a partir de ${t.parada} s. Assista antes de mandar.`);
-  diag('conferência ' + (t.parada != null ? 'parada ' + t.parada + ' s' : 'ok'), G);
+  const avisa = decideParada(t.parada, G.camParadas || 0, SAFARI);
+  if (avisa) info(`A imagem da câmera parece parada a partir de ${t.parada} s. Assista antes de mandar.`);
+  diag('conferência ' + (t.parada != null ? 'parada ' + t.parada + ' s' + (avisa ? '' : ' (só no arquivo, Safari: sem aviso)') : 'ok'), G);
 }
 
 // ---------- enviar ----------
@@ -871,5 +880,7 @@ function diag(motivo, g){
   } catch (e) { /* diagnóstico nunca atrapalha */ }
 }
 
-return { abrir, fechar, versao:VERSAO, _estado:() => G, _mime:pickMime };
+// 13/11: o roteiro do Claude chegou com o gravador aberto e ainda sem gravar: troca os blocos e volta ao 1º
+function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; prompter(); return true; }
+return { abrir, fechar, trocarBlocos, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada };
 })();
