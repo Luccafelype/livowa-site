@@ -26,6 +26,10 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
 .ga-conta[hidden]{display:none}
 .ga-aviso{position:absolute;left:12px;right:12px;bottom:24%;background:rgba(138,82,0,.95);color:#fff;border-radius:12px;padding:8px 12px;font-size:.9rem;font-weight:600;pointer-events:none}
 .ga-aviso[hidden]{display:none}
+/* 12/11: aviso da montagem (sem lupa, cartão em pesquisa): só na tela, nunca no vídeo */
+.ga-nota{position:absolute;left:7%;right:7%;top:50%;padding:12px 14px;border:2px dashed rgba(255,214,10,.85);border-radius:14px;background:rgba(10,15,13,.86);
+  color:#fff;font:600 .92rem/1.35 system-ui,-apple-system,sans-serif;text-align:center;pointer-events:none}
+.ga-nota[hidden]{display:none}
 .ga-ver{position:absolute;inset:0;width:100%;height:100%;background:#000;object-fit:contain}
 .ga-ver[hidden]{display:none}
 .ga-msg{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:24px;background:rgba(0,0,0,.86);text-align:center}

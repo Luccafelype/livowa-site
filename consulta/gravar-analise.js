@@ -15,10 +15,19 @@
    srcObject ou mudança de tamanho do <video> da câmera durante a gravação; Wake Lock pedido no toque de gravar (com
    Bloqueio Automático curto o iPhone escurece a tela ~20 s depois do último toque); o <video> da câmera fica VISÍVEL
    (o círculo da tela é ele mesmo, por cima do canvas), e o canvas também (no /gravar o canvas escondido congelou o
-   arquivo aos 18 s no iOS 18.7, diagnóstico de 03/11). mp4 quando o navegador grava mp4; webm só como reserva. */
+   arquivo aos 18 s no iOS 18.7, diagnóstico de 03/11). mp4 quando o navegador grava mp4; webm só como reserva.
+   MONTAGEM AUTOMÁTICA (12/11, pedido do Lucca: "montagem rápida, simples e pouco custosa do vídeo"): cada bloco pode
+   trazer uma cena (montada pela Caixa, em index.html cenaPI) que entra sozinha no canvas quando o bloco começa, enquanto
+   ele fala. Visual do vídeo do Copas (youtu.be/EFmnPEtx04g): fundo escuro, traço fino, número grande amarelo/azul, lupa
+   com linha fina até o rótulo, ícones de linha. idade = "Rosto 45–52" × "Você 45" e a régua (0,5 s); foto = até 3 lupas
+   nos sinais (o incômodo dela primeiro), no ponto do rosto achado pelo FaceLandmarker (pele/rosto.js, o mesmo do /pele)
+   na foto de frente, sem rosto = sem lupa e aviso só na tela; dentro = ícone + rótulo de cada hábito citado, sobre a foto
+   escurecida; desejo = cartão "O que importa aos {idade}" (o-que-importa-idade.json); sem o arquivo, o aviso "conteúdo em
+   pesquisa" é DOM (.ga-nota) e NUNCA entra no vídeo. A foto não sai do aparelho: só a biblioteca e o modelo do MediaPipe
+   são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1211b';
+const VERSAO = '1211c';
 const W = 720, H = 1280, FPS = 30, MAX_S = 90;
 const CIRC = { cx:W - 24 - 120, cy:H - 24 - 120, r:120 };   // câmera dele
 const TOPO = 150;                                           // nome e CRM no alto do vídeo
@@ -31,6 +40,14 @@ const mmss = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.f
 const fmtMB = b => b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
 const CURTO = { frente:'Frente', esquerda:'Esq.', direita:'Dir.' };
 const FS_K = 'livowa_ga_fs';
+// montagem (12/11)
+const AMARELO = '#ffd60a', AZUL = '#5ab8ff', VERDE = '#5fd68a', LARANJA = '#ff9f43', APAGADO = 'rgba(255,255,255,.66)';
+const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+const GRAU = ['sem achado', 'leve', 'moderado', 'marcado'], COR_GRAU = [VERDE, AZUL, AMARELO, LARANJA];
+const R_LUPA = [52, 84], LUPA_X = 1.7;   // raio da lupa no quadro (px) e o aumento dentro dela
+const COR_TOM = { pesa:AMARELO, bem:VERDE, neutro:AZUL };
+const sai = x => { const t = Math.max(0, Math.min(1, x)); return 1 - (1 - t) * (1 - t) * (1 - t); };   // ease-out
+const ROSTO_URL = (() => { try { return new URL('../pele/rosto.js?v=2', (document.currentScript && document.currentScript.src) || location.href).href; } catch (e) { return '/pele/rosto.js?v=2'; } })();
 let fsPrompt = 22; try { const v = +localStorage.getItem(FS_K); if (v >= 16 && v <= 36) fsPrompt = v; } catch (e) { /* sem armazenamento */ }
 
 let G = null;      // o gravador aberto (null = fechado)
@@ -57,6 +74,7 @@ function monta(){
       <div class="ga-prompt" aria-live="polite"><div class="ga-p-topo"><b class="ga-p-tit"></b><span class="ga-p-pos"></span><button type="button" class="ga-aa" aria-label="Tamanho do texto">Aa</button></div><p class="ga-p-txt"></p><p class="ga-p-dep"></p></div>
       <div class="ga-conta" hidden></div>
       <div class="ga-aviso" hidden></div>
+      <div class="ga-nota" hidden></div>
       <video class="ga-ver" playsinline controls hidden></video>
       <div class="ga-msg" hidden><p></p><button type="button" class="ga-tentar">Tentar de novo</button></div>
     </div>
@@ -87,7 +105,7 @@ function monta(){
   document.body.append(el);
   const q = s => el.querySelector(s);
   D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pDep:q('.ga-p-dep'),
-    conta:q('.ga-conta'), aviso:q('.ga-aviso'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
+    conta:q('.ga-conta'), aviso:q('.ga-aviso'), nota:q('.ga-nota'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
     fechar:q('.ga-fechar'), ant:q('.ga-ant'), rec:q('.ga-rec-b'), recT:q('.ga-rec-t'), prox:q('.ga-prox'), grav:q('.ga-grav'), rev:q('.ga-rev'), fim:q('.ga-fim'),
     refazer:q('.ga-refazer'), enviar:q('.ga-enviar'), baixar:q('.ga-baixar'), marcar:q('.ga-marcar'), denovo:q('.ga-denovo'), info:q('.ga-info'), tentar:q('.ga-tentar') };
   D.ctx = D.tela.getContext('2d', { alpha:false });
@@ -155,6 +173,8 @@ function pinta(){
   G.quadros++;
   ctx.fillStyle = '#0b100e'; ctx.fillRect(0, 0, W, H);
   if (f && f.img){ const z = f.z; try { ctx.drawImage(f.img, z.ox, z.oy, f.bw * z.s, f.bh * z.s); } catch (e) { /* foto ainda não pronta */ } }
+  // montagem do bloco (12/11): números, lupas, ícones ou cartão, por cima da foto e por baixo do anel, do nome e da faixa
+  try { montagem(ctx, agora); } catch (e) { G.erroMontagem = String(e && e.message || e).slice(0, 80); }
   // realce: escurece em volta e marca o anel onde o dedo está
   const al = anelAlfa();
   if (al > 0){
@@ -207,6 +227,291 @@ function vigiaCam(){
   }
 }
 
+// ---------- montagem automática (12/11): a cena de cada bloco, desenhada no canvas (entra no vídeo) ----------
+const lim = (v, a, b) => Math.max(a, Math.min(b, v));
+function escurece(ctx, al){ if (al > 0){ ctx.fillStyle = `rgba(4,7,6,${al.toFixed(3)})`; ctx.fillRect(0, 0, W, H); } }
+function montagem(ctx, agora){
+  const b = G.o.blocos[G.bloco], c = b && b.cena; if (!c) return;
+  const t = agora - (G.blocoT || agora);
+  ctx.save();
+  if (c.tipo === 'idade') cenaIdade(ctx, c, t);
+  else if (c.tipo === 'foto') cenaFoto(ctx, c, agora);
+  else if (c.tipo === 'dentro') cenaDentro(ctx, c, t);
+  else if (c.tipo === 'desejo') cenaDesejo(ctx, c, t);
+  ctx.restore();
+  ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+// aviso da montagem só na tela (DOM): nunca entra no vídeo
+function nota(){
+  if (!G || !D) return;
+  const b = G.o.blocos[G.bloco], c = b && b.cena; let t = '';
+  if (c && c.tipo === 'desejo' && !(c.itens && c.itens.length)) t = c.aviso || 'O que importa: conteúdo em pesquisa. Este cartão não entra no vídeo.';
+  else if (c && c.tipo === 'foto'){
+    const r = G.rosto;
+    if (!c.lupas || !c.lupas.length) t = 'Sem lupa: a análise não marcou sinal visível. Use o dedo para marcar.';
+    else if (!r || r.estado === 'buscando') t = 'Lupas: procurando o rosto na foto de frente…';
+    else if (r.estado === 'sem') t = 'Sem lupa: não achei o rosto na foto de frente. Use o dedo para marcar.';
+    else if (G.foto !== r.k) t = 'As lupas aparecem na foto de frente.';
+  }
+  D.nota.textContent = t; D.nota.hidden = !t || G.estado === 'rev' || G.estado === 'fim';
+}
+
+// idade: "Rosto 45–52" (amarelo) × "Você 45" (azul) e a régua de traço fino; entra em 0,5 s
+function cenaIdade(ctx, c, t){
+  const p = sai(t / 500), lo = Math.max(15, Math.floor((Math.min(c.idade, c.min) - 6) / 5) * 5), hi = Math.ceil((Math.max(c.idade, c.max) + 6) / 5) * 5;
+  escurece(ctx, .82 * sai(t / 250));
+  const yN = 470, xa = 215, xb = 565;
+  ctx.globalAlpha = p; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = AMARELO; ctx.font = `600 32px ${FONTE}`; ctx.fillText('Rosto', xa, yN - 128);
+  ctx.fillStyle = AZUL; ctx.fillText('Você', xb, yN - 128);
+  const sobe = (1 - p) * 26;
+  ctx.font = `700 112px ${MONO}`; ctx.fillStyle = AMARELO; ctx.fillText(`${c.min}–${c.max}`, xa, yN + sobe);
+  ctx.fillStyle = AZUL; ctx.fillText(String(c.idade), xb, yN + sobe);
+  ctx.font = `500 24px ${FONTE}`; ctx.fillStyle = APAGADO; ctx.fillText('estimativa', xa, yN + 44);
+  ctx.fillText('anos', xb, yN + 44);
+  ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(400, yN - 160); ctx.lineTo(400, yN + 50); ctx.stroke();
+  // régua
+  const x0 = 70, x1 = 650, yR = 690, X = v => x0 + (v - lo) / (hi - lo) * (x1 - x0), ate = x0 + (x1 - x0) * p;
+  ctx.globalAlpha = 1; ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x0, yR); ctx.lineTo(ate, yR); ctx.stroke();
+  ctx.font = `500 22px ${MONO}`; ctx.fillStyle = APAGADO; ctx.textAlign = 'center';
+  for (let v = lo; v <= hi; v += 5){ const x = X(v); if (x > ate + 1) break; ctx.beginPath(); ctx.moveTo(x, yR - 8); ctx.lineTo(x, yR + 8); ctx.stroke(); ctx.globalAlpha = p; ctx.fillText(String(v), x, yR + 40); ctx.globalAlpha = 1; }
+  const meio = (X(c.min) + X(c.max)) / 2, mw = (X(c.max) - X(c.min)) / 2 * p;
+  ctx.fillStyle = AMARELO; caixa(ctx, meio - mw, yR - 7, Math.max(2, 2 * mw), 14, 7); ctx.fill();
+  const xv = X(lo + (c.idade - lo) * p);
+  ctx.strokeStyle = AZUL; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xv, yR - 52); ctx.lineTo(xv, yR + 12); ctx.stroke();
+  ctx.fillStyle = AZUL; ctx.beginPath(); ctx.arc(xv, yR, 9, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = p; ctx.font = `700 26px ${MONO}`; ctx.fillText(String(c.idade), xv, yR - 62);
+}
+
+// foto: lupas nos sinais. Pontos do rosto (FaceLandmarker do /pele) na foto de frente; posição = pixel da foto, então
+// acompanham a pinça. Lado de cada lupa (esquerdo/direito do rosto) escolhido uma vez por bloco, longe da câmera e da faixa.
+let rostoMod = null, rostoFL = null;
+function detector(){
+  if (!rostoMod) rostoMod = import(ROSTO_URL).catch(e => { rostoMod = null; throw e; });
+  return rostoMod.then(R => {
+    if (!rostoFL) rostoFL = R.criarFace('IMAGE').catch(e => { rostoFL = null; throw e; });
+    return rostoFL.then(fl => ({ R, fl }));
+  });
+}
+async function achaRosto(){
+  const g0 = G;
+  if (!G.o.blocos.some(b => b.cena && b.cena.tipo === 'foto' && b.cena.lupas && b.cena.lupas.length)) return;   // sem lupa pedida: nem baixa o modelo
+  const k = G.fotos.findIndex(f => f.chave === 'frente' && f.img);
+  if (k < 0){ G.rosto = { estado:'sem', k:-1 }; nota(); return; }
+  G.rosto = { estado:'buscando', k }; nota();
+  let r = null;
+  try {
+    const { R, fl } = await detector();
+    if (G !== g0) return;
+    const f = G.fotos[k], iw = f.img.naturalWidth, ih = f.img.naturalHeight;
+    const lms = (fl.detect(f.img).faceLandmarks || []).filter(l => l && l.length >= 468);
+    if (lms.length){
+      const larg = l => { let a = 1, b = 0; for (const q of l){ if (q.x < a) a = q.x; if (q.x > b) b = q.x; } return b - a; };
+      const lm = lms.reduce((x, y) => larg(y) > larg(x) ? y : x);
+      r = pontosSinais(R.geometria(lm, iw, ih), R.media);
+    }
+  } catch (e) { g0.rostoErro = String(e && e.message || e).slice(0, 80); }
+  if (G !== g0) return;
+  G.rosto = r ? { estado:'ok', k, ...r } : { estado:'sem', k };
+  G.rostoT = performance.now(); G.lupasLay = null;
+  nota();
+}
+// onde fica cada sinal (pixels da foto; a foto da Caixa já vem com os olhos na horizontal). Mesmas áreas de REGIOES
+// (pele/rosto.js), com os dois lados do rosto: [lado esquerdo da imagem, lado direito].
+function pontosSinais(g, media){
+  const P = g.P, i = g.iod, m = (...ks) => media(ks.map(k => P[k]));
+  return { iod:i, pts:{
+    linhas_testa:[{ x:P[151].x, y:P[151].y - .2 * i }],
+    olhos:[{ x:P[33].x - .13 * i, y:P[33].y + .05 * i }, { x:P[263].x + .13 * i, y:P[263].y + .05 * i }],
+    sulco_nasolabial:[m(129, 61, 206), m(358, 291, 426)],
+    manchas:[{ x:P[50].x - .06 * i, y:P[50].y + .06 * i }, { x:P[280].x + .06 * i, y:P[280].y + .06 * i }],
+    flacidez:[m(172, 150, 136), m(397, 379, 365)] } };
+}
+const escala = (f, z) => f.bw / f.img.naturalWidth * z.s;
+const naTela = (f, p, z = f.z) => { const a = escala(f, z); return { x:z.ox + p.x * a, y:z.oy + p.y * a }; };
+function arrumaLupas(c, f){
+  const z = f.base, r = lim(.2 * G.rosto.iod * escala(f, z), R_LUPA[0], R_LUPA[1]), cam = G.mostraCam && G.cam;
+  const dentro = q => ({ x:lim(q.x, r + 10, W - r - 10), y:lim(q.y, TOPO + r + 10, H - r - 10) });
+  const postos = [];
+  for (const l of c.lupas){
+    const cs = (G.rosto.pts[l.id] || []).map((p, lado) => {
+      const t = naTela(f, p, z), d = dentro(t);
+      let s = -2 * Math.hypot(d.x - t.x, d.y - t.y);
+      if (cam && Math.hypot(d.x - CIRC.cx, d.y - CIRC.cy) < CIRC.r + r + 10) s -= 1000;   // embaixo da câmera dele
+      if (d.y + r > H - 180 && d.x - r < (cam ? CIRC.cx - CIRC.r : W)) s -= 300;          // em cima da faixa verde
+      s += postos.length ? Math.min(400, ...postos.map(q => Math.hypot(q.d.x - d.x, q.d.y - d.y))) : (lado === 0 ? 1 : 0);
+      return { p, lado, s, d };
+    });
+    if (!cs.length) continue;
+    const m = cs.reduce((x, y) => y.s > x.s ? y : x);
+    postos.push({ ...l, p:m.p, lado:m.lado, d:m.d });
+  }
+  // rótulos: para o lado do meio do quadro, acima ou abaixo da lupa, sem cobrir outra lupa nem outro rótulo
+  const ctx = D.ctx, caixas = [];
+  for (const q of postos){
+    ctx.font = `700 30px ${FONTE}`; const w1 = ctx.measureText(q.nome).width; ctx.font = `600 25px ${FONTE}`;
+    const w = Math.ceil(Math.max(w1, ctx.measureText(GRAU[q.nivel] || '').width)) + 32, h = 84, dir = q.d.x <= W / 2 ? 1 : -1;
+    const tenta = [[dir, -1], [dir, 1], [dir, 0], [-dir, -1], [-dir, 1]].map(([sx, sy]) => {
+      let x = sx > 0 ? q.d.x + r + 34 : q.d.x - r - 34 - w, y = sy < 0 ? q.d.y - r - 14 - h : sy > 0 ? q.d.y + r + 14 : q.d.y - h / 2;
+      x = lim(x, 12, W - 12 - w);
+      const sobCam = cam && x + w > CIRC.cx - CIRC.r - 8;
+      y = lim(y, TOPO + 6, (sobCam ? CIRC.cy - CIRC.r - 12 : H - 190) - h);
+      const bate = caixas.some(k => x < k.x + k.w + 10 && x + w + 10 > k.x && y < k.y + k.h + 10 && y + h + 10 > k.y)
+        || postos.some(o => Math.hypot(lim(o.d.x, x, x + w) - o.d.x, lim(o.d.y, y, y + h) - o.d.y) < r + 8);
+      return { x, y, bate };
+    });
+    const e = tenta.find(k => !k.bate) || tenta[0];
+    caixas.push({ x:e.x, y:e.y, w, h });
+    q.rot = { dx:e.x - q.d.x, dy:e.y - q.d.y, w, h };
+  }
+  return { r, postos };
+}
+function cenaFoto(ctx, c, agora){
+  const R0 = G.rosto, f = G.fotos[G.foto];
+  if (!R0 || R0.estado !== 'ok' || G.foto !== R0.k || !f || !f.img || !c.lupas || !c.lupas.length) return;
+  const chave = G.bloco + ':' + (G.mostraCam && G.cam ? 1 : 0);
+  if (!G.lupasLay || G.lupasLay.chave !== chave) G.lupasLay = { chave, ...arrumaLupas(c, f) };
+  const L = G.lupasLay, t = agora - Math.max(G.blocoT || 0, G.rostoT || 0), a = escala(f, f.z);
+  const vis = L.postos.map((q, k) => {
+    const t0 = 200 + k * 800, raw = naTela(f, q.p), cx = lim(raw.x, L.r + 10, W - L.r - 10), cy = lim(raw.y, TOPO + L.r + 10, H - L.r - 10);
+    return { q, x:cx, y:cy, g:sai((t - t0) / 350), gl:sai((t - t0 - 300) / 250), gr:sai((t - t0 - 450) / 220) };
+  }).filter(v => v.g > 0);
+  G.lupasVis = vis.map(v => ({ id:v.q.id, x:v.x, y:v.y, r:L.r, img:v.q.p, nivel:v.q.nivel, nome:v.q.nome }));   // para conferir (teste)
+  const al = .5 * sai(t / 300);
+  if (al > 0){
+    ctx.fillStyle = `rgba(4,7,6,${al.toFixed(3)})`; ctx.beginPath(); ctx.rect(0, 0, W, H);
+    vis.forEach(v => { const rr = L.r * v.g; ctx.moveTo(v.x + rr, v.y); ctx.arc(v.x, v.y, rr, 0, Math.PI * 2, true); });
+    ctx.fill('evenodd');
+  }
+  vis.forEach(v => lupa(ctx, f, v, L.r, a));
+}
+// pedaço da imagem com a origem dentro dos limites (o Safari não desenha nada se a origem sai da imagem)
+function pedaco(ctx, img, sx, sy, sw, sh, dx, dy, dw, dh){
+  const iw = img.naturalWidth, ih = img.naturalHeight, kx = dw / sw, ky = dh / sh;
+  const x0 = Math.max(0, sx), y0 = Math.max(0, sy), x1 = Math.min(iw, sx + sw), y1 = Math.min(ih, sy + sh);
+  if (x1 - x0 < 1 || y1 - y0 < 1) return;
+  ctx.drawImage(img, x0, y0, x1 - x0, y1 - y0, dx + (x0 - sx) * kx, dy + (y0 - sy) * ky, (x1 - x0) * kx, (y1 - y0) * ky);
+}
+function lupa(ctx, f, v, r0, a){
+  const r = r0 * v.g, { x, y } = v, q = v.q, cor = COR_GRAU[q.nivel] || AMARELO;
+  // dentro: o que está sob a lupa, aumentado
+  const ix = (x - f.z.ox) / a, iy = (y - f.z.oy) / a, m = r / (a * LUPA_X);
+  ctx.save(); ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = '#0b100e'; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+  try { pedaco(ctx, f.img, ix - m, iy - m, 2 * m, 2 * m, x - r, y - r, 2 * r, 2 * r); } catch (e) { /* ok */ }
+  ctx.restore();
+  ctx.lineWidth = 4; ctx.strokeStyle = cor; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(x, y, r + 7, 0, Math.PI * 2); ctx.stroke();
+  // rótulo: caixa escura, linha fina da borda da lupa até ela; o cabo da lupa do lado oposto
+  const R = q.rot, bx = lim(x + R.dx, 8, W - 8 - R.w), by = lim(y + R.dy, TOPO + 4, H - 8 - R.h);
+  const ax = lim(x, bx, bx + R.w), ay = lim(y, by, by + R.h), dd = Math.hypot(ax - x, ay - y) || 1, ux = (ax - x) / dd, uy = (ay - y) / dd;
+  // cabo: na diagonal, para baixo (ou para cima se o rótulo está embaixo), para fora se couber no quadro, sem apontar para o rótulo
+  const k = Math.SQRT1_2, fora = x < W / 2 ? -1 : 1, vy = ay > y + r ? -1 : 1;
+  const cabo = [[fora * k, vy * k], [-fora * k, vy * k], [fora * k, -vy * k], [-fora * k, -vy * k]]
+    .find(([hx, hy]) => { const ex = x + hx * (r + 34), ey = y + hy * (r + 34); return ex > 4 && ex < W - 4 && ey > TOPO && ey < H - 4 && hx * ux + hy * uy < .3; }) || [-ux, -uy];
+  ctx.lineCap = 'round'; ctx.lineWidth = 7; ctx.strokeStyle = cor;
+  ctx.beginPath(); ctx.moveTo(x + cabo[0] * (r + 4), y + cabo[1] * (r + 4)); ctx.lineTo(x + cabo[0] * (r + 4 + 26 * v.g), y + cabo[1] * (r + 4 + 26 * v.g)); ctx.stroke();
+  if (v.gl <= 0) return;
+  const sx = x + ux * (r + 7), sy = y + uy * (r + 7);
+  ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,255,255,.88)';
+  ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + (ax - sx) * v.gl, sy + (ay - sy) * v.gl); ctx.stroke();
+  if (v.gr <= 0) return;
+  ctx.globalAlpha = v.gr;
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ax, ay, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(6,10,9,.86)'; caixa(ctx, bx, by, R.w, R.h, 12); ctx.fill();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.stroke();
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillStyle = '#fff'; ctx.font = `700 30px ${FONTE}`; ctx.fillText(q.nome, bx + 16, by + 11);
+  ctx.fillStyle = cor; ctx.font = `600 25px ${FONTE}`; ctx.fillText(GRAU[q.nivel] || '', bx + 16, by + 49);
+  ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
+}
+
+// por dentro: ícone de linha + rótulo de cada hábito citado; amarelo = pesa, verde = a favor, azul = sem medida
+function icone(ctx, id, cx, cy, s, cor){
+  ctx.save(); ctx.translate(cx - s / 2, cy - s / 2); ctx.scale(s / 100, s / 100);
+  ctx.strokeStyle = cor; ctx.lineWidth = 5.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const L = (...p) => { ctx.beginPath(); ctx.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i], p[i + 1]); ctx.stroke(); };
+  if (id === 'sol'){
+    ctx.beginPath(); ctx.arc(50, 50, 18, 0, Math.PI * 2); ctx.stroke();
+    for (let k = 0; k < 8; k++){ const a = k * Math.PI / 4; L(50 + 29 * Math.cos(a), 50 + 29 * Math.sin(a), 50 + 41 * Math.cos(a), 50 + 41 * Math.sin(a)); }
+  } else if (id === 'cigarro'){
+    caixa(ctx, 8, 54, 84, 16, 3); ctx.stroke(); L(68, 54, 68, 70);
+    ctx.beginPath(); ctx.moveTo(18, 46); ctx.bezierCurveTo(8, 36, 26, 30, 16, 18); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(31, 46); ctx.bezierCurveTo(21, 36, 39, 30, 29, 20); ctx.stroke();
+  } else if (id === 'sono'){
+    lua(ctx); L(70, 12, 84, 12, 70, 26, 84, 26); L(86, 34, 94, 34, 86, 42, 94, 42);
+  } else if (id === 'metabolico'){
+    ctx.beginPath(); ctx.moveTo(50, 8); ctx.bezierCurveTo(50, 8, 22, 42, 22, 62); ctx.arc(50, 62, 28, Math.PI, 0, true); ctx.bezierCurveTo(78, 42, 50, 8, 50, 8); ctx.closePath(); ctx.stroke();
+    L(32, 64, 42, 64, 47, 53, 54, 76, 59, 64, 68, 64);
+  } else if (id === 'movimento'){
+    ctx.beginPath(); ctx.arc(58, 15, 8, 0, Math.PI * 2); ctx.stroke();
+    L(56, 26, 50, 56); L(55, 33, 40, 45); L(55, 33, 69, 46); L(50, 56, 40, 73, 33, 91); L(50, 56, 62, 72, 67, 91);
+  }
+  ctx.restore();
+}
+function lua(ctx){   // lua crescente de traço: arco longo do círculo de fora + arco curto do de dentro
+  const A = { x:46, y:54, r:34 }, B = { x:63, y:40, r:28 }, dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy);
+  const l = (A.r * A.r - B.r * B.r + d * d) / (2 * d), h = Math.sqrt(Math.max(0, A.r * A.r - l * l)), mx = A.x + dx * l / d, my = A.y + dy * l / d;
+  const p1 = { x:mx + h * dy / d, y:my - h * dx / d }, p2 = { x:mx - h * dy / d, y:my + h * dx / d };
+  const ang = (c, p) => Math.atan2(p.y - c.y, p.x - c.x);
+  const arco = (c, a0, a1, ref, longe) => {   // o sentido sai do ponto do meio de cada arco (longe ou perto de ref)
+    const cw = ((a1 - a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI), mCw = a0 + cw / 2, mAc = a0 - (2 * Math.PI - cw) / 2;
+    const dist = m => Math.hypot(c.x + c.r * Math.cos(m) - ref.x, c.y + c.r * Math.sin(m) - ref.y);
+    ctx.arc(c.x, c.y, c.r, a0, a1, longe ? dist(mAc) > dist(mCw) : dist(mAc) < dist(mCw));
+  };
+  ctx.beginPath(); arco(A, ang(A, p1), ang(A, p2), B, true); arco(B, ang(B, p2), ang(B, p1), A, false); ctx.closePath(); ctx.stroke();
+}
+function cenaDentro(ctx, c, t){
+  const hs = (c.habitos || []).slice(0, 3); if (!hs.length) return;
+  escurece(ctx, .82 * sai(t / 250));
+  const alto = 190, y0 = Math.round((TOPO + 40 + 880 - hs.length * alto) / 2);
+  hs.forEach((hb, k) => {
+    const p = sai((t - 150 - k * 450) / 350); if (p <= 0) return;
+    const yc = y0 + k * alto + alto / 2 + (1 - p) * 24, cor = COR_TOM[hb.tom] || AZUL;
+    ctx.globalAlpha = p;
+    ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.arc(130, yc, 68, 0, Math.PI * 2); ctx.stroke();
+    icone(ctx, hb.id, 130, yc, 96, cor);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#fff'; ctx.font = `700 42px ${FONTE}`; ctx.fillText(hb.nome, 226, yc - 8);
+    ctx.fillStyle = cor; ctx.font = `600 30px ${FONTE}`;
+    quebra(ctx, hb.valor || '', 460, 2).forEach((l, i) => ctx.fillText(l, 226, yc + 34 + i * 36));
+  });
+  ctx.globalAlpha = 1;
+}
+
+// desejo: cartão "O que importa aos {idade}" com 3 itens (o arquivo da pesquisa); sem itens, nada no canvas (a nota avisa)
+function cenaDesejo(ctx, c, t){
+  const its = (c.itens || []).slice(0, 3); if (!its.length) return;
+  escurece(ctx, .82 * sai(t / 250));
+  const x0 = 40, w = 640;
+  ctx.font = `700 44px ${FONTE}`; const tl = quebra(ctx, c.titulo || '', w - 64, 2);
+  ctx.font = `500 31px ${FONTE}`; const il = its.map(s => quebra(ctx, s, w - 140, 3));
+  ctx.font = `500 20px ${FONTE}`; const ft = c.fontes && c.fontes.length ? quebra(ctx, 'Fontes: ' + c.fontes.join('; '), w - 64, 1) : [];
+  const h = 34 + tl.length * 54 + 30 + il.reduce((s, l) => s + Math.max(2, l.length) * 40 + 22, 0) + (ft.length ? 34 : 0) + 18;
+  const y0 = Math.max(TOPO + 20, Math.round((TOPO + 20 + 880 - h) / 2)), p = sai(t / 300);
+  ctx.globalAlpha = p;
+  ctx.fillStyle = 'rgba(10,15,13,.92)'; caixa(ctx, x0, y0, w, h, 22); ctx.fill();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.stroke();
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = '#fff'; ctx.font = `700 44px ${FONTE}`;
+  tl.forEach((l, i) => ctx.fillText(l, x0 + 32, y0 + 34 + i * 54));
+  let y = y0 + 34 + tl.length * 54 + 4;
+  ctx.fillStyle = AMARELO; ctx.fillRect(x0 + 32, y, 64, 3); y += 26;
+  il.forEach((ls, k) => {
+    const q = sai((t - 250 - k * 400) / 300), bh = Math.max(2, ls.length) * 40 + 22;
+    if (q > 0){
+      ctx.globalAlpha = q;
+      ctx.lineWidth = 2.5; ctx.strokeStyle = AMARELO; ctx.beginPath(); ctx.arc(x0 + 56, y + 22, 22, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = AMARELO; ctx.font = `600 26px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(k + 1), x0 + 56, y + 23);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillStyle = '#fff'; ctx.font = `500 31px ${FONTE}`;
+      ls.forEach((l, i) => ctx.fillText(l, x0 + 100, y + 4 + i * 40));
+    }
+    y += bh;
+  });
+  if (ft.length){ ctx.globalAlpha = p; ctx.fillStyle = APAGADO; ctx.font = `500 20px ${FONTE}`; ctx.fillText(ft[0], x0 + 32, y + 4); }
+  ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
+}
+
 // ---------- teleprompter (só DOM) ----------
 function prompter(){
   const bs = G.o.blocos, b = bs[G.bloco] || { titulo:'', fala:'' }, n = bs.length;
@@ -222,6 +527,8 @@ function prompter(){
   D.pDep.textContent = G.bloco < n - 1 ? 'Depois: ' + (bs[G.bloco + 1].titulo || '') : 'Último bloco';
   D.prompt.style.setProperty('--fs', fsPrompt + 'px');
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); }   // a cena do bloco começa agora
+  nota();
 }
 function aviso(t){ D.aviso.textContent = t; D.aviso.hidden = !t; }
 function info(t){ D.info.textContent = t || ''; }
@@ -240,6 +547,7 @@ function estado(e){
   D.rec.disabled = e === 'prep' && !G.pronto;
   D.fotos.querySelectorAll('button').forEach(b => { b.disabled = rev; });
   D.zoom.disabled = rev; D.cami.disabled = rev || !G.cam;
+  nota();
 }
 
 // ---------- abrir / fechar ----------
@@ -258,7 +566,7 @@ async function abrir(o){
   requestAnimationFrame(encaixa);
   G.iv = setInterval(pinta, 1000 / FPS);
   const g0 = G;
-  await Promise.all([Promise.all(G.fotos.map(carregaFoto)), abreCamera()]);
+  await Promise.all([Promise.all(G.fotos.map(carregaFoto)).then(() => { if (G === g0) achaRosto(); }), abreCamera()]);
   if (G !== g0) return;
   const algumaFoto = G.fotos.some(f => f.img);
   if (!algumaFoto) return falha('A foto não carregou. O link das fotos vale 10 minutos: feche, toque em Ver de novo e abra o gravador.');
@@ -357,7 +665,7 @@ function comeca(){
   rec.onerror = e => { g.erroRec = (e.error && e.error.name) || 'erro'; };
   rec.onstop = () => terminou(g);
   try { rec.start(); } catch (e) { return falha('Não deu para gravar: ' + (e.message || e.name)); }   // sem timeslice (iOS)
-  G.t0 = performance.now(); G.camUlt = G.camUlt || G.t0;
+  G.t0 = performance.now(); G.camUlt = G.camUlt || G.t0; G.blocoT = G.t0;   // a cena do 1º bloco entra no vídeo desde o começo
   estado('rec');
   info('Gravando. Próximo troca o texto e a faixa.');
   G.relogio = setInterval(() => {
@@ -505,7 +813,7 @@ function liga(){
   D.rec.onclick = () => { if (!G) return; if (G.estado === 'prep') conta(); else if (G.estado === 'conta'){ clearTimeout(G.contaT); D.conta.hidden = true; estado('prep'); } else if (G.estado === 'rec') para(); };
   D.prox.onclick = () => { if (G && G.bloco < G.o.blocos.length - 1){ G.bloco++; prompter(); } };
   D.ant.onclick = () => { if (G && G.bloco > 0){ G.bloco--; prompter(); } };
-  D.fotos.onclick = ev => { const b = ev.target.closest('button[data-f]'); if (!b || !G) return; G.foto = +b.dataset.f; G.anel = null; D.fotos.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
+  D.fotos.onclick = ev => { const b = ev.target.closest('button[data-f]'); if (!b || !G) return; G.foto = +b.dataset.f; G.anel = null; D.fotos.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); nota(); };
   D.zoom.onclick = () => { const f = G && G.fotos[G.foto]; if (f && f.base) f.z = { ...f.base }; };
   D.cami.onclick = () => { if (!G || !G.cam) return; G.mostraCam = !G.mostraCam; D.cami.setAttribute('aria-pressed', String(G.mostraCam)); D.cam.style.visibility = G.mostraCam ? '' : 'hidden'; };
   // Aa: 18 → 22 → 26 → 30 → 18 (fica neste aparelho)

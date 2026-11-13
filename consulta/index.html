@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Leads">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Caixa de leads</title>
-<link rel="stylesheet" href="gravar-analise.css?v=20261112a">
+<link rel="stylesheet" href="gravar-analise.css?v=20261112b">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    Quatro abas: Caixa (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX), Portas (tema e % de
@@ -388,7 +388,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </div>
 <script src="kits.js?v=20261112d"></script>
 <script src="roteiro.js?v=20261112c"></script>
-<script src="gravar-analise.js?v=20261112b"></script>
+<script src="gravar-analise.js?v=20261112c"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -1304,9 +1304,7 @@ function faixaPI(id, b, p){
   if (id === 'cl-idade') return faixaPI('idade', b);
   if (id === 'cl-foto') return p?.aponte?.length ? 'Na foto: ' + p.aponte.join(' · ') : faixaPI('bem', b);
   if (id === 'cl-dentro'){   // o hábito que o bloco cita primeiro (entre os que ela tem); sem citação, a prioridade das regras
-    const tem = { metabolico:['pressao', 'glicose', 'ambas'].includes(r.metabolico), cigarro:['hoje', 'as_vezes', 'parou', 'parou_menos10', 'parou_mais10'].includes(r.cigarro),
-      sono:['curto', 'cansado'].includes(r.sono), sol:['todo_dia', 'fds'].includes(r.sol), movimento:['quase_nada', 'ate2'].includes(r.movimento) };
-    const PAL = { metabolico:/press[ãa]o|glicose/i, cigarro:/fum|cigarro|vape/i, sono:/dorm|sono|cansad/i, sol:/\bsol\b|protetor/i, movimento:/\bmex|moviment|caminh|exerc/i };
+    const tem = temPI(r), PAL = HAB_PAL;
     const fala = String(p?.fala || ''), achados = Object.keys(PAL).filter(k => tem[k]).map(k => [k, fala.search(PAL[k])]).filter(([, x]) => x >= 0).sort((x, y) => x[1] - y[1]);
     const k = achados[0]?.[0] || ['metabolico', 'cigarro', 'sono', 'sol', 'movimento'].find(x => tem[x]);
     return k ? `${ROTPI[k][0]}: ${v(k)}` : null; }
@@ -1320,12 +1318,110 @@ function faixaPI(id, b, p){
   if (id === 'ponte' || id === 'interesse') return r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
   return null;
 }
-function abreGravador(i){
+// ---------- 12/11: montagem automática do vídeo (o gravador desenha a cena de cada bloco sozinho) ----------
+// hábitos: as palavras que o bloco usa para cada um e o que ela tem (pesa) ou tem a favor
+const HAB_PAL = { metabolico:/press[ãa]o|glicose/i, cigarro:/fum|cigarro|vape/i, sono:/dorm|sono|cansad/i, sol:/\bsol\b|protetor/i, movimento:/\bmex|moviment|caminh|exerc/i };
+const temPI = r => ({ metabolico:['pressao', 'glicose', 'ambas'].includes(r.metabolico), cigarro:['hoje', 'as_vezes', 'parou', 'parou_menos10', 'parou_mais10'].includes(r.cigarro),
+  sono:['curto', 'cansado'].includes(r.sono), sol:['todo_dia', 'fds'].includes(r.sol), movimento:['quase_nada', 'ate2'].includes(r.movimento) });
+const BEM_PI = { metabolico:['nao_medi'], cigarro:['nunca'], sono:['bem'], sol:['quase_nenhum'], movimento:['2a5', 'mais5'] };
+const HAB_CURTO = {   // rótulo curto do vídeo: nome do hábito + a resposta dela
+  metabolico:[r => ({ pressao:'Pressão', glicose:'Glicose' }[r.metabolico] || 'Pressão e glicose'), { nao_medi:'normais no último ano', nunca:'nunca mediu', pressao:'alta', glicose:'alta', ambas:'as duas altas' }],
+  cigarro:[() => 'Cigarro', { nunca:'nunca fumou', parou:'parou', parou_mais10:'parou há mais de 10 anos', parou_menos10:'parou há menos de 10 anos', as_vezes:'às vezes', hoje:'fuma hoje' }],
+  sono:[() => 'Sono', { bem:'7 h ou mais, acorda bem', '6h':'umas 6 h', curto:'5 h ou menos', cansado:'acorda cansada(o)' }],
+  sol:[() => 'Sol sem protetor', { quase_nenhum:'quase nenhum', fds:'no fim de semana', todo_dia:'quase todo dia' }],
+  movimento:[() => 'Movimento', { quase_nada:'quase nada', ate2:'até 2 h por semana', '2a5':'2 a 5 h por semana', mais5:'mais de 5 h por semana' }],
+};
+// sinais: a região do incômodo (= DOR de pele/app.js) e as palavras do [APONTE: …]
+const DOR_PI = { cansada:['olhos'], caindo:['sulco_nasolabial', 'flacidez'], pescoco:['flacidez'], palpebra:['olhos'], manchas:['manchas', 'linhas_testa', 'olhos'] };
+const APONTE_PI = [['linhas_testa', /testa/i], ['olhos', /olho|olheira|p[aá]lpebra|galinha/i], ['sulco_nasolabial', /nariz|boca|bigode|sulco/i], ['manchas', /mancha|bochecha/i], ['flacidez', /contorno|mand[ií]bula|papada|pesco[cç]o|queixo|flacid/i]];
+// "O que importa aos {idade}" e os rótulos leigos dos sinais: consulta/o-que-importa-idade.json (cópia do arquivo da
+// pesquisa, tarefas/venda-pele-conversa/o-que-importa-idade.json). Lido a cada abrir do gravador; sem ele (404), o cartão
+// fica só como aviso na tela ("conteúdo em pesquisa"), nunca no vídeo, e os sinais usam os nomes da Caixa (SINPI).
+// Formato lido (tolerante): { rotulos:{ olhos:'…' | { curto|nome:'…' } }, faixas:[{ de, ate, sexo:'f'|'m'|'ambos', titulo?,
+// itens:['…' | { curto|texto:'…', fonte:'…' }] }] }; também aceita a faixa em texto ("45-54", "65+") e grupos por chave
+// ({ f:{ '45-54':{ itens } } }).
+let IMPORTA = null;
+async function carregaImporta(){
+  try { const r = await fetch('o-que-importa-idade.json', { cache:'no-cache' }); IMPORTA = r.ok ? await r.json() : null; } catch { IMPORTA = null; }
+  return IMPORTA;
+}
+const sexoChave = v => typeof v !== 'string' ? undefined : /^(f|fem|feminino|mulher|mulheres)$/i.test(v.trim()) ? 'f' : /^(m|masc|masculino|homem|homens)$/i.test(v.trim()) ? 'm' : /^(ambos|todos|todas|qualquer)$/i.test(v.trim()) ? '' : undefined;
+function idadesTxt(v){
+  const t = String(v ?? ''); let m;
+  if ((m = t.match(/(\d{2})\s*(?:a|-|–|—|até|ate)\s*(\d{2,3})/i))) return { min:+m[1], max:+m[2] };
+  if ((m = t.match(/(\d{2})\s*(?:\+|anos? ou mais|ou mais)/i))) return { min:+m[1], max:150 };
+  if ((m = t.match(/(?:at[ée]|<|menos de)\s*(\d{2})/i))) return { min:0, max:+m[1] };
+  return null;
+}
+function idadesObj(o){
+  const n = k => o[k] != null && o[k] !== '' && isFinite(+o[k]) ? +o[k] : null;
+  const a = n('de') ?? n('min') ?? n('idade_min') ?? n('desde'), b = n('ate') ?? n('até') ?? n('max') ?? n('idade_max');
+  if (a != null || b != null) return { min:a ?? 0, max:b ?? 150 };
+  return idadesTxt(o.faixa ?? o.idade ?? o.idades);
+}
+const itemTxt = x => typeof x === 'string' ? x.trim() : x && typeof x === 'object' ? String(x.curto ?? x.texto ?? x.titulo ?? x.item ?? x.frase ?? x.rotulo ?? x.nome ?? '').trim() : '';
+const fonteTxt = x => { const f = x && typeof x === 'object' ? (x.fonte_curta ?? x.fonte) : null; return typeof f === 'string' && f.length <= 60 && !/https?:|www\./i.test(f) ? f.trim() : ''; };
+function faixasImporta(j){
+  const out = [];
+  const anda = (o, c) => {
+    if (Array.isArray(o)){ o.forEach(x => anda(x, c)); return; }
+    if (!o || typeof o !== 'object') return;
+    const lista = ['itens', 'items', 'lista', 'pontos', 'o_que_importa'].map(k => o[k]).find(Array.isArray);
+    const fx = idadesObj(o) || c.fx, sx = sexoChave(o.sexo ?? o.genero) ?? c.sx;
+    if (lista){ out.push({ fx, sx, titulo:typeof o.titulo === 'string' ? o.titulo : null, itens:lista.map(itemTxt).filter(Boolean), fontes:lista.map(fonteTxt).filter(Boolean) }); return; }
+    for (const [k, v] of Object.entries(o)) if (!/^r[oó]tulos$/i.test(k)) anda(v, { fx:idadesTxt(k) || fx, sx:sexoChave(k) ?? sx });
+  };
+  anda(j && (j.faixas ?? j.idades ?? j), { fx:null, sx:null });
+  return out;
+}
+function importaPara(idade, sexo){
+  const tem = isFinite(idade), tit = tem ? `O que importa aos ${idade}` : 'O que importa na sua idade';
+  const fim = ' Este cartão não entra no vídeo.';
+  if (!IMPORTA) return { titulo:tit, itens:null, aviso:`${tit}: conteúdo em pesquisa.${fim}` };
+  const cands = faixasImporta(IMPORTA).filter(x => x.itens.length && (!x.fx || (tem && idade >= x.fx.min && idade <= x.fx.max)) && (!x.sx || !sexo || x.sx === sexo));
+  const m = cands.sort((a, b) => ((b.sx === sexo) - (a.sx === sexo)) || ((!!b.fx) - (!!a.fx)))[0];
+  if (!m) return { titulo:tit, itens:null, aviso:`${tit}: o arquivo da pesquisa ainda não tem itens para ${tem ? idade + ' anos' : 'esta idade'}${sexo === 'f' ? ' (mulher)' : sexo === 'm' ? ' (homem)' : ''}.${fim}` };
+  return { titulo:(m.titulo || tit).replace(/\{idade\}/g, tem ? idade : ''), itens:m.itens.slice(0, 3), fontes:[...new Set(m.fontes)].slice(0, 3) };
+}
+function rotuloSinal(id){
+  const R = IMPORTA && (IMPORTA.rotulos ?? IMPORTA['rótulos']), v = R && R[id];
+  const t = typeof v === 'string' ? v : v && typeof v === 'object' ? (v.curto ?? v.nome ?? v.rotulo ?? v.leigo) : null;
+  return typeof t === 'string' && t.trim() ? t.trim() : SINPI[id];
+}
+// a cena de cada bloco: idade (números e régua), foto (lupas), dentro (ícones dos hábitos citados), desejo (cartão)
+function cenaPI(id, b, p, fala){
+  const d = b.d, r = d.respostas || {}, c = b.c || {}, mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = Number(d.idade ?? r.idade);
+  if (id === 'cl-idade' || id === 'idade')
+    return !d.sem_analise && c.idadeFaixa?.dizer && mF && isFinite(idade) ? { tipo:'idade', min:+mF[1], max:+mF[2], idade } : null;
+  if (id === 'cl-foto'){
+    if (d.sem_analise) return null;
+    const N = Object.fromEntries((d.sinais || []).filter(s => SINPI[s.id] && s.visivel !== false && s.nivel != null).map(s => [s.id, Math.max(0, Math.min(3, Math.round(+s.nivel) || 0))]));
+    const dor = d.espelho_regiao && N[d.espelho_regiao] != null ? [d.espelho_regiao] : (DOR_PI[r.espelho] || []).filter(k => N[k] != null).sort((x, y) => N[y] - N[x]).slice(0, 1);
+    const ap = (p?.aponte || []).join(' · '), apIds = APONTE_PI.map(([k, re]) => [k, ap.search(re)]).filter(([k, x]) => x >= 0 && N[k] >= 1).sort((x, y) => x[1] - y[1]).map(([k]) => k);
+    const resto = Object.keys(N).filter(k => N[k] >= 1).sort((x, y) => N[y] - N[x]);
+    const ids = [...new Set([...dor, ...apIds, ...resto])].slice(0, 3);
+    return { tipo:'foto', lupas:ids.map(k => ({ id:k, nome:rotuloSinal(k), nivel:N[k] })) };
+  }
+  if (id === 'cl-dentro' || id === 'bem' || /^habito-\w+$/.test(id)){
+    const m = /^habito-(\w+)$/.exec(id), txt = String(fala ?? p?.fala ?? ''), tem = temPI(r);
+    const ks = m ? [m[1]] : Object.keys(HAB_PAL).map(k => [k, txt.search(HAB_PAL[k])]).filter(([k, x]) => x >= 0 && r[k] != null && r[k] !== '').sort((x, y) => x[1] - y[1]).map(([k]) => k);
+    const habitos = ks.filter(k => HAB_CURTO[k] && r[k] != null).slice(0, 3).map(k => ({ id:k, nome:HAB_CURTO[k][0](r),
+      valor:String(HAB_CURTO[k][1][r[k]] ?? valPI(k, r[k], d)).replace(/cansada\(o\)/, gen(d, 'cansada', 'cansado', 'cansada(o)')),
+      tom:tem[k] ? 'pesa' : (BEM_PI[k] || []).includes(r[k]) ? 'bem' : 'neutro' }));
+    return habitos.length ? { tipo:'dentro', habitos } : null;
+  }
+  if (id === 'cl-desejo' || id === 'interesse' || id === 'ponte') return { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo) };
+  return null;
+}
+async function abreGravador(i){
   const b = KB[i]; if (!b || !window.GRAVADOR) return;
   const fotos = fotosDoGrupo(b.g, b.e).filter(f => f.url).map(f => ({ rot:f.rot, url:f.url, chave:f.chave }));
   const passos = window.ROTEIRO?.passosReact(b.e) || [], nome = KIT_NOME.trim();
   b.ids = passos.map(p => p.id);
-  const blocos = passos.map(p => ({ titulo:p.bloco, fala:KITS.preencher(p.fala, { ...b.c.vars, nome:nome || null }), faixa:faixaPI(p.id, b, p) }));   // [APONTE: …] fica na fala: o gravador mostra só no teleprompter
+  await carregaImporta();
+  if (KB[i] !== b) return;   // trocou de lead enquanto lia o arquivo
+  const blocos = passos.map(p => { const fala = KITS.preencher(p.fala, { ...b.c.vars, nome:nome || null });   // [APONTE: …] fica na fala: o gravador mostra só no teleprompter
+    return { titulo:p.bloco, fala, faixa:faixaPI(p.id, b, p), cena:cenaPI(p.id, b, p, fala) }; });
   const c = codigoAtual, volta = document.querySelector(`.ga-abrir[data-kb="${i}"]`);
   GRAVADOR.abrir({ codigo:c, fotos, blocos, foto:'frente', aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
 }
