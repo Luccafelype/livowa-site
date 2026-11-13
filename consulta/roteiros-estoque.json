@@ -462,15 +462,9 @@
    ]
   },
   "interesse": {
-   "f": "12/11 (v3, decisão d-20261112-proximo-passo-analise, nas palavras do Lucca): o vídeo fecha com a pergunta de interesse; liga o desejo e o incômodo e pede só interesse, sem preço (tarefas/venda-pele-conversa/roteiro-v3-1211.md, Etapa 2, bloco 6). Substitui a pergunta de 1 toque no pele-idade; o 'o que você já tentou?' vai para a conversa.",
-   "com_ambos": [
-    "{nome}, isso dá para trabalhar: o que pesa por dentro e {espelho}, pensando em {futuro}. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
-   ],
-   "sem_incomodo": [
-    "{nome}, isso dá para trabalhar, pensando em {futuro}. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
-   ],
-   "sem_desejo": [
-    "{nome}, isso dá para trabalhar: o que pesa por dentro e {espelho}. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+   "f": "12/11 (v3, decisão d-20261112-proximo-passo-analise, nas palavras do Lucca): o vídeo fecha com a pergunta de interesse, sem preço (roteiro-v3-1211.md, Etapa 2, bloco 6). 12/11 noite (regras-ajuste-pele-idade.md): vai no mesmo bloco da ponte, que já diz o desejo (o desejo aparece uma vez); o incômodo vira 'o que te incomoda no espelho' (sem repetir a frase dela nem 'e … e').",
+   "com_espelho": [
+    "{nome}, isso dá para trabalhar: o que pesa por dentro e o que te incomoda no espelho. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
    ],
    "sem_nada": [
     "{nome}, isso dá para trabalhar. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"

@@ -18,7 +18,7 @@
    arquivo aos 18 s no iOS 18.7, diagnóstico de 03/11). mp4 quando o navegador grava mp4; webm só como reserva. */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1211a';
+const VERSAO = '1211b';
 const W = 720, H = 1280, FPS = 30, MAX_S = 90;
 const CIRC = { cx:W - 24 - 120, cy:H - 24 - 120, r:120 };   // câmera dele
 const TOPO = 150;                                           // nome e CRM no alto do vídeo
@@ -212,7 +212,13 @@ function prompter(){
   const bs = G.o.blocos, b = bs[G.bloco] || { titulo:'', fala:'' }, n = bs.length;
   D.pTit.textContent = b.titulo || '';
   D.pPos.textContent = n ? `${G.bloco + 1} de ${n}` : '';
-  D.pTxt.textContent = b.fala || '';
+  // 12/11: [APONTE: região] (roteiro do Claude) vira dica destacada no teleprompter; nunca vai para o canvas
+  D.pTxt.textContent = '';
+  String(b.fala || '').split(/(\[(?:APONTE|CIRCULAR):[^\]]*\])/i).forEach(pedaco => {
+    const m = /^\[(?:APONTE|CIRCULAR):\s*([^\]]*)\]$/i.exec(pedaco);
+    if (m){ const sp = document.createElement('span'); sp.className = 'ga-dica'; sp.textContent = 'aponte: ' + m[1].trim(); D.pTxt.append(sp); }
+    else if (pedaco) D.pTxt.append(document.createTextNode(pedaco));
+  });
   D.pDep.textContent = G.bloco < n - 1 ? 'Depois: ' + (bs[G.bloco + 1].titulo || '') : 'Último bloco';
   D.prompt.style.setProperty('--fs', fsPrompt + 'px');
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;

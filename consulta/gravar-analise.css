@@ -20,6 +20,7 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
 .ga-p-topo b{color:#8fe0bd;flex:1;min-width:0}
 .ga-aa{pointer-events:auto;min-height:36px;min-width:44px;padding:4px 10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.35);background:rgba(0,0,0,.45);color:#fff;font:700 .9rem system-ui;text-transform:none;letter-spacing:0}
 .ga-p-txt{margin:4px 0 0;font-size:var(--fs);line-height:1.32;font-weight:650;text-shadow:0 1px 2px #000}
+.ga-dica{display:inline-block;margin:0 4px;padding:0 8px;border-radius:8px;background:#ffd60a;color:#000;font-size:.72em;font-weight:800;vertical-align:.12em;text-shadow:none}
 .ga-p-dep{margin:6px 0 0;font-size:.78rem;color:#b7c7c0}
 .ga-conta{position:absolute;inset:0;display:grid;place-items:center;font:800 7rem/1 system-ui;color:#fff;text-shadow:0 2px 12px #000;pointer-events:none}
 .ga-conta[hidden]{display:none}

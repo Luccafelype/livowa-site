@@ -193,6 +193,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .kit details.pi-preco{background:var(--bg)}
 .conv{position:fixed;inset:0;z-index:70;background:var(--s);color:var(--fg);overflow:auto;-webkit-overflow-scrolling:touch;padding:max(12px,env(safe-area-inset-top)) 16px 40px}
 .conv[hidden]{display:none}
+.pi-cl-st{margin:0;font-size:.9rem;border-radius:10px;padding:8px 10px;background:var(--bg);color:var(--fg)}
+.pi-cl-st.ok{background:var(--a2)} .pi-cl-st.erro{background:var(--w2);color:var(--w)} .pi-cl-st.espera{color:var(--m)}
+.pi-cl-av ul{margin:4px 0 0;padding-left:1.1em;font-size:.9rem}
 .conv-cab{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--s);padding:6px 0 10px;border-bottom:1px solid var(--l);margin-bottom:8px}
 .conv-cab h2{margin:0;font-size:1.15rem}
 .conv-b{max-width:640px;margin:0 auto}
@@ -383,9 +386,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div id="conv" class="conv" role="dialog" aria-modal="true" aria-labelledby="conv-tit" hidden>
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
-<script src="kits.js?v=20261112c"></script>
-<script src="roteiro.js?v=20261112b"></script>
-<script src="gravar-analise.js?v=20261112a"></script>
+<script src="kits.js?v=20261112d"></script>
+<script src="roteiro.js?v=20261112c"></script>
+<script src="gravar-analise.js?v=20261112b"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -1228,11 +1231,13 @@ function kitCorpoPI(i, b, K, c, atalho){
     + kitMsg(V3.audioFala, i, { raw:true, rotulo:'Fala do áudio', quando:'Grave uma vez e reenvie sempre o mesmo' }) + `<p class="kit-sub">${esc(V3.audioDica)}</p>` + marca('audio', 'Marcar: áudio enviado'));
   // 2 · gravar a análise
   const fotos = FOTOS.filter(f => f.grupo === b.g && f.url), resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
+  // 12/11: o roteiro do Claude (pedido sozinho ao abrir) manda no gravador; a área .pi-claude se redesenha sozinha quando
+  // o Claude responde, sem mexer no campo da resposta
   h += passo(2, 'Gravar a análise', `<label class="pi-resp-l">Resposta dela ao áudio (opcional: abre o roteiro)<textarea class="pi-resp" rows="2" maxlength="200" placeholder="do jeito que você vai falar: quer se cuidar antes dos 50">${esc(resp)}</textarea></label>
-    <button type="button" class="ga-abrir" data-kb="${i}" ${fotos.length && window.GRAVADOR ? '' : 'disabled'}>${fotos.length ? 'Gravar análise' : 'Gravar análise (sem fotos: apagadas ou não carregaram)'}</button>
-    <p class="kit-sub">O gravador usa o roteiro acima (com a variação escolhida) como teleprompter. Idade do rosto no vídeo: ${esc(c.idadeFaixa.txt)}</p>
+    <div class="pi-claude" data-kb="${i}">${claudeHtml(i)}</div>
+    <p class="kit-sub">Idade do rosto no vídeo: ${esc(c.idadeFaixa.txt)}</p>
     <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>Modo revisão (iPad: caneta e zoom)</button>`
-    + kitMsg(V3.depoisVideo, i, { rotulo:'Logo depois do vídeo, por escrito' }) + marca('analisei', 'Marcar: análise enviada'));
+    + marca('analisei', 'Marcar: análise enviada'));
   // 3 · ela respondeu
   const R3 = [['sim', 'Sim'], ['agora', 'Agora não'], ['nao', 'Não quis'], ['sumiu', 'Sumiu']];
   let c3 = `<div class="pi-r3" role="group" aria-label="O que ela respondeu">${R3.map(([k, t]) => `<button type="button" data-r3="${k}" data-kb="${i}" aria-pressed="${b.r3 === k}">${t}</button>`).join('')}</div>`;
@@ -1254,6 +1259,31 @@ function kitCorpoPI(i, b, K, c, atalho){
     ${K.atalhos.map(a => kitMsg(a.texto, i, { raw:true, rotulo:'/' + a.id, quando:[a.quando, a.nota].filter(Boolean).join(' · ') })).join('')}</div></details>`;
   return h;
 }
+// o que o passo 2 mostra do Claude: estado, avisos (acima do Gravar), o botão Gravar, Refazer/estoque e o POR ESCRITO
+function claudeHtml(i){
+  const b = KB[i], V3 = KITS['pele-idade'].v3, cl = window.ROTEIRO?.claude(b.e) || null, resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
+  const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
+  let h = '';
+  if (cl?.estado === 'gerando') h += '<p class="pi-cl-st espera">O Claude está escrevendo o roteiro desta pessoa (5 a 20 s). Se quiser, grave já com o do estoque.</p>';
+  else if (cl?.usar){ const n = cl.palavras; h += `<p class="pi-cl-st ok"><b>Roteiro do Claude</b>: ${cl.partes.blocos.length} blocos${n ? `, ${n} palavras (~${Math.round(n / 150 * 60)} s)` : ''}${cl.respUsada ? ', com a resposta dela' : ''}. É o que o gravador usa.</p>`; }
+  else if (cl?.tem && cl.usarEstoque) h += '<p class="pi-cl-st">Usando o roteiro do estoque (o do Claude está guardado).</p>';
+  else if (cl?.erro) h += `<p class="pi-cl-st erro">${esc(cl.erro)} Vale o roteiro do estoque.</p>`;
+  else h += '<p class="pi-cl-st">Roteiro do estoque.</p>';
+  const av = cl?.usar ? [...cl.partes.avisos, ...(cl.conferir || []).map(a => 'Conferir: ' + a)] : [];
+  if (av.length) h += `<div class="kit-refazer pi-cl-av"><b>Antes de gravar</b><ul>${av.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>`;
+  h += `<button type="button" class="ga-abrir" data-kb="${i}" ${fotos.length && window.GRAVADOR ? '' : 'disabled'}>${fotos.length ? 'Gravar análise' : 'Gravar análise (sem fotos: apagadas ou não carregaram)'}</button>`;
+  const bts = [];
+  if (resp && cl && cl.estado !== 'gerando' && resp !== cl.respUsada && !b.d.sem_analise && !b.c.refazer) bts.push(`<button type="button" class="sec pi-cl-refazer" data-kb="${i}">Refazer com a resposta dela</button>`);
+  if (cl?.tem && cl.estado !== 'gerando') bts.push(`<button type="button" class="sec pi-cl-estoque" data-kb="${i}">${cl.usarEstoque ? 'Usar o do Claude' : 'Usar o do estoque'}</button>`);
+  if (bts.length) h += `<div class="l-acoes">${bts.join('')}</div>`;
+  const escrito = cl?.usar && cl.partes.porEscrito.length ? cl.partes.porEscrito : [V3.depoisVideo];
+  h += escrito.map((t, k) => kitMsg(t, i, { rotulo:k ? 'Por escrito também' : 'Logo depois do vídeo, por escrito' })).join('');
+  return h;
+}
+function pintaClaudePI(){
+  document.querySelectorAll('#out .pi-claude[data-kb]').forEach(el => { const i = +el.dataset.kb; if (KB[i]?.t === 'pele-idade') el.innerHTML = claudeHtml(i); });
+}
+window.aoMudarClaude = () => pintaClaudePI();
 function redesenhaKitsPI(){
   document.querySelectorAll('#out .kit[data-kb]').forEach(sec => {
     const i = +sec.dataset.kb; if (KB[i]?.t !== 'pele-idade') return;
@@ -1265,16 +1295,29 @@ function redesenhaKitsPI(){
 // a faixa do vídeo: o dado do bloco que ela está ouvindo (rótulos do cartão; sem número quando a régua não deixa)
 const ESTUDO_PI = { cigarro:'Estudo: gêmeos idênticos (Guyuron 2009)', sol:'Estudo: gêmeos idênticos (Guyuron 2009)', metabolico:'Estudos: Gunn 2012 e Noordam 2011',
   sono:'Estudo: Oyetakin-White 2015', movimento:'Estudo: Mayes 2010', gemeos:'Estudo: gêmeos de 70 anos ou mais (Christensen 2009)' };
-function faixaPI(id, b){
+function faixaPI(id, b, p){
   const d = b.d, r = d.respostas || {}, c = b.c, mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = d.idade ?? r.idade;
-  const v = k => r[k] != null && r[k] !== '' ? valPI(k, r[k], d) : null;
+  // 12/11: o rótulo da faixa pelo sexo (o do cartão diz "cansada(o)")
+  const v = k => r[k] != null && r[k] !== '' ? valPI(k, r[k], d).replace(/cansada\(o\)/, gen(d, 'cansada', 'cansado', 'cansada(o)')) : null;
+  // roteiro do Claude: a faixa pelo bloco (abertura, idade, foto, por dentro, desejo)
+  if (id === 'cl-abertura') return faixaPI('abertura', b);
+  if (id === 'cl-idade') return faixaPI('idade', b);
+  if (id === 'cl-foto') return p?.aponte?.length ? 'Na foto: ' + p.aponte.join(' · ') : faixaPI('bem', b);
+  if (id === 'cl-dentro'){   // o hábito que o bloco cita primeiro (entre os que ela tem); sem citação, a prioridade das regras
+    const tem = { metabolico:['pressao', 'glicose', 'ambas'].includes(r.metabolico), cigarro:['hoje', 'as_vezes', 'parou', 'parou_menos10', 'parou_mais10'].includes(r.cigarro),
+      sono:['curto', 'cansado'].includes(r.sono), sol:['todo_dia', 'fds'].includes(r.sol), movimento:['quase_nada', 'ate2'].includes(r.movimento) };
+    const PAL = { metabolico:/press[ãa]o|glicose/i, cigarro:/fum|cigarro|vape/i, sono:/dorm|sono|cansad/i, sol:/\bsol\b|protetor/i, movimento:/\bmex|moviment|caminh|exerc/i };
+    const fala = String(p?.fala || ''), achados = Object.keys(PAL).filter(k => tem[k]).map(k => [k, fala.search(PAL[k])]).filter(([, x]) => x >= 0).sort((x, y) => x[1] - y[1]);
+    const k = achados[0]?.[0] || ['metabolico', 'cigarro', 'sono', 'sol', 'movimento'].find(x => tem[x]);
+    return k ? `${ROTPI[k][0]}: ${v(k)}` : null; }
+  if (id === 'cl-desejo') return faixaPI('ponte', b);
   if (id === 'abertura') return window.ROTEIRO?.respostaDe(codigoAtual) ? null : r.espelho && r.espelho !== 'nada' ? 'No espelho: ' + v('espelho') : r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
   if (id === 'idade') return c.idadeFaixa?.dizer && mF ? `Rosto: ${mF[1]} a ${mF[2]} anos · você tem ${idade}` : idade != null && c.caso !== 'sem_numero' ? `Você tem ${idade} anos` : null;
   if (id === 'bem'){ const bons = [r.cigarro === 'nunca' && 'nunca fumou', r.sol === 'quase_nenhum' && 'quase sem sol no rosto', r.metabolico === 'nao_medi' && 'pressão e glicose normais', r.sono === 'bem' && 'dorme bem',
     ['2a5', 'mais5'].includes(r.movimento) && 'se mexe ' + v('movimento')].filter(Boolean); return bons.length ? 'O que está bem: ' + bons.slice(0, 2).join(' · ') : null; }
   const m = /^habito-(\w+)$/.exec(id || ''); if (m && ROTPI[m[1]]) return `${ROTPI[m[1]][0]}: ${v(m[1]) || '—'}`;
   if (id === 'mecanismo'){ const hab = ['cigarro', 'sol', 'metabolico', 'sono', 'movimento'].find(k => (b.ids || []).includes('habito-' + k)); return ESTUDO_PI[hab || 'gemeos']; }
-  if (id === 'ponte') return r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
+  if (id === 'ponte' || id === 'interesse') return r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
   return null;
 }
 function abreGravador(i){
@@ -1282,7 +1325,7 @@ function abreGravador(i){
   const fotos = fotosDoGrupo(b.g, b.e).filter(f => f.url).map(f => ({ rot:f.rot, url:f.url, chave:f.chave }));
   const passos = window.ROTEIRO?.passosReact(b.e) || [], nome = KIT_NOME.trim();
   b.ids = passos.map(p => p.id);
-  const blocos = passos.map(p => ({ titulo:p.bloco, fala:KITS.preencher(p.fala, { ...b.c.vars, nome:nome || null }), faixa:faixaPI(p.id, b) }));
+  const blocos = passos.map(p => ({ titulo:p.bloco, fala:KITS.preencher(p.fala, { ...b.c.vars, nome:nome || null }), faixa:faixaPI(p.id, b, p) }));   // [APONTE: …] fica na fala: o gravador mostra só no teleprompter
   const c = codigoAtual, volta = document.querySelector(`.ga-abrir[data-kb="${i}"]`);
   GRAVADOR.abrir({ codigo:c, fotos, blocos, foto:'frente', aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
 }
@@ -1317,6 +1360,8 @@ $('out').addEventListener('click', ev => {
   if (r3){ const b = KB[+r3.dataset.kb]; if (!b) return; b.r3 = r3.dataset.r3; redesenhaKitsPI();
     const et = R3_ETAPA[b.r3]; if (et) marcar(codigoAtual, et); return; }
   const ga = ev.target.closest('.ga-abrir'); if (ga){ abreGravador(+ga.dataset.kb); return; }
+  const rf = ev.target.closest('.pi-cl-refazer'); if (rf){ const b = KB[+rf.dataset.kb]; if (b) window.ROTEIRO?.refazerComResposta(b.e); return; }
+  const ue = ev.target.closest('.pi-cl-estoque'); if (ue){ const b = KB[+ue.dataset.kb], cl = b && window.ROTEIRO?.claude(b.e); if (cl) window.ROTEIRO.usarEstoque(b.e, !cl.usarEstoque); return; }
   const cv = ev.target.closest('.pi-conv'); if (cv) abreConversa(+cv.dataset.kb);
 });
 let respT = 0;

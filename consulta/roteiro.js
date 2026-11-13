@@ -151,6 +151,9 @@ const NOME_SIN_PI = { linhas_testa:'Linhas da testa', olhos:'Canto dos olhos', s
 function entradaPeleIdade(d, c){
   const sin = (d.sinais || []).filter(s => NOME_SIN_PI[s.id] && s.visivel !== false && s.nivel != null && +s.nivel >= 1).sort((a, b) => b.nivel - a.nivel);
   return {
+    sexo:SEXO[d.respostas?.sexo || d.sexo] || undefined,   // 12/11: concordância (cansada/cansado)
+    desejo_de_10_anos:c?.vars?.futuro || undefined, incomodo_no_espelho:c?.vars?.espelho || undefined,
+    regiao_do_incomodo_que_a_pagina_mostrou:d.espelho_regiao ? NOME_SIN_PI[d.espelho_regiao] || d.espelho_regiao : undefined,
     idade_informada:d.idade ?? undefined,
     idade_que_o_rosto_aparenta:d.faixa || 'a página não mostrou número',
     leitura:c ? c.titulo : undefined,
@@ -170,7 +173,7 @@ const testeDe = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2'
   : e.funil === 'teste-emagrecimento' ? 'quiz-emagrecimento' : e.funil === 'quiz-longevidade' ? 'quiz-longevidade' : null;
 const KIT_DE = { pele:'pele', pele2:'pele2', 'pele-idade':'pele-idade', pernas:'pernas', braco:'braco' };
 // testes que a edge gerar-roteiro já aceita (logica.ts, TESTES); os outros mostram só o roteiro do estoque
-const CLAUDE_TESTES = new Set(['pele', 'pele2', 'pernas', 'braco', 'quiz-longevidade', 'quiz-emagrecimento']);
+const CLAUDE_TESTES = new Set(['pele', 'pele2', 'pernas', 'braco', 'quiz-longevidade', 'quiz-emagrecimento', 'pele-idade']);   // 12/11: pele-idade
 /** {teste, chave, entrada} de um resultado da Caixa, ou null se o teste não tem roteiro. */
 function montar(e){
   const t = testeDe(e); if (!t) return null;
@@ -185,7 +188,7 @@ function montar(e){
 let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o botão do Claude)
 async function carregaEstoque(){
   if (EST) return EST;
-  try { const r = await fetch('roteiros-estoque.json?v=20261112a', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
+  try { const r = await fetch('roteiros-estoque.json?v=20261112b', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
   return EST;
 }
 const TEMPO = ['0-8 s', '8-30 s', '30-45 s', '45-52 s', '52-60 s'];
@@ -279,7 +282,11 @@ function rotPeleIdade(d, c, E){
   out.push(blocoE('abertura', TEMPO[0], ab, V, { f:P.abertura.f, circular:V.resposta ? null : V.espelho ? 'a resposta "o que mais incomoda no espelho" na tela' : V.futuro ? 'a resposta "daqui a 10 anos" na tela' : null }));
   // a idade do rosto: com número só se a página mostrou e a regra deixa (mais de 5 anos acima: sem número)
   const caso = c?.caso || 'sem_numero', dizer = !!(c?.idadeFaixa?.dizer && mF);
-  const chave = caso === 'sem_numero' ? 'sem_numero' : caso === 'mais_velho' && !dizer ? 'mais_velho_sem_numero' : caso;
+  // 12/11: a leitura segue a FAIXA (idade dentro da faixa = "acompanha a sua idade"; abaixo do mínimo = o rosto mostra
+  // mais; acima do máximo = mostra menos), não o meio da faixa ±3 (Carla, 45 com rosto 45-52, ouvia "um pouco acima")
+  const iN = idade != null && idade !== '' && !isNaN(+idade) ? +idade : null;
+  const lido = caso === 'sem_numero' || !mF || iN == null ? caso : iN < +mF[1] ? 'mais_velho' : iN > +mF[2] ? 'mais_novo' : 'igual';
+  const chave = lido === 'sem_numero' ? 'sem_numero' : lido === 'mais_velho' && !dizer ? 'mais_velho_sem_numero' : lido;
   const bi = d.sem_analise ? null : blocoE('idade', TEMPO[1], P.idade[chave], V, { f:P.idade.f, circular:chave === 'sem_numero' ? null : dizer ? 'a régua: a faixa do rosto e a sua idade' : 'a foto de frente inteira' });
   if (bi) bi.regiao = null;
   out.push(bi);
@@ -290,7 +297,9 @@ function rotPeleIdade(d, c, E){
     r.sono === 'bem' && P.bem.itens.sono, ['2a5', 'mais5'].includes(r.movimento) && P.bem.itens['movimento_' + r.movimento]].filter(Boolean);
   if (bons.length) out.push(blocoE('bem', TEMPO[1], P.bem.texto, { ...V, bem:listaE(bons.slice(0, 2)) }, { f:P.bem.f }));
   // hábitos que pesam: até 2 no vídeo (uma ideia só); o 1º leva o sinal da foto e o mecanismo
-  const hab = ORDEM_HAB.filter(k => (ATENCAO_PI[k] || []).includes(r[k]));
+  // 12/11: pressão ou glicose alta vem antes do sol (sinal de saúde pesa mais que a pele por fora)
+  const ordemHab = ['pressao', 'glicose', 'ambas'].includes(r.metabolico) ? ['cigarro', 'metabolico', 'sol', 'sono', 'movimento'] : ORDEM_HAB;
+  const hab = ordemHab.filter(k => (ATENCAO_PI[k] || []).includes(r[k]));
   const comFoto = !!mF;   // a página só mostrou sinais quando mostrou número
   const sin = Object.fromEntries((d.sinais || []).map(s => [s.id, s.visivel !== false && s.nivel != null ? +s.nivel || 0 : null]));
   const fem = r.sexo === 'f' ? 'cansado_f' : r.sexo === 'm' ? 'cansado_m' : 'cansado';
@@ -307,11 +316,17 @@ function rotPeleIdade(d, c, E){
   if (comFoto && (sin.manchas || 0) >= 2) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.pele, V, { f:C.seguranca.f, fixo:true }));
   const mec = hab[0] || 'gemeos';
   out.push(blocoE('mecanismo', TEMPO[2], P.mecanismo[mec], V, { f:P.mecanismo.f }));
-  out.push(blocoE('ponte', TEMPO[3], V.espelho && V.futuro ? P.ponte.com_futuro : P.ponte.texto, V, { f:P.ponte.f }));
+  // 12/11: ponte e pergunta de interesse num bloco só, com o desejo UMA vez no vídeo (se a abertura já disse o desejo, aqui não)
+  // e o incômodo como "o que te incomoda no espelho" (sem repetir a frase dela nem "e … e")
+  const desejoNaAbertura = !V.resposta && !V.espelho && !!V.futuro, PI6 = P.interesse;
   // 12/11 (v3, bloco 6): a pergunta de interesse no lugar da pergunta de 1 toque; troca pelo que ela marcou
-  const PI6 = P.interesse;
-  if (PI6) out.push(blocoE('interesse', TEMPO[4], PI6[V.espelho && V.futuro ? 'com_ambos' : V.futuro ? 'sem_incomodo' : V.espelho ? 'sem_desejo' : 'sem_nada'], V, { f:PI6.f, fixo:true }));
-  else out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  if (PI6){
+    const pontes = V.futuro && !desejoNaAbertura ? P.ponte.com_futuro : P.ponte.texto, perg = PI6[V.espelho ? 'com_espelho' : 'sem_nada'] || PI6.sem_nada;
+    out.push(blocoE('interesse', '45-60 s', pontes.flatMap(pt => perg.map(q => pt + ' ' + q)), V, { f:P.ponte.f + ' · ' + PI6.f }));
+  } else {
+    out.push(blocoE('ponte', TEMPO[3], V.espelho && V.futuro ? P.ponte.com_futuro : P.ponte.texto, V, { f:P.ponte.f }));
+    out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  }
   if (['pressao', 'glicose', 'ambas'].includes(r.metabolico)) avisos.push('Ela marcou pressão ou glicose alta: sinal de saúde (regra 17). Vale olhar com exame; fale com ela também por escrito. Sem nome de doença nem de remédio.');
   if (r.cigarro === 'hoje') avisos.push('Fuma hoje: tom de alívio e explicação, sem cobrança (regra 22).');
   if (caso === 'sem_numero' && !c?.refazer) avisos.push('A página não mostrou número. Se ela quiser o número, mande o atalho /pirefazer.');
@@ -437,15 +452,17 @@ function htmlEstoque(i){
 }
 /** Texto do roteiro vindo do Claude: tempos, [CIRCULAR] destacado, avisos separados. */
 function formata(txt){
-  const [fala, avisos] = String(txt).split(/^AVISOS PARA O LUCCA\s*$/m);
+  const [antes, avisos] = String(txt).split(/^AVISOS PARA O LUCCA\s*$/m);
+  const [fala, escrito] = antes.split(/^POR ESCRITO DEPOIS\s*$/m);   // 12/11 (pele-idade): o que vai por escrito depois do vídeo
   const linhas = fala.split('\n').filter(l => l.trim() && !/^ROTEIRO\s*$/.test(l.trim()) && !/^TESTE:/.test(l));
   const h = linhas.map(l => {
     const m = l.match(/^\s*\[(\d+-\d+ s)\]\s*(.*)$/);
-    const corpoL = destaca(m ? m[2] : l).replace(/\[CIRCULAR:([^\]]*)\]/g, '<mark class="rot-c">circular:$1</mark>');
+    const corpoL = destaca(m ? m[2] : l).replace(/\[CIRCULAR:([^\]]*)\]/g, '<mark class="rot-c">circular:$1</mark>').replace(/\[APONTE:([^\]]*)\]/gi, '<mark class="rot-c">aponte:$1</mark>');
     return `<div class="rot-l"><span class="rot-t">${m ? esc(m[1]) : ''}</span><span class="rot-f">${corpoL}</span><span></span></div>`;
   }).join('');
   const av = (avisos || '').split('\n').map(l => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean);
-  return `<div class="rot-txt">${h}</div>` + (av.length ? `<div class="rot-av"><b>Avisos do Claude</b><ul>${av.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '');
+  const pe = (escrito || '').split('\n').map(l => l.replace(/^\s*-\s*/, '').trim()).filter(Boolean);
+  return `<div class="rot-txt">${h}</div>` + (pe.length ? `<div class="rot-av"><b>Por escrito depois</b><ul>${pe.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '') + (av.length ? `<div class="rot-av"><b>Avisos do Claude</b><ul>${av.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '');
 }
 const dinheiro = v => v == null ? '' : 'US$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits:4, maximumFractionDigits:4 });
 const quandoCurto = d => new Date(d).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
@@ -471,34 +488,60 @@ function corpo(i){
   if (USO) h += `<p class="rot-info">Hoje: ${USO.hoje} de ${USO.teto} ajustes pagos</p>`;
   return h + '</details>';
 }
-const redesenha = i => { const s = document.querySelector(`.rot[data-rot="${i}"]`); if (s) s.innerHTML = corpo(i); };
+const redesenha = i => { const s = document.querySelector(`.rot[data-rot="${i}"]`); if (s) s.innerHTML = corpo(i); try { window.aoMudarClaude?.(B[i]?.e); } catch (err) { console.error(err); } };
 const redesenhaTodos = () => B.forEach((_, i) => redesenha(i));
 const ERRO = { teto:'Chegou no teto de ajustes de hoje. Amanhã libera de novo.', recusa:'O Claude recusou este pedido. Use o roteiro do estoque.',
   ocupado:'A API está ocupada agora. Tente de novo em 1 minuto.', sem_chave:'A função está sem a chave da Anthropic.', grande:'Resultado grande demais para mandar.',
-  vazio:'O Claude não devolveu texto. Tente de novo.', banco:'Não consegui gravar no banco. Tente de novo.' };
-async function gerar(i){
-  const b = B[i]; b.estado = 'gerando'; b.erro = ''; redesenha(i);
+  vazio:'O Claude não devolveu texto. Tente de novo.', banco:'Não consegui gravar no banco. Tente de novo.',
+  teste:'A edge do Claude ainda não conhece este teste (falta publicar a nova).' };
+async function gerar(i, o = {}){
+  const b = B[i]; if (!b || b.estado === 'gerando') return;
+  b.estado = 'gerando'; b.erro = ''; redesenha(i);
+  let cod = '';
   try {
-    const base = textoEstoque(b, '');   // vai com {nome}, nunca com o nome digitado
-    const r = await post({ acao:'gerar', c:CODIGO, chave:b.chave, teste:b.teste, entrada:b.entrada, base, pedido:(b.pedido || '').trim(), novo:true });
+    // 12/11 (pele-idade): o Claude escreve o roteiro no formato próprio, sem a base do estoque; a resposta dela ao áudio vai no pedido
+    const pi = b.teste === 'pele-idade', resp = pi ? (RESP[CODIGO] || '') : '';
+    const base = pi ? '' : textoEstoque(b, '');   // vai com {nome}, nunca com o nome digitado
+    const extra = (b.pedido || '').trim();
+    const pedido = pi ? [resp ? 'Resposta dela ao áudio: ' + resp : '', extra].filter(Boolean).join(' · ').slice(0, 300) : extra;
+    const r = await post({ acao:'gerar', c:CODIGO, chave:b.chave, teste:b.teste, entrada:b.entrada, base, pedido, novo:o.novo !== false });
     const j = await r.json().catch(() => ({}));
     if (r.status === 404) throw new Error('Link sem acesso. Use o link do arquivo privado.');
-    if (!j.ok) throw new Error(ERRO[j.erro] || `Não ajustou (${j.erro || r.status}).`);
-    b.roteiro = j.roteiro;
+    cod = j.erro || '';
+    if (!j.ok || !j.roteiro) throw new Error(ERRO[j.erro] || `Não ajustou (${j.erro || r.status}).`);
+    b.roteiro = j.roteiro; b.respUsada = o.novo === false && !j.pago ? b.respUsada : resp;
     if (j.hoje != null) USO = { hoje:j.hoje, teto:j.teto };
-  } catch (err) { b.erro = err.message || 'Sem conexão.'; }
+  } catch (err) {
+    b.erro = err.message || 'Sem conexão.';
+    if (o.auto && !['teto', 'teste', 'recusa'].includes(cod)) AUTO.delete(o.auto);   // falha passageira: tenta de novo na próxima abertura
+  }
   b.estado = ''; redesenhaTodos();
+}
+// 12/11: ao abrir um lead da pele nova sem roteiro do Claude guardado, pede UMA vez, sozinho (novo:false: se a edge já
+// tiver um, devolve sem pagar). Foto ruim e sem análise ficam no estoque (o roteiro de refazer e o das respostas).
+const AUTO = new Set();
+function autoPI(c){
+  B.forEach((b, i) => {
+    if (c !== CODIGO || b.teste !== 'pele-idade' || b.roteiro || b.estado === 'gerando') return;
+    let cc = null; try { cc = window.KITS?.['pele-idade']?.classifica(b.e.dados || {}); } catch (err) { console.error(err); }
+    if (cc?.refazer || cc?.semAnalise || b.e?.dados?.sem_analise) return;
+    const k = c + '|' + b.chave; if (AUTO.has(k)) return; AUTO.add(k);
+    gerar(i, { novo:false, auto:k });
+  });
 }
 async function lerGravados(c){
   if (!B.length) return;
   try {
     const r = await post({ acao:'ler', c });
     const j = await r.json().catch(() => ({}));
-    if (c !== CODIGO || !j.ok) return;
-    USO = { hoje:j.hoje, teto:j.teto };
-    for (const b of B){ const g = (j.roteiros || []).find(x => x.chave === b.chave); if (g) b.roteiro = g; }
-    redesenhaTodos();
+    if (c !== CODIGO) return;
+    if (j.ok){
+      USO = { hoje:j.hoje, teto:j.teto };
+      for (const b of B){ const g = (j.roteiros || []).find(x => x.chave === b.chave); if (g) b.roteiro = g; }
+      redesenhaTodos();
+    }
   } catch { /* sem conexão: segue com o estoque */ }
+  if (c === CODIGO) autoPI(c);
 }
 async function montarTodos(){
   B.forEach(b => { if (!b.est) b.estado = 'lendo'; }); redesenhaTodos();
@@ -575,9 +618,40 @@ async function preencheParecidos(){
 
 // Modo revisão da pele-idade: os passos são os blocos do roteiro montado, com a variação escolhida na tela.
 const ROT_BLOCO = { abertura:'Abertura', idade:'Idade do rosto', bem:'O que está bem', 'habito-cigarro':'Cigarro', 'habito-sol':'Sol', 'habito-metabolico':'Pressão e glicose',
-  'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', ponte:'Ponte', pergunta:'Pergunta', interesse:'Pergunta de interesse', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
+  'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', ponte:'Ponte', pergunta:'Pergunta', interesse:'Desejo e pergunta', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
+// 12/11: o roteiro do Claude (pele-idade) em partes: blocos cortados pelos marcadores [a-b s], o [APONTE: …] de cada bloco,
+// as linhas do POR ESCRITO DEPOIS e os AVISOS. null = não é do formato.
+const TIT_CL = { 0:['Abertura', 'cl-abertura'], 8:['Idade do rosto', 'cl-idade'], 18:['Foto', 'cl-foto'], 32:['Por dentro', 'cl-dentro'], 48:['Desejo e pergunta', 'cl-desejo'] };
+function partesClaude(txt){
+  const s = String(txt || ''), i = s.search(/^ROTEIRO\b/m), e = s.search(/^POR ESCRITO DEPOIS/m), f = s.search(/^AVISOS PARA O LUCCA/m);
+  if (i < 0) return null;
+  const fim = [e, f].filter(x => x > i).sort((a, b2) => a - b2)[0], corpo = s.slice(i + 7, fim);
+  const re = /\[(\d+)\s*-\s*(\d+)\s*s\]/g, marcas = []; let m;
+  while ((m = re.exec(corpo))) marcas.push({ a:+m[1], b:+m[2], ini:m.index, fim:m.index + m[0].length });
+  const blocos = marcas.map((k, j) => {
+    const fala = corpo.slice(k.fim, j + 1 < marcas.length ? marcas[j + 1].ini : undefined).replace(/\s+/g, ' ').trim()
+      .replace(/^(Abertura|Idade|Foto|Por dentro|Desejo e pergunta)\s*:\s*/i, '');
+    const [titulo, id] = TIT_CL[k.a] || ['Bloco ' + (j + 1), 'cl-' + (j + 1)];
+    return { id, titulo, tempo:`${k.a}-${k.b} s`, fala, aponte:[...fala.matchAll(/\[(?:APONTE|CIRCULAR):\s*([^\]]+)\]/gi)].map(x => x[1].trim()) };
+  }).filter(x => x.fala);
+  const linhas = (a, b2) => a < 0 ? [] : s.slice(a, b2 > a ? b2 : undefined).split('\n').slice(1).map(l => l.replace(/^\s*[-•]\s*/, '').trim()).filter(Boolean);
+  const aspas = l => { const q = l.match(/["“]([^"”]+)["”]/g); return q && q.length === 1 ? q[0].slice(1, -1) : l.replace(/^["“]|["”]$/g, ''); };
+  return { blocos, porEscrito:linhas(e, f).map(aspas), avisos:linhas(f, -1).filter(l => !/^nenhum\.?$/i.test(l)) };
+}
+/** O estado do Claude para um resultado (a Caixa mostra no passo 2 e o gravador usa). */
+function claude(e){
+  const b = B.find(x => x.e === e); if (!b) return null;
+  const partes = b.roteiro ? partesClaude(b.roteiro.roteiro) : null, ok = !!(partes && partes.blocos.length);
+  return { estado:b.estado, erro:b.erro, tem:ok, usar:ok && !b.usarEstoque, usarEstoque:!!b.usarEstoque, partes, palavras:b.roteiro?.palavras ?? null,
+    conferir:b.roteiro?.avisos || [], modelo:b.roteiro?.modelo || '', respUsada:b.respUsada ?? null, teto:USO };
+}
+function usarEstoque(e, sim){ const i = B.findIndex(x => x.e === e); if (i < 0) return; B[i].usarEstoque = !!sim; redesenha(i); }
+function refazerComResposta(e){ const i = B.findIndex(x => x.e === e); if (i >= 0) gerar(i, { novo:true }); }
 function passosReact(e){
   const b = B.find(x => x.e === e);
+  const cl = b && b.teste === 'pele-idade' ? claude(e) : null;
+  if (cl && cl.usar) return cl.partes.blocos.map(x => ({ id:x.id, bloco:x.titulo, foto:'frente', tempo:x.tempo, tela:x.aponte.length ? 'Aponte: ' + x.aponte.join('; ') : 'Foto de frente inteira',
+    fala:x.fala, aponte:x.aponte, regiao:null, nota:'', claude:true }));
   if (!b || !b.est || !b.est.blocos.length) return [{ bloco:'Foto', foto:'frente', tempo:'', tela:'Foto de frente inteira', fala:'', nota:'O roteiro do estoque não carregou: use o cartão.' }];
   return b.est.blocos.map(bl => ({ id:bl.id, bloco:ROT_BLOCO[bl.id] || bl.id, foto:'frente', tempo:bl.tempo, tela:bl.circular ? 'Circular: ' + bl.circular : 'Foto de frente inteira',
     fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, nota:bl.fixo ? 'Frase fixa: não cortar.' : '' }));
@@ -642,5 +716,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
+return { montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
 })();
