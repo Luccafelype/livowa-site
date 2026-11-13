@@ -786,6 +786,11 @@ const V3_PI = {
   toque7:'{nome}, você ainda quer {desejo}?',
   // 13/11 (CRM, botão "Pedir a foto" de quem bateu no limite da análise): texto do Claude, sem promessa de vídeo nem prazo
   pedirFoto:'{nome}, recebi o seu teste ({lv}). A análise automática da foto não rodou. Pode me mandar aqui uma foto do seu rosto, de frente, com a luz de uma janela?',
+  // 13/11 (CRM v3, lembretes da conversa: véspera e 1 h antes, LN pdf 35-36, à mão). Texto do Claude; o Lucca pode trocar.
+  lembreteVespera:'{nome}, passando para lembrar da nossa conversa {quando}. Se precisar mudar o horário, me avisa aqui.',   // {quando} = "amanhã às 19:00"
+  lembreteHora:'{nome}, daqui a pouco, às {hora}, é a nossa conversa. Até já!',
+  // não compareceu: remarcar na hora (LN pdf 36: nunca "a gente se fala depois")
+  faltou:'{nome}, não consegui falar com você no horário de hoje. Se ainda fizer sentido, escolha outro horário aqui: {link}',
 };
 // Agora não → o próximo teste pelo desejo dela (v3, proposta do Claude). 'entender' não está no mapa da v3: vai ao quiz.
 const NUTRIR_PI = { braco:{ teste:'livowa.com/braco', tema:'sobre a sua idade muscular' }, longevidade:{ teste:'livowa.com/longevidade', tema:'sobre o que pesa nos seus próximos 10 anos' } };

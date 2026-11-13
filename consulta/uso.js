@@ -61,14 +61,14 @@ function manda(){
 setInterval(manda, LOTE_MS);
 
 // ---------- telas ----------
-const OVERLAY = new Set(['gravador', 'revisao', 'conversa', 'revisao-ipad']);
+const OVERLAY = new Set(['gravador', 'revisao', 'conversa', 'revisao-ipad', 'folha']);   // folha (13/11): a data ou o desfecho
 function irPara(nova, extra){
   try {
     if (!nova || nova === tela) return;
     const agora = Date.now(), ms = agora - telaT, de = tela;
     if (OVERLAY.has(nova) && !OVERLAY.has(de)) antesOverlay = de;
     if (de === 'lead' && nova === 'leads' && ms < 3000) poe('answer', 'volta-rapida', { ms });
-    if (de === 'lead' && !['lead', 'gravador', 'revisao', 'conversa', 'revisao-ipad'].includes(nova) && !/^passo-/.test(nova)) lead = null;
+    if (de === 'lead' && !['lead', 'gravador', 'revisao', 'conversa', 'revisao-ipad', 'folha'].includes(nova) && !/^passo-/.test(nova)) lead = null;
     tela = nova; telaT = agora;
     poe('step_view', nova, { ms:de ? ms : 0, de:de || null, ...(extra || {}) });
   } catch (e) { /* ok */ }

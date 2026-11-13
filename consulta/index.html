@@ -156,6 +156,44 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .lc .l-teste{font-size:.8rem;font-weight:600;color:var(--a);background:var(--a2);border-radius:999px;padding:1px 8px}
 .lc .l-t{margin-left:auto;color:var(--m);font-size:.85rem;white-space:nowrap}
 .lc .l-t.tarde{color:var(--r);font-weight:700}
+.lc .l-t.rapido{color:var(--a);font-weight:700}
+.lc .l-t.medio{color:var(--w);font-weight:700}
+.lc .l-t.data{color:var(--fg);font-weight:600}
+/* 13/11 (CRM v3): folha de data e de escolha, datas do lead, linha do tempo, venda no Funil */
+.folha{position:fixed;inset:0;z-index:80;background:rgba(10,20,15,.45);display:flex;align-items:flex-end;justify-content:center}
+.folha[hidden]{display:none}
+.folha-c{position:relative;background:var(--s);color:var(--fg);width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px 16px max(18px,env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+.folha-c h2{margin:0 36px 10px 0;font-size:1.15rem}
+.folha-c h3{margin:14px 0 6px;font-size:.95rem}
+.folha-c .f-x{position:absolute;top:10px;right:10px;width:40px;height:40px;padding:0;background:var(--bg);color:var(--fg);border:1.5px solid var(--l);border-radius:50%;font-size:1rem}
+.f-campos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.f-campos.um{grid-template-columns:1fr}
+.f-campos label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--m);font-weight:600}
+.f-campos input{font:600 1.05rem system-ui;padding:10px;border:1.5px solid var(--l);border-radius:10px;background:var(--s);color:var(--fg);min-height:46px;width:100%;box-sizing:border-box}
+.f-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.f-chips button{background:var(--bg);color:var(--fg);border:1.5px solid var(--l);padding:6px 12px;font-size:.9rem;border-radius:999px}
+.f-bts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.f-bts button{min-height:48px}
+.f-2{background:var(--s)!important;color:var(--a)!important;border:1.5px solid var(--l)!important}
+.f-dica{color:var(--m);font-size:.88rem;margin:8px 0 0}
+.f-erro{color:var(--r);font-weight:600;font-size:.9rem;margin:8px 0 0}
+.f-escolha{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.f-escolha button{min-height:52px}
+.f-escolha button:last-child{grid-column:1/-1;background:var(--s);color:var(--a);border:1.5px solid var(--l)}
+.g-data{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 2px;font-size:.95rem}
+.g-data button{padding:6px 12px;font-size:.88rem;background:var(--s);color:var(--a);border:1.5px solid var(--l)}
+.g-data .rapido{color:var(--a)}.g-data .medio{color:var(--w)}.g-data .tarde{color:var(--r)}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;gap:10px;padding:5px 0;border-top:1px solid var(--l);font-size:.92rem}
+.hist li:first-child{border-top:0}
+.hist time{flex:none;width:7.6em;color:var(--m);font-variant-numeric:tabular-nums}
+.hist li.futuro{color:var(--a);font-weight:600}
+.hist small{color:var(--m)}
+.vd-et{list-style:none;margin:0;padding:0}
+.vd-et li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--l)}
+.vd-et li:first-child{border-top:0}
+.vd-et small{color:var(--m);font-weight:500}
+#fn-venda .rapido{color:var(--a)}#fn-venda .medio{color:var(--w)}#fn-venda .tarde{color:var(--r)}
 .lc .l-apaga{width:9px;height:9px;border-radius:50%;background:#e8a317;display:inline-block;align-self:center}
 .lc .l2{color:var(--m);font-size:.92rem;margin-top:2px}
 .lc .l-bt{display:flex;gap:8px;margin-top:10px}
@@ -374,6 +412,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   </section>
 
   <section id="funil" hidden>
+    <div id="fn-venda"></div>
     <div class="card fn-ctl">
       <div class="fn-funis" id="fn-funis" role="group" aria-label="Funil"></div>
       <div class="seg" id="fn-dias" role="group" aria-label="Período"><button type="button" data-d="7" aria-pressed="true">7 dias</button><button type="button" data-d="30" aria-pressed="false">30 dias</button></div>
@@ -415,11 +454,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   </div>
   <div class="react-nav"><button type="button" id="react-ant">Anterior</button><button type="button" class="sec" id="react-texto" aria-pressed="false">Só a foto</button><button type="button" id="react-prox">Próximo</button></div>
 </div>
+<div id="folha" class="folha" role="dialog" aria-modal="true" aria-labelledby="folha-tit" hidden><div class="folha-c" id="folha-c"></div></div>
 <div id="conv" class="conv" role="dialog" aria-modal="true" aria-labelledby="conv-tit" hidden>
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
-<script src="uso.js?v=20261113a"></script>
-<script src="kits.js?v=20261113a"></script>
+<script src="uso.js?v=20261113b"></script>
+<script src="kits.js?v=20261113b"></script>
 <script src="roteiro.js?v=20261113a"></script>
 <script src="gravar-analise.js?v=20261113a"></script>
 <script>
@@ -441,17 +481,21 @@ const TZ = 'America/Sao_Paulo';
 // 12/11 (cartão p24): as etapas do lead. A edge velha só aceita novo|respondi|consulta|nao_quis: se ela recusar (erro
 // 'status'), a Caixa grava a equivalente velha (VELHA) e guarda a fina neste aparelho (FINO: só código → etapa), para mostrar
 // a certa; com a edge nova no ar, grava a fina direto. Lead antigo: respondi → analisei, consulta → conversa.
-const ETAPAS = [['novo','Novo'],['audio','Áudio enviado'],['analisei','Análise enviada'],['respondeu','Respondeu'],['conversa','Conversa marcada'],['comprou','Comprou'],['nutrir','Nutrir'],['nao_quis','Não quis'],['sumiu','Sumiu']];
+const ETAPAS = [['novo','Novo'],['audio','Áudio enviado'],['analisei','Análise enviada'],['respondeu','Respondeu'],['conversa','Conversa marcada'],['faltou','Faltou'],['comprou','Comprou'],['nutrir','Nutrir'],['nao_quis','Não quis'],['sumiu','Sumiu']];
+// 13/11 (CRM v3): faltou = não compareceu. A edge de hoje recusa: grava conversa (QUASE) e guarda a fina neste aparelho
+const QUASE = { faltou:'conversa' };
 const NOME_ET = Object.fromEntries(ETAPAS);
-const VELHA = { novo:'novo', audio:'respondi', analisei:'respondi', respondeu:'respondi', nutrir:'respondi', conversa:'consulta', comprou:'consulta', sumiu:'nao_quis', nao_quis:'nao_quis' };
+const VELHA = { novo:'novo', audio:'respondi', analisei:'respondi', respondeu:'respondi', nutrir:'respondi', conversa:'consulta', faltou:'consulta', comprou:'consulta', sumiu:'nao_quis', nao_quis:'nao_quis' };
 const DE_VELHA = { respondi:'analisei', consulta:'conversa' };
 const FILA = ['novo', 'audio', 'respondeu'];
 const FINO_K = 'livowa_caixa_etapa';
 let FINO = {}, SERV_VELHO = 0;   // SERV_VELHO = quando a edge recusou etapa nova (tenta a nova de novo depois de 10 min)
 try { FINO = JSON.parse(localStorage.getItem(FINO_K) || '{}') || {}; } catch { FINO = {}; }
 const gravaFino = () => { try { localStorage.setItem(FINO_K, JSON.stringify(FINO)); } catch { /* sem armazenamento: vale só nesta aba */ } };
-const etapaDe = l => { const s = l?.status || 'novo'; if (NOME_ET[s] && s !== 'novo' && s !== 'nao_quis') return s;
-  const f = FINO[l?.codigo]; if (f && VELHA[f] === s) return f; return DE_VELHA[s] || s || 'novo'; };
+const etapaDe = l => { const s = l?.status || 'novo', f = FINO[l?.codigo];
+  if (f && f !== s && QUASE[f] === s) return f;   // 13/11: faltou guardado aqui, o banco com conversa
+  if (NOME_ET[s] && s !== 'novo' && s !== 'nao_quis') return s;
+  if (f && VELHA[f] === s) return f; return DE_VELHA[s] || s || 'novo'; };
 // 12/11 (teste ao vivo, item 4): quem bateu no limite da análise grava um 'complete' sem análise (etapa 'limite',
 // resumo 'sem_analise', props.sem_analise): sem foto, faixa, caso nem sinais
 const semAnaliseP = p => p.funil === 'pele-idade' && (p.etapa === 'limite' || p.resumo === 'sem_analise' || p.dados?.sem_analise === true);
@@ -481,6 +525,9 @@ function apagaFoto(l){
 const NOME_PI = 'Pele: idade e vitalidade';   // livowa.com/pele (funnelId pele-idade, 04/11)
 const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'pele-idade' ? NOME_PI : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
 let LEADS = [], filtro = 'fila', CARREGOU = false;
+// 13/11 (CRM v3): o banco devolve conversa_em, proximo_toque_em e primeira_resposta_em (sql-crm-v3.sql)? Sem isso, a
+// página esconde as datas e funciona como antes
+let DATAS_OK = false;
 // 13/11 (decisão d-20261113-leads-ate-1211-testes): TODO código que chegou até 12/11/2026 (horário de Brasília) foi teste
 // do próprio Lucca. Mesma data da fila ("chegou há" = l.chegou). Sai da fila, dos números e do "Todos"; fica em "Mostrar
 // testes" com a etiqueta "teste seu". O treino segue no filtro Treino (ehTreino vem antes).
@@ -518,7 +565,7 @@ function resumo(l){
 function desenhaCaixa(){
   if (!K) return semChave();
   const reais = LEADS.filter(l => !ehTeste(l)), n = e => reais.filter(l => etapaDe(l) === e).length;
-  const naFila = reais.filter(l => FILA.includes(etapaDe(l)));
+  const naFila = reais.filter(l => FILA.includes(etapaDe(l)) || naFilaV3(l));
   $('n-esperam').textContent = naFila.length; $('n-conversa').textContent = n('conversa'); $('n-nutrir').textContent = n('nutrir');
   const treino = LEADS.filter(ehTreino);
   // 13/11 (pedido do Lucca: 9 botões de filtro era demais): Responder agora · Treino (se houver) · Etapa ▾ (lista com as
@@ -529,7 +576,8 @@ function desenhaCaixa(){
     + `<label class="f-et${naEtapa ? ' on' : ''}"><span class="sr">Etapa</span><select id="f-etapa" aria-label="Etapa"><option value="">Etapa ▾</option>${ets.map(([e, t, q]) => `<option value="${e}"${filtro === e ? ' selected' : ''}>${esc(t)} (${q})</option>`).join('')}</select></label>`
     + bt('todos', 'Todos', reais.length);
   // Treino: como a fila (mais antigo primeiro, próxima ação, passo a passo), mas com todas as etapas, para ele ir até o fim
-  const xs = filtro === 'fila' ? [...naFila].sort((a, b) => new Date(a.chegou) - new Date(b.chegou))
+  const ordemF = l => { const pd = pendencia(l, etapaDe(l)); return pd ? pd.ordem : 1; };   // 1 = a fila de antes (novo, áudio, respondeu)
+  const xs = filtro === 'fila' ? [...naFila].sort((a, b) => ordemF(a) - ordemF(b) || new Date(a.chegou) - new Date(b.chegou))
     : filtro === 'treino' ? [...treino].sort((a, b) => new Date(a.chegou) - new Date(b.chegou))
     : filtro === 'testes' ? LEADS : filtro === 'todos' ? reais : reais.filter(l => etapaDe(l) === filtro);
   let h = xs.length ? xs.map(l => cartaoLead(l, filtro === 'fila' || filtro === 'treino')).join('')
@@ -559,8 +607,58 @@ function incomodoCurto(l){
   if (r.espelho === 'outro') return String(r.espelho_texto || '').split(/\s+/).filter(Boolean).slice(0, 5).join(' ');
   return INC_PI[r.espelho]?.((r.sexo || p.dados?.sexo) === 'm') || '';
 }
+// ---------- 13/11 CRM v3: datas da conversa e do próximo toque, lembretes, BAMFAM (crm-principios.md, itens 2-4 e 6) ----------
+// Horário de Brasília fixo (-03:00, sem horário de verão desde 2019).
+const diaBR = t => new Date(t).toLocaleDateString('en-CA', { timeZone:TZ });   // AAAA-MM-DD
+const hojeBR = () => diaBR(Date.now());
+const somaDias = (dia, n) => { const d = new Date(dia + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const horaBR = t => new Date(t).toLocaleTimeString('pt-BR', { timeZone:TZ, hour:'2-digit', minute:'2-digit' });
+const diaCurto = dia => dia.slice(8, 10) + '/' + dia.slice(5, 7);
+const semanaDe = dia => ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'][new Date(dia + 'T12:00:00Z').getUTCDay()];
+const isoBR = (dia, hora) => new Date(`${dia}T${hora}:00-03:00`).toISOString();
+const nomeDia = dia => { const h = hojeBR(); return dia === h ? 'hoje' : dia === somaDias(h, 1) ? 'amanhã' : dia === somaDias(h, -1) ? 'ontem' : `${semanaDe(dia)} ${diaCurto(dia)}`; };
+const quandoConversa = t => nomeDia(diaBR(t)) + ' às ' + horaBR(t);
+// lembrete já mandado (véspera / 1 h antes), por código e pelo horário: remarcou, vale de novo. Só neste aparelho.
+const LEMB_K = 'livowa_crm_lembrou';
+let LEMB = {}; try { LEMB = JSON.parse(localStorage.getItem(LEMB_K) || '{}') || {}; } catch { LEMB = {}; }
+const lembrou = (c, q, conv) => LEMB[c]?.[q] === conv;
+const marcaLembrou = (c, q, conv) => { LEMB[c] = { ...(LEMB[c] || {}), [q]:conv }; try { localStorage.setItem(LEMB_K, JSON.stringify(LEMB)); } catch { /* só nesta aba */ } };
+// etapa aberta → a data que ela precisa ter (BAMFAM: nenhuma etapa aberta sem data)
+const ABERTA = { conversa:'conversa_em', nutrir:'proximo_toque_em', faltou:'proximo_toque_em' };
+// o que a data pede agora: {rot, acao, ordem} ou null. ordem: 0 = antes de tudo na fila
+function pendencia(l, et){
+  if (!DATAS_OK || !ABERTA[et]) return null;
+  const agora = Date.now();
+  if (et === 'conversa'){
+    const conv = l.conversa_em; if (!conv) return { rot:'Marcar a próxima data', acao:'data', ordem:3 };
+    const t = new Date(conv).getTime();
+    if (agora >= t) return { rot:'Fechou? / Faltou?', acao:'fechou', ordem:2 };
+    if (agora >= t - 75 * 60e3) return lembrou(l.codigo, 'h', conv) ? null : { rot:'Lembrar: 1 h antes', acao:'hora', ordem:0 };
+    // véspera: a partir das 18h do dia anterior; quem marcou já dentro dessa janela acabou de confirmar
+    const ini = Date.parse(`${somaDias(diaBR(t), -1)}T18:00:00-03:00`);
+    if (agora >= ini && !lembrou(l.codigo, 'v', conv) && !(l.atualizado_em && new Date(l.atualizado_em).getTime() >= ini)) return { rot:'Lembrar: véspera', acao:'vespera', ordem:2 };
+    return null;
+  }
+  const dia = l.proximo_toque_em;
+  if (!dia) return { rot:'Marcar a próxima data', acao:'data', ordem:3 };
+  if (dia <= hojeBR()) return et === 'nutrir' ? { rot:'Mandar o próximo teste', acao:'nutrir', ordem:3 } : { rot:'Remarcar a conversa', acao:'faltou', ordem:3 };
+  return null;
+}
+// a data no canto do cartão (no lugar do "há X") e a cor da velocidade da 1ª resposta (LN pdf 20: 5 min)
+function tempoCartao(l, et, naFila){
+  if (DATAS_OK && et === 'conversa' && l.conversa_em) return ['conversa ' + quandoConversa(l.conversa_em), 'data'];
+  if (DATAS_OK && ABERTA[et] && l.proximo_toque_em) return ['toque ' + nomeDia(l.proximo_toque_em), 'data'];
+  const m = (Date.now() - new Date(l.chegou).getTime()) / 60e3;
+  if (et === 'novo') return [espera(l.chegou), m <= 5 ? 'rapido' : m <= 60 ? 'medio' : 'tarde'];
+  return [espera(l.chegou), naFila && m > 24 * 60 ? 'tarde' : ''];
+}
+const velocidade = min => min <= 5 ? 'rapido' : min <= 60 ? 'medio' : 'tarde';
+const duracao = min => min < 60 ? `${Math.max(0, Math.round(min))} min` : min < 48 * 60 ? `${Math.round(min / 60)} h` : `${Math.round(min / 1440)} dias`;
+const naFilaV3 = l => !!pendencia(l, etapaDe(l));
+
 // a próxima ação, em 1 toque: [rótulo, ação]
 function acaoDe(l, et){
+  const pd = pendencia(l, et); if (pd) return [pd.rot, pd.acao];
   const pi = ehPI(l);
   if (pi && soSemAnalise(l) && (et === 'novo' || et === 'audio')) return ['Pedir a foto', 'foto'];
   if (pi && et === 'novo') return ['Mandar áudio', 'audio'];
@@ -574,13 +672,13 @@ function acaoDe(l, et){
 function cartaoLead(l, modo){
   const naFila = modo === true || modo === 'fila', toque = modo === 'toque', c = l.codigo, et = etapaDe(l), nm = nomeLead(l);
   const quando = new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-  const tarde = naFila && Date.now() - new Date(l.chegou).getTime() > 24 * 3600e3;
+  const [tTxt, tCls] = tempoCartao(l, et, naFila);
   const testes = [...new Set((l.partes || []).map(TESTE_1).filter(Boolean))], [rot, acao] = acaoDe(l, et), inc = incomodoCurto(l);
   const ap = temPele(l) ? apagaFoto(l) : '', apPerto = /apaga em [12] dias?$/.test(ap);
   const tag = ehTreino(l) ? '<span class="tag t">treino</span>' : antesDoCorte(l) ? '<span class="tag t">teste seu</span>' : ehTeste(l) ? '<span class="tag t">teste</span>' : '';
   return `<article class="lead lc${toque ? ' l-toque' : ''}" data-c="${esc(c)}" data-et="${esc(et)}">
       <div class="l1"><b class="l-nome">${esc(nm || c)}</b>${nm ? `<small class="l-cod">${esc(c)}</small>` : ''}${testes.length ? `<span class="l-teste">${esc(testes.join(' + '))}</span>` : ''}${tag}${apPerto ? `<i class="l-apaga" role="img" aria-label="${esc(ap)}" title="${esc(ap)}"></i>` : ''}
-        <span class="l-t${tarde ? ' tarde' : ''}" title="${esc(quando)}">${toque ? 'análise ' + esc(espera(l.atualizado_em)) : esc(espera(l.chegou))}</span></div>
+        <span class="l-t${!toque && tCls ? ' ' + tCls : ''}" title="${esc(quando)}">${toque ? 'análise ' + esc(espera(l.atualizado_em)) : esc(tTxt)}</span></div>
       ${inc ? `<div class="l2">${esc(inc)}</div>` : ''}
       <div class="l-bt"><button type="button" class="l-acao" data-acao="${acao}" data-c="${esc(c)}">${esc(rot)}</button><button type="button" class="l-mais" data-ver="${esc(c)}" aria-label="Abrir o lead inteiro">⋯</button></div>
     </article>`;
@@ -617,11 +715,11 @@ async function carregar(){
     if (r.status === 404){ $('lista').innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
     const j = await r.json();
     if (!j.ok) throw 0;
-    LEADS = j.leads || []; CARREGOU = true; desenhaCaixa();
+    LEADS = j.leads || []; CARREGOU = true; DATAS_OK = LEADS.some(l => 'conversa_em' in l); desenhaCaixa();
   } catch { window.USO?.sinal('erro', { onde:'lista' }); $('lista').innerHTML = '<p class="aviso">Não consegui carregar os leads agora. Puxe para atualizar.</p>'; }
 }
 // grava a etapa (e a nota) de um código; devolve true quando o servidor aceitou
-async function marcar(c, etapa, nota){
+async function marcar(c, etapa, nota, datas){
   const l = LEADS.find(x => x.codigo === c) || { codigo:c, status:'novo', nota:'' };
   const antes = { status:l.status, nota:l.nota, fino:FINO[c] };
   const alvo = etapa || etapaDe(l);
@@ -630,16 +728,24 @@ async function marcar(c, etapa, nota){
   const oks = () => document.querySelectorAll(`[id="ok-${c}"]`), diz = t => oks().forEach(e => { e.textContent = t; });
   diz('Salvando…');
   try {
-    const manda = async st => { const r = await post({ acao:'status', c, status:st, nota:l.nota || '' }); return r.json().catch(() => ({ ok:false })); };
+    const manda = async st => { const r = await post({ acao:'status', c, status:st, nota:l.nota || '', ...(datas || {}) }); return r.json().catch(() => ({ ok:false })); };
     let st = Date.now() - SERV_VELHO < 600e3 ? VELHA[alvo] : alvo, j = await manda(st);
+    if (!j.ok && j.erro === 'status' && QUASE[alvo] && st === alvo){ st = QUASE[alvo]; j = await manda(st); }   // 13/11: edge sem a etapa faltou
     if (!j.ok && j.erro === 'status' && st !== VELHA[alvo]){ SERV_VELHO = Date.now(); st = VELHA[alvo]; j = await manda(st); }   // edge velha: a equivalente
     if (!j.ok) throw 0;
     l.status = j.gestao?.status || st;
+    let semData = false;
+    if (j.gestao && 'conversa_em' in j.gestao){   // 13/11: banco com as datas
+      for (const k of ['conversa_em', 'proximo_toque_em', 'primeira_resposta_em']) l[k] = j.gestao[k] ?? null;
+      semData = !!datas && Object.entries(datas).some(([k, v]) => v && !j.gestao[k]);   // banco novo, edge velha: a data não chegou
+      DATAS_OK = !semData;
+    }
     if (l.status === alvo || VELHA[alvo] === alvo) delete FINO[c]; else FINO[c] = alvo;
     gravaFino();
     l.atualizado_em = j.gestao?.atualizado_em || new Date().toISOString();
     if (!LEADS.includes(l)) LEADS.unshift(l);
-    diz('Salvo'); if (etapa) window.USO?.acao('etapa:' + etapa); else if (nota !== undefined) window.USO?.acao('nota-salva');
+    diz(semData ? 'Salvo, mas sem a data (falta publicar a edge nova)' : 'Salvo'); if (etapa) window.USO?.acao('etapa:' + etapa); else if (nota !== undefined) window.USO?.acao('nota-salva');
+    if (codigoAtual === c) carregaHistorico(c);
     if (etapa) setTimeout(() => { if (!$('caixa').hidden) desenhaCaixa(); }, filtro === 'fila' ? 700 : 0);   // deixa ver o toque antes de sair da lista
     if (codigoAtual === c && etapa){ desenhaGestao(c); redesenhaKitsPI(); }
     pintaEtapa(c, etapaDe(l));
@@ -661,13 +767,13 @@ async function copiaTexto(txt, btn){
   try { if (!navigator.clipboard?.writeText) throw 0; await navigator.clipboard.writeText(txt); feito('Copiado'); window.USO?.acao('copiou'); return true; }
   catch { feito('Não copiou'); window.USO?.sinal('erro', { onde:'copiar' }); return false; }
 }
-function copiaDaLista(btn, qual = btn.dataset.copia){
+function copiaDaLista(btn, qual = btn.dataset.copia, extra = {}){
   const l = LEADS.find(x => x.codigo === btn.dataset.c), K = window.KITS?.['pele-idade']; if (!l || !K) return Promise.resolve(false);
   const p = (l.partes || []).find(x => x.funil === 'pele-idade'), r = p?.dados?.respostas || {};
   let desejo = null; try { desejo = r.futuro ? valPI('futuro', r.futuro, p.dados) : null; } catch { desejo = null; }
   const tpl = qual === 'audio' ? K.v3.audioTexto : K.v3[qual];
   // sem nome: tira o "{nome}, " do começo; se ainda faltar dado ({desejo}…), não copia (null = abrir o lead)
-  const txt = KITS.preencher(tpl, { nome:nomeLead(l) || null, lv:l.codigo, desejo }).replace(/^\{nome\},\s*(.)/, (m, ch) => ch.toUpperCase());
+  const txt = KITS.preencher(tpl, { nome:nomeLead(l) || null, lv:l.codigo, desejo, ...extra }).replace(/^\{nome\},\s*(.)/, (m, ch) => ch.toUpperCase());
   if (/\{[a-z0-9_]+\}/.test(txt)) return Promise.resolve(null);
   return copiaTexto(txt, btn);
 }
@@ -680,6 +786,22 @@ async function acaoLista(btn){
     return;
   }
   if (a === 'foto' || a === 'toque1' || a === 'toque7'){ if (await copiaDaLista(btn, a === 'foto' ? 'pedirFoto' : a) === null) abreLead(c, a === 'foto' ? 1 : 3); return; }
+  // 13/11 (CRM v3)
+  if (a === 'data') return marcarEtapa(c, etapaDe(l));
+  if (a === 'fechou') return fechouFaltou(c);
+  if (a === 'vespera' || a === 'hora'){
+    const conv = l.conversa_em, ok = await copiaDaLista(btn, a === 'hora' ? 'lembreteHora' : 'lembreteVespera', { quando:quandoConversa(conv), hora:horaBR(conv) });
+    if (ok === null) return abreLead(c, 1);   // sem nome: o nome se digita no passo 1
+    if (ok){ marcaLembrou(c, a === 'hora' ? 'h' : 'v', conv); setTimeout(() => { if (!$('caixa').hidden) desenhaCaixa(); }, 700); }
+    return;
+  }
+  if (a === 'nutrir' || a === 'faltou'){
+    const p = (l.partes || []).find(x => x.funil === 'pele-idade'), nt = window.KITS?.['pele-idade']?.nutrir?.(p?.dados) || {};
+    const ok = await copiaDaLista(btn, a, { ...nt, link:`${AGENDA}?notes=${encodeURIComponent(c)}` });
+    if (ok === null) return abreLead(c, 1);
+    if (ok) setTimeout(() => marcarEtapa(c, etapaDe(l)), 500);   // mandou: a próxima data (BAMFAM)
+    return;
+  }
   if (a === 'gravar') return abreLead(c, 2, true);
   if (a === 'convite' || a === 'toque3') return abreLead(c, 3);
   if (a === 'conversa') return abreLead(c, 4);
@@ -707,14 +829,16 @@ async function gravarQuandoPronto(c){
 document.addEventListener('click', ev => {
   const a = ev.target.closest('.ac button'); if (a){ marcarAceite(a.dataset.c, a.dataset.a); return; }
   const s = ev.target.closest('.st button');
-  if (s){ s.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === s)); marcar(s.dataset.c, s.dataset.s); return; }
+  if (s){ s.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === s)); const c = s.dataset.c;
+    marcarEtapa(c, s.dataset.s).then(ok => { if (ok === false) pintaEtapa(c, etapaDe(LEADS.find(x => x.codigo === c) || { codigo:c })); }); return; }
   const cp = ev.target.closest('.l-copiar'); if (cp){ copiaDaLista(cp); return; }
   const ac = ev.target.closest('.l-acao'); if (ac){ acaoLista(ac); return; }
+  const gm = ev.target.closest('.g-mudar'); if (gm){ marcarEtapa(gm.dataset.c, gm.dataset.et); return; }
   const v = ev.target.closest('[data-ver]'); if (v){ abrirCodigo(v.dataset.ver, true); return; }
   const f = ev.target.closest('#filtro button, .f-testes');
   if (f){ filtro = f.dataset.f; document.querySelectorAll('#filtro button').forEach(b => b.setAttribute('aria-pressed', b === f)); CARREGOU ? desenhaCaixa() : carregar(); }
 });
-document.addEventListener('change', ev => { const s = ev.target.closest('.et-sel'); if (s) marcar(s.dataset.c, s.value);
+document.addEventListener('change', ev => { const s = ev.target.closest('.et-sel'); if (s) marcarEtapa(s.dataset.c, s.value);
   if (ev.target.id === 'f-etapa' && ev.target.value){ filtro = ev.target.value; CARREGOU ? desenhaCaixa() : carregar(); } });
 const timers = {};
 document.addEventListener('input', ev => {
@@ -833,7 +957,7 @@ async function carregaFunil(){
   if (!FN.dados) box.innerHTML = '<p class="aviso">Carregando…</p>'; else box.style.opacity = .55;
   try { localStorage.setItem('livowa_funil', JSON.stringify({ funil:FN.funil, dias:FN.dias })); } catch {}
   try {
-    const r = await post({ acao:'funil', dias:FN.dias, funil:FN.funil || 'teste-pernas', origem:FN.origem, variante:FN.variante });
+    const r = await post({ acao:'funil', dias:FN.dias, funil:FN.funil || 'teste-pernas', origem:FN.origem, variante:FN.variante, desde:DESDE_FUNIL });
     if (r.status === 404){ box.innerHTML = '<p class="aviso">Link sem acesso. Use o link do arquivo privado.</p>'; return; }
     const j = await r.json(); if (!j.ok) throw new Error(j.erro || r.status);
     if (n !== FN.pedido) return;   // chegou uma resposta mais nova
@@ -846,8 +970,31 @@ function opcoesSelect(sel, itens, atual){
   sel.value = itens.some(([v]) => v === atual) ? atual : '';
   return sel.value;
 }
+// 13/11 (decisão d-20261113-leads-ate-1211-testes): o Funil conta só a partir de 13/11 00:00 de Brasília (a edge nova
+// repassa p_desde às RPCs; a velha ignora e o aviso do corte não aparece)
+const DESDE_FUNIL = '2026-11-13T03:00:00.000Z';
+// a venda, etapa por etapa (RPC leads_venda: quem chegou depois do corte, com as etapas na ordem e a 1ª resposta)
+function cartaoVenda(vs){
+  if (!Array.isArray(vs)) return '';
+  const real = vs.filter(v => { const l = LEADS.find(x => x.codigo === v.codigo); return !v.teste && !(l && (ehTreino(l) || ehTeste(l))); });
+  if (!real.length) return `<div class="card"><h2 style="margin-bottom:6px">A venda, desde 13/11</h2><p class="aviso" style="margin:0">Nenhum lead real desde 13/11 ainda. As taxas aparecem aqui sozinhas.</p></div>`;
+  const tem = (v, es) => (v.etapas || []).some(e => es.includes(e)) || es.includes(v.status);
+  const ELA = ['respondeu', 'conversa', 'faltou', 'comprou', 'nutrir', 'nao_quis'];
+  const veio = v => { const e = v.etapas || []; return e.some((x, i) => x === 'conversa' && ['comprou', 'nutrir', 'nao_quis'].includes(e[i + 1])) || tem(v, ['comprou']); };
+  const n0 = real.length, n1 = real.filter(v => v.primeira_resposta_em || tem(v, ['audio', 'analisei', ...ELA, 'sumiu'])).length,
+    n2 = real.filter(v => tem(v, ELA)).length, n3 = real.filter(v => tem(v, ['conversa', 'faltou', 'comprou'])).length,
+    n4 = real.filter(veio).length, n5 = real.filter(v => tem(v, ['comprou'])).length;
+  const tx = (a, b) => b ? pct(Math.round(1000 * a / b) / 10) : '—';
+  const ms = real.filter(v => v.primeira_resposta_em).map(v => (new Date(v.primeira_resposta_em) - new Date(v.chegou)) / 60e3).filter(m => m >= 0).sort((a, b) => a - b);
+  const med = ms.length ? (ms.length % 2 ? ms[(ms.length - 1) / 2] : (ms[ms.length / 2 - 1] + ms[ms.length / 2]) / 2) : null;
+  const linhas = [['Chegaram', n0, ''], ['Você respondeu', n1, tx(n1, n0) + ' de quem chegou'], ['Ela respondeu', n2, tx(n2, n1) + ' de quem recebeu'],
+    ['Marcaram a conversa', n3, tx(n3, n2) + ' de quem respondeu'], ['Compareceram', n4, tx(n4, n3) + ' de quem marcou'], ['Compraram', n5, tx(n5, n4) + ' de quem compareceu']];
+  return `<div class="card"><h2 style="margin-bottom:6px">A venda, desde 13/11</h2><ol class="vd-et">${linhas.map(([t, n, x]) => `<li><span>${t}${x ? ` <small>· ${x}</small>` : ''}</span><b>${n}</b></li>`).join('')}</ol>
+    <p class="fn-nota">1ª resposta: ${med == null ? 'ainda sem medida' : `mediana de <b class="${velocidade(med)}">${esc(duracao(med))}</b> (${ms.length} ${ms.length === 1 ? 'lead' : 'leads'}; o livro pede até 5 min)`}. Sem testes nem treino.</p></div>`;
+}
 function desenhaFunil(){
   const { opcoes, etapas } = FN.dados, f = FN.funil;
+  $('fn-venda').innerHTML = cartaoVenda(FN.dados.venda) + (FN.dados.desde ? '<p class="fn-nota" style="margin:0 0 10px">O funil conta só a partir de 13/11 (antes disso eram testes seus).</p>' : '');
   const qtd = Object.fromEntries((opcoes.funis || []).map(x => [x.id, x.pessoas]));
   const lista = [...FUNIS, ...(opcoes.funis || []).filter(x => x.id !== 'crm-uso' && !FUNIS.some(([id]) => id === x.id)).map(x => [x.id, x.id])];   // 13/11: crm-uso = registro de uso, não é funil
   $('fn-funis').innerHTML = lista.map(([id, nome]) => `<button type="button" data-funil="${esc(id)}" aria-pressed="${id === f}">${esc(nome)} <small>${qtd[id] || 0}</small></button>`).join('');
@@ -931,9 +1078,125 @@ function desenhaGestao(c){
       <div class="resumo">${esc(resumo(l))}</div>${ap ? `<div class="apaga">${esc(ap)}</div>` : ''}
       <small class="aviso">Chegou ${esc(new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }))}${l.atualizado_em ? ' · marcado ' + esc(new Date(l.atualizado_em).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })) : ''}</small>`, 'sec-orig');
   }
-  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2>${secao('Etapa e nota', (NOME_ET[et] || et) + (l?.nota ? ' · com nota' : ''), `${botoes(lx)}
+  const hist = DATAS_OK && l ? secao('Linha do tempo', HIST[c] ? `${HIST[c].length} marcações` : '', `<div id="hist-${esc(c)}">${HIST[c] ? linhaDoTempo(l, HIST[c]) : '<p class="aviso">Carregando…</p>'}</div>`, 'sec-hist') : '';
+  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2>${secao('Etapa e nota', (NOME_ET[et] || et) + (DATAS_OK && l && ABERTA[et] ? ' · ' + resumoData(l, et) : '') + (l?.nota ? ' · com nota' : ''), `${botoes(lx)}${DATAS_OK && l ? linhaDatas(l, et) : ''}
     <textarea class="nota" data-c="${esc(c)}" maxlength="500" rows="1" placeholder="Nota">${esc(l?.nota || '')}</textarea>
-    <div class="acoes"><small id="ok-${esc(c)}"></small></div>`, 'sec-et')}${ac}${orig}</div>`;
+    <div class="acoes"><small id="ok-${esc(c)}"></small></div>`, 'sec-et')}${hist}${ac}${orig}</div>`;
+}
+// 13/11 (CRM v3): as datas do lead, dentro de "Etapa e nota"
+const resumoData = (l, et) => et === 'conversa' ? (l.conversa_em ? quandoConversa(l.conversa_em) : 'sem data') : l.proximo_toque_em ? 'toque ' + nomeDia(l.proximo_toque_em) : 'sem data';
+function linhaDatas(l, et){
+  let h = '';
+  if (ABERTA[et]) h += `<div class="g-data"><span>${et === 'conversa' ? 'Conversa' : 'Próximo toque'}: <b>${esc(resumoData(l, et).replace(/^toque /, ''))}</b></span><button type="button" class="g-mudar" data-et="${esc(et)}" data-c="${esc(l.codigo)}">${(et === 'conversa' ? l.conversa_em : l.proximo_toque_em) ? 'Mudar' : 'Marcar a data'}</button></div>`;
+  if (l.primeira_resposta_em){ const m = (new Date(l.primeira_resposta_em) - new Date(l.chegou)) / 60e3;
+    h += `<div class="g-data"><span>1ª resposta: <b class="${velocidade(m)}">${esc(duracao(m))}</b> depois de chegar</span></div>`; }
+  return h;
+}
+// linha do tempo (RPC leads_historico_de pela edge, ação 'historico'); guardada por código nesta aba
+const HIST = {};
+async function carregaHistorico(c){
+  if (!DATAS_OK) return;
+  try {
+    const r = await post({ acao:'historico', c }), j = await r.json();
+    if (!j.ok || !Array.isArray(j.historico)) throw 0;   // edge sem a ação: a seção some
+    const l = LEADS.find(x => x.codigo === c);
+    HIST[c] = j.historico; if (l && j.chegou && !l.chegou) l.chegou = j.chegou;
+    const box = document.getElementById('hist-' + c); if (!box || codigoAtual !== c) return;
+    box.innerHTML = linhaDoTempo(l || { codigo:c, chegou:j.chegou }, j.historico);
+    const s = box.closest('details')?.querySelector('summary span'); if (s) s.textContent = `${j.historico.length} marcações`;
+  } catch {
+    const box = document.getElementById('hist-' + c); if (box && !HIST[c]) box.closest('details')?.remove();
+  }
+}
+function linhaDoTempo(l, hs){
+  const quando = t => `${diaCurto(diaBR(t))} ${horaBR(t)}`, ev = [];
+  if (l.chegou) ev.push([l.chegou, 'Chegou', '']);
+  let primeira = true;
+  for (const h of hs){
+    if (h.para === 'novo' && !h.de) continue;   // a criação da linha: o "Chegou" já diz
+    let extra = '';
+    if (primeira && h.para !== 'novo' && l.chegou){ primeira = false; extra = ` <small>(${esc(duracao((new Date(h.em) - new Date(l.chegou)) / 60e3))} depois)</small>`; }
+    ev.push([h.em, esc(NOME_ET[h.para] || h.para), extra]);
+  }
+  const et = etapaDe(l);
+  const fut = et === 'conversa' && l.conversa_em ? `<li class="futuro"><time>${esc(quando(l.conversa_em))}</time><span>Conversa</span></li>`
+    : ABERTA[et] && l.proximo_toque_em ? `<li class="futuro"><time>${esc(diaCurto(l.proximo_toque_em))}</time><span>Próximo toque</span></li>` : '';
+  return `<ol class="hist">${ev.map(([t, txt, x]) => `<li><time>${esc(quando(t))}</time><span>${txt}${x}</span></li>`).join('')}${fut}</ol>`;
+}
+
+// ---------- 13/11 (CRM v3): a folha que pergunta a data ou o desfecho, por cima da página ----------
+function folha(html, monta){
+  return new Promise(res => {
+    const f = $('folha'), cx = document.createElement('div');   // um nó novo por pergunta: os ouvintes da anterior vão embora com ela
+    cx.innerHTML = html + '<p class="f-erro" role="alert"></p><button type="button" class="f-x" aria-label="Fechar">✕</button>';
+    $('folha-c').replaceChildren(cx);
+    f.hidden = false; window.USO?.tela('folha');
+    let feito = false;
+    const fim = v => { if (feito) return; feito = true; f.hidden = true; cx.remove(); f.onclick = null; window.USO?.volta(); res(v); };
+    f.onclick = ev => { if (ev.target === f || ev.target.closest('.f-x')) fim(null); };
+    monta(cx, fim, t => { cx.querySelector('.f-erro').textContent = t; });
+  });
+}
+const PEDE_DATA = { conversa:1, nutrir:1, faltou:1 };
+const chips = (alvo, ns) => `<div class="f-chips">${ns.map(n => `<button type="button" class="f-chip" data-alvo="${alvo}" data-n="${n}">+${n} ${n === 1 ? 'dia' : 'dias'}</button>`).join('')}</div>`;
+function pedeData(c, etapa){
+  const l = LEADS.find(x => x.codigo === c) || { codigo:c }, nm = nomeLead(l) || c, h = hojeBR();
+  const campoConv = (d, hr) => `<div class="f-campos"><label>Dia<input type="date" id="f-dia" min="${h}" value="${d}"></label><label>Hora<input type="time" id="f-hora" step="900" value="${hr}"></label></div>`;
+  const campoToque = (id, d) => `<div class="f-campos um"><label>Dia<input type="date" id="${id}" min="${h}" value="${d}"></label></div>`;
+  const pegaConv = (cx, erro) => { const d = cx.querySelector('#f-dia').value, hr = cx.querySelector('#f-hora').value; if (!d || !hr){ erro('Escolha o dia e a hora.'); return null; } return isoBR(d, hr); };
+  const ligaChips = cx => cx.addEventListener('click', ev => { const b = ev.target.closest('.f-chip'); if (b) cx.querySelector('#' + b.dataset.alvo).value = somaDias(h, +b.dataset.n); });
+  if (etapa === 'conversa'){
+    const d0 = l.conversa_em ? diaBR(l.conversa_em) : '', h0 = l.conversa_em ? horaBR(l.conversa_em) : '';
+    return folha(`<h2 id="folha-tit">Quando é a conversa${nm ? ' com ' + esc(nm) : ''}?</h2>${campoConv(d0, h0)}
+      <p class="f-dica">A fila lembra você na véspera e 1 h antes, com o texto pronto.</p>
+      <div class="f-bts"><button type="button" class="f-ok">Salvar</button><button type="button" class="f-sem f-2">Sem data agora</button></div>`,
+      (cx, fim, erro) => cx.addEventListener('click', ev => {
+        if (ev.target.closest('.f-sem')) return fim({ etapa, datas:{ conversa_em:null } });
+        if (!ev.target.closest('.f-ok')) return;
+        const iso = pegaConv(cx, erro); if (iso) fim({ etapa, datas:{ conversa_em:iso } });
+      }));
+  }
+  if (etapa === 'nutrir'){
+    const d0 = l.proximo_toque_em && l.proximo_toque_em > h ? l.proximo_toque_em : somaDias(h, 14);
+    return folha(`<h2 id="folha-tit">Quando volto a falar com ${esc(nm)}?</h2>${campoToque('f-toque', d0)}${chips('f-toque', [7, 14, 30])}
+      <p class="f-dica">Nesse dia ela volta para “Responder agora” com o próximo teste pronto para copiar.</p>
+      <div class="f-bts"><button type="button" class="f-ok">Salvar</button><button type="button" class="f-sem f-2">Sem data agora</button></div>`,
+      (cx, fim, erro) => { ligaChips(cx); cx.addEventListener('click', ev => {
+        if (ev.target.closest('.f-sem')) return fim({ etapa, datas:{ proximo_toque_em:null } });
+        if (!ev.target.closest('.f-ok')) return;
+        const d = cx.querySelector('#f-toque').value; if (!d) return erro('Escolha o dia.');
+        fim({ etapa, datas:{ proximo_toque_em:d } });
+      }); });
+  }
+  // faltou: remarcou (volta a "Conversa marcada") ou tenta de novo num dia
+  return folha(`<h2 id="folha-tit">${esc(nm)} faltou. Qual a próxima data?</h2>
+    <button type="button" class="f-copia f-2" style="width:100%">Copiar mensagem para remarcar</button>
+    <h3>Remarcou a conversa</h3>${campoConv('', '')}<div class="f-bts"><button type="button" class="f-ok">Salvar a conversa</button></div>
+    <h3>Ou: tentar de novo no dia</h3>${campoToque('f-toque', l.proximo_toque_em && l.proximo_toque_em > h ? l.proximo_toque_em : somaDias(h, 1))}${chips('f-toque', [1, 2, 7])}
+    <div class="f-bts"><button type="button" class="f-ok2 f-2">Salvar o dia</button><button type="button" class="f-sem f-2">Sem data agora</button></div>`,
+    (cx, fim, erro) => { ligaChips(cx); cx.addEventListener('click', async ev => {
+      const cp = ev.target.closest('.f-copia');
+      if (cp){ cp.dataset.c = c; if (await copiaDaLista(cp, 'faltou', { link:`${AGENDA}?notes=${encodeURIComponent(c)}` }) === null) erro('Falta o nome: abra o lead no passo 1.'); return; }
+      if (ev.target.closest('.f-sem')) return fim({ etapa, datas:{ proximo_toque_em:null } });
+      if (ev.target.closest('.f-ok')){ const iso = pegaConv(cx, erro); if (iso) fim({ etapa:'conversa', datas:{ conversa_em:iso, proximo_toque_em:null } }); return; }
+      if (ev.target.closest('.f-ok2')){ const d = cx.querySelector('#f-toque').value; if (!d) return erro('Escolha o dia.'); fim({ etapa, datas:{ proximo_toque_em:d } }); }
+    }); });
+}
+// marca a etapa; conversa, nutrir e faltou pedem a data antes (só com o banco novo). false = cancelou ou não salvou
+async function marcarEtapa(c, etapa){
+  if (!DATAS_OK || !PEDE_DATA[etapa]) return marcar(c, etapa);
+  const r = await pedeData(c, etapa);
+  if (!r) return false;
+  return marcar(c, r.etapa, undefined, r.datas);
+}
+// depois do horário da conversa: como foi?
+async function fechouFaltou(c){
+  const l = LEADS.find(x => x.codigo === c) || { codigo:c }, nm = nomeLead(l);
+  const v = await folha(`<h2 id="folha-tit">Como foi a conversa${nm ? ' com ' + esc(nm) : ''}?</h2>
+    <div class="f-escolha">${[['comprou', 'Comprou'], ['nutrir', 'Agora não'], ['nao_quis', 'Não quis'], ['faltou', 'Faltou'], ['outra', 'Marcou outra conversa']].map(([e, t]) => `<button type="button" class="f-esc" data-et="${e}">${t}</button>`).join('')}</div>`,
+    (cx, fim) => cx.addEventListener('click', ev => { const b = ev.target.closest('.f-esc'); if (b) fim(b.dataset.et); }));
+  if (!v) return false;
+  return marcarEtapa(c, v === 'outra' ? 'conversa' : v);
 }
 
 // ---------- Consulta de um código (a de 28/10) ----------
@@ -1213,7 +1476,7 @@ function interpretaBraco(d){
 async function ver(c){
   codigoAtual = c;
   if (!K){ $('gestao').innerHTML = ''; $('out').innerHTML = avisoSemChave(); return; }
-  desenhaGestao(c);
+  desenhaGestao(c); carregaHistorico(c);
   $('out').innerHTML = '<p class="aviso">Buscando…</p>';
   try {
     const r = await post({ c });
@@ -1329,9 +1592,9 @@ function kitCorpo(i){
 // 12/11: "Responder passo a passo" com a copy da v3 (KITS['pele-idade'].v3): 1 áudio antes · 2 gravar a análise · 3 ela
 // respondeu · 4 a conversa. Cada passo tem o texto pronto (nome, código, desejo e incômodo dela) e o botão da etapa.
 const AGENDA = 'https://agenda.livowa.com/drluccamarques/conversa';
-const ORDEM_ET = { novo:0, audio:1, analisei:2, respondeu:3, conversa:4, comprou:5, nutrir:5, nao_quis:5, sumiu:5 };
-const PASSO_DE = { novo:1, audio:2, analisei:3, respondeu:3, nutrir:3, nao_quis:3, sumiu:3, conversa:4, comprou:4 };
-const R3_DE = { respondeu:'sim', conversa:'sim', comprou:'sim', nutrir:'agora', nao_quis:'nao', sumiu:'sumiu' };
+const ORDEM_ET = { novo:0, audio:1, analisei:2, respondeu:3, conversa:4, faltou:4, comprou:5, nutrir:5, nao_quis:5, sumiu:5 };
+const PASSO_DE = { novo:1, audio:2, analisei:3, respondeu:3, nutrir:3, nao_quis:3, sumiu:3, conversa:4, faltou:4, comprou:4 };
+const R3_DE = { respondeu:'sim', conversa:'sim', faltou:'sim', comprou:'sim', nutrir:'agora', nao_quis:'nao', sumiu:'sumiu' };
 const R3_ETAPA = { sim:'respondeu', agora:'nutrir', nao:'nao_quis' };
 function kitCorpoPI(i, b, K, c, atalho){
   const V3 = K.v3, l = LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual, status:'novo' }, et = etapaDe(l), ord = ORDEM_ET[et] ?? 0;
@@ -1375,7 +1638,7 @@ function kitCorpoPI(i, b, K, c, atalho){
   h += passo(3, 'Ela respondeu', c3);
   // 4 · a conversa
   h += passo(4, 'A conversa (15 min)', `<button type="button" class="pi-conv" data-kb="${i}">Abrir o roteiro da conversa</button>
-    <p class="kit-sub">Depois da conversa:</p><div class="pi-r3" style="grid-template-columns:repeat(3,1fr)">${[['comprou', 'Comprou'], ['nutrir', 'Nutrir'], ['nao_quis', 'Não quis']].map(([e, t]) => `<button type="button" class="pi-depois" data-et="${e}" data-kb="${i}" aria-pressed="${et === e}">${t}</button>`).join('')}</div>`);
+    <p class="kit-sub">Depois da conversa:</p><div class="pi-r3" style="grid-template-columns:repeat(4,1fr)">${[['comprou', 'Comprou'], ['nutrir', 'Nutrir'], ['nao_quis', 'Não quis'], ['faltou', 'Faltou']].map(([e, t]) => `<button type="button" class="pi-depois" data-et="${e}" data-kb="${i}" aria-pressed="${et === e}">${t}</button>`).join('')}</div>`);
   h += `<details><summary>Ver atalhos do WhatsApp (${K.atalhos.length})</summary><div>
     <p class="kit-sub">Para cadastrar em WhatsApp Business › Configurações › Ferramentas comerciais › Respostas rápidas. O app não preenche {nome}.</p>
     ${K.atalhos.map(a => kitMsg(a.texto, i, { raw:true, rotulo:'/' + a.id, quando:[a.quando, a.nota].filter(Boolean).join(' · ') })).join('')}</div></details>`;
@@ -1568,10 +1831,10 @@ $('out').addEventListener('click', ev => {
   if (pf){ const i = +pf.dataset.kb; KB[i].forcar = pf.dataset.perfil; const sec = pf.closest('.kit'); sec.innerHTML = kitCorpo(i); sec.querySelector(`.kit-perfil [data-perfil="${pf.dataset.perfil}"]`)?.focus(); return; }
   const rc = ev.target.closest('.kit-react'); if (rc){ reactAbrir(+rc.dataset.react, rc); return; }
   // 12/11: passo a passo da pele nova
-  const mk = ev.target.closest('.pi-marca, .pi-depois'); if (mk){ if (mk.classList.contains('pi-depois')) KB[+mk.dataset.kb].r3 = ''; marcar(codigoAtual, mk.dataset.et); return; }
+  const mk = ev.target.closest('.pi-marca, .pi-depois'); if (mk){ if (mk.classList.contains('pi-depois')) KB[+mk.dataset.kb].r3 = ''; marcarEtapa(codigoAtual, mk.dataset.et); return; }
   const r3 = ev.target.closest('.pi-r3 button[data-r3]');
   if (r3){ const b = KB[+r3.dataset.kb]; if (!b) return; b.r3 = r3.dataset.r3; redesenhaKitsPI();
-    const et = R3_ETAPA[b.r3]; if (et) marcar(codigoAtual, et); return; }
+    const et = R3_ETAPA[b.r3]; if (et) marcarEtapa(codigoAtual, et); return; }
   const ga = ev.target.closest('.ga-abrir'); if (ga){ abreGravador(+ga.dataset.kb); return; }
   const rf = ev.target.closest('.pi-cl-refazer'); if (rf){ const b = KB[+rf.dataset.kb]; if (b) window.ROTEIRO?.refazerComResposta(b.e); return; }
   const ue = ev.target.closest('.pi-cl-estoque'); if (ue){ const b = KB[+ue.dataset.kb], cl = b && window.ROTEIRO?.claude(b.e); if (cl) window.ROTEIRO.usarEstoque(b.e, !cl.usarEstoque); return; }
