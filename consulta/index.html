@@ -451,7 +451,12 @@ function apagaFoto(l){
 const NOME_PI = 'Pele: idade e vitalidade';   // livowa.com/pele (funnelId pele-idade, 04/11)
 const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'pele-idade' ? NOME_PI : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
 let LEADS = [], filtro = 'fila', CARREGOU = false;
-const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '');
+// 13/11 (decisão d-20261113-leads-ate-1211-testes): TODO código que chegou até 12/11/2026 (horário de Brasília) foi teste
+// do próprio Lucca. Mesma data da fila ("chegou há" = l.chegou). Sai da fila, dos números e do "Todos"; fica em "Mostrar
+// testes" com a etiqueta "teste seu". O treino segue no filtro Treino (ehTreino vem antes).
+const CORTE_TESTES = Date.parse('2026-11-13T00:00:00-03:00');
+const antesDoCorte = l => { const t = new Date(l.chegou).getTime(); return isFinite(t) && t < CORTE_TESTES; };
+const ehTeste = l => /^(teste|sonda)/i.test(l.origem?.source || '') || /^teste/i.test(l.origem?.campaign || '') || antesDoCorte(l);
 // 12/11 (treino do Lucca com leads fictícios: utm_source=teste_treino, utm_campaign=treino): filtro próprio, fora da fila real e dos números
 const ehTreino = l => /treino/i.test(l.origem?.source || '') || /treino/i.test(l.origem?.campaign || '');
 function origem(o){
@@ -518,7 +523,7 @@ function cartaoLead(l, naFila){
       <div class="prox">${esc(proxAcao(l, et))}</div>
       ${ap ? `<div class="apaga">${esc(ap)}</div>` : ''}
       <div class="tags"><span class="tag e">${esc(NOME_ET[et] || et)}</span>${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
-        <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTreino(l) ? '<span class="tag t">treino</span>' : ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
+        <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTreino(l) ? '<span class="tag t">treino</span>' : antesDoCorte(l) ? '<span class="tag t">teste seu</span>' : ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
       <div class="resumo">${esc(resumo(l))}</div>
       <div class="l-acoes"><button type="button" data-ver="${esc(l.codigo)}">${naFila ? 'Responder' : 'Ver resultado completo'}</button>
         ${copiaAudio ? `<button type="button" class="sec l-copiar" data-copia="audio" data-c="${esc(l.codigo)}">Copiar “recebi o seu teste”</button>` : ''}
