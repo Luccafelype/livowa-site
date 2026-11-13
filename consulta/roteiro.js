@@ -188,7 +188,10 @@ function montar(e){
 let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o botão do Claude)
 async function carregaEstoque(){
   if (EST) return EST;
-  try { const r = await fetch('roteiros-estoque.json?v=20261112b', { cache:'no-cache' }); EST = r.ok ? await r.json() : null; } catch { EST = null; }
+  const [est, imp] = await Promise.all([
+    fetch('roteiros-estoque.json?v=20261113x', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('o-que-importa-idade.json?v=20261113', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null)]);
+  EST = est; IMP = imp;   // 13/11: o bloco 5 ("o que conserva na idade") sai do mesmo arquivo do cartão do gravador
   if (EST) estoqueEditavel(EST);
   return EST;
 }
@@ -226,8 +229,73 @@ function blocoE(id, tempo, textos, V, o = {}){
   const opc = (Array.isArray(textos) ? textos : [textos]).map(t => preenche(t, V)).filter(Boolean).map(t => o.junta ? t + ' ' + o.junta : t);
   return opc.length ? { id, tempo, opcoes:opc, circular:o.circular ? preenche(o.circular, V) || o.circular : null, fonte:o.f || '', fixo:!!o.fixo } : null;
 }
+// ---------- 13/11 (d-20261113-narrativa-analise-todas-iscas): UMA narrativa em 6 blocos para todos os testes ----------
+// abertura · o resultado ao lado da referência da idade · o que está conservado e onde aparece · o que pesa · o que conserva
+// na idade · desejo e pergunta de interesse. Muda só o que entra nas lacunas (video-analise-duracao-roteiro.md, 3A e 3B).
+// Bloco sem dado fica de fora (não se inventa). Alvo: pele e emagrecimento 60-75 s; braço, pernas e longevidade 45-60 s.
+const T6 = ['0-6 s', '6-16 s', '16-34 s', '34-48 s', '48-58 s', '58-72 s'], T6C = ['0-6 s', '6-16 s', '16-28 s', '28-38 s', '38-46 s', '46-60 s'];
+let IMP = null;   // o-que-importa-idade.json (o mesmo do cartão "O que conserva" do gravador)
+const FX_IMP = n => n <= 34 ? 'ate34' : n <= 49 ? '35a49' : n <= 64 ? '50a64' : '65mais';
+const MOV_RE = /músculo|força/i;   // braço, pernas e longevidade: o item de músculo ou força, quando a faixa tem
+const FORA_PELE = /músculo|força|pressão|glicose|sono/i;   // PROMPT-NARRATIVA: fora da pele, isso antes do protetor solar
+/** O item da faixa e do sexo: o 1º que casa com pref (músculo/força nos testes de movimento; fora da pele, nada de protetor
+    antes); sem sexo, só os comuns aos dois. Dorme mal a partir dos 35: o sono vai na frente (condicionais do arquivo). */
+function itemImporta(fx, sexo, pref, o = {}){
+  const L = IMP && IMP.idade && IMP.idade[fx]; if (!L) return null;
+  const min = t => t ? t[0].toLowerCase() + t.slice(1) : null;
+  if (o.dormeMal && fx !== 'ate34' && IMP.condicionais?.sono?.t) return min(IMP.condicionais.sono.t);
+  const ts = s => (L[s] || []).map(x => x.t);
+  const lista = sexo === 'f' || sexo === 'm' ? ts(sexo) : ts('f').filter(t => ts('m').includes(t));
+  return min((pref && lista.find(t => pref.test(t))) || (o.foraPele && lista.find(t => FORA_PELE.test(t))) || lista[0]);
+}
+/** Um bloco feito de frases (cada uma com as suas variações): as variações do bloco combinam as frases 1 a 1.
+    Frase sem dado (alguma {chave} vazia) sai do bloco; bloco sem nenhuma frase sai do roteiro. */
+function bloco6(id, tempo, partes, V, o = {}){
+  const ls = partes.filter(Boolean).map(p => (Array.isArray(p) ? p : [p]).map(t => preenche(t, V)).filter(Boolean)).filter(l => l.length);
+  if (!ls.length) return null;
+  const n = Math.max(...ls.map(l => l.length));
+  const opc = [...new Set(Array.from({ length:n }, (_, k) => ls.map(l => l[k % l.length]).join(' ')))];
+  return { id, tempo, opcoes:opc, circular:o.circular || null, fonte:o.f || '', fixo:!!o.fixo, regiao:o.regiao || null };
+}
+/** Bloco 6: o desejo (se ela disse), "{o que o teste mostra} é uma parte", o rótulo do bloco 1 e a pergunta de interesse. */
+/** Passou do alvo (150 palavras por minuto, fora dos colchetes): corta na ordem do PROMPT-NARRATIVA. 1º o "acompanha" do
+    bloco 3 (sem ela, o bloco sai), depois o exemplo do bloco 5. */
+const palavrasE = t => String(t).replace(/\[[A-Z]+:[^\]]*\]/g, '').split(/\s+/).filter(Boolean).length;
+function cabe(out, maxS, sem, V, T){
+  const n = () => out.filter(Boolean).reduce((s, b) => s + b.opcoes.reduce((t, o) => t + palavrasE(o), 0) / b.opcoes.length, 0);   // a média das variações
+  const k = out.findIndex(b => b && b.id === 'conserva');
+  if (n() / 2.5 > maxS && k >= 0) out[k] = sem || null;
+  const j = out.findIndex(b => b && b.id === 'importa');
+  if (n() / 2.5 > maxS && j >= 0 && V && V.ex_id){ V.ex_id = null; out[j] = importa6(EST.comum.narrativa, V, T); }
+}
+// ---------- o exemplo por imagem (13/11, d-20261113-exemplos-por-imagem) ----------
+// O catálogo vem da edge (consultar-codigo, ação "exemplos": id, testes, liga, idade, fala; nunca a imagem). Sem ele, sem exemplo.
+let EXE = null;
+const semAcento = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+// o que o lead tem, nas palavras do campo "liga" do kit
+const LIGA_SINAL = { manchas:['manchas'], linhas_testa:['rugas'], olhos:['olhos', 'olheira'], sulco_nasolabial:['sulco'], flacidez:['flacidez', 'contorno'], textura_poros:[] };
+const LIGA_QUEIXA = { manchas:['manchas'], rugas:['rugas'], olheiras:['olheira', 'olhos'], acne:[], cravos:[], oleosidade:[], poros:[], ressecamento:[], textura:[] };
+const LIGA_EMAG = { volta:['peso'], vontade:['peso'], balanca:['peso', 'barriga'], constancia:['peso'], comeco:['peso'] };
+const LIGA_LONG = { cansaco:['fôlego', 'exercício'], peso:['barriga'], dor:[], exame:[], forca:['força', 'exercício'], nada:['longevidade'] };
+/** A imagem do teste que mais liga ao que ela tem (o "principal" desempata). Na pele, só se ligar a algo dela. */
+function escolheExemplo(teste, termos, idade, exigeLiga){
+  if (!Array.isArray(EXE) || !EXE.length) return null;
+  const tm = new Set((termos || []).map(semAcento));
+  const cand = EXE.filter(x => x && x.id && (!x.testes || !x.testes.length || x.testes.includes(teste)))
+    .map((x, i) => ({ x, i, nota:(x.liga || []).filter(l => tm.has(semAcento(l))).length + (x.papel === 'principal' ? .5 : 0) }))
+    .filter(c => !exigeLiga || c.nota >= 1).sort((a, b) => b.nota - a.nota || a.i - b.i);
+  const ex = cand[0] && cand[0].x; if (!ex || !ex.fala) return null;
+  const m = String(ex.idade || '').match(/(\d+)(?:\D+(\d+))?/), perto = m && idade != null && idade >= +m[1] && idade <= +(m[2] || m[1]);   // "18-31" ou "57"
+  const fala = String(ex.fala).trim().replace(/[.\s]+$/, '');
+  return { ex_id:ex.id, ex_fala:/^[A-ZÀ-Ú](?![A-ZÀ-Ú])/.test(fala) ? fala[0].toLowerCase() + fala.slice(1) : fala, ex_perto:!!perto };
+}
+const interesse6 = (N, V, T, desejo, f) => bloco6('interesse', T[5], [desejo, N.parte, N.trabalhar, N.interesse], V, { f:(f ? f + ' · ' : '') + N.f });
+const importa6 = (N, V, T) => bloco6('importa', T[4], [V.idade ? N.importa_idade : N.importa_faixa,
+  V.ex_id ? (V.ex_perto ? N.exemplo_idade : N.exemplo).map(t => `[IMAGEM: ${V.ex_id}] ` + t) : null], V,
+  { f:'o-que-importa-idade.json (idade e sexo); fora da pele, só o item' + (V.ex_id ? '; o exemplo é a imagem ' + V.ex_id + ' do kit' : '') });
+
 function rotPele(d, t, c, E){
-  const P = E.pele, C = E.comum, p2 = t === 'pele2', V = {}, out = [], avisos = [];
+  const P = E.pele, C = E.comum, N = C.narrativa, p2 = t === 'pele2', V = {}, out = [], avisos = [];
   if (c?.refazer){
     const mot = /ruim/.test(c.motivo) ? 'ruim' : /cobert/.test(c.motivo) ? 'coberta' : 'padrao';
     V.motivo = P.refazer.motivo[mot];
@@ -240,37 +308,43 @@ function rotPele(d, t, c, E){
   const resp = d.respostas || {};
   const qs = String(resp.incomoda || '').split('+').filter(Boolean).map(q => P.queixa[q]).filter(q => q && q[0]);
   V.queixa = qs.length ? listaE(qs.slice(0, 2).map(q => q[0])) : null;
+  Object.assign(V, { rotulo_curto:V.queixa, mostra:P.mostra });
+  const idade = Number(d.idade ?? resp.idade);
+  V.idade = isFinite(idade) && idade > 0 ? String(idade) : null;
   const principal = qs.map(q => com.find(s => s.id === q[1])).find(Boolean) || [...com].sort((a, b) => b.grau - a.grau)[0];
   const ordem = principal ? [principal, ...com.filter(s => s !== principal).sort((a, b) => b.grau - a.grau)] : [];
-  out.push(blocoE('abertura', TEMPO[0], V.queixa ? P.abertura.com_queixa : P.abertura.sem_queixa, V, { f:P.abertura.f }));
+  // 1 · abertura: o que ela marcou, nas palavras dela
+  out.push(bloco6('abertura', T6[0], [N.abertura, V.queixa ? P.contou : null], V, { f:N.f, circular:V.queixa ? 'a resposta "o que incomoda" na tela' : null }));
+  // 2 · a idade aparente (pele2) ou a faixa (pele antiga), só quando a regra do kit deixa
+  const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), aparente = c?.idadeFaixa?.aparente;
+  if (c?.idadeFaixa?.dizer && mF) out.push(bloco6('resultado', T6[1], [aparente ? P.idade_aparente.texto : P.faixa_idade.texto], { ...V, min:mF[1], max:mF[2] },
+    { f:(aparente ? P.idade_aparente : P.faixa_idade).f, circular:aparente ? 'a idade aparente no topo do resultado' : 'a faixa de idade na tela' }));
+  else if (d.faixa) avisos.push('Faixa de idade fora do vídeo: ' + (c?.idadeFaixa?.txt || 'regra do kit.'));
+  // 3 · o que está conservado, onde aparece mais (até 2 achados) e o mecanismo do principal
   const bem = sin.filter(s => s.grau === 0 && P.achados[s.id]).map(s => P.achados[s.id].nome);
   V.bem = bem.length ? listaE(bem.slice(0, 2)) : null;
-  out.push(blocoE('bem', TEMPO[1], V.bem ? P.bem.com_lista : P.bem.sem_lista, V, { f:P.bem.f }));
-  const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), aparente = c?.idadeFaixa?.aparente;
-  const nAch = aparente && c?.idadeFaixa?.dizer && mF ? 2 : 3;   // com a idade aparente no vídeo, 2 achados (cabe em 1 min)
-  for (const s of ordem.slice(0, nAch)){
-    const A = P.achados[s.id];
-    const W = { ...V, onde:A.onde_fixo || listaE(s.regioes.map(r => REG_ACNE_TXT[Object.keys(REG_ACNE).find(k => REG_ACNE[k] === r)] || r)) || 'no rosto' };
-    const reg = REG_CURTA[s.id] || s.regioes.join(' e ') || 'rosto';
-    out.push(blocoE('achado-' + s.id, TEMPO[1], s.grau >= 2 ? A.forte : A.leve, W, { f:A.f, circular:`${s.foto}, ${reg}`, junta:s.id === 'cicatriz_acne' && s.tipo === 'marca de cor' ? A.cor : '' }));
-  }
-  if (ordem.length > nAch) avisos.push('Também apareceram (fora do vídeo, para 1 ideia só): ' + ordem.slice(nAch).map(s => P.achados[s.id].nome).join(', ') + '.');
-  if (com.some(s => s.id === 'manchas' && s.grau >= 2)) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.pele, V, { f:C.seguranca.f, fixo:true }));
-  // a faixa: pele antiga só quando a regra do kit deixa (compara com a idade real); pele2 = "idade aparente do rosto",
-  // que ela já viu no topo do resultado (03/11), e entra PRIMEIRO no que o resultado mostra
-  if (c?.idadeFaixa?.dizer && mF){
-    const bl = aparente ? blocoE('idade', TEMPO[1], P.idade_aparente.texto, { ...V, min:mF[1], max:mF[2] }, { f:P.idade_aparente.f, circular:'a idade aparente no topo do resultado' })
-      : blocoE('faixa', TEMPO[1], P.faixa_idade.texto, { ...V, min:mF[1], max:mF[2] }, { f:P.faixa_idade.f, circular:'a faixa de idade na tela' });
-    if (aparente) out.splice(out.findIndex(b => b && b.id === 'bem'), 0, bl); else out.push(bl);
-  } else if (d.faixa) avisos.push('Faixa de idade fora do vídeo: ' + (c?.idadeFaixa?.txt || 'regra do kit.'));
-  if (principal) out.push(blocoE('mecanismo', TEMPO[2], P.achados[principal.id].mecanismo, V, { f:P.achados[principal.id].f }));
-  out.push(blocoE('ponte', TEMPO[3], aparente && c?.idadeFaixa?.dizer && mF ? P.idade_aparente.ponte : C.ponte.foto, V, { f:C.ponte.f }));
-  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  const achados = ordem.slice(0, 2).map(s => {
+    const A = P.achados[s.id], W = { ...V, onde:A.onde_fixo || listaE(s.regioes.map(r => REG_ACNE_TXT[Object.keys(REG_ACNE).find(k => REG_ACNE[k] === r)] || r)) || 'no rosto' };
+    return (s.grau >= 2 ? A.forte : A.leve).map(x => preenche(x, W)).filter(Boolean).map(x => s.id === 'cicatriz_acne' && s.tipo === 'marca de cor' && A.cor ? x + ' ' + A.cor : x);
+  });
+  if (ordem.length > 2) avisos.push('Também apareceram (fora do vídeo, para 1 ideia só): ' + ordem.slice(2).map(s => P.achados[s.id].nome).join(', ') + '.');
+  const seg = com.some(s => s.id === 'manchas' && s.grau >= 2) ? C.seguranca.pele : null;
+  const s0 = ordem[0];
+  out.push(bloco6('conserva', T6[2], [V.bem ? P.bem.com_lista : P.bem.sem_lista, ...achados, principal ? P.achados[principal.id].mecanismo : null, seg], V,
+    { f:P.bem.f, circular:s0 ? `${s0.foto}, ${REG_CURTA[s0.id] || s0.regioes.join(' e ') || 'rosto'}` : null }));
+  // 4 · o que pesa: a pele não pergunta hábito (fica de fora)
+  // 5 · o que conserva na idade dela
+  V.item = V.idade ? itemImporta(FX_IMP(+V.idade), resp.sexo, null) : null;
+  Object.assign(V, escolheExemplo(t, [...String(resp.incomoda || '').split('+').flatMap(q => LIGA_QUEIXA[q] || []), ...(principal ? LIGA_SINAL[principal.id] || [] : [])], V.idade ? +V.idade : null, true) || {});
+  out.push(importa6(N, V, T6));
+  // 6 · desejo e pergunta de interesse (a pele não pergunta o desejo de 10 anos)
+  out.push(interesse6(N, V, T6, null));
   if (['gravida', 'amamentando', 'tentando'].includes(resp.seguranca)) avisos.push(`Ela marcou "${P2.seguranca[1][resp.seguranca]}": nada de produto, remédio ou procedimento, nem por escrito.`);
   if (['sensivel', 'reacao'].includes(resp.alergia)) avisos.push(`Alergia: "${P2.alergia[1][resp.alergia]}". Nada de nome de produto.`);
+  cabe(out, 75, bloco6('conserva', T6[2], [V.bem ? P.bem.com_lista : P.bem.sem_lista, ...achados, seg], V, { f:P.bem.f }), V, T6);
   if (c?.notaAcne) avisos.push(c.notaAcne);
-  if (!principal) avisos.push('Nenhum achado com grau 1 ou mais: o vídeo pode ficar curto (70 a 130 palavras, regra 8).');
-  return { blocos:out.filter(Boolean), avisos };
+  if (!principal) avisos.push('Nenhum achado com grau 1 ou mais: o vídeo pode ficar curto.');
+  return { blocos:out.filter(Boolean), avisos, rotulo:V.queixa };
 }
 // Pele: idade e vitalidade (04/11). Ordem: abertura com o "daqui a 10 anos" → a idade do rosto ao lado da idade real →
 // o que está bem → até 2 hábitos que pesam (o 1º com o sinal da foto, quando houver) → o mecanismo do 1º (o único número
@@ -342,19 +416,19 @@ function rotPeleIdade(d, c, E){
     out.push(blocoE('interesse', '45-60 s', pontes.flatMap(pt => perg.map(q => pt + ' ' + q)), V, { f:P.ponte.f + ' · ' + PI6.f }));
   } else {
     out.push(blocoE('ponte', TEMPO[3], V.espelho && V.futuro ? P.ponte.com_futuro : P.ponte.texto, V, { f:P.ponte.f }));
-    out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+    out.push(blocoE('pergunta', TEMPO[4], C.narrativa.interesse, V, { f:C.narrativa.f }));   // 13/11: a pergunta de interesse fecha todos
   }
   if (['pressao', 'glicose', 'ambas'].includes(r.metabolico)) avisos.push('Ela marcou pressão ou glicose alta: sinal de saúde (regra 17). Vale olhar com exame; fale com ela também por escrito. Sem nome de doença nem de remédio.');
   if (r.cigarro === 'hoje') avisos.push('Fuma hoje: tom de alívio e explicação, sem cobrança (regra 22).');
   if (caso === 'sem_numero' && !c?.refazer) avisos.push('A página não mostrou número. Se ela quiser o número, mande o atalho /pirefazer.');
   avisos.push('Não é análise de pele: nada de produto, rotina, procedimento ou programa no vídeo (regras 4, 5 e 23).');
-  return { blocos:out.filter(Boolean), avisos };
+  return { blocos:out.filter(Boolean), avisos, rotulo:V.resposta || V.espelho || null };
 }
 function rotMov(t, d, c, E){
-  const M = E[t], C = E.comum, out = [], avisos = [], V = {};
+  const M = E[t], C = E.comum, N = C.narrativa, out = [], avisos = [], V = {};
   const m = c?.medida || {};
   if (t === 'pernas') Object.assign(V, { tempo:n1(d.t), pc:d.pc != null ? String(d.pc) : null, faixa_idade:d.faixa || null });
-  else Object.assign(V, { roscas:m.roscas != null ? String(m.roscas) : null, idade_m:m.faixaTxt || null });
+  else Object.assign(V, { roscas:m.roscas != null ? String(m.roscas) : null, idade_m:m.idadeM != null ? m.idadeM + ' anos' : m.v >= m.VREF ? 'até 50 anos' : m.v >= m.PRE ? 'acima de 76 anos, ainda robusto' : null });   // 3B: no vídeo, nunca "frágil"
   if (c?.refazer){
     const k = t === 'pernas' ? (/mais rápido/.test(c.motivo) ? 'rapido' : /Contou/.test(c.motivo) ? 'reps' : 'padrao')
       : (/curta/.test(c.motivo) ? 'curto' : /Só \d+ movimentos/.test(c.motivo) ? 'poucas' : /não combinam|rara/.test(c.motivo) ? 'estranho' : 'padrao');
@@ -365,58 +439,97 @@ function rotMov(t, d, c, E){
     avisos.push('Medição duvidosa: ' + (c.motivo || '') + ' Nenhuma faixa no vídeo (regra 16).');
     return { blocos:out.filter(Boolean), avisos };
   }
-  out.push(blocoE('abertura', TEMPO[0], M.abertura.texto, V, { f:M.abertura.f, circular:t === 'pernas' ? 'o tempo das 5 levantadas' : 'as roscas em 10 s' }));
-  if (c?.faixa) out.push(blocoE('faixa', TEMPO[1], M.faixa[c.faixa], V, { f:M.faixa.f, circular:t === 'pernas' ? 'o percentil e o quadril no vídeo' : 'a idade muscular estimada' }));
-  if (t === 'pernas' && V.faixa_idade && c?.faixa && c.faixa < 4) out.push(blocoE('parecida', TEMPO[1], M.faixa.parecida, V, { f:M.faixa.f, circular:'a faixa de idade na tela' }));
-  if (c?.faixa === 4) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.movimento, V, { f:C.seguranca.f, fixo:true }));
-  out.push(blocoE('mecanismo', TEMPO[2], M.mecanismo.texto, V, { f:M.mecanismo.f }));
-  out.push(blocoE('ponte', TEMPO[3], C.ponte.medida, V, { f:C.ponte.f }));
-  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  const idade = d.idade != null && d.idade !== '' && !isNaN(+d.idade) ? +d.idade : null, f = c?.faixa;
+  // o rótulo: a resposta dela ao áudio de antes (colada no passo 2); sem ela, o do teste. No bloco 6 volta o do teste.
+  Object.assign(V, { idade:idade != null ? String(idade) : null, resposta:RESP[CODIGO] || null, mostra:M.mostra, rotulo_curto:M.rotulo, conserva:M.conservado });
+  // 1 · abertura
+  out.push(bloco6('abertura', T6C[0], [N.abertura, V.resposta ? N.contou_resposta : N.quis], { ...V, rotulo:V.resposta || M.rotulo }, { f:N.f }));
+  // 2 · o número dela ao lado da idade real; faixa 4 leva a frase de segurança (não se corta)
+  if (f) out.push(bloco6('resultado', T6C[1], [M.resultado[f], t === 'pernas' && f < 4 ? M.parecida : null, f === 4 ? C.seguranca.movimento : null], V,
+    { f:M.resultado.f, circular:t === 'pernas' ? 'o tempo das 5 levantadas e o percentil' : 'as roscas em 10 s e a idade muscular' }));
+  // 3 · o que está conservado (faixa 1 no braço; 1 e 2 nas pernas) e o mecanismo (o "acompanha")
+  const conservado = f === 1 || (f === 2 && (t === 'pernas' || M.conservado_2));
+  out.push(bloco6('conserva', T6C[2], [conservado ? N.conservado : null, M.mecanismo.texto], { ...V, conserva:f === 2 && M.conservado_2 ? M.conservado_2 : M.conservado }, { f:M.mecanismo.f }));
+  // 4 · o que pesa: o teste não pergunta hábito (fica de fora)
+  // 5 · o que conserva na idade dela (o item de músculo ou força)
+  V.item = idade != null ? itemImporta(FX_IMP(idade), d.sexo, MOV_RE) : null;
+  Object.assign(V, escolheExemplo(t, ['força', 'músculo', 'potência', ...(t === 'pernas' ? ['pernas', 'cadeira'] : [])], idade, false) || {});
+  out.push(importa6(N, V, T6C));
+  // 6 · sem desejo (o teste não pergunta): "{o braço / as pernas} é uma parte…" e a pergunta de interesse
+  out.push(interesse6(N, V, T6C, null));
+  cabe(out, 60, conservado ? bloco6('conserva', T6C[2], [N.conservado], { ...V, conserva:f === 2 && M.conservado_2 ? M.conservado_2 : M.conservado }, { f:M.mecanismo.f }) : null, V, T6C);
   if (c?.simples) avisos.push('Leitura do kit: ' + c.simples);
-  if (c?.faixa === 4) avisos.push('Faixa 4: fale com ela também por escrito (regra 17).');
-  return { blocos:out.filter(Boolean), avisos };
+  if (f === 4) avisos.push('Faixa 4: fale com ela também por escrito (regra 17).');
+  if (!V.resposta) avisos.push('Sem a resposta dela ao áudio: a abertura usa o rótulo do teste. Cole a resposta no campo do passo 2 para abrir com as palavras dela.');
+  return { blocos:out.filter(Boolean), avisos, rotulo:V.resposta || M.rotulo };
 }
+// emagrecimento: idade do teste em faixas (18a29…60mais) → a faixa do arquivo "o que importa"
+const FX_EMAG = { '18a29':'ate34', '30a39':'35a49', '40a49':'35a49', '50a59':'50a64', '60mais':'50a64' };
 function rotEmag(d, E){
-  const Q = E['quiz-emagrecimento'], C = E.comum, r = d.respostas || {}, out = [], avisos = [];
+  const Q = E['quiz-emagrecimento'], C = E.comum, N = C.narrativa, r = d.respostas || {}, out = [], avisos = [];
   const lst = k => String(r[k] || '').split('+').filter(x => x && !['nenhum', 'nada'].includes(x));
   const rot = (k, x) => (EMAG[k][1][x] || x).toLowerCase();
-  const V = { acontece:EMAG.acontece[1][r.acontece || d.perfil] || null, sono:EMAG.sono[1][r.sono] || null,
-    forca:{ '1':'1 vez por semana', '2mais':'2 vezes ou mais por semana' }[r.forca] || null, cansada:r.sexo === 'm' ? 'cansado' : 'cansada' };
+  const perfil = r.acontece || d.perfil;
+  const V = { acontece:EMAG.acontece[1][perfil] || null, sono:EMAG.sono[1][r.sono] || null,
+    forca:{ '1':'1 vez por semana', '2mais':'2 vezes ou mais por semana' }[r.forca] || null, cansada:r.sexo === 'm' ? 'cansado' : 'cansada',
+    rotulo:Q.rotulo[perfil] || null, mostra:Q.mostra, desejo:Q.objetivo[r.objetivo] || null };
+  V.rotulo_curto = V.rotulo;
   const cp = [r.ciclo === 'irregular' ? 'a menstruação falhando ou atrasando' : null, lst('pele').includes('pelos') ? 'pelos grossos no rosto, no queixo ou na barriga' : null].filter(Boolean);
   V.ciclo_pelos = cp.length ? listaE(cp) : null;
   V.sintomas = lst('tireoide').length ? listaE(lst('tireoide').map(x => rot('tireoide', x))) : null;
   V.exames = lst('exames').filter(x => x !== 'sem_exames').length ? listaE(lst('exames').filter(x => x !== 'sem_exames').map(x => rot('exames', x))) : null;
-  out.push(blocoE('abertura', TEMPO[0], Q.abertura.texto, V, { f:Q.abertura.f, circular:'a resposta "o que mais acontece"' }));
+  // 1 · abertura com a resposta dela entre aspas
+  out.push(bloco6('abertura', T6[0], [N.abertura, V.acontece ? Q.contou : null], V, { f:Q.abertura.f, circular:'a resposta "o que mais acontece"' }));
+  // 2 · a âncora é o perfil (sem régua de idade; o IMC fica fora da fala)
+  out.push(bloco6('resultado', T6[1], [Q.resultado], V, { f:Q.rotulo.f, circular:'o perfil no topo do resultado' }));
+  // 3 · o que está bem e o mecanismo do perfil
   const bemK = r.exames === 'nada' ? 'exames_ok' : ['7', '8', '9mais'].includes(r.sono) ? 'sono_ok' : ['1', '2mais'].includes(r.forca) ? 'forca_ok' : 'geral';
-  out.push(blocoE('bem', TEMPO[1], Q.bem[bemK], V, { f:Q.bem.f, circular:bemK === 'geral' ? null : 'essa resposta na tela' }));
+  out.push(bloco6('conserva', T6[2], [Q.bem[bemK], Q.mecanismo[perfil]], V, { f:Q.bem.f + ' · ' + Q.mecanismo.f, circular:bemK === 'geral' ? null : 'essa resposta na tela' }));
+  // 4 · o que pesa: até 2 sinais (o remédio sempre entra, regra 23)
   let sin = String(d.sinais || '').split('+').filter(s => s && Q.sinais[s]);
-  sin = [...sin.filter(s => s === 'remedio'), ...sin.filter(s => s !== 'remedio')];   // remédio sempre entra (regra 23)
-  for (const s of sin.slice(0, 2)) out.push(blocoE('sinal-' + s, TEMPO[1], Q.sinais[s], V, { f:Q.sinais.f, circular:'as respostas que ela marcou sobre isso' }));
+  sin = [...sin.filter(s => s === 'remedio'), ...sin.filter(s => s !== 'remedio')];
+  if (sin.length) out.push(bloco6('pesa', T6[3], sin.slice(0, 2).map(s => Q.sinais[s]), V, { f:Q.sinais.f, circular:'as respostas que ela marcou sobre isso' }));
   if (sin.length > 2) avisos.push('Outros sinais do resultado (fale por escrito, 1 ideia por vídeo): ' + sin.slice(2).map(s => SINAL_EMAG[s] || s).join('; ') + '.');
-  const perfil = r.acontece || d.perfil;
-  if (Q.mecanismo[perfil]) out.push(blocoE('mecanismo', TEMPO[2], Q.mecanismo[perfil], V, { f:Q.mecanismo.f }));
-  out.push(blocoE('ponte', TEMPO[3], C.ponte.respostas, V, { f:C.ponte.f }));
-  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
+  // 5 · o que conserva na faixa de idade dela
+  V.item = FX_EMAG[r.idade] ? itemImporta(FX_EMAG[r.idade], r.sexo, null, { foraPele:true, dormeMal:['5menos', '6'].includes(String(r.sono)) }) : null;
+  Object.assign(V, escolheExemplo('quiz-emagrecimento', LIGA_EMAG[perfil] || ['peso'], null, false) || {});
+  out.push(importa6(N, V, T6));
+  // 6 · o objetivo dela (o teste não pergunta "daqui a 10 anos") e a pergunta de interesse
+  out.push(interesse6(N, V, T6, N.desejo_agora));
+  cabe(out, 75, bloco6('conserva', T6[2], [Q.bem[bemK]], V, { f:Q.bem.f }), V, T6);
   if (d.imc) avisos.push(`IMC ${n1(d.imc)} (${d.faixa || 'sem faixa'}) fica fora da fala; só por escrito se ela perguntar (regra 22).`);
   if (r.fase === 'gravida') avisos.push('Grávida: peso não é meta agora; nada de dieta, nem por escrito.');
-  return { blocos:out.filter(Boolean), avisos };
+  return { blocos:out.filter(Boolean), avisos, rotulo:V.rotulo, desejo:V.desejo };
 }
+// longevidade: idade do quiz em faixas → a faixa do arquivo "o que importa" (as que caem em duas faixas ficam de fora)
+const FX_LONG = { '40-49':'35a49', '50-59':'50a64', '70+':'65mais' };
 function rotLong(d, E){
-  const Q = E['quiz-longevidade'], C = E.comum, r = d.respostas || {}, out = [], avisos = [];
+  const Q = E['quiz-longevidade'], C = E.comum, N = C.narrativa, r = d.respostas || {}, out = [], avisos = [];
   const arr = v => Array.isArray(v) ? v : v ? String(v).split('+') : [];
-  const V = { objetivo:arr(r.objetivo).length ? listaE(arr(r.objetivo).slice(0, 2).map(x => OBJ_CURTO[x] || x)) : null };
-  out.push(blocoE('abertura', TEMPO[0], V.objetivo ? Q.abertura.texto : ['{nome}, aqui é o Lucca. Li todas as suas respostas com calma. Vou te contar o que eu vi.'], V, { f:Q.abertura.f, circular:'a resposta "daqui a 10 anos"' }));
-  const inc = arr(r.incomoda).filter(x => Q.incomoda[x]);
-  for (const x of inc.slice(0, 2)) out.push(blocoE('incomoda-' + x, TEMPO[1], Q.incomoda[x], V, { f:Q.incomoda.f, circular:'essa resposta na tela' }));
+  const inc = arr(r.incomoda).filter(x => Q.incomoda[x]), prin = inc.find(x => x !== 'nada') || inc[0];
+  const V = { objetivo:arr(r.objetivo).length ? listaE(arr(r.objetivo).slice(0, 2).map(x => OBJ_CURTO[x] || x)) : null,
+    rotulo:prin && Q.rotulo[prin] ? Q.rotulo[prin] : null, mostra:Q.mostra, idade_txt:r.idade && LONG.idade[1][r.idade] ? LONG.idade[1][r.idade].toLowerCase() : null };
+  V.rotulo_curto = V.rotulo || V.objetivo; V.desejo = V.objetivo;
+  // 1 · abertura: o incômodo dela (ou, sem incômodo, o que ela quer)
+  out.push(bloco6('abertura', T6C[0], [N.abertura, V.rotulo ? Q.contou_incomoda : V.objetivo ? Q.contou_objetivo : null], V, { f:Q.abertura.f, circular:'essa resposta na tela' }));
+  // 2 · sem número: a âncora é a idade e o objetivo dela
+  const b2 = bloco6('resultado', T6C[1], [Q.resultado], V, { f:Q._resultado_f || Q.abertura.f, circular:'a idade e o "daqui a 10 anos" na tela' });
+  out.push(b2);
+  // 3 · o incômodo principal (ou "nada te incomoda hoje") e o mecanismo
+  out.push(bloco6('conserva', T6C[2], [prin ? Q.incomoda[prin] : null, Q.acompanha.texto], V, { f:Q.incomoda.f + ' · ' + Q.acompanha.f }));
+  // 4 · o que atrapalha
   const at = arr(r.atrapalha).find(x => Q.atrapalha[x]);
-  if (at) out.push(blocoE('atrapalha-' + at, TEMPO[1], Q.atrapalha[at], V, { f:Q.atrapalha.f, circular:'essa resposta na tela' }));
-  out.push(blocoE('mecanismo', TEMPO[2], Q.mecanismo.texto, V, { f:Q.mecanismo.f }));
-  out.push(blocoE('ponte', TEMPO[3], C.ponte.respostas, V, { f:C.ponte.f }));
-  out.push(blocoE('pergunta', TEMPO[4], C.pergunta.geral, V, { f:C.pergunta.f }));
-  if (inc.length > 2) avisos.push('Também marcou: ' + inc.slice(2).map(x => LONG.incomoda[1][x]).join('; ') + '.');
+  if (at) out.push(bloco6('pesa', T6C[3], [Q.atrapalha[at]], V, { f:Q.atrapalha.f, circular:'essa resposta na tela' }));
+  // 5 · o que conserva na idade dela (sem sexo no quiz: o item comum aos dois, de músculo ou força quando houver)
+  V.item = FX_LONG[r.idade] ? itemImporta(FX_LONG[r.idade], r.sexo, MOV_RE, { foraPele:true }) : null;
+  Object.assign(V, escolheExemplo('quiz-longevidade', [...(LIGA_LONG[prin] || []), 'longevidade'], null, false) || {});
+  out.push(importa6(N, V, T6C));
+  // 6 · daqui a 10 anos, o que ela quer, e a pergunta de interesse
+  out.push(interesse6(N, V, T6C, N.desejo));
+  cabe(out, 60, bloco6('conserva', T6C[2], [prin ? Q.incomoda[prin] : null], V, { f:Q.incomoda.f }), V, T6C);
+  if (inc.length > 1) avisos.push('Também marcou: ' + inc.filter(x => x !== prin).map(x => LONG.incomoda[1][x]).join('; ') + '.');
   if (r.ajuda) avisos.push(`Prefere fazer: ${LONG.ajuda[1][r.ajuda] || r.ajuda}.`);
-  if (r.idade) avisos.push(`Idade: ${LONG.idade[1][r.idade] || r.idade}.`);
-  return { blocos:out.filter(Boolean), avisos };
+  return { blocos:out.filter(Boolean), avisos, rotulo:V.rotulo || V.objetivo, desejo:V.objetivo };
 }
 /** O roteiro de um resultado montado pelo estoque: {blocos, avisos}, ou null sem estoque. */
 function doEstoque(e){
@@ -634,7 +747,7 @@ async function preencheParecidos(){
 }
 
 // Modo revisão da pele-idade: os passos são os blocos do roteiro montado, com a variação escolhida na tela.
-const ROT_BLOCO = { abertura:'Abertura', idade:'Idade do rosto', bem:'O que está bem', 'habito-cigarro':'Cigarro', 'habito-sol':'Sol', 'habito-metabolico':'Pressão e glicose',
+const ROT_BLOCO = { resultado:'O resultado', conserva:'O que está conservado', pesa:'O que pesa', importa:'O que conserva na idade', abertura:'Abertura', idade:'Idade do rosto', bem:'O que está bem', 'habito-cigarro':'Cigarro', 'habito-sol':'Sol', 'habito-metabolico':'Pressão e glicose',
   'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', ponte:'Ponte', pergunta:'Pergunta', interesse:'Desejo e pergunta', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
 // 12/11: o roteiro do Claude (pele-idade) em partes: blocos cortados pelos marcadores [a-b s], o [APONTE: …] de cada bloco,
 // as linhas do POR ESCRITO DEPOIS e os AVISOS. null = não é do formato.
@@ -667,19 +780,27 @@ function refazerComResposta(e){ const i = B.findIndex(x => x.e === e); if (i >= 
 function passosReact(e){
   const b = B.find(x => x.e === e);
   const cl = b && b.teste === 'pele-idade' ? claude(e) : null;
+  const rotulo = b?.est?.rotulo || null;   // 13/11: o rótulo do bloco 1, destacado no teleprompter
   if (cl && cl.usar) return cl.partes.blocos.map(x => ({ id:x.id, bloco:x.titulo, foto:'frente', tempo:x.tempo, tela:x.aponte.length ? 'Aponte: ' + x.aponte.join('; ') : 'Foto de frente inteira',
-    fala:x.fala, aponte:x.aponte, regiao:null, nota:'', claude:true }));
+    fala:x.fala, aponte:x.aponte, regiao:null, nota:'', claude:true, rotulo }));
   if (!b || !b.est || !b.est.blocos.length) return [{ bloco:'Foto', foto:'frente', tempo:'', tela:'Foto de frente inteira', fala:'', nota:'O roteiro do estoque não carregou: use o cartão.' }];
   return b.est.blocos.map(bl => ({ id:bl.id, bloco:ROT_BLOCO[bl.id] || bl.id, foto:'frente', tempo:bl.tempo, tela:bl.circular ? 'Circular: ' + bl.circular : 'Foto de frente inteira',
-    fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, nota:bl.fixo ? 'Frase fixa: não cortar.' : '' }));
+    fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, nota:bl.fixo ? 'Frase fixa: não cortar.' : '', rotulo }));
 }
-/** 12/11: a resposta dela ao áudio antes (colada pelo Lucca no passo 2) abre o roteiro do pele-idade. Só nesta tela. */
+/** A resposta dela ao áudio antes (colada pelo Lucca no passo 2) abre o roteiro (pele-idade, braço e pernas). Só nesta tela. */
 let RESP = {};
 function resposta(c, txt){
   const t = String(txt || '').replace(/\s+/g, ' ').trim().slice(0, 200);
   if (t) RESP[c] = t; else delete RESP[c];
   if (c !== CODIGO || !EST) return;
-  B.forEach(b => { if (b.teste === 'pele-idade'){ try { b.est = doEstoque(b.e); } catch (err) { console.error(err); } } });
+  B.forEach(b => { try { b.est = doEstoque(b.e); } catch (err) { console.error(err); } });   // 13/11: todos (braço e pernas abrem com ela)
+  redesenhaTodos();
+}
+/** 13/11: o catálogo das imagens do exemplo (da edge, sem URL) chegou: o estoque de todos se refaz com o exemplo. */
+function exemplos(lista){
+  EXE = Array.isArray(lista) ? lista.filter(x => x && typeof x.id === 'string') : null;
+  if (!EST) return;
+  B.forEach(b => { try { b.est = doEstoque(b.e); } catch (err) { console.error(err); } });
   redesenhaTodos();
 }
 /** Chamado pela Caixa depois de desenhar os cartões de um código. */
@@ -733,5 +854,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
+return { exemplos, carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
 })();

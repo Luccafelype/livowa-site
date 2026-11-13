@@ -26,11 +26,15 @@ let fila = [], tela = '', telaT = Date.now(), antesOverlay = '', lead = null, le
 const abertos = new Map();   // lead → vezes aberto (só na memória desta aba; o código nunca sai daqui)
 
 // ---------- limpeza: só chaves conhecidas, valores curtos de opção ----------
-const CHAVES = new Set(['ms', 'sessao_ms', 'de', 'tela', 'tipo_lead', 'treino', 'aparelho', 'largura', 'altura', 'vezes', 'onde', 'estado', 'volta', 'n', 'anel', 'pinca', 'blocos']);
+const CHAVES = new Set(['ms', 'sessao_ms', 'de', 'tela', 'tipo_lead', 'treino', 'aparelho', 'largura', 'altura', 'vezes', 'onde', 'estado', 'volta', 'n', 'anel', 'pinca', 'blocos', 'ms_blocos', 'bloco_fim', 'salto_fecho']);
 const ok = v => typeof v === 'number' ? isFinite(v) : typeof v === 'boolean' ? true : typeof v === 'string' && v.length <= 40 && /^[A-Za-z0-9 _.:-]*$/.test(v) && !/LV-/i.test(v);
 function limpa(p){
   const o = {};
-  for (const [k, v] of Object.entries(p || {})) if (CHAVES.has(k) && v != null && ok(v)) o[k] = typeof v === 'number' ? Math.round(v) : v;
+  for (const [k, v] of Object.entries(p || {})){
+    if (!CHAVES.has(k) || v == null) continue;
+    if (Array.isArray(v)){ if (v.length <= 20 && v.every(x => typeof x === 'number' && isFinite(x))) o[k] = v.map(Math.round); continue; }   // 13/11: ms_blocos (só números)
+    if (ok(v)) o[k] = typeof v === 'number' ? Math.round(v) : v;
+  }
   return o;
 }
 const passo = s => typeof s === 'string' && /^[a-z0-9:_.-]{1,60}$/.test(s) && !/lv-/.test(s);

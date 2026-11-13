@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f2f4f1">
 <script>try { var t = localStorage.getItem('livowa_crm_tema'); if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t; } catch (e) { /* sem armazenamento: segue o sistema */ }</script>
 <title>CRM</title>
-<link rel="stylesheet" href="gravar-analise.css?v=20261112c">
+<link rel="stylesheet" href="gravar-analise.css?v=20261113y">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    13/11: o nome passou a ser CRM (pedido do Lucca); a aba dos leads é "Leads".
@@ -281,6 +281,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .det-tudo>summary{padding:12px 0}
 .det-tudo>.sec-c>#gestao .sec:first-child{border-top:0}
 .det-h{margin:14px 0 2px;font-size:.9rem;color:var(--m)}
+.pi-mais{margin:10px 0}
+.pi-mais>summary{cursor:pointer;color:var(--m);font-weight:600;padding:6px 0}
 .kit-dica{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--l);color:var(--m);font:700 .75rem system-ui;cursor:help}
 .passo.feito>summary small{color:var(--a)}
 .passo.agora{border:2px solid var(--a)}
@@ -511,10 +513,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div id="conv" class="conv" role="dialog" aria-modal="true" aria-labelledby="conv-tit" hidden>
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
-<script src="uso.js?v=20261113b"></script>
-<script src="kits.js?v=20261113e"></script>
-<script src="roteiro.js?v=20261113e"></script>
-<script src="gravar-analise.js?v=20261113b"></script>
+<script src="uso.js?v=20261113y"></script>
+<script src="kits.js?v=20261113p"></script>
+<script src="roteiro.js?v=20261113x"></script>
+<script src="gravar-analise.js?v=20261113y"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -554,9 +556,11 @@ const etapaDe = l => { const s = l?.status || 'novo', f = FINO[l?.codigo];
 const semAnaliseP = p => p.funil === 'pele-idade' && (p.etapa === 'limite' || p.resumo === 'sem_analise' || p.dados?.sem_analise === true);
 const temPele = l => (l.partes || []).some(p => (p.funil === 'pele-idade' || p.funil === 'pele2' || p.etapa === 'pele-resultado') && !semAnaliseP(p));
 const ehPI = l => (l.partes || []).some(p => p.funil === 'pele-idade');
+// 13/11 (d-20261113-narrativa-analise-todas-iscas): os testes que seguem o passo a passo da pele (a mesma próxima ação no cartão)
+const ehPasso = l => (l.partes || []).some(p => ['pele-idade', 'teste-braco', 'teste-pernas', 'quiz-longevidade', 'teste-emagrecimento', 'pele2'].includes(p.funil) && p.etapa !== 'pele-resultado');
 const soSemAnalise = l => { const ps = (l.partes || []).filter(p => p.funil === 'pele-idade'); return ps.length > 0 && ps.every(semAnaliseP); };
 function proxAcao(l, et){
-  const pi = ehPI(l);
+  const pi = ehPasso(l);
   if (pi && soSemAnalise(l) && (et === 'novo' || et === 'audio')) return 'Pedir a foto no WhatsApp (a análise automática não rodou)';
   if (et === 'novo') return pi ? 'Confirmar recebimento' : 'Responder (kit do teste)';
   if (et === 'audio') return pi ? 'Gravar a análise' : 'Mandar a análise';
@@ -722,7 +726,10 @@ const AJ_MSGS = [['audioTexto', 'Confirmação de recebimento'], ['audioFala', '
   ['lembreteVespera', 'Lembrete na véspera'], ['lembreteHora', 'Lembrete 1 h antes'], ['faltou', 'Faltou: remarcar']];
 // [chave, rótulo, padrão, mínimo, máximo]
 const AJ_PARAMS = [['toque_dias', 'Toques depois da análise (dias)', [1, 3, 7], 1, 60], ['nutrir_dias', 'Nutrir: próximo toque em (dias)', 14, 1, 180],
-  ['verde_min', 'Resposta verde até (min)', 5, 1, 240], ['ambar_min', 'Resposta âmbar até (min)', 60, 1, 1440], ['roteiro_espera_s', 'Espera pelo roteiro do Claude antes do estoque (s)', 30, 5, 120]];
+  ['verde_min', 'Resposta verde até (min)', 5, 1, 240], ['ambar_min', 'Resposta âmbar até (min)', 60, 1, 1440], ['roteiro_espera_s', 'Espera pelo roteiro do Claude antes do estoque (s)', 30, 5, 120],
+  // 13/11 (2º treino da Carla): o gravador. A chave do banco não aceita ponto: gravar_<nome> (o pedido falou gravar.<nome>)
+  ['gravar_ritmo_palavras_s', 'Gravador: ritmo da fala (palavras por segundo)', 2.5, 1, 5, 0.1], ['gravar_salto_fecho_s', 'Gravador: pula para a pergunta aos (s)', 75, 30, 170],
+  ['gravar_alvo_s', 'Gravador: alvo do vídeo (s)', 90, 30, 180], ['gravar_teto_s', 'Gravador: corta o vídeo aos (s)', 105, 45, 180]];
 const AJ_VARS = ['nome', 'lv', 'desejo', 'incomodo', 'idade', 'h1', 'h2', 'link', 'proximo_teste'];
 function padraoCfg(k){
   const tx = window.KITS?.texto?.(k); if (tx) return tx.padrao;   // 13/11: texto dos kits (braço, pernas, pele…)
@@ -774,7 +781,7 @@ function varsLead(l){
 // a próxima ação, em 1 toque: [rótulo, ação]
 function acaoDe(l, et){
   const pd = pendencia(l, et); if (pd) return [pd.rot, pd.acao];
-  const pi = ehPI(l);
+  const pi = ehPasso(l);
   if (pi && soSemAnalise(l) && (et === 'novo' || et === 'audio')) return ['Pedir a foto', 'foto'];
   if (pi && et === 'novo') return ['Confirmar recebimento', 'audio'];   // 13/11: o id 'audio' no banco continua
   if (pi && et === 'audio') return ['Gravar análise', 'gravar'];
@@ -953,7 +960,7 @@ async function gravarQuandoPronto(c){
     if (codigoAtual !== c || $('busca').hidden || window.GRAVADOR?._estado()) return;   // saiu do lead ou o gravador já abriu
     const bt = document.querySelector('#out .pi-claude .ga-abrir'); if (bt && bt.disabled) return;   // sem fotos: fica no passo 2, com o aviso
     const i = bt ? +bt.dataset.kb : -1, cl = KB[i] ? window.ROTEIRO?.claude(KB[i].e) : null;
-    if (bt && (Date.now() - t0 > cfgN('roteiro_espera_s', LEADS.find(x => x.codigo === c)) * 1000 || (cl && cl.lido && cl.estado !== 'gerando' && cl.estado !== 'lendo'))) return abreGravador(i);
+    if (bt && (KB[i]?.t !== 'pele-idade' || Date.now() - t0 > cfgN('roteiro_espera_s', LEADS.find(x => x.codigo === c)) * 1000 || (cl && cl.lido && cl.estado !== 'gerando' && cl.estado !== 'lendo'))) return abreGravador(i);
     if (Date.now() - t0 > cfgN('roteiro_espera_s', LEADS.find(x => x.codigo === c)) * 1000 + 5000) return;
     await espera(300);
   }
@@ -1692,7 +1699,25 @@ $('out').addEventListener('click', async ev => {
 });
 // ---------- Kit de resposta (01/11): faixa, mensagens prontas e modo react; tudo local, nada vai para o servidor ----------
 let KB = [], KM = [], KIT_NOME = '', KIT_COD = '', NOME_G = '', R = null;   // KB = blocos da tela; KM = mensagens desenhadas; KIT_NOME começa com o nome guardado (NOME_G, 12/11) e o que ele digitar fica só nesta tela
-const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'pele-idade' ? 'pele-idade' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas' : null;
+const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'pele-idade' ? 'pele-idade' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas'
+  : e.funil === 'quiz-longevidade' ? 'quiz-longevidade' : e.funil === 'teste-emagrecimento' ? 'quiz-emagrecimento' : null;
+// 13/11 (d-20261113-narrativa-analise-todas-iscas): uma narrativa só; braço, pernas, quizzes e pele2 seguem o passo a passo da pele
+const PASSO_KIT = new Set(['pele-idade', 'braco', 'pernas', 'pele2', 'quiz-longevidade', 'quiz-emagrecimento']);
+const FOTO_KIT = new Set(['pele', 'pele2', 'pele-idade']);
+// "Agora não": o próximo teste de quem fez cada um (o da pele nova vai pelo desejo dela)
+const NUTRIR_TESTE = { braco:'reconhecer', pernas:'chegar10', pele2:'reconhecer', 'quiz-longevidade':'chegar10', 'quiz-emagrecimento':'chegar10' };
+// o que vai na tela do gravador e da revisão: as fotos (pele) ou o quadro com o resultado (os outros)
+function telasKit(b){
+  if (FOTO_KIT.has(b.t)) return fotosDoGrupo(b.g, b.e).filter(f => f.url).map(f => ({ rot:f.rot, url:f.url, chave:f.chave }));
+  try { return b.quadros ||= (b.t === 'braco' || b.t === 'pernas' ? quadrosMov(b) : quadrosQuiz(b)); } catch (err) { console.error(err); return []; }
+}
+// quiz: um quadro com as respostas dela (os mesmos rótulos do "Respostas do teste")
+function quadrosQuiz(b){
+  const doc = new DOMParser().parseFromString(`<div>${detalhe(b.e)}</div>`, 'text/html');
+  const ls = [...doc.querySelectorAll('.p2 .l, .l')].map(l => ({ rot:l.querySelector('span')?.textContent?.trim() || '', val:l.querySelector('b')?.textContent?.trim() || '' }))
+    .filter(x => x.rot && x.val && !/^nome$/i.test(x.rot)).filter((x, k, a) => a.findIndex(y => y.rot === x.rot) === k).slice(0, 4);
+  return [{ chave:'resultado', rot:'Respostas', url:quadro(`${b.c?.titulo || 'Quiz'} · as respostas dela`, ls.length ? ls : [{ rot:'Respostas', val:'—' }]) }];
+}
 function kitBloco(e){
   const t = window.KITS && kitTeste(e); if (!t) return '';
   try {
@@ -1715,7 +1740,7 @@ const COR_FAIXA = { 1:'ok', 2:'meh', 3:'meh', 4:'bad' };
 function kitCorpo(i){
   const b = KB[i], K = KITS[b.t], c = b.c = K.classifica(b.d, b.forcar), pele = b.t === 'pele' || b.t === 'pele2';
   const atalho = id => K.atalhos.find(a => a.id === id)?.texto || '';
-  if (b.t === 'pele-idade') return kitCorpoPI(i, b, K, c, atalho);
+  if (PASSO_KIT.has(b.t)) return kitCorpoPI(i, b, K, c, atalho);
   let h = '<h3 class="kit-h">Responder</h3>';
   h += `<div class="kit-faixa ${pele ? (c.perfil === 'A' ? 'ok' : 'meh') : COR_FAIXA[c.faixa] || 'meh'}"><b>${pele ? 'Perfil ' + esc(c.titulo) : c.faixa ? `Faixa ${c.faixa} de 4 · ${esc(c.titulo)}` : 'Faixa não calculada'}</b><span>${esc(c.simples || '')}</span></div>`;
   if (c.refazer) h += `<div class="kit-refazer"><b>${pele ? 'Foto duvidosa' : 'Medição duvidosa'}: peça para refazer</b><p>${esc(c.motivo)}</p>
@@ -1748,14 +1773,16 @@ const PASSO_DE = { novo:1, audio:2, analisei:3, respondeu:3, nutrir:3, nao_quis:
 const R3_DE = { respondeu:'sim', conversa:'sim', faltou:'sim', comprou:'sim', nutrir:'agora', nao_quis:'nao', sumiu:'sumiu' };
 const R3_ETAPA = { sim:'respondeu', agora:'nutrir', nao:'nao_quis' };
 function kitCorpoPI(i, b, K, c, atalho){
-  const l = LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual, status:'novo' }, V3 = v3De(l, 'pele-idade'), et = etapaDe(l), ord = ORDEM_ET[et] ?? 0;
-  const nt = K.nutrir(b.d), r = b.d.respostas || {};
+  const PI = b.t === 'pele-idade', funil = b.e?.funil || 'pele-idade';
+  const l = LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual, status:'novo' }, V3 = v3De(l, funil), et = etapaDe(l), ord = ORDEM_ET[et] ?? 0;
+  const nt = PI ? K.nutrir(b.d) : KITS['pele-idade'].nutrir({ respostas:{ futuro:NUTRIR_TESTE[b.t] || 'reconhecer' } }), r = b.d.respostas || {};
   b.extra = { h1:'', h2:'', ...(b.extra || {}), lv:codigoAtual, link:`${AGENDA}?notes=${encodeURIComponent(codigoAtual)}`, teste:nt.teste, tema:nt.tema, proximo_teste:nt.teste,
-    desejo:c.vars.futuro || null, incomodo:c.vars.espelho || null, idade:b.d.idade != null ? `${b.d.idade} anos` : null };
+    desejo:c.vars?.futuro || (PI ? null : window.ROTEIRO?.doEstoque?.(b.e)?.desejo) || null, incomodo:c.vars?.espelho || null, idade:b.d.idade != null ? `${b.d.idade} anos` : null };
   if (!b.r3) b.r3 = R3_DE[et] || '';
   let h = '<h3 class="kit-h">Responder passo a passo</h3>';
-  h += `<div class="kit-faixa ${c.cor}"><b>${esc(c.titulo[0].toUpperCase() + c.titulo.slice(1))}</b><span>${esc(c.simples)}</span></div>`;
-  if (c.refazer) h += `<div class="kit-refazer"><b>Foto duvidosa: peça para refazer</b><p>${esc(c.motivo)}</p>
+  const tit = String(c.titulo || KITS.NOME_TESTE?.[b.t] || '');
+  h += `<div class="kit-faixa ${c.cor || COR_FAIXA[c.faixa] || 'meh'}"><b>${esc(tit ? tit[0].toUpperCase() + tit.slice(1) : '')}${!PI && c.faixa ? ` · faixa ${c.faixa} de 4` : ''}</b><span>${esc(c.simples || '')}</span></div>`;
+  if (c.refazer) h += `<div class="kit-refazer"><b>${FOTO_KIT.has(b.t) ? 'Foto duvidosa' : 'Medição duvidosa'}: peça para refazer</b><p>${esc(c.motivo)}</p>
     ${kitMsg(atalho(c.atalhoRefazer), i, { rotulo:'Atalho /' + c.atalhoRefazer, quando:'Mandar este e parar aí' })}</div>`;
   if (c.semAnalise) h += `<div class="kit-refazer"><b>A análise automática não rodou</b><p>Ela bateu no limite de análises do dia: aqui não há foto nem número, só as respostas. Peça a foto no WhatsApp; o roteiro acima usa só as respostas.</p></div>`;
   h += `<label class="kit-nome-l"><span>Nome<small>${NOME_G ? 'veio do teste' : 'só nesta tela'}</small></span><input class="kit-nome" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="primeiro nome" value="${esc(KIT_NOME)}"></label>`;
@@ -1767,13 +1794,16 @@ function kitCorpoPI(i, b, K, c, atalho){
   h += passo(1, 'Confirmar recebimento', kitMsg(V3.audioTexto, i, { rotulo:'Texto' })
     + kitMsg(V3.audioFala, i, { raw:true, rotulo:'Fala do áudio', quando:'Grave uma vez e reenvie sempre o mesmo' }) + `<p class="kit-sub">${esc(V3.audioDica)}</p>` + marca('audio', 'Marcar: recebimento confirmado'));
   // 2 · gravar a análise
-  const fotos = FOTOS.filter(f => f.grupo === b.g && f.url), resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
+  const fotos = telasKit(b), resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
+  // braço, pernas e pele2: os textos do kit de antes (referência, "por que importa", mensagens da ficha) num fechado, só por escrito
+  const mais = PI ? [] : (K.mensagens(c) || []).filter(m => !m.audio && !/^convite$/i.test(m.rotulo || ''));
   // 12/11: o roteiro do Claude (pedido sozinho ao abrir) manda no gravador; a área .pi-claude se redesenha sozinha quando
   // o Claude responde, sem mexer no campo da resposta
   h += passo(2, 'Gravar a análise', `<label class="pi-resp-l">Resposta dela (usa no vídeo)<textarea class="pi-resp" rows="2" maxlength="200" placeholder="do jeito que você vai falar: quer se cuidar antes dos 50">${esc(resp)}</textarea></label>
     <div class="pi-claude" data-kb="${i}">${claudeHtml(i)}</div>
     <button type="button" class="kit-react" data-react="${i}" ${fotos.length ? '' : 'disabled'}>Revisar</button>`
-    + marca('analisei', 'Marcar: análise enviada'), 'Idade do rosto no vídeo: ' + c.idadeFaixa.txt);
+    + (mais.length ? `<details class="pi-mais"><summary>Mais textos deste teste</summary><div>${mais.map(m => kitMsg(m.texto, i, { rotulo:m.rotulo, quando:m.quando, nota:m.nota })).join('')}</div></details>` : '')
+    + marca('analisei', 'Marcar: análise enviada'), c.idadeFaixa ? 'Idade do rosto no vídeo: ' + c.idadeFaixa.txt : '');
   // 3 · ela respondeu
   const R3 = [['sim', 'Sim'], ['agora', 'Agora não'], ['nao', 'Não quis'], ['sumiu', 'Sumiu']];
   let c3 = `<div class="pi-r3" role="group" aria-label="O que ela respondeu">${R3.map(([k, t]) => `<button type="button" data-r3="${k}" data-kb="${i}" aria-pressed="${b.r3 === k}">${t}</button>`).join('')}</div>`;
@@ -1781,7 +1811,7 @@ function kitCorpoPI(i, b, K, c, atalho){
     + kitMsg(V3.convite, i, { rotulo:'Convite (2 horários em até 3 dias)' }) + `<p class="kit-sub">${esc(V3.conviteAgora)} O link já leva o código ${esc(codigoAtual)} nas notas da agenda.</p>`
     + `<details class="pi-preco"><summary>Se ela perguntar o preço por escrito (proposta do Claude, ainda não aprovada por você)</summary><div>${kitMsg(V3.preco, i, {})}</div></details>`
     + marca('conversa', 'Marcar: conversa marcada');
-  else if (b.r3 === 'agora') c3 += kitMsg(V3.nutrir, i, { rotulo:'Nutrir: o próximo teste pelo desejo dela' }) + `<p class="kit-sub">Desejo: ${esc(c.vars.futuro || 'não respondeu')} → ${esc(nt.teste)}.</p>`;
+  else if (b.r3 === 'agora') c3 += kitMsg(V3.nutrir, i, { rotulo:'Nutrir: o próximo teste' }) + `<p class="kit-sub">${PI ? `Desejo: ${esc(c.vars?.futuro || 'não respondeu')} → ` : ''}${esc(nt.teste)}</p>`;
   else if (b.r3 === 'nao') c3 += kitMsg(V3.naoQuis, i, { rotulo:'Não quis' }) + '<p class="kit-sub">Não insistir.</p>';
   else if (b.r3 === 'sumiu') c3 += kitMsg(V3.toque1, i, { rotulo:'Dia 1, por escrito' }) + `<div class="kit-m audio"><div class="kit-rot"><b>Dia 3, áudio</b></div><div class="kit-txt">${esc(V3.toque3)}</div></div>`
     + kitMsg(V3.toque7, i, { rotulo:'Dia 7, por escrito' }) + marca('sumiu', 'Marcar: sumiu (depois dos 3 toques)');
@@ -1790,15 +1820,15 @@ function kitCorpoPI(i, b, K, c, atalho){
   // 4 · a conversa
   h += passo(4, 'A conversa (15 min)', `<button type="button" class="pi-conv" data-kb="${i}">Abrir o roteiro da conversa</button>
     <p class="kit-sub">Depois da conversa:</p><div class="pi-r3" style="grid-template-columns:repeat(4,1fr)">${[['comprou', 'Comprou'], ['nutrir', 'Nutrir'], ['nao_quis', 'Não quis'], ['faltou', 'Faltou']].map(([e, t]) => `<button type="button" class="pi-depois" data-et="${e}" data-kb="${i}" aria-pressed="${et === e}">${t}</button>`).join('')}</div>`);
-  h += `<details><summary>Ver atalhos do WhatsApp (${K.atalhos.length})</summary><div>
+  if (K.atalhos?.length) h += `<details><summary>Ver atalhos do WhatsApp (${K.atalhos.length})</summary><div>
     <p class="kit-sub">Para cadastrar em WhatsApp Business › Configurações › Ferramentas comerciais › Respostas rápidas. O app não preenche {nome}.</p>
     ${K.atalhos.map(a => kitMsg(a.texto, i, { raw:true, rotulo:'/' + a.id, quando:[a.quando, a.nota].filter(Boolean).join(' · ') })).join('')}</div></details>`;
   return h;
 }
 // o que o passo 2 mostra do Claude: estado, avisos (acima do Gravar), o botão Gravar, Refazer/estoque e o POR ESCRITO
 function claudeHtml(i){
-  const b = KB[i], V3 = v3De(LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual }, 'pele-idade'), cl = window.ROTEIRO?.claude(b.e) || null, resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
-  const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
+  const b = KB[i], V3 = v3De(LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual }, b.e?.funil || 'pele-idade'), cl = window.ROTEIRO?.claude(b.e) || null, resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
+  const fotos = telasKit(b);
   let h = '';
   // 13/11 (print do Lucca: a frase estourava a caixa e era instrução): só o estado, numa linha curta que quebra
   if (cl?.estado === 'gerando') h += '<p class="pi-cl-st espera" role="status"><i class="pi-ponto" aria-hidden="true"></i>Roteiro do Claude…</p>';
@@ -1808,7 +1838,7 @@ function claudeHtml(i){
   else h += '<p class="pi-cl-st" role="status">Roteiro do estoque ✓</p>';
   const av = cl?.usar ? [...cl.partes.avisos, ...(cl.conferir || []).map(a => 'Conferir: ' + a)] : [];
   if (av.length) h += `<div class="kit-refazer pi-cl-av"><b>Antes de gravar</b><ul>${av.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>`;
-  h += `<button type="button" class="ga-abrir" data-kb="${i}" ${fotos.length && window.GRAVADOR ? '' : 'disabled'}>${fotos.length ? 'Gravar análise' : 'Gravar análise (sem fotos: apagadas ou não carregaram)'}</button>`;
+  h += `<button type="button" class="ga-abrir" data-kb="${i}" ${fotos.length && window.GRAVADOR ? '' : 'disabled'}>${fotos.length ? 'Gravar análise' : 'Gravar análise (sem fotos)'}</button>`;
   const bts = [];
   if (resp && cl && cl.estado !== 'gerando' && resp !== cl.respUsada && !b.d.sem_analise && !b.c.refazer) bts.push(`<button type="button" class="sec pi-cl-refazer" data-kb="${i}">Refazer com a resposta dela</button>`);
   if (cl?.tem && cl.estado !== 'gerando') bts.push(`<button type="button" class="sec pi-cl-estoque" data-kb="${i}">${cl.usarEstoque ? 'Usar o do Claude' : 'Usar o do estoque'}</button>`);
@@ -1818,7 +1848,7 @@ function claudeHtml(i){
   return h;
 }
 function pintaClaudePI(){
-  document.querySelectorAll('#out .pi-claude[data-kb]').forEach(el => { const i = +el.dataset.kb; if (KB[i]?.t === 'pele-idade') el.innerHTML = claudeHtml(i); });
+  document.querySelectorAll('#out .pi-claude[data-kb]').forEach(el => { const i = +el.dataset.kb; if (PASSO_KIT.has(KB[i]?.t)) el.innerHTML = claudeHtml(i); });
 }
 window.aoMudarClaude = () => { pintaClaudePI(); trocaRoteiroGravador(); };   // 13/11: o do Claude chegou com o gravador aberto: troca
 function redesenhaKitsPI(){
@@ -1949,13 +1979,50 @@ function regiaoLupa(txt){
   return nomes.length ? nomes.join(' · ') : String(txt).trim();
 }
 async function blocosGravador(b){
-  const passos = window.ROTEIRO?.passosReact(b.e) || [], nome = KIT_NOME.trim();
+  const passos = window.ROTEIRO?.passosReact(b.e) || [], nome = KIT_NOME.trim(), PI = b.t === 'pele-idade';
   b.ids = passos.map(p => p.id);
   await carregaImporta();
-  const blocos = passos.map(p => { const fala = KITS.preencher(p.fala, { ...b.c.vars, nome:nome || null }).replace(/\[(APONTE|CIRCULAR):\s*([^\]]*)\]/gi, (m, t, x) => `[${t.toUpperCase()}: ${regiaoLupa(x)}]`);
-    const cena = cenaPI(p.id, b, p, fala);
-    return { titulo:p.bloco, fala, faixa:faixaPI(p.id, b, p), cena, notas:cena?.notas || [] }; });
-  return { blocos, fonte:passos.some(p => p.claude) ? 'claude' : 'estoque' };
+  const blocos = passos.map(p => { const fala = KITS.preencher(p.fala, { ...(b.c?.vars || {}), nome:nome || null }).replace(/\[(APONTE|CIRCULAR):\s*([^\]]*)\]/gi, (m, t, x) => `[${t.toUpperCase()}: ${regiaoLupa(x)}]`);
+    const cena = PI ? cenaPI(p.id, b, p, fala) : cenaOutro(p.id, b);
+    return { titulo:p.bloco, fala, tempo:p.tempo || null, faixa:PI ? faixaPI(p.id, b, p) : p.id === 'resultado' ? (b.c?.simples || null) : null, cena, notas:cena?.notas || [], destaque:p.rotulo || null }; });
+  return { blocos:await comExemplo(blocos), fonte:passos.some(p => p.claude) ? 'claude' : 'estoque' };
+}
+// 13/11 (d-20261113-exemplos-por-imagem): o exemplo do bloco 5 é imagem de estudo, de licença restrita, no bucket privado
+// "exemplos" (nunca no site). O catálogo (sem URL) vai ao roteiro do estoque, que escolhe a imagem; a URL assinada (10 min)
+// só quando o gravador abre. No gravador, o [IMAGEM: id] abre um bloco "Exemplo" com o cartão da imagem.
+const RE_IMG = /\[IMAGEM:\s*([a-z0-9-]{1,60})\s*\]/i;
+async function carregaExemplos(){
+  if (!K || !window.ROTEIRO?.exemplos) return;
+  try { const j = await (await post({ acao:'exemplos', teste:'*' })).json(); if (j.ok && Array.isArray(j.catalogo)) window.ROTEIRO.exemplos(j.catalogo); }
+  catch { /* edge sem a ação ou bucket sem o kit: o vídeo segue sem exemplo */ }
+}
+async function urlsExemplos(ids){
+  if (!ids.length || !K) return {};
+  try { const j = await (await post({ acao:'exemplos', ids:ids.slice(0, 6) })).json(); return Object.fromEntries((j.ok && Array.isArray(j.exemplos) ? j.exemplos : []).filter(x => x && x.url).map(x => [x.id, x])); }
+  catch { return {}; }
+}
+async function comExemplo(blocos){
+  const ids = [...new Set(blocos.map(x => (RE_IMG.exec(x.fala) || [])[1]).filter(Boolean).map(x => x.toLowerCase()))];
+  if (!ids.length) return blocos;
+  const ex = await urlsExemplos(ids), out = [];
+  for (const x of blocos){
+    const m = RE_IMG.exec(x.fala); if (!m){ out.push(x); continue; }
+    const antes = x.fala.slice(0, m.index).trim(), depois = x.fala.slice(m.index + m[0].length).replace(/\[IMAGEM:[^\]]*\]/gi, '').trim(), e = ex[m[1].toLowerCase()];
+    if (antes) out.push({ ...x, fala:antes, tempo:null });   // partido em dois: o tempo de cada parte sai das palavras
+    out.push({ titulo:'Exemplo', tempo:null, fala:depois, faixa:null, destaque:null, imagem:e ? (e.legenda || []).join(' × ') || 'na tela' : '',
+      cena:e ? { tipo:'exemplo', id:e.id, url:e.url, recorte:e.recorte, legenda:e.legenda || [], credito:e.credito || '', nota:e.nota || '' } : null,
+      notas:e ? [] : ['A imagem do exemplo não veio: pule esta parte.'] });
+  }
+  return out;
+}
+// 13/11: fora da pele nova, a cena do bloco 2 é a régua (o número do teste ao lado da idade dela), quando os dois são números
+function cenaOutro(id, b){
+  if (id !== 'resultado') return null;
+  const d = b.d || {}, idade = Number(d.idade);
+  if (!isFinite(idade) || idade <= 0) return null;
+  if (b.t === 'braco'){ const n = b.c?.medida?.idadeM; return Number.isFinite(n) ? { tipo:'idade', min:n, max:n, idade, rot:'Músculo' } : null; }
+  if (b.t === 'pernas'){ const m = String(d.faixa || '').match(/(\d+)\D+(\d+)/); return m ? { tipo:'idade', min:+m[1], max:+m[2], idade, rot:'Pernas' } : null; }
+  return null;
 }
 let GRAV_KB = -1;   // o kit cujo gravador está aberto (para trocar o roteiro se o do Claude chegar depois)
 async function trocaRoteiroGravador(){
@@ -1965,12 +2032,14 @@ async function trocaRoteiroGravador(){
 }
 async function abreGravador(i){
   const b = KB[i]; if (!b || !window.GRAVADOR) return;
-  const fotos = fotosDoGrupo(b.g, b.e).filter(f => f.url).map(f => ({ rot:f.rot, url:f.url, chave:f.chave }));
+  const fotos = telasKit(b);
   const { blocos, fonte } = await blocosGravador(b);   // [APONTE: …] fica na fala: o gravador mostra só no teleprompter
   if (KB[i] !== b) return;   // trocou de lead enquanto lia o arquivo
   const c = codigoAtual, volta = document.querySelector(`.ga-abrir[data-kb="${i}"]`);
   GRAV_KB = i;
-  GRAVADOR.abrir({ codigo:c, fotos, blocos, fonte, foto:'frente', aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
+  const lg = LEADS.find(x => x.codigo === c) || { codigo:c };   // 13/11: os números do gravador (Ajustes)
+  const params = { ritmo:cfgN('gravar_ritmo_palavras_s', lg), salto:cfgN('gravar_salto_fecho_s', lg), alvo:cfgN('gravar_alvo_s', lg), teto:cfgN('gravar_teto_s', lg) };
+  GRAVADOR.abrir({ codigo:c, fotos, blocos, fonte, params, foto:FOTO_KIT.has(b.t) ? 'frente' : fotos[0]?.chave, aoMarcar:() => marcar(c, 'analisei'), aoFechar:() => { if (volta?.isConnected) volta.focus(); } });
 }
 // a conversa de 15 min numa tela legível (v3, etapa 4)
 function abreConversa(i){
@@ -2109,10 +2178,10 @@ function reactAbrir(i, volta, chave){
   const b = KB[i]; if (!b) return;
   window.USO?.tela('revisao-ipad');
   const foto = b.t === 'pele' || b.t === 'pele2' || b.t === 'pele-idade';
-  const telas = foto ? fotosDoGrupo(b.g, b.e).filter(f => f.url) : (b.quadros ||= quadrosMov(b));
+  const telas = foto ? fotosDoGrupo(b.g, b.e).filter(f => f.url) : telasKit(b);
   if (!telas.length) return;
   const passos = b.t === 'pele-idade' ? window.ROTEIRO?.passosReact(b.e) || [{ bloco:'Foto', foto:'frente', tempo:'', tela:'Foto de frente inteira', fala:'' }]
-    : foto ? KITS[b.t].react(b.d, b.c.perfil) : passosMov(b);
+    : foto ? KITS[b.t].react(b.d, b.c.perfil) : b.t === 'braco' || b.t === 'pernas' ? passosMov(b) : window.ROTEIRO?.passosReact(b.e) || [];
   R = { i, foto, passos, telas, pos:0, tela:-1, volta, z:{ s:1, tx:0, ty:0 }, fit:null };
   $('react').hidden = false; document.body.style.overflow = 'hidden';
   $('react-card').hidden = false; $('rv-corpo').classList.remove('so-foto'); $('rv-dica').hidden = false;
@@ -2134,7 +2203,7 @@ function reactDesenha(){
   $('react-reg').textContent = R.foto ? p.bloco.replace(/ \(opcional\)$/, '') : '';
   $('react-tit').textContent = p.bloco; $('react-pos').textContent = `${R.pos + 1} de ${n}${p.tempo ? ' · ' + p.tempo : ''}`;
   const vars = { ...KB[R.i].c.vars, ...(p.vars || {}), nome:KIT_NOME.trim() };
-  $('react-fala').innerHTML = KITS.pedacos(p.fala, vars).map(x => x.falta ? `<mark>${esc(x.s)}</mark>` : esc(x.s)).join('');
+  $('react-fala').innerHTML = KITS.pedacos(String(p.fala || '').replace(/\s*\[IMAGEM:[^\]]*\]\s*/gi, ' (imagem do exemplo) '), vars).map(x => x.falta ? `<mark>${esc(x.s)}</mark>` : esc(x.s)).join('');
   $('react-extra').textContent = [
     (p.tela || '') + (!veio ? ` (essa foto não veio; mostrando ${t.rot.toLowerCase()})` : '') + (p.nivel != null ? ` · nível ${p.nivel}/3` : ''),
     p.nota, p.extra, p.seguranca ? `Frase de segurança (não cortar): "${p.seguranca}"` : ''].filter(x => x && x.trim()).join('\n');
@@ -2386,7 +2455,7 @@ function campoAj(k, rot){
   const { v, de } = cfgDe(k, null, cadeiaAj()), proprio = CFG.linhas[AJ.escopo]?.[k] != null, ro = CFG.ok ? '' : ' readonly';
   const volta = CFG.ok && proprio ? `<button type="button" class="aj-volta" data-k="${k}">${AJ.escopo === 'geral' ? 'Voltar ao padrão' : 'Voltar ao geral'}</button>` : '';
   const pr = AJ_PARAMS.find(x => x[0] === k);
-  const corpo = pr ? `<div class="aj-nums">${(Array.isArray(v) ? v : [v]).map((n, i) => `<input class="aj-num" type="number" inputmode="numeric" min="${pr[3]}" max="${pr[4]}" data-k="${k}" data-i="${i}" value="${esc(n)}"${ro} aria-label="${esc(rot)}${Array.isArray(v) ? ' ' + (i + 1) : ''}">`).join('')}</div>`
+  const corpo = pr ? `<div class="aj-nums">${(Array.isArray(v) ? v : [v]).map((n, i) => `<input class="aj-num" type="number" inputmode="${pr[5] ? 'decimal' : 'numeric'}" min="${pr[3]}" max="${pr[4]}" step="${pr[5] || 1}" data-k="${k}" data-i="${i}" value="${esc(n)}"${ro} aria-label="${esc(rot)}${Array.isArray(v) ? ' ' + (i + 1) : ''}">`).join('')}</div>`
     : `<textarea class="aj-txt" data-k="${k}" rows="3" aria-label="${esc(rot)}"${ro}>${esc(v)}</textarea>
       ${CFG.ok ? `<div class="aj-chips">${[...new Set([...AJ_VARS, ...(String(padraoCfg(k)).match(/\{([a-z0-9_]+)\}/g) || []).map(x => x.slice(1, -1))])].map(x => `<button type="button" class="aj-chip" data-v="${x}" data-k="${k}">{${x}}</button>`).join('')}</div>` : ''}
       <div class="aj-previa" id="ajp-${k}">${previaAj(k)}</div>`;
@@ -2464,7 +2533,7 @@ $('aj-lead').addEventListener('change', ev => { AJ.lead = ev.target.value; AJ_MS
 
 document.addEventListener('visibilitychange', () => { if (document.hidden) return; carregaConfig().then(() => { if (!$('ajustes').hidden) desenhaAjustes(); });
   if (!$('caixa').hidden) carregar(); else if (!$('funil').hidden) carregaFunil(); });
-carregar(); carregaConfig().then(() => { if (CARREGOU && !$('caixa').hidden && !FAIXA) desenhaCaixa(); });
+carregar(); carregaConfig().then(() => { if (CARREGOU && !$('caixa').hidden && !FAIXA) desenhaCaixa(); }); carregaExemplos();
 // 13/11: sol/lua (força claro ou escuro neste aparelho; sem escolha, segue o sistema)
 const SOL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
 const LUA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';

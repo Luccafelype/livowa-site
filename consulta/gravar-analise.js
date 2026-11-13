@@ -27,8 +27,25 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1311b';
-const W = 720, H = 1280, FPS = 30, MAX_S = 90;
+const VERSAO = '1311y';
+const W = 720, H = 1280, FPS = 30;
+// 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
+// (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
+const PADRAO = { ritmo:2.5, salto:75, alvo:90, teto:105 };
+function params(o){
+  const p = { ...PADRAO }, q = (o && o.params) || {};
+  for (const k of Object.keys(PADRAO)){ const v = Number(q[k]); if (Number.isFinite(v) && v > 0) p[k] = v; }
+  if (p.alvo > p.teto) p.alvo = p.teto;
+  if (p.salto >= p.teto) p.salto = Math.max(1, p.teto - 15);
+  return p;
+}
+/** Quanto o bloco deve durar: o [a-b s] do roteiro; sem ele, as palavras ÷ o ritmo (marcadores [..] fora). */
+function tempoBloco(b, ritmo){
+  const m = /(\d+(?:[.,]\d+)?)\s*[-–]\s*(\d+(?:[.,]\d+)?)\s*s/.exec(String((b && b.tempo) || ''));
+  if (m){ const d = parseFloat(m[2].replace(',', '.')) - parseFloat(m[1].replace(',', '.')); if (d > 0) return d * 1000; }
+  const n = String((b && b.fala) || '').replace(/\[[^\]]*\]/g, ' ').split(/\s+/).filter(Boolean).length;
+  return Math.max(3, n / (ritmo || PADRAO.ritmo)) * 1000;
+}
 const CIRC = { cx:W - 24 - 120, cy:H - 24 - 120, r:120 };   // câmera dele
 const TOPO = 150;                                           // nome e CRM no alto do vídeo
 const R_ANEL = 84;
@@ -71,7 +88,7 @@ function monta(){
     <div class="ga-quadro">
       <canvas class="ga-tela" width="${W}" height="${H}" aria-label="Vídeo que vai ser gravado"></canvas>
       <video class="ga-cam" playsinline muted autoplay aria-hidden="true"></video>
-      <div class="ga-prompt" aria-live="polite"><div class="ga-p-topo"><b class="ga-p-tit"></b><span class="ga-p-pos"></span><button type="button" class="ga-aa" aria-label="Tamanho do texto">Aa</button></div><p class="ga-p-txt"></p><div class="ga-p-opc" hidden></div><p class="ga-p-dep"></p></div>
+      <div class="ga-prompt" aria-live="polite"><div class="ga-p-topo"><b class="ga-p-tit"></b><span class="ga-p-pos"></span><button type="button" class="ga-aa" aria-label="Tamanho do texto">Aa</button></div><p class="ga-p-txt"></p><div class="ga-p-barra" hidden><i></i></div><div class="ga-p-opc" hidden></div><p class="ga-p-dep" aria-hidden="true"></p></div>
       <div class="ga-conta" hidden></div>
       <div class="ga-aviso" hidden></div>
       <div class="ga-nota" hidden></div>
@@ -104,7 +121,7 @@ function monta(){
   </div>`;
   document.body.append(el);
   const q = s => el.querySelector(s);
-  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'),
+  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pBarra:q('.ga-p-barra'), pBarraI:q('.ga-p-barra i'),
     conta:q('.ga-conta'), aviso:q('.ga-aviso'), nota:q('.ga-nota'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
     fechar:q('.ga-fechar'), ant:q('.ga-ant'), rec:q('.ga-rec-b'), recT:q('.ga-rec-t'), prox:q('.ga-prox'), grav:q('.ga-grav'), rev:q('.ga-rev'), fim:q('.ga-fim'),
     refazer:q('.ga-refazer'), enviar:q('.ga-enviar'), baixar:q('.ga-baixar'), marcar:q('.ga-marcar'), denovo:q('.ga-denovo'), info:q('.ga-info'), tentar:q('.ga-tentar') };
@@ -148,6 +165,21 @@ async function carregaFoto(f){
     } catch (e2) { f.erro = true; return false; }
   }
 }
+
+// 13/11 (d-20261113-exemplos-por-imagem): a imagem do exemplo (bucket privado, URL assinada de 10 min) também vira blob
+async function carregaExemplo(c){
+  if (!c || c.img || c.carregando || !c.url) return;
+  c.carregando = true;
+  try {
+    const r = await fetch(c.url, { mode:'cors', credentials:'omit', cache:'no-store' });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const url = URL.createObjectURL(await r.blob()), img = new Image(); img.decoding = 'async'; img.src = url;
+    await (img.decode ? img.decode() : new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; }));
+    c.img = img; c.obj = url;
+  } catch (e) { c.erro = true; }
+  c.carregando = false; if (G) nota();
+}
+const exemplosDe = bs => (bs || []).map(b => b && b.cena).filter(c => c && c.tipo === 'exemplo');
 
 // ---------- desenho do quadro (só o que vai para o vídeo; o teleprompter não passa por aqui) ----------
 function caixa(ctx, x, y, w, h, r){
@@ -238,6 +270,7 @@ function montagem(ctx, agora){
   else if (c.tipo === 'foto') cenaFoto(ctx, c, agora);
   else if (c.tipo === 'dentro') cenaDentro(ctx, c, t);
   else if (c.tipo === 'desejo') cenaDesejo(ctx, c, t);
+  else if (c.tipo === 'exemplo') cenaExemplo(ctx, c, t);
   ctx.restore();
   ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
 }
@@ -246,6 +279,7 @@ function nota(){
   if (!G || !D) return;
   const b = G.o.blocos[G.bloco], c = b && b.cena; let t = '';
   if (c && c.tipo === 'desejo' && !(c.itens && c.itens.length)) t = c.aviso || 'O que importa: conteúdo em pesquisa. Este cartão não entra no vídeo.';
+  else if (c && c.tipo === 'exemplo' && !c.img) t = c.erro ? 'A imagem do exemplo não carregou: pule esta parte.' : 'Carregando a imagem do exemplo…';
   else if (c && c.tipo === 'foto'){
     const r = G.rosto;
     if (!c.lupas || !c.lupas.length) t = 'Sem lupa: a análise não marcou sinal visível. Use o dedo para marcar.';
@@ -262,10 +296,10 @@ function cenaIdade(ctx, c, t){
   escurece(ctx, .82 * sai(t / 250));
   const yN = 470, xa = 215, xb = 565;
   ctx.globalAlpha = p; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = AMARELO; ctx.font = `600 32px ${FONTE}`; ctx.fillText('Rosto', xa, yN - 128);
+  ctx.fillStyle = AMARELO; ctx.font = `600 32px ${FONTE}`; ctx.fillText(c.rot || 'Rosto', xa, yN - 128);   // 13/11: Músculo, Pernas
   ctx.fillStyle = AZUL; ctx.fillText('Você', xb, yN - 128);
   const sobe = (1 - p) * 26;
-  ctx.font = `700 112px ${MONO}`; ctx.fillStyle = AMARELO; ctx.fillText(`${c.min}–${c.max}`, xa, yN + sobe);
+  ctx.font = `700 112px ${MONO}`; ctx.fillStyle = AMARELO; ctx.fillText(c.min === c.max ? String(c.min) : `${c.min}–${c.max}`, xa, yN + sobe);
   ctx.fillStyle = AZUL; ctx.fillText(String(c.idade), xb, yN + sobe);
   ctx.font = `500 24px ${FONTE}`; ctx.fillStyle = APAGADO; ctx.fillText('estimativa', xa, yN + 44);
   ctx.fillText('anos', xb, yN + 44);
@@ -514,6 +548,32 @@ function cenaDesejo(ctx, c, t){
   ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
 }
 
+// exemplo (13/11, d-20261113-exemplos-por-imagem): a imagem do estudo só recortada pelo kit (nenhuma outra edição), a
+// legenda grande (uma por painel, da esquerda para a direita) e, no pé, o crédito e "Varia de pessoa para pessoa." pequenos.
+// Fica entre a faixa do nome e a câmera, encostado embaixo; entra em 0,4 s.
+function cenaExemplo(ctx, c, t){
+  const img = c.img; if (!img || !img.naturalWidth) return;
+  const p = sai(t / 400), r = c.recorte || { x:0, y:0, w:100, h:100 }, nw = img.naturalWidth, nh = img.naturalHeight;
+  const sx = r.x / 100 * nw, sy = r.y / 100 * nh, sw = Math.max(1, r.w / 100 * nw), sh = Math.max(1, r.h / 100 * nh);
+  const leg = (c.legenda || []).filter(Boolean).slice(0, 4), n = Math.max(1, leg.length);
+  ctx.font = `500 20px ${FONTE}`;
+  const xP0 = 32, notaL = c.nota ? quebra(ctx, c.nota, W - 2 * xP0, 2) : [];   // a nota da tela do kit (ex.: "Vermelho = músculo")
+  const topo = TOPO + 20, base = CIRC.cy - CIRC.r - 20, hLeg = leg.length ? 96 : 0, hPe = 62 + notaL.length * 26;
+  let dw = W - 64, dh = sh * dw / sw; if (dh > base - topo - hLeg - hPe){ dh = base - topo - hLeg - hPe; dw = sw * dh / sh; }
+  const dx = (W - dw) / 2, dy = base - hLeg - hPe - dh;   // encostado na câmera: na tela dele, o teleprompter cobre o alto
+  escurece(ctx, p);   // fundo liso: nada do quadro de baixo aparece por trás
+  ctx.globalAlpha = p;
+  try { ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh); } catch (e) { /* imagem ainda não pronta */ }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = '#fff'; ctx.font = `700 32px ${FONTE}`;
+  leg.forEach((l, k) => quebra(ctx, l, Math.max(120, dw / n - 14), 2).forEach((s, i) => ctx.fillText(s, dx + dw * (k + .5) / n, dy + dh + 14 + i * 38)));
+  ctx.textAlign = 'left'; ctx.fillStyle = APAGADO; ctx.font = `500 20px ${FONTE}`;
+  const xP = xP0; let yP = dy + dh + hLeg + 8;
+  notaL.forEach(l => { ctx.fillText(l, xP, yP); yP += 26; });
+  if (c.credito) ctx.fillText(quebra(ctx, c.credito, W - 2 * xP, 1)[0], xP, yP);
+  ctx.fillText('Varia de pessoa para pessoa.', xP, yP + 27);
+  ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
+}
+
 // ---------- teleprompter (só DOM) ----------
 function prompter(){
   const bs = G.o.blocos, b = bs[G.bloco] || { titulo:'', fala:'' }, n = bs.length;
@@ -521,19 +581,47 @@ function prompter(){
   D.pPos.textContent = n ? `${G.bloco + 1} de ${n}${G.o.fonte ? ' · ' + (G.o.fonte === 'claude' ? 'Claude' : 'estoque') : ''}` : '';
   // 12/11: [APONTE: região] (roteiro do Claude) vira dica destacada no teleprompter; nunca vai para o canvas
   D.pTxt.textContent = '';
+  if (b.imagem){ const sp = document.createElement('span'); sp.className = 'ga-dica'; sp.textContent = '→ imagem: ' + b.imagem; D.pTxt.append(sp); }   // 13/11: o exemplo na tela
   String(b.fala || '').split(/(\[(?:APONTE|CIRCULAR):[^\]]*\])/i).forEach(pedaco => {
     const m = /^\[(?:APONTE|CIRCULAR):\s*([^\]]*)\]$/i.exec(pedaco);
     if (m){ const sp = document.createElement('span'); sp.className = 'ga-dica'; sp.textContent = '→ ' + m[1].trim(); D.pTxt.append(sp); }   // 13/11: o nome da lupa
-    else if (pedaco) D.pTxt.append(document.createTextNode(pedaco));
+    else if (pedaco) poeComDestaque(D.pTxt, pedaco, b.destaque);
   });
   // 12/11: notas só para ele (nome popular do sinal, o que acompanha a idade, o porquê de cada item do cartão): nunca no canvas
   D.pOpc.textContent = ''; (b.notas || []).forEach(t => { const q = document.createElement('p'); q.textContent = t; D.pOpc.append(q); });
   D.pOpc.hidden = !(b.notas && b.notas.length);
-  D.pDep.textContent = G.bloco < n - 1 ? 'Depois: ' + (bs[G.bloco + 1].titulo || '') : 'Último bloco';
+  // 13/11: a 1ª linha do próximo bloco, apagada (dá para ver que tem mais); no último, nada
+  D.pDep.textContent = G.bloco < n - 1 ? String(bs[G.bloco + 1].fala || '').replace(/\[[^\]]*\]/g, ' ').replace(/\{nome\}/g, '').replace(/\s+/g, ' ').replace(/^[\s,]+/, '').trim() : '';
   D.prompt.style.setProperty('--fs', fsPrompt + 'px');
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
-  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); if (G.estado === 'rec') (G.blocosVistos ||= new Set()).add(G.bloco); }   // a cena do bloco começa agora
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
+  marcaTempo();
   nota();
+}
+// 13/11 (d-20261113-narrativa-analise-todas-iscas): o rótulo do bloco 1 (o incômodo ou objetivo nas palavras dela) em destaque
+function poeComDestaque(el, txt, d){
+  const i = d ? txt.toLowerCase().indexOf(String(d).toLowerCase()) : -1;
+  if (i < 0){ el.append(document.createTextNode(txt)); return; }
+  if (i) el.append(document.createTextNode(txt.slice(0, i)));
+  const m = document.createElement('mark'); m.className = 'ga-rot'; m.textContent = txt.slice(i, i + d.length); el.append(m);
+  poeComDestaque(el, txt.slice(i + d.length), d);
+}
+// 13/11: ms em cada bloco durante a gravação (registro de uso: ms_blocos), somando as voltas
+function contaBloco(fim){
+  if (!G || !G.msBlocos) return;
+  const agora = performance.now();
+  if (G.blocoAtivo != null && G.msBlocos[G.blocoAtivo] != null) G.msBlocos[G.blocoAtivo] += agora - G.blocoIni;
+  G.blocoAtivo = fim ? null : G.bloco; G.blocoIni = agora;
+}
+// 13/11: a linha fina enche no tempo do bloco; esgotado, o Próximo pulsa até ele tocar (o controle é dele)
+function marcaTempo(){
+  if (!G || !D) return;
+  const rec = G.estado === 'rec', n = G.o.blocos.length, ult = G.bloco >= n - 1;
+  D.pBarra.hidden = !rec;
+  if (!rec){ D.prox.classList.remove('pulsa'); return; }
+  const fr = Math.min(1, (performance.now() - G.blocoT) / tempoBloco(G.o.blocos[G.bloco], G.p.ritmo));
+  D.pBarraI.style.width = (fr * 100).toFixed(1) + '%';
+  D.prox.classList.toggle('pulsa', fr >= 1 && !ult);
 }
 function aviso(t){ D.aviso.textContent = t; D.aviso.hidden = !t; }
 function info(t){ D.info.textContent = t || ''; }
@@ -548,7 +636,8 @@ function estado(e){
   D.prompt.hidden = rev; D.ver.hidden = !rev;
   D.rec.classList.toggle('on', e === 'rec');
   if (e === 'rev') window.USO?.tela('revisao'); else if (e === 'prep' || e === 'conta' || e === 'rec') window.USO?.tela('gravador');
-  D.recT.textContent = e === 'rec' ? '0:00 / ' + mmss(MAX_S * 1000) : e === 'conta' ? 'Cancelar' : 'Gravar';
+  D.recT.textContent = e === 'rec' ? '0:00 / ' + mmss(G.p.alvo * 1000) : e === 'conta' ? 'Cancelar' : 'Gravar';
+  marcaTempo();
   D.rec.setAttribute('aria-label', e === 'rec' ? 'Parar a gravação' : e === 'conta' ? 'Cancelar a contagem' : 'Começar a gravar');
   D.rec.disabled = e === 'prep' && !G.pronto;
   D.fotos.querySelectorAll('button').forEach(b => { b.disabled = rev; });
@@ -559,10 +648,11 @@ function estado(e){
 // ---------- abrir / fechar ----------
 /** o = { codigo, nome, fotos:[{rot, url, chave}], blocos:[{titulo, fala, faixa}], aoMarcar?:fn, foto?:chave }. */
 async function abrir(o){
+  o = o || {};
   monta();
   if (G) fechar();
   G = { o, fotos:(o.fotos || []).filter(f => f.url).map(f => ({ ...f })), foto:0, bloco:0, estado:'prep', pronto:false, cam:false, mic:false, mostraCam:true,
-    stream:null, rec:null, chunks:[], t0:0, take:null, anel:null, ptrs:new Map(), gesto:null, quadros:0, camQuadros:0, camUlt:0, camParada:false, camParadas:0, camParadaS:null, iv:0, relogio:0, wake:null };
+    stream:null, rec:null, chunks:[], t0:0, take:null, anel:null, ptrs:new Map(), gesto:null, quadros:0, camQuadros:0, camUlt:0, camParada:false, camParadas:0, camParadaS:null, iv:0, relogio:0, wake:null, p:params(o) };
   const k = G.fotos.findIndex(f => f.chave === (o.foto || 'frente')); if (k > 0) G.foto = k;
   D.el.hidden = false; document.body.classList.add('ga-aberto');
   window.USO?.tela('gravador');   // 13/11: registro de uso do CRM (uso.js)
@@ -573,6 +663,7 @@ async function abrir(o){
   requestAnimationFrame(encaixa);
   G.iv = setInterval(pinta, 1000 / FPS);
   const g0 = G;
+  exemplosDe(G.o.blocos).forEach(carregaExemplo);   // 13/11: a imagem do exemplo (não segura a abertura)
   await Promise.all([Promise.all(G.fotos.map(carregaFoto)).then(() => { if (G === g0) achaRosto(); }), abreCamera()]);
   if (G !== g0) return;
   const algumaFoto = G.fotos.some(f => f.img);
@@ -636,6 +727,7 @@ function fechar(){
   try { g.wake?.release(); } catch (e) { /* ok */ }
   liberaTake();
   g.fotos.forEach(f => { if (f.obj) URL.revokeObjectURL(f.obj); f.img = null; });
+  exemplosDe(g.o.blocos).forEach(c => { if (c.obj) URL.revokeObjectURL(c.obj); c.img = null; });
   D.cam.srcObject = null;
   D.el.hidden = true; document.body.classList.remove('ga-aberto');
   G = null;
@@ -676,19 +768,24 @@ function comeca(){
   rec.onstop = () => terminou(g);
   try { rec.start(); } catch (e) { return falha('Não deu para gravar: ' + (e.message || e.name)); }   // sem timeslice (iOS)
   G.t0 = performance.now(); G.camUlt = G.camUlt || G.t0; G.blocoT = G.t0;   // a cena do 1º bloco entra no vídeo desde o começo
+  G.msBlocos = G.o.blocos.map(() => 0); G.blocoAtivo = G.bloco; G.blocoIni = G.t0; G.saltou = false;
   estado('rec');
   info('Gravando. Próximo troca o texto e a faixa.');
   G.relogio = setInterval(() => {
     if (!G || G.estado !== 'rec') return;
     const ms = performance.now() - G.t0;
-    D.recT.textContent = mmss(ms) + ' / ' + mmss(MAX_S * 1000);
-    D.rec.classList.toggle('fim-perto', ms > (MAX_S - 10) * 1000);
-    if (ms >= MAX_S * 1000) para();
+    D.recT.textContent = mmss(ms) + ' / ' + mmss(G.p.alvo * 1000);
+    D.rec.classList.toggle('fim-perto', ms >= G.p.alvo * 1000);
+    const n = G.o.blocos.length;   // o único salto automático: a pergunta de interesse nunca fica de fora
+    if (!G.saltou && ms >= G.p.salto * 1000 && G.bloco < n - 1){ G.saltou = true; G.bloco = n - 1; prompter(); }
+    marcaTempo();
+    if (ms >= G.p.teto * 1000) para();
   }, 250);
 }
 function para(){
   if (!G || !G.rec || G.estado !== 'rec') return;
   G.ms = performance.now() - G.t0;
+  contaBloco(true); G.blocoFim = G.bloco;
   clearInterval(G.relogio);
   info('Fechando o arquivo…');
   try { G.rec.stop(); } catch (e) { terminou(G); }
@@ -710,7 +807,8 @@ function terminou(g){
   info(`${mmss(g.take.ms)} · ${fmtMB(blob.size)} · ${extOf(type)}. Assista antes de mandar.`);
   duracao(g.take).then(d => { if (G && G.take && G.take.url === url){ G.take.dur = d; confere(G.take); } });
   diag('fim', g);
-  window.USO?.sinal('gravacao-fim', { ms:g.ms || 0, anel:g.anelUsos || 0, pinca:g.pincas || 0, blocos:(g.blocosVistos || new Set()).size });
+  window.USO?.sinal('gravacao-fim', { ms:g.ms || 0, anel:g.anelUsos || 0, pinca:g.pincas || 0, blocos:(g.blocosVistos || new Set()).size,
+    ms_blocos:(g.msBlocos || []).map(Math.round), bloco_fim:g.blocoFim ?? g.bloco, salto_fecho:!!g.saltou });   // 13/11: sem precisar do vídeo
 }
 // duração real do arquivo (o webm do Chrome vem com Infinity até buscar o fim)
 function duracao(t){
@@ -833,6 +931,8 @@ function liga(){
   D.el.addEventListener('touchmove', e => { if (G && e.target === D.tela) e.preventDefault(); }, { passive:false });
   D.rec.onclick = () => { if (!G) return; if (G.estado === 'prep') conta(); else if (G.estado === 'conta'){ clearTimeout(G.contaT); D.conta.hidden = true; estado('prep'); } else if (G.estado === 'rec') para(); };
   D.prox.onclick = () => { if (G && G.bloco < G.o.blocos.length - 1){ G.bloco++; prompter(); } };
+  const tocaTexto = ev => { if (!G || !['prep', 'rec'].includes(G.estado) || ev.target.closest('button')) return; D.prox.click(); };   // 13/11: o texto é o alvo grande
+  D.pTxt.addEventListener('click', tocaTexto); D.pDep.addEventListener('click', tocaTexto);
   D.ant.onclick = () => { if (G && G.bloco > 0){ G.bloco--; prompter(); } };
   D.fotos.onclick = ev => { const b = ev.target.closest('button[data-f]'); if (!b || !G) return; G.foto = +b.dataset.f; G.anel = null; D.fotos.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); nota(); };
   D.zoom.onclick = () => { const f = G && G.fotos[G.foto]; if (f && f.base) f.z = { ...f.base }; };
@@ -856,6 +956,8 @@ function liga(){
   if (window.ResizeObserver) new ResizeObserver(() => { if (G) encaixa(); }).observe(D.el.querySelector('.ga-palco'));   // a barra muda de altura: o quadro acompanha (nunca durante a gravação)
   document.addEventListener('keydown', ev => {
     if (!G) return;
+    const vale = ['prep', 'rec'].includes(G.estado);
+    if (ev.key === ' ' && vale && !ev.target.closest?.('input, textarea')){ ev.preventDefault(); if (document.activeElement?.closest?.('.ga')) document.activeElement.blur(); if (!ev.repeat) D.prox.click(); return; }   // 13/11: espaço avança (sem acionar o botão em foco)
     if (ev.key === 'ArrowRight'){ ev.preventDefault(); D.prox.click(); }
     else if (ev.key === 'ArrowLeft'){ ev.preventDefault(); D.ant.click(); }
     else if (ev.key === 'Escape' && G.estado !== 'rec'){ ev.preventDefault(); D.fechar.click(); }
@@ -881,6 +983,6 @@ function diag(motivo, g){
 }
 
 // 13/11: o roteiro do Claude chegou com o gravador aberto e ainda sem gravar: troca os blocos e volta ao 1º
-function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; prompter(); return true; }
-return { abrir, fechar, trocarBlocos, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada };
+function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; prompter(); return true; }
+return { abrir, fechar, trocarBlocos, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params };
 })();

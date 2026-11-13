@@ -773,7 +773,7 @@ const atalhosPeleIdade = PI_ATALHOS.map(id => T.atalhos.pele.find(a => a.id === 
 // Regras: sem promessa, sem "consulta", sem "grátis", sem preço por escrito, sem prometer vídeo nem prazo.
 const V3_PI = {
   audioTexto:'{nome}, recebi o seu teste ({lv}). Nas próximas horas eu te mando a sua análise.',   // 13/11: texto do Lucca ("Confirmar recebimento")
-  audioFala:'Oi! Aqui é o Lucca. Recebi o seu teste e eu mesmo vou olhar com calma a sua foto e o que você respondeu. Enquanto isso, me conta: o que te fez fazer o teste agora?',
+  audioFala:'Oi! Aqui é o doutor Lucca Marques. Recebi o seu teste e eu mesmo vou olhar com calma o seu resultado e o que você respondeu. Enquanto isso, me conta: o que te fez fazer o teste agora?',   // 13/11: o nome decidido; sem "foto" (vale para todos os testes)
   audioDica:'Grave uma vez (uns 15 s, sem nome), deixe salvo e reenvie sempre o mesmo: grave na conversa "Eu" (você mesmo) do WhatsApp Business e encaminhe.',
   depoisVideo:'Você se interessaria? Pode me responder sim ou não, do jeito que for melhor para você.',
   convite:'Que bom, {nome}. Vamos conversar 15 minutos por vídeo: eu entendo melhor o seu caso e te mostro como funciona. Tenho {h1} ou {h2}. Qual fica melhor? Se preferir outro horário, escolha aqui: {link}',
@@ -840,10 +840,10 @@ function editavel(obj, prop, chave, dono, grupo, rotulo){
 for (const [t, dono] of [['braco', 'teste-braco'], ['pernas', 'teste-pernas']]) for (const [f, x] of Object.entries(T[t])){
   const g = `Faixa ${f} · ${x.titulo}`;
   editavel(x, 'titulo', `${t}_${f}_titulo`, dono, g, 'Nome da faixa');
-  x.audio.forEach((a, i) => editavel(a, 'texto', `${t}_${f}_audio_${i}`, dono, g, 'Áudio' + (x.audio.length > 1 && a.quando ? ` (${a.quando})` : '')));
+  // 13/11 (d-20261113-narrativa-analise-todas-iscas): o áudio e o convite da faixa saíram de uso (vídeo em 6 blocos e o convite do
+  // passo a passo, editável em "convite" no teste): não vão aos Ajustes, para nenhuma frase morta aparecer lá
   editavel(x, 'ref', `${t}_${f}_ref`, dono, g, 'Referência jovem');
   editavel(x, 'estudo', `${t}_${f}_estudo`, dono, g, 'Por que importa');
-  editavel(x, 'convite', `${t}_${f}_convite`, dono, g, 'Convite');
 }
 for (const [t, dono] of [['braco', 'teste-braco'], ['pernas', 'teste-pernas'], ['pele', 'pele']]) T.atalhos[t].forEach(a => {
   editavel(a, 'texto', `at_${t}_${a.id}`, dono, 'Atalhos do WhatsApp', '/' + a.id + (a.quando ? ` · ${a.quando}` : ''));
@@ -872,6 +872,9 @@ return {
   pele:{ classifica:classificaPele, mensagens:(c) => mensagensPele(c.perfil), react:reactPeleComRegiao, atalhos:T.atalhos.pele, perfis:PERFIL_TXT },
   pele2:{ classifica:classificaPele2, mensagens:(c) => mensagensPele(c.perfil), react:reactPele2, atalhos:atalhosPele2, perfis:PERFIL_TXT, norm:normPele2, acne:d => acnePele2(normPele2(d)) },
   // react: os passos vêm do roteiro do estoque (ROTEIRO.passosReact, em roteiro.js), para a fala ser uma só
+  // 13/11 (d-20261113-narrativa-analise-todas-iscas): os quizzes ganham o mesmo passo a passo (sem mensagens próprias)
+  'quiz-longevidade':{ classifica:() => ({ teste:'quiz-longevidade', faixa:null, titulo:'Quiz da longevidade', simples:'As respostas dela', refazer:false, cor:'ok', vars:{} }), mensagens:() => [], atalhos:[] },
+  'quiz-emagrecimento':{ classifica:() => ({ teste:'quiz-emagrecimento', faixa:null, titulo:'Teste do emagrecimento', simples:'As respostas dela', refazer:false, cor:'ok', vars:{} }), mensagens:() => [], atalhos:[] },
   'pele-idade':{ classifica:classificaPeleIdade, mensagens:mensagensPeleIdade, atalhos:atalhosPeleIdade, caso:CASO_PI, futuro:FUTURO_PI, v3:V3_PI, nutrir:nutrirPI, conversa:CONVERSA_PI },
 };
 })();
