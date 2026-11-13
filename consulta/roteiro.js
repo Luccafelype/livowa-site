@@ -898,5 +898,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { exemplos, carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
+return { exemplos, catalogo:id => (EXE || []).find(x => x.id === id) || null, carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
 })();

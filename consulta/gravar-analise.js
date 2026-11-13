@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1311y';
+const VERSAO = '1311z';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -139,6 +139,7 @@ function encaixa(){
   let w = p.width, h = w * H / W;
   if (h > p.height){ h = p.height; w = h * W / H; }
   Object.assign(D.quadro.style, { width:w + 'px', height:h + 'px', left:((p.width - w) / 2) + 'px', top:((p.height - h) / 2) + 'px' });
+  D.prompt.style.setProperty('--topo', Math.ceil(h * TOPO / H) + 'px');   // 13/11: até aqui o teleprompter é opaco (o nome e o CRM do vídeo não aparecem por trás)
 }
 
 // ---------- fotos: baixadas para a memória (blob), para o canvas não ficar "sujo" e o link de 10 min não vencer no meio ----------
@@ -548,29 +549,65 @@ function cenaDesejo(ctx, c, t){
   ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
 }
 
-// exemplo (13/11, d-20261113-exemplos-por-imagem): a imagem do estudo só recortada pelo kit (nenhuma outra edição), a
-// legenda grande (uma por painel, da esquerda para a direita) e, no pé, o crédito e "Varia de pessoa para pessoa." pequenos.
-// Fica entre a faixa do nome e a câmera, encostado embaixo; entra em 0,4 s.
+// exemplo (13/11, d-20261113-exemplos-por-imagem): a imagem do estudo só recortada pelo kit (nenhuma outra edição), grande:
+// entre a faixa do nome e a câmera, na largura toda. Dois jeitos, o que der a imagem maior (3º treino: a faixa dos olhos saiu
+// com 60 px e ele não entendeu):
+//  - inteira (lado a lado, como no estudo), com a legenda grande embaixo de cada painel;
+//  - em pé: os painéis do kit (paineis > 1) um embaixo do outro, cada um com a sua legenda;
+//  - grade (3 ou 4 painéis): 2 colunas.
+// Vale a que enche ≥ 55% da altura sem encolher o painel mais que 30%; senão, a maior (a faixa dos olhos e as tomografias
+// ficam em pé; as gêmeas, inteiras na largura toda).
+// No pé, ao lado da câmera, pequenos: a nota da tela, o crédito e "Varia de pessoa para pessoa.". Entra em 0,4 s.
+const EX = { y0:TOPO + 8, leg:84, legPe:56, gap:14 };
+function layoutExemplo(c, img){
+  const r = c.recorte || { x:0, y:0, w:100, h:100 }, nw = img.naturalWidth, nh = img.naturalHeight;
+  const sx = r.x / 100 * nw, sy = r.y / 100 * nh, sw = Math.max(1, r.w / 100 * nw), sh = Math.max(1, r.h / 100 * nh);
+  const y1 = CIRC.cy - CIRC.r - 12, alto = y1 - EX.y0, leg = (c.legenda || []).filter(Boolean), n = Math.max(1, Math.min(4, +c.paineis || 1));
+  // inteira
+  const sA = Math.min(W / sw, (alto - (leg.length ? EX.leg : 0)) / sh), wA = sw * sA, hA = sh * sA;
+  const A = { modo:'inteira', h:hA + (leg.length ? EX.leg : 0), area:wA * hA / n,
+    paineis:[{ sx, sy, sw, sh, dx:(W - wA) / 2, dy:0, dw:wA, dh:hA }],
+    legs:n < 2 && leg.length > 1 ? [{ t:leg.join(' × '), cx:W / 2, y:hA + 12, larg:W - 48, linhas:2 }]   // gráfico: a legenda é do eixo ou das curvas, não de painel
+      : leg.map((t, k) => ({ t, cx:(W - wA) / 2 + wA * (k + .5) / Math.max(1, leg.length), y:hA + 12, larg:Math.max(150, wA / Math.max(1, leg.length) - 16), linhas:2 })) };
+  if (n < 2) return A;
+  // em pé
+  const pw = sw / n, cada = (alto - n * (leg.length ? EX.legPe : 0) - (n - 1) * EX.gap) / n, sB = Math.min(W / pw, cada / sh), wB = pw * sB, hB = sh * sB;
+  const B = { modo:'em pé', area:wB * hB, h:n * hB + (n - 1) * EX.gap + n * (leg.length ? EX.legPe : 0), paineis:[], legs:[] };
+  for (let k = 0, y = 0; k < n; k++){
+    B.paineis.push({ sx:sx + k * pw, sy, sw:pw, sh, dx:(W - wB) / 2, dy:y, dw:wB, dh:hB });
+    if (leg[k]) B.legs.push({ t:leg[k], cx:W / 2, y:y + hB + 8, larg:W - 48, linhas:1 });
+    y += hB + (leg.length ? EX.legPe : 0) + EX.gap;
+  }
+  const cand = [A, B];
+  // grade: 3 ou 4 painéis em 2 colunas (a última linha com 1 painel fica no meio)
+  if (n >= 3){
+    const lin = Math.ceil(n / 2), cadaG = (alto - lin * (leg.length ? EX.leg : 0) - (lin - 1) * EX.gap) / lin, sC = Math.min((W - EX.gap) / 2 / pw, cadaG / sh), wC = pw * sC, hC = sh * sC;
+    const C = { modo:'grade', area:wC * hC, h:lin * hC + (lin - 1) * EX.gap + lin * (leg.length ? EX.leg : 0), paineis:[], legs:[] };
+    for (let k = 0; k < n; k++){
+      const li = Math.floor(k / 2), so = k === n - 1 && n % 2 === 1, x = so ? (W - wC) / 2 : W / 2 + (k % 2 ? EX.gap / 2 : -EX.gap / 2 - wC), y = li * (hC + (leg.length ? EX.leg : 0) + EX.gap);
+      C.paineis.push({ sx:sx + k * pw, sy, sw:pw, sh, dx:x, dy:y, dw:wC, dh:hC });
+      if (leg[k]) C.legs.push({ t:leg[k], cx:x + wC / 2, y:y + hC + 8, larg:Math.max(150, wC), linhas:2 });
+    }
+    cand.push(C);
+  }
+  // a maior imagem; entre as que enchem ≥ 55% da altura sem encolher mais que 30%, a maior delas
+  const maior = cand.reduce((a, b) => b.area > a.area ? b : a), cheias = cand.filter(x => x.h >= .55 * H && x.area >= .7 * maior.area);
+  return cheias.length ? cheias.reduce((a, b) => b.area > a.area ? b : a) : maior;
+}
 function cenaExemplo(ctx, c, t){
   const img = c.img; if (!img || !img.naturalWidth) return;
-  const p = sai(t / 400), r = c.recorte || { x:0, y:0, w:100, h:100 }, nw = img.naturalWidth, nh = img.naturalHeight;
-  const sx = r.x / 100 * nw, sy = r.y / 100 * nh, sw = Math.max(1, r.w / 100 * nw), sh = Math.max(1, r.h / 100 * nh);
-  const leg = (c.legenda || []).filter(Boolean).slice(0, 4), n = Math.max(1, leg.length);
-  ctx.font = `500 20px ${FONTE}`;
-  const xP0 = 32, notaL = c.nota ? quebra(ctx, c.nota, W - 2 * xP0, 2) : [];   // a nota da tela do kit (ex.: "Vermelho = músculo")
-  const topo = TOPO + 20, base = CIRC.cy - CIRC.r - 20, hLeg = leg.length ? 96 : 0, hPe = 62 + notaL.length * 26;
-  let dw = W - 64, dh = sh * dw / sw; if (dh > base - topo - hLeg - hPe){ dh = base - topo - hLeg - hPe; dw = sw * dh / sh; }
-  const dx = (W - dw) / 2, dy = base - hLeg - hPe - dh;   // encostado na câmera: na tela dele, o teleprompter cobre o alto
+  const L = c.lay || (c.lay = layoutExemplo(c, img)), p = sai(t / 400), y1 = CIRC.cy - CIRC.r - 12;
+  const top = EX.y0 + Math.max(0, (y1 - EX.y0 - L.h) / 2);   // centrado na vertical, entre o nome e a câmera
   escurece(ctx, p);   // fundo liso: nada do quadro de baixo aparece por trás
   ctx.globalAlpha = p;
-  try { ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh); } catch (e) { /* imagem ainda não pronta */ }
-  ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = '#fff'; ctx.font = `700 32px ${FONTE}`;
-  leg.forEach((l, k) => quebra(ctx, l, Math.max(120, dw / n - 14), 2).forEach((s, i) => ctx.fillText(s, dx + dw * (k + .5) / n, dy + dh + 14 + i * 38)));
+  for (const q of L.paineis){ try { ctx.drawImage(img, q.sx, q.sy, q.sw, q.sh, q.dx, top + q.dy, q.dw, q.dh); } catch (e) { /* imagem ainda não pronta */ } }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = '#fff'; ctx.font = `700 34px ${FONTE}`;
+  for (const l of L.legs) quebra(ctx, l.t, l.larg, l.linhas).forEach((s, i) => ctx.fillText(s, l.cx, top + l.y + i * 38));
+  // pé: ao lado da câmera, pequeno
   ctx.textAlign = 'left'; ctx.fillStyle = APAGADO; ctx.font = `500 20px ${FONTE}`;
-  const xP = xP0; let yP = dy + dh + hLeg + 8;
-  notaL.forEach(l => { ctx.fillText(l, xP, yP); yP += 26; });
-  if (c.credito) ctx.fillText(quebra(ctx, c.credito, W - 2 * xP, 1)[0], xP, yP);
-  ctx.fillText('Varia de pessoa para pessoa.', xP, yP + 27);
+  const xP = 24, larg = CIRC.cx - CIRC.r - 16 - xP, pe = [...(c.nota ? quebra(ctx, c.nota, larg, 2) : []), ...(c.credito ? quebra(ctx, c.credito, larg, 2) : []), 'Varia de pessoa para pessoa.'];
+  let yP = Math.max(y1 + 14, top + L.h + 10);
+  pe.forEach(l => { ctx.fillText(l, xP, yP); yP += 26; });
   ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
 }
 
@@ -984,5 +1021,5 @@ function diag(motivo, g){
 
 // 13/11: o roteiro do Claude chegou com o gravador aberto e ainda sem gravar: troca os blocos e volta ao 1º
 function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; prompter(); return true; }
-return { abrir, fechar, trocarBlocos, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params };
+return { abrir, fechar, trocarBlocos, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo };
 })();

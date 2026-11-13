@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f2f4f1">
 <script>try { var t = localStorage.getItem('livowa_crm_tema'); if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t; } catch (e) { /* sem armazenamento: segue o sistema */ }</script>
 <title>CRM</title>
-<link rel="stylesheet" href="gravar-analise.css?v=20261113y">
+<link rel="stylesheet" href="gravar-analise.css?v=20261113z">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    13/11: o nome passou a ser CRM (pedido do Lucca); a aba dos leads é "Leads".
@@ -515,8 +515,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </div>
 <script src="uso.js?v=20261113y"></script>
 <script src="kits.js?v=20261113p"></script>
-<script src="roteiro.js?v=20261113z"></script>
-<script src="gravar-analise.js?v=20261113y"></script>
+<script src="roteiro.js?v=20261113w"></script>
+<script src="gravar-analise.js?v=20261113z"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -2004,6 +2004,13 @@ async function urlsExemplos(ids){
   try { const j = await (await post({ acao:'exemplos', ids:ids.slice(0, 6) })).json(); return Object.fromEntries((j.ok && Array.isArray(j.exemplos) ? j.exemplos : []).filter(x => x && x.url).map(x => [x.id, x])); }
   catch { return {}; }
 }
+// quantos painéis lado a lado a imagem tem (para pôr um embaixo do outro): o do kit, se vier; senão, um por legenda, menos
+// nos gráficos (a legenda é do eixo, não de painel: "cada linha é…", curvas)
+function paineisExemplo(e){
+  const n = +e.paineis; if (n >= 1 && n <= 4) return n;
+  const cat = window.ROTEIRO?.catalogo?.(e.id), leg = (e.legenda || []).length;
+  return leg >= 2 && leg <= 4 && !/cada linha|curva|gr[aá]fico/i.test(String(cat?.fala || '') + ' ' + String(e.nota || '')) ? leg : 1;
+}
 async function comExemplo(blocos){
   const ids = [...new Set(blocos.map(x => (RE_IMG.exec(x.fala) || [])[1]).filter(Boolean).map(x => x.toLowerCase()))];
   if (!ids.length) return blocos;
@@ -2013,7 +2020,7 @@ async function comExemplo(blocos){
     const antes = x.fala.slice(0, m.index).trim(), depois = x.fala.slice(m.index + m[0].length).replace(/\[IMAGEM:[^\]]*\]/gi, '').trim(), e = ex[m[1].toLowerCase()];
     if (antes) out.push({ ...x, fala:antes, tempo:null });   // partido em dois: o tempo de cada parte sai das palavras
     out.push({ titulo:'Exemplo', tempo:null, fala:depois, faixa:null, destaque:null, imagem:e ? (e.legenda || []).join(' × ') || 'na tela' : '',
-      cena:e ? { tipo:'exemplo', id:e.id, url:e.url, recorte:e.recorte, legenda:e.legenda || [], credito:e.credito || '', nota:e.nota || '' } : null,
+      cena:e ? { tipo:'exemplo', id:e.id, url:e.url, recorte:e.recorte, legenda:e.legenda || [], credito:e.credito || '', nota:e.nota || '', paineis:paineisExemplo(e) } : null,
       notas:e ? [] : ['A imagem do exemplo não veio: pule esta parte.'] });
   }
   return out;

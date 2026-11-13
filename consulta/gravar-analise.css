@@ -13,7 +13,7 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
 /* o círculo da câmera na tela é o próprio <video> (o iOS só entrega quadro de <video> visível), no mesmo lugar do círculo do canvas */
 .ga-cam{position:absolute;left:63.333%;top:79.375%;width:33.333%;height:18.75%;border-radius:50%;object-fit:cover;transform:scaleX(-1);
   border:2px solid #fff;pointer-events:none;background:#1b2420}
-.ga-prompt{position:absolute;left:0;right:0;top:0;padding:10px 14px 12px;background:linear-gradient(rgba(0,0,0,.9),rgba(0,0,0,.62) 75%,rgba(0,0,0,0));
+.ga-prompt{position:absolute;left:0;right:0;top:0;padding:10px 14px 12px;background:linear-gradient(#000 0,#000 var(--topo,90px),rgba(0,0,0,.86) calc(var(--topo,90px) + 24px),rgba(0,0,0,.62) 85%,rgba(0,0,0,0));
   pointer-events:none;max-height:46%;overflow:hidden;--fs:22px}
 .ga-prompt[hidden]{display:none}
 .ga-p-topo{display:flex;align-items:center;gap:10px;font-size:.78rem;color:#cfe3da;text-transform:uppercase;letter-spacing:.04em}
