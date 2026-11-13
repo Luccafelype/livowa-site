@@ -45,8 +45,8 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-app
 .lc .l-faixa button{background:transparent;color:var(--a);border:1.5px solid var(--a);padding:6px 14px;font-size:.92rem}
 main{max-width:560px;margin:auto;padding:max(16px,env(safe-area-inset-top)) 16px 48px}
 h1{font-size:1.4rem;margin:0 0 12px}
-.abas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:4px;margin-bottom:14px}
-.abas button{background:none;color:var(--m);border:0;border-radius:10px;padding:11px 2px;font:600 1rem system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.abas{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:4px;margin-bottom:14px}
+.abas button{background:none;color:var(--m);border:0;border-radius:10px;padding:11px 2px;font:600 .9rem system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .abas button[aria-selected="true"]{background:var(--a);color:var(--on-a)}
 form{display:flex;gap:8px;margin-bottom:18px}
 input{flex:1;min-width:0;font:700 1.2rem ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;padding:12px;border:1.5px solid var(--l);border-radius:12px;background:var(--s);color:var(--fg)}
@@ -205,6 +205,22 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .vd-et li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--l)}
 .vd-et li:first-child{border-top:0}
 .vd-et small{color:var(--m);font-weight:500}
+/* 13/11: Ajustes (frases e parâmetros por escopo) */
+.aj-ctl{display:grid;gap:10px}
+.aj-ctl label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--m);font-weight:600}
+.aj-ctl select{font:600 1rem system-ui;padding:10px;border:1.5px solid var(--l);border-radius:10px;background:var(--s);color:var(--fg)}
+.aj-txt{width:100%;box-sizing:border-box;font:1rem/1.45 system-ui;padding:10px;border:1.5px solid var(--l);border-radius:10px;background:var(--bg);color:var(--fg);resize:vertical;min-height:84px}
+.aj-txt[readonly],.aj-num[readonly]{opacity:.75}
+.aj-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.aj-chips button{background:var(--a2);color:var(--a);border:0;padding:5px 10px;font:600 .85rem ui-monospace,monospace;border-radius:999px}
+.aj-previa{background:var(--s);border:1px dashed var(--l);border-radius:10px;padding:10px;font-size:.95rem;white-space:pre-wrap}
+.aj-previa mark{background:var(--w2);color:var(--w);border-radius:4px;padding:0 2px}
+.aj-previa small{display:block;color:var(--m);font-size:.78rem;margin-bottom:4px}
+.aj-pe{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;min-height:36px}
+.aj-st{color:var(--m)}
+.aj-volta{background:var(--s);color:var(--a);border:1.5px solid var(--l);padding:6px 12px;font-size:.88rem}
+.aj-nums{display:flex;gap:8px;flex-wrap:wrap}
+.aj-num{width:5.2em;font:600 1.05rem system-ui;padding:10px;border:1.5px solid var(--l);border-radius:10px;background:var(--bg);color:var(--fg)}
 #fn-venda .rapido{color:var(--a)}#fn-venda .medio{color:var(--w)}#fn-venda .tarde{color:var(--r)}
 .lc .l-apaga{width:9px;height:9px;border-radius:50%;background:#e8a317;display:inline-block;align-self:center}
 .lc .l2{color:var(--m);font-size:.92rem;margin-top:2px}
@@ -410,12 +426,22 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     <button role="tab" id="t-cod" aria-selected="false">Código</button>
     <button role="tab" id="t-portas" aria-selected="false">Portas</button>
     <button role="tab" id="t-funil" aria-selected="false">Funil</button>
+    <button role="tab" id="t-ajustes" aria-selected="false">Ajustes</button>
   </div>
 
   <section id="caixa">
     <div class="conta tres"><div><b id="n-esperam">–</b><span>esperam você</span></div><div><b id="n-conversa">–</b><span>em conversa</span></div><div><b id="n-nutrir">–</b><span>em nutrição</span></div></div>
     <div class="filtro" id="filtro" role="group" aria-label="Filtro"></div>
     <div id="lista"><p class="aviso">Carregando…</p></div>
+  </section>
+
+  <section id="ajustes" hidden>
+    <div class="card aj-ctl">
+      <label>Vale para<select id="aj-escopo"></select></label>
+      <label>Prévia com<select id="aj-lead"></select></label>
+      <p class="aviso" id="aj-aviso" style="margin:0" hidden></p>
+    </div>
+    <div id="aj-corpo"><p class="aviso">Carregando…</p></div>
   </section>
 
   <section id="portas" hidden>
@@ -520,7 +546,7 @@ function proxAcao(l, et){
   if (et === 'novo') return pi ? 'Confirmar recebimento' : 'Responder (kit do teste)';
   if (et === 'audio') return pi ? 'Gravar a análise' : 'Mandar a análise';
   if (et === 'respondeu') return 'Mandar o convite';
-  if (et === 'analisei'){ const d = diasDesde(l.atualizado_em); return d >= 7 ? 'Toque do dia 7 (sumiu?)' : d >= 3 ? 'Toque do dia 3: áudio curto' : d >= 1 ? 'Toque do dia 1: “conseguiu ver?”' : 'Esperar a resposta dela'; }
+  if (et === 'analisei'){ const d = diasDesde(l.atualizado_em), [t1, t3, t7] = cfgN('toque_dias', l); return d >= t7 ? `Toque do dia ${t7} (sumiu?)` : d >= t3 ? `Toque do dia ${t3}: áudio curto` : d >= t1 ? `Toque do dia ${t1}: “conseguiu ver?”` : 'Esperar a resposta dela'; }
   return { conversa:'Fazer a conversa', comprou:'Cliente', nutrir:'Nutrir: próximo teste mandado', nao_quis:'Não insistir', sumiu:'Sem ação' }[et] || '';
 }
 const diasDesde = d => d ? Math.floor((Date.now() - new Date(d).getTime()) / 86400e3) : 0;
@@ -599,7 +625,7 @@ function desenhaCaixa(){
     : `<p class="aviso">${filtro === 'fila' ? 'Ninguém esperando você.' : filtro === 'treino' ? 'Nenhum lead de treino.' : filtro === 'todos' || filtro === 'testes' ? 'Nenhum lead nos últimos 30 dias.' : 'Ninguém nesta etapa.'}</p>`;
   // quem recebeu a análise e não respondeu: o toque do dia 1, 3 ou 7 (v3)
   if (filtro === 'fila'){
-    const esp = reais.filter(l => etapaDe(l) === 'analisei' && diasDesde(l.atualizado_em) >= 1).sort((a, b) => new Date(a.atualizado_em) - new Date(b.atualizado_em));
+    const esp = reais.filter(l => etapaDe(l) === 'analisei' && diasDesde(l.atualizado_em) >= cfgN('toque_dias', l)[0]).sort((a, b) => new Date(a.atualizado_em) - new Date(b.atualizado_em));
     if (esp.length) h += `<h2 class="espera-h">Análise enviada, sem resposta (${esp.length})</h2>` + esp.map(cartaoToque).join('');
   }
   h += filtro === 'testes' ? '<button type="button" class="f-testes" data-f="fila">Voltar para Responder agora</button>' : '<button type="button" class="f-testes" data-f="testes">Mostrar testes</button>';
@@ -664,12 +690,63 @@ function tempoCartao(l, et, naFila){
   if (DATAS_OK && et === 'conversa' && l.conversa_em) return ['conversa ' + quandoConversa(l.conversa_em), 'data'];
   if (DATAS_OK && ABERTA[et] && l.proximo_toque_em) return ['toque ' + nomeDia(l.proximo_toque_em), 'data'];
   const m = (Date.now() - new Date(l.chegou).getTime()) / 60e3;
-  if (et === 'novo') return [espera(l.chegou), m <= 5 ? 'rapido' : m <= 60 ? 'medio' : 'tarde'];
+  if (et === 'novo') return [espera(l.chegou), velocidade(m, l)];
   return [espera(l.chegou), naFila && m > 24 * 60 ? 'tarde' : ''];
 }
-const velocidade = min => min <= 5 ? 'rapido' : min <= 60 ? 'medio' : 'tarde';
+const velocidade = (min, l) => min <= cfgN('verde_min', l) ? 'rapido' : min <= cfgN('ambar_min', l) ? 'medio' : 'tarde';
 const duracao = min => min < 60 ? `${Math.max(0, Math.round(min))} min` : min < 48 * 60 ? `${Math.round(min / 60)} h` : `${Math.round(min / 1440)} dias`;
 const naFilaV3 = l => !!pendencia(l, etapaDe(l));
+
+// ---------- 13/11 (CRM v3, pedido do Lucca): Ajustes — frases e parâmetros por escopo; vale o mais específico ----------
+// coorte (treino, campanha, origem) → teste (funil do lead) → geral → o padrão de hoje (kits.js). Guardado no banco
+// (crm_config; edge config_ler / config_salvar): iPhone e Mac veem o mesmo. Sem o banco novo, a aba só mostra.
+const CFG = { linhas:{}, ok:false };   // linhas[escopo][chave] = valor
+const AJ_MSGS = [['audioTexto', 'Confirmação de recebimento'], ['audioFala', 'Fala do áudio de recebimento'], ['depoisVideo', 'Pergunta por escrito depois do vídeo'],
+  ['convite', 'Convite para a conversa'], ['preco', 'Preço por escrito'], ['nutrir', 'Nutrir: o próximo teste'], ['naoQuis', 'Não quis'], ['pedirFoto', 'Pedir a foto'],
+  ['toque1', 'Toque D1'], ['toque3', 'Toque D3 (o áudio: o que você fala)'], ['toque7', 'Toque D7'], ['combinado', 'Combinado da conversa'],
+  ['lembreteVespera', 'Lembrete na véspera'], ['lembreteHora', 'Lembrete 1 h antes'], ['faltou', 'Faltou: remarcar']];
+// [chave, rótulo, padrão, mínimo, máximo]
+const AJ_PARAMS = [['toque_dias', 'Toques depois da análise (dias)', [1, 3, 7], 1, 60], ['nutrir_dias', 'Nutrir: próximo toque em (dias)', 14, 1, 180],
+  ['verde_min', 'Resposta verde até (min)', 5, 1, 240], ['ambar_min', 'Resposta âmbar até (min)', 60, 1, 1440], ['roteiro_espera_s', 'Espera pelo roteiro do Claude antes do estoque (s)', 30, 5, 120]];
+const AJ_VARS = ['nome', 'lv', 'desejo', 'incomodo', 'idade', 'h1', 'h2', 'link', 'proximo_teste'];
+function padraoCfg(k){
+  const K = window.KITS?.['pele-idade'], pr = AJ_PARAMS.find(x => x[0] === k);
+  if (pr) return pr[2];
+  if (k === 'combinado') return K?.conversa?.find(x => x.titulo === 'O combinado')?.fala || '';
+  return K?.v3?.[k] ?? '';
+}
+const limpaEsc = x => String(x || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 40);
+function coortesDe(l){
+  if (!l || !l.partes) return [];
+  const o = l.origem || {}, src = String(o.source || '').toLowerCase(), camp = limpaEsc(o.campaign), out = [];
+  if (ehTreino(l)) out.push('treino');
+  if (camp && camp !== 'treino') out.push(camp);
+  out.push(src === 'ig_bio' ? 'bio' : src === 'ig_direct' ? 'direct' : /^whatsapp/.test(src) ? 'whatsapp' : limpaEsc(src) || 'direto');
+  return [...new Set(out.filter(Boolean))];
+}
+const testesDe = (l, funil) => [...new Set([...(l?.partes || []).map(p => p.etapa === 'pele-resultado' ? 'pele' : p.funil), funil].filter(Boolean))];
+const escoposDe = (l, funil) => [...coortesDe(l).map(c => 'coorte:' + c), ...testesDe(l, funil).map(t => 'teste:' + t), 'geral'];
+function cfgDe(k, l, cadeia){
+  for (const e of cadeia || escoposDe(l)){ const v = CFG.linhas[e]?.[k]; if (v != null && v !== '') return { v, de:e }; }
+  return { v:padraoCfg(k), de:'padrão' };
+}
+const cfg = (k, l, funil) => cfgDe(k, l, escoposDe(l, funil)).v;
+function cfgN(k, l){   // parâmetro numérico, conferido (fora da faixa: o padrão)
+  const pr = AJ_PARAMS.find(x => x[0] === k), v = cfg(k, l), [, , d, min, max] = pr, dentro = n => Number.isFinite(+n) && +n >= min && +n <= max;
+  if (Array.isArray(d)) return Array.isArray(v) && v.length === d.length && v.every(dentro) && v.every((n, i) => !i || +n > +v[i - 1]) ? v.map(Number) : d;
+  return dentro(v) ? +v : d;
+}
+// as frases da v3 já resolvidas para um lead (o kit do lead e a cópia da lista usam isto)
+const v3De = (l, funil) => { const K = window.KITS?.['pele-idade'], cad = escoposDe(l, funil), out = {}; for (const k of Object.keys(K?.v3 || {})) out[k] = cfgDe(k, l, cad).v; return out; };
+// as variáveis de um lead (cópia da lista, prévia dos Ajustes)
+function varsLead(l){
+  const p = (l.partes || []).find(x => x.funil === 'pele-idade'), r = p?.dados?.respostas || {};
+  let desejo = null; try { desejo = r.futuro ? valPI('futuro', r.futuro, p.dados) : null; } catch { desejo = null; }
+  const nt = window.KITS?.['pele-idade']?.nutrir?.(p?.dados) || {}, idade = r.idade ?? p?.dados?.idade;
+  return { nome:nomeLead(l) || null, lv:l.codigo, desejo, incomodo:incomodoCurto(l) || null, idade:idade != null ? `${idade} anos` : null,
+    link:`${AGENDA}?notes=${encodeURIComponent(l.codigo)}`, teste:nt.teste, tema:nt.tema, proximo_teste:nt.teste,
+    ...(l.conversa_em ? { quando:quandoConversa(l.conversa_em), hora:horaBR(l.conversa_em) } : {}) };
+}
 
 // a próxima ação, em 1 toque: [rótulo, ação]
 function acaoDe(l, et){
@@ -679,7 +756,7 @@ function acaoDe(l, et){
   if (pi && et === 'novo') return ['Confirmar recebimento', 'audio'];   // 13/11: o id 'audio' no banco continua
   if (pi && et === 'audio') return ['Gravar análise', 'gravar'];
   if (pi && et === 'respondeu') return ['Mandar convite', 'convite'];
-  if (pi && et === 'analisei'){ const d = diasDesde(l.atualizado_em); return d >= 7 ? ['Copiar toque do dia 7', 'toque7'] : d >= 3 ? ['Toque do dia 3 (áudio)', 'toque3'] : d >= 1 ? ['Copiar toque do dia 1', 'toque1'] : ['Abrir', 'abrir']; }
+  if (pi && et === 'analisei'){ const d = diasDesde(l.atualizado_em), [t1, t3, t7] = cfgN('toque_dias', l); return d >= t7 ? [`Copiar toque do dia ${t7}`, 'toque7'] : d >= t3 ? [`Toque do dia ${t3} (áudio)`, 'toque3'] : d >= t1 ? [`Copiar toque do dia ${t1}`, 'toque1'] : ['Abrir', 'abrir']; }
   if (pi && et === 'conversa') return ['Fazer a conversa', 'conversa'];
   if (FILA.includes(et)) return ['Responder', 'abrir'];   // os outros testes: o kit do teste, dentro do lead
   return ['Abrir', 'abrir'];
@@ -786,11 +863,9 @@ async function copiaTexto(txt, btn){
 }
 function copiaDaLista(btn, qual = btn.dataset.copia, extra = {}){
   const l = LEADS.find(x => x.codigo === btn.dataset.c), K = window.KITS?.['pele-idade']; if (!l || !K) return Promise.resolve(false);
-  const p = (l.partes || []).find(x => x.funil === 'pele-idade'), r = p?.dados?.respostas || {};
-  let desejo = null; try { desejo = r.futuro ? valPI('futuro', r.futuro, p.dados) : null; } catch { desejo = null; }
-  const tpl = qual === 'audio' ? K.v3.audioTexto : K.v3[qual];
+  const tpl = cfg(qual === 'audio' ? 'audioTexto' : qual, l);   // 13/11: a frase dos Ajustes (o mais específico para este lead)
   // sem nome: tira o "{nome}, " do começo; se ainda faltar dado ({desejo}…), não copia (null = abrir o lead)
-  const txt = KITS.preencher(tpl, { nome:nomeLead(l) || null, lv:l.codigo, desejo, ...extra }).replace(/^\{nome\},\s*(.)/, (m, ch) => ch.toUpperCase());
+  const txt = KITS.preencher(tpl, { ...varsLead(l), ...extra }).replace(/^\{nome\},\s*(.)/, (m, ch) => ch.toUpperCase());
   if (/\{[a-z0-9_]+\}/.test(txt)) return Promise.resolve(null);
   return copiaTexto(txt, btn);
 }
@@ -848,8 +923,8 @@ async function gravarQuandoPronto(c){
     if (codigoAtual !== c || $('busca').hidden || window.GRAVADOR?._estado()) return;   // saiu do lead ou o gravador já abriu
     const bt = document.querySelector('#out .pi-claude .ga-abrir'); if (bt && bt.disabled) return;   // sem fotos: fica no passo 2, com o aviso
     const i = bt ? +bt.dataset.kb : -1, cl = KB[i] ? window.ROTEIRO?.claude(KB[i].e) : null;
-    if (bt && (Date.now() - t0 > 30000 || (cl && cl.lido && cl.estado !== 'gerando' && cl.estado !== 'lendo'))) return abreGravador(i);
-    if (Date.now() - t0 > 35000) return;
+    if (bt && (Date.now() - t0 > cfgN('roteiro_espera_s', LEADS.find(x => x.codigo === c)) * 1000 || (cl && cl.lido && cl.estado !== 'gerando' && cl.estado !== 'lendo'))) return abreGravador(i);
+    if (Date.now() - t0 > cfgN('roteiro_espera_s', LEADS.find(x => x.codigo === c)) * 1000 + 5000) return;
     await espera(300);
   }
 }
@@ -877,10 +952,11 @@ document.addEventListener('input', ev => {
 
 // ---------- Abas ----------
 function aba(qual, quieto){
-  if (!quieto) window.USO?.tela({ caixa:'leads', cod:'codigo', portas:'portas', funil:'funil' }[qual]);   // 13/11: registro de uso (uso.js)
-  $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod'); $('t-portas').setAttribute('aria-selected', qual === 'portas'); $('t-funil').setAttribute('aria-selected', qual === 'funil');
-  $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod'; $('portas').hidden = qual !== 'portas'; $('funil').hidden = qual !== 'funil';
-  $('tit').textContent = qual === 'caixa' ? 'CRM' : qual === 'portas' ? 'Portas' : qual === 'funil' ? 'Funil' : 'Consulta por código';
+  if (!quieto) window.USO?.tela({ caixa:'leads', cod:'codigo', portas:'portas', funil:'funil', ajustes:'ajustes' }[qual]);   // 13/11: registro de uso (uso.js)
+  $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod'); $('t-portas').setAttribute('aria-selected', qual === 'portas'); $('t-funil').setAttribute('aria-selected', qual === 'funil'); $('t-ajustes').setAttribute('aria-selected', qual === 'ajustes');
+  $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod'; $('portas').hidden = qual !== 'portas'; $('funil').hidden = qual !== 'funil'; $('ajustes').hidden = qual !== 'ajustes';
+  $('tit').textContent = qual === 'caixa' ? 'CRM' : qual === 'portas' ? 'Portas' : qual === 'funil' ? 'Funil' : qual === 'ajustes' ? 'Ajustes' : 'Consulta por código';
+  if (qual === 'ajustes'){ desenhaAjustes(); carregaConfig().then(desenhaAjustes); }
   if (qual === 'portas') carregaPortas();
   if (qual === 'funil') carregaFunil();
   if (qual === 'caixa'){ $('voltar').hidden = true; desenhaCaixa(); }
@@ -890,6 +966,7 @@ $('t-caixa').onclick = () => aba('caixa');
 $('t-cod').onclick = () => aba('cod');
 $('t-portas').onclick = () => aba('portas');
 $('t-funil').onclick = () => aba('funil');
+$('t-ajustes').onclick = () => aba('ajustes');
 
 // ---------- Portas (01/11) ----------
 const NOME_TESTE = { pele:'Pele do rosto (metade selfie /idade, metade /pele2)', quiz:'Quiz da longevidade', teste:'Pernas', braco:'Idade muscular (braço)', emag:'Teste do emagrecimento' };
@@ -1117,7 +1194,7 @@ function linhaDatas(l, et){
   let h = '';
   if (ABERTA[et]) h += `<div class="g-data"><span>${et === 'conversa' ? 'Conversa' : 'Próximo toque'}: <b>${esc(resumoData(l, et).replace(/^toque /, ''))}</b></span><button type="button" class="g-mudar" data-et="${esc(et)}" data-c="${esc(l.codigo)}">${(et === 'conversa' ? l.conversa_em : l.proximo_toque_em) ? 'Mudar' : 'Marcar a data'}</button></div>`;
   if (l.primeira_resposta_em){ const m = (new Date(l.primeira_resposta_em) - new Date(l.chegou)) / 60e3;
-    h += `<div class="g-data"><span>1ª resposta: <b class="${velocidade(m)}">${esc(duracao(m))}</b> depois de chegar</span></div>`; }
+    h += `<div class="g-data"><span>1ª resposta: <b class="${velocidade(m, l)}">${esc(duracao(m))}</b> depois de chegar</span></div>`; }
   return h;
 }
 // linha do tempo (RPC leads_historico_de pela edge, ação 'historico'); guardada por código nesta aba
@@ -1185,7 +1262,7 @@ function pedeData(c, etapa){
       }));
   }
   if (etapa === 'nutrir'){
-    const d0 = l.proximo_toque_em && l.proximo_toque_em > h ? l.proximo_toque_em : somaDias(h, 14);
+    const d0 = l.proximo_toque_em && l.proximo_toque_em > h ? l.proximo_toque_em : somaDias(h, cfgN('nutrir_dias', l.partes ? l : null));
     return folha(`<h2 id="folha-tit">Quando volto a falar com ${esc(nm)}?</h2>${campoToque('f-toque', d0)}${chips('f-toque', [7, 14, 30])}
       <p class="f-dica">Nesse dia ela volta para “Responder agora” com o próximo teste pronto para copiar.</p>
       <div class="f-bts"><button type="button" class="f-ok">Salvar</button><button type="button" class="f-sem f-2">Sem data agora</button></div>`,
@@ -1625,9 +1702,9 @@ const PASSO_DE = { novo:1, audio:2, analisei:3, respondeu:3, nutrir:3, nao_quis:
 const R3_DE = { respondeu:'sim', conversa:'sim', faltou:'sim', comprou:'sim', nutrir:'agora', nao_quis:'nao', sumiu:'sumiu' };
 const R3_ETAPA = { sim:'respondeu', agora:'nutrir', nao:'nao_quis' };
 function kitCorpoPI(i, b, K, c, atalho){
-  const V3 = K.v3, l = LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual, status:'novo' }, et = etapaDe(l), ord = ORDEM_ET[et] ?? 0;
+  const l = LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual, status:'novo' }, V3 = v3De(l, 'pele-idade'), et = etapaDe(l), ord = ORDEM_ET[et] ?? 0;
   const nt = K.nutrir(b.d), r = b.d.respostas || {};
-  b.extra = { h1:'', h2:'', ...(b.extra || {}), lv:codigoAtual, link:`${AGENDA}?notes=${encodeURIComponent(codigoAtual)}`, teste:nt.teste, tema:nt.tema,
+  b.extra = { h1:'', h2:'', ...(b.extra || {}), lv:codigoAtual, link:`${AGENDA}?notes=${encodeURIComponent(codigoAtual)}`, teste:nt.teste, tema:nt.tema, proximo_teste:nt.teste,
     desejo:c.vars.futuro || null, incomodo:c.vars.espelho || null, idade:b.d.idade != null ? `${b.d.idade} anos` : null };
   if (!b.r3) b.r3 = R3_DE[et] || '';
   let h = '<h3 class="kit-h">Responder passo a passo</h3>';
@@ -1674,7 +1751,7 @@ function kitCorpoPI(i, b, K, c, atalho){
 }
 // o que o passo 2 mostra do Claude: estado, avisos (acima do Gravar), o botão Gravar, Refazer/estoque e o POR ESCRITO
 function claudeHtml(i){
-  const b = KB[i], V3 = KITS['pele-idade'].v3, cl = window.ROTEIRO?.claude(b.e) || null, resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
+  const b = KB[i], V3 = v3De(LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual }, 'pele-idade'), cl = window.ROTEIRO?.claude(b.e) || null, resp = window.ROTEIRO?.respostaDe(codigoAtual) || '';
   const fotos = FOTOS.filter(f => f.grupo === b.g && f.url);
   let h = '';
   if (cl?.estado === 'gerando') h += '<p class="pi-cl-st espera">O Claude está escrevendo o roteiro desta pessoa (5 a 20 s). Se quiser, grave já com o do estoque.</p>';
@@ -1837,7 +1914,8 @@ function abreConversa(i){
   const b = KB[i], K = KITS['pele-idade']; if (!b || !K) return;
   const vars = { ...b.c.vars, ...(b.extra || {}), resposta:window.ROTEIRO?.respostaDe(codigoAtual) || null, nome:KIT_NOME.trim() || null };
   const tx = t => KITS.pedacos(t, vars).map(p => p.falta ? `<mark>${esc(p.s)}</mark>` : esc(p.s)).join('');
-  $('conv-corpo').innerHTML = K.conversa.map(x => `<section class="conv-s"><h3><span>${esc(x.min === 'antes' ? 'antes' : x.min + ' min')}</span>${esc(x.titulo)}</h3>
+  const comb = cfg('combinado', LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual }, 'pele-idade');   // 13/11: Ajustes
+  $('conv-corpo').innerHTML = K.conversa.map(x => x.titulo === 'O combinado' ? { ...x, fala:comb } : x).map(x => `<section class="conv-s"><h3><span>${esc(x.min === 'antes' ? 'antes' : x.min + ' min')}</span>${esc(x.titulo)}</h3>
     ${x.fala ? `<p class="conv-f">“${tx(x.fala)}”</p>` : ''}${x.itens ? `<ul>${x.itens.map(t => `<li>${tx(t)}</li>`).join('')}</ul>` : ''}${x.nota ? `<p class="conv-n">${tx(x.nota)}</p>` : ''}</section>`).join('');
   $('conv').hidden = false; document.body.style.overflow = 'hidden'; $('conv').scrollTop = 0; $('conv-fechar').focus();
 }
@@ -2211,8 +2289,114 @@ document.addEventListener('keydown', ev => {
 });
 $('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').value.trim().toUpperCase(); if (c){ $('voltar').hidden = true; ver(c); } });
 // volta ao app (iPhone): recarrega a caixa
-document.addEventListener('visibilitychange', () => { if (document.hidden) return; if (!$('caixa').hidden) carregar(); else if (!$('funil').hidden) carregaFunil(); });
-carregar();
+// ---------- 13/11: a aba Ajustes ----------
+const AJ = { escopo:'geral', lead:'', tempo:{} };
+const AJ_TESTES = [['pele-idade', 'Pele: idade e vitalidade'], ['teste-braco', 'Idade muscular (braço)'], ['teste-pernas', 'Pernas'], ['quiz-longevidade', 'Quiz da longevidade'], ['pele2', 'Pele 2'], ['teste-emagrecimento', 'Emagrecimento']];
+const AJ_COORTES = [['treino', 'Treino'], ['pele', 'PELE'], ['pernas', 'PERNAS'], ['musculo', 'MÚSCULO'], ['idade', 'IDADE'], ['bio', 'Bio'], ['direct', 'Direct'], ['whatsapp', 'WhatsApp']];
+const nomeEscopo = e => e === 'padrão' || e === 'geral' ? e : e.startsWith('coorte:') ? 'coorte ' + e.slice(7).toUpperCase() : e.slice(6);
+const cadeiaAj = () => AJ.escopo === 'geral' ? ['geral'] : [AJ.escopo, 'geral'];
+const EXEMPLO = { codigo:'LV-XXXX', chegou:new Date().toISOString(), origem:{}, partes:[{ funil:'pele-idade', etapa:'resultado', dados:{ idade:47, respostas:{ nome:'Ana', idade:47, espelho:'manchas', futuro:'chegar10' } } }] };
+async function carregaConfig(){
+  if (!K) return;
+  try {
+    const r = await post({ acao:'config_ler' }), j = await r.json();
+    if (!j.ok || !Array.isArray(j.config)) throw 0;   // edge de hoje (sem a ação) ou banco sem crm_config: só leitura
+    if (Object.values(AJ.tempo).some(Boolean)) return;   // edição em curso: não pisa
+    const ls = {}; for (const x of j.config) (ls[x.escopo] ||= {})[x.chave] = x.valor;
+    CFG.linhas = ls; CFG.ok = true;
+  } catch { CFG.ok = false; }
+}
+function leadsPrevia(){ return LEADS.filter(l => ehTreino(l) || !ehTeste(l)); }
+function leadPrevia(){
+  const ls = leadsPrevia(); let l = ls.find(x => x.codigo === AJ.lead);
+  if (!l){ l = ls.find(x => escoposDe(x).includes(AJ.escopo)) || ls[0] || EXEMPLO; AJ.lead = l.codigo; }
+  return l;
+}
+function previaAj(k){
+  if (AJ_PARAMS.some(x => x[0] === k)) return '';
+  const l = leadPrevia(), { v, de } = cfgDe(k, l), raw = k === 'audioFala' || k === 'toque3';
+  const txt = raw ? esc(v) : KITS.pedacos(v, varsLead(l)).map(x => x.falta ? `<mark>${esc(x.s)}</mark>` : esc(x.s)).join('');
+  return `<small>Prévia · ${esc(nomeLead(l) || l.codigo)}${de !== AJ.escopo ? ' · vem de ' + esc(nomeEscopo(de)) : ''}</small>${txt}`;
+}
+function campoAj(k, rot){
+  const { v, de } = cfgDe(k, null, cadeiaAj()), proprio = CFG.linhas[AJ.escopo]?.[k] != null, ro = CFG.ok ? '' : ' readonly';
+  const volta = CFG.ok && proprio ? `<button type="button" class="aj-volta" data-k="${k}">${AJ.escopo === 'geral' ? 'Voltar ao padrão' : 'Voltar ao geral'}</button>` : '';
+  const pr = AJ_PARAMS.find(x => x[0] === k);
+  const corpo = pr ? `<div class="aj-nums">${(Array.isArray(v) ? v : [v]).map((n, i) => `<input class="aj-num" type="number" inputmode="numeric" min="${pr[3]}" max="${pr[4]}" data-k="${k}" data-i="${i}" value="${esc(n)}"${ro} aria-label="${esc(rot)}${Array.isArray(v) ? ' ' + (i + 1) : ''}">`).join('')}</div>`
+    : `<textarea class="aj-txt" data-k="${k}" rows="3" aria-label="${esc(rot)}"${ro}>${esc(v)}</textarea>
+      ${CFG.ok ? `<div class="aj-chips">${[...new Set([...AJ_VARS, ...(String(padraoCfg(k)).match(/\{([a-z0-9_]+)\}/g) || []).map(x => x.slice(1, -1))])].map(x => `<button type="button" class="aj-chip" data-v="${x}" data-k="${k}">{${x}}</button>`).join('')}</div>` : ''}
+      <div class="aj-previa" id="ajp-${k}">${previaAj(k)}</div>`;
+  return secao(rot, 'de: ' + nomeEscopo(de), `${corpo}<div class="aj-pe"><small class="aj-st" id="ajs-${k}"></small>${volta}</div>`, 'sec-aj aj-' + k);
+}
+function desenhaAjustes(){
+  if ($('ajustes').hidden) return;
+  if (!K){ $('aj-corpo').innerHTML = avisoSemChave(); return; }
+  const ops = [['geral', 'Geral (todos)'], ...AJ_TESTES.map(([t, n]) => ['teste:' + t, 'Teste: ' + n])], cs = new Map(AJ_COORTES);
+  LEADS.forEach(l => coortesDe(l).forEach(c => { if (!cs.has(c)) cs.set(c, c.toUpperCase()); }));
+  Object.keys(CFG.linhas).forEach(e => { if (e.startsWith('coorte:') && !cs.has(e.slice(7))) cs.set(e.slice(7), e.slice(7).toUpperCase()); if (e.startsWith('teste:') && !ops.some(([x]) => x === e)) ops.push([e, 'Teste: ' + e.slice(6)]); });
+  ops.push(...[...cs].map(([c, n]) => ['coorte:' + c, 'Coorte: ' + n]));
+  $('aj-escopo').innerHTML = ops.map(([e, n]) => `<option value="${esc(e)}"${e === AJ.escopo ? ' selected' : ''}>${esc(n)}</option>`).join('');
+  leadPrevia();
+  const ls = leadsPrevia();
+  $('aj-lead').innerHTML = (ls.length ? ls : [EXEMPLO]).map(l => `<option value="${esc(l.codigo)}"${l.codigo === AJ.lead ? ' selected' : ''}>${esc((nomeLead(l) || l.codigo) + ' · ' + l.codigo + (ehTreino(l) ? ' · treino' : ''))}</option>`).join('');
+  $('aj-aviso').hidden = CFG.ok; $('aj-aviso').textContent = 'Só para ler: o banco ainda não guarda os ajustes.';
+  const abertos = [...document.querySelectorAll('#aj-corpo details[open]')].map(d => [...d.classList].find(c => /^aj-/.test(c)));
+  $('aj-corpo').innerHTML = `<div class="card"><h2>Mensagens</h2>${AJ_MSGS.map(([k, t]) => campoAj(k, t)).join('')}</div>
+    <div class="card"><h2>Números</h2>${AJ_PARAMS.map(([k, t]) => campoAj(k, t)).join('')}</div>`;
+  abertos.forEach(c => c && document.querySelector('#aj-corpo .' + c)?.setAttribute('open', ''));
+}
+function pintaCampoAj(k){
+  const d = document.querySelector('#aj-corpo .aj-' + k); if (!d) return;
+  const { de } = cfgDe(k, null, cadeiaAj()), s = d.querySelector('summary span'); if (s) s.textContent = 'de: ' + nomeEscopo(de);
+  const pv = document.getElementById('ajp-' + k); if (pv) pv.innerHTML = previaAj(k);
+  const pe = d.querySelector('.aj-pe'), proprio = CFG.linhas[AJ.escopo]?.[k] != null, b = pe.querySelector('.aj-volta');
+  if (proprio && !b) pe.insertAdjacentHTML('beforeend', `<button type="button" class="aj-volta" data-k="${k}">${AJ.escopo === 'geral' ? 'Voltar ao padrão' : 'Voltar ao geral'}</button>`);
+  if (!proprio && b) b.remove();
+}
+const stAj = (k, t) => { const e = document.getElementById('ajs-' + k); if (e) e.textContent = t; };
+// muda na hora (a cópia e o kit já usam), grava no banco 0,6 s depois da última tecla
+function mudaAj(k, v){
+  const e = AJ.escopo;
+  if (v == null) delete (CFG.linhas[e] || {})[k]; else (CFG.linhas[e] ||= {})[k] = v;
+  pintaCampoAj(k); stAj(k, 'Salvando…');
+  clearTimeout(AJ.tempo[k]);
+  AJ.tempo[k] = setTimeout(async () => {
+    if (codigoAtual) redesenhaKitsPI();   // o kit do lead aberto já com a frase nova
+    try { const r = await post({ acao:'config_salvar', escopo:e, chave:k, valor:v }), j = await r.json(); if (!j.ok) throw 0; stAj(k, 'Salvo'); }
+    catch { stAj(k, 'Não salvou. Tente de novo.'); window.USO?.sinal('erro', { onde:'ajustes' }); }
+    finally { AJ.tempo[k] = null; }
+  }, 600);
+}
+function valorNum(k){
+  const pr = AJ_PARAMS.find(x => x[0] === k), ns = [...document.querySelectorAll(`#aj-corpo .aj-num[data-k="${k}"]`)].map(i => i.value.trim());
+  if (ns.some(x => x === '' || !Number.isFinite(+x) || +x < pr[3] || +x > pr[4])) return null;
+  const v = ns.map(Number); if (Array.isArray(pr[2])) return v.every((n, i) => !i || n > v[i - 1]) ? v : null;
+  return v[0];
+}
+document.addEventListener('input', ev => {
+  const t = ev.target; if (!CFG.ok || !t.closest?.('#aj-corpo')) return;
+  if (t.classList.contains('aj-txt')){ if (!t.value.trim()) return stAj(t.dataset.k, 'Vazio não salva'); mudaAj(t.dataset.k, t.value); }
+  if (t.classList.contains('aj-num')){ const pr = AJ_PARAMS.find(x => x[0] === t.dataset.k), v = valorNum(t.dataset.k);
+    if (v == null) return stAj(t.dataset.k, Array.isArray(pr[2]) ? `De ${pr[3]} a ${pr[4]}, em ordem` : `De ${pr[3]} a ${pr[4]}`); mudaAj(t.dataset.k, v); }
+});
+document.addEventListener('click', ev => {
+  const ch = ev.target.closest('.aj-chip');
+  if (ch){ const ta = document.querySelector(`#aj-corpo .aj-txt[data-k="${ch.dataset.k}"]`); if (!ta || ta.readOnly) return;
+    const a = ta.selectionStart ?? ta.value.length, b = ta.selectionEnd ?? a, ins = '{' + ch.dataset.v + '}';
+    ta.value = ta.value.slice(0, a) + ins + ta.value.slice(b); ta.selectionStart = ta.selectionEnd = a + ins.length; ta.focus();
+    mudaAj(ch.dataset.k, ta.value); return; }
+  const vt = ev.target.closest('.aj-volta');
+  if (vt){ const k = vt.dataset.k; mudaAj(k, null);
+    const { v } = cfgDe(k, null, cadeiaAj()), ta = document.querySelector(`#aj-corpo .aj-txt[data-k="${k}"]`);
+    if (ta) ta.value = v; else document.querySelectorAll(`#aj-corpo .aj-num[data-k="${k}"]`).forEach((i, n) => { i.value = Array.isArray(v) ? v[n] : v; });
+  }
+});
+$('aj-escopo').addEventListener('change', ev => { AJ.escopo = ev.target.value; AJ.lead = ''; desenhaAjustes(); });
+$('aj-lead').addEventListener('change', ev => { AJ.lead = ev.target.value; AJ_MSGS.forEach(([k]) => { const pv = document.getElementById('ajp-' + k); if (pv) pv.innerHTML = previaAj(k); }); });
+
+document.addEventListener('visibilitychange', () => { if (document.hidden) return; carregaConfig().then(() => { if (!$('ajustes').hidden) desenhaAjustes(); });
+  if (!$('caixa').hidden) carregar(); else if (!$('funil').hidden) carregaFunil(); });
+carregar(); carregaConfig().then(() => { if (CARREGOU && !$('caixa').hidden && !FAIXA) desenhaCaixa(); });
 // 13/11: sol/lua (força claro ou escuro neste aparelho; sem escolha, segue o sistema)
 const SOL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
 const LUA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
