@@ -669,7 +669,7 @@ function classificaPele2(d, forcar){
   return c;
 }
 /** Atalhos da pele, com o link da pele2 no lugar do /idade. */
-const atalhosPele2 = T.atalhos.pele.map(a => ({ ...a, texto:a.texto.replace('livowa.com/idade', 'livowa.com/pele2') }));
+const atalhosPele2 = T.atalhos.pele.map(a => Object.defineProperty({ ...a }, 'texto', { get:() => a.texto.replace('livowa.com/idade', 'livowa.com/pele2'), enumerable:true }));   // 13/11: segue o texto editado nos Ajustes
 /** Roteiro da pele trocado para os 3 ângulos; foto = frente | esquerda | direita. regiao = áreas para o destaque aproximado. */
 function reactPele2(d, perfil){
   d = normPele2(d);
@@ -822,8 +822,50 @@ const CONVERSA_PI = [
 ];
 
 const NOME_TESTE = { braco:'Idade muscular (braço)', pernas:'Pernas', pele:'Pele', pele2:'Pele 2', 'pele-idade':'Pele: idade e vitalidade' };
+
+// ---------- 13/11 (regra do Lucca: toda frase que o CRM copia ou mostra é editável nos Ajustes; nenhuma fica só no código) ----------
+// Cada texto daqui vira uma chave (braco_1_audio_0, at_braco_refazer, pele_A_0_0, p2_cravo, pi_video, conv_2_fala…) com o
+// teste dono (o funil). O CRM liga KITS.ligar((chave, padrão, dono) => texto) aos Ajustes (crm_config, escopo teste:<dono>);
+// sem isso, vale o texto de hoje. As frases da v3 (V3_PI) e o combinado já têm chave própria no CRM.
+const TEXTOS = [], POR_CHAVE = new Map();
+let ler = (chave, padrao) => padrao;
+const chaveOk = c => String(c).replace(/[^A-Za-z0-9_]/g, '_').slice(0, 40);
+function editavel(obj, prop, chave, dono, grupo, rotulo){
+  const padrao = obj && obj[prop]; if (typeof padrao !== 'string') return;
+  chave = chaveOk(chave); if (POR_CHAVE.has(chave)) return;
+  const t = { chave, dono, grupo, rotulo, padrao }; TEXTOS.push(t); POR_CHAVE.set(chave, t);
+  Object.defineProperty(obj, prop, { get(){ return ler(chave, padrao, dono); }, enumerable:true, configurable:true });
+}
+for (const [t, dono] of [['braco', 'teste-braco'], ['pernas', 'teste-pernas']]) for (const [f, x] of Object.entries(T[t])){
+  const g = `Faixa ${f} · ${x.titulo}`;
+  editavel(x, 'titulo', `${t}_${f}_titulo`, dono, g, 'Nome da faixa');
+  x.audio.forEach((a, i) => editavel(a, 'texto', `${t}_${f}_audio_${i}`, dono, g, 'Áudio' + (x.audio.length > 1 && a.quando ? ` (${a.quando})` : '')));
+  editavel(x, 'ref', `${t}_${f}_ref`, dono, g, 'Referência jovem');
+  editavel(x, 'estudo', `${t}_${f}_estudo`, dono, g, 'Por que importa');
+  editavel(x, 'convite', `${t}_${f}_convite`, dono, g, 'Convite');
+}
+for (const [t, dono] of [['braco', 'teste-braco'], ['pernas', 'teste-pernas'], ['pele', 'pele']]) T.atalhos[t].forEach(a => {
+  editavel(a, 'texto', `at_${t}_${a.id}`, dono, 'Atalhos do WhatsApp', '/' + a.id + (a.quando ? ` · ${a.quando}` : ''));
+  editavel(a, 'nota', `at_${t}_${a.id}_nota`, dono, 'Atalhos do WhatsApp', '/' + a.id + ' · nota');
+});
+for (const [p, x] of Object.entries(T.pele.perfis)){
+  editavel(x, 'titulo', `pele_${p}_titulo`, 'pele', `Perfil ${p}`, 'Nome do perfil');
+  x.msgs.forEach((vs, i) => vs.forEach((m, j) => editavel(m, 'texto', `pele_${p}_${i}_${j}`, 'pele', `Perfil ${p}`, (ROT_PELE[i] || 'Mensagem') + (vs.length > 1 ? ` (${j + 1})` : '') + (m.quando ? ` · ${m.quando}` : ''))));
+}
+for (const [c, r] of [['pescoco', 'Pergunta do pescoço'], ['fotoRuim', 'Foto ruim'], ['seguranca', 'Segurança']]) editavel(T.pele, c, `pele_${c}`, 'pele', 'Outras', r);
+for (const c of Object.keys(T2)) editavel(T2, c, `p2_${c}`, 'pele2', 'Frases do react', c);
+for (const [c, r] of [['video', 'Junto com o vídeo'], ['videoFuturo', 'Junto com o vídeo (com o desejo)'], ['depois', 'Depois que ela responder']]) editavel(T_PI, c, `pi_${c}`, 'pele-idade', 'Mensagens do resultado', r);
+atalhosPeleIdade.forEach(a => { if (!T.atalhos.pele.includes(a)) editavel(a, 'texto', `at_pi_${a.id}`, 'pele-idade', 'Atalhos do WhatsApp', '/' + a.id); });
+CONVERSA_PI.forEach((x, i) => {
+  const r = `${x.min === 'antes' ? 'antes' : x.min + ' min'} · ${x.titulo}`;
+  if (x.titulo !== 'O combinado') editavel(x, 'fala', `conv_${i}_fala`, 'pele-idade', 'A conversa de 15 min', r);
+  editavel(x, 'nota', `conv_${i}_nota`, 'pele-idade', 'A conversa de 15 min', r + ' · nota');
+  (x.itens || []).forEach((t, j) => editavel(x.itens, j, `conv_${i}_item_${j}`, 'pele-idade', 'A conversa de 15 min', `${r} · item ${j + 1}`));
+});
+
 return {
   T, T2, REF, preencher, pedacos, NOME_TESTE,
+  textos:TEXTOS, texto:c => POR_CHAVE.get(c), ligar:f => { ler = f; },
   braco:{ medida:medidaBraco, classifica:classificaBraco, mensagens:(c) => mensagensMov('braco', c.faixa, c.vars.idade), atalhos:T.atalhos.braco },
   pernas:{ classifica:classificaPernas, mensagens:(c) => mensagensMov('pernas', c.faixa, c.vars.idade), atalhos:T.atalhos.pernas },
   pele:{ classifica:classificaPele, mensagens:(c) => mensagensPele(c.perfil), react:reactPeleComRegiao, atalhos:T.atalhos.pele, perfis:PERFIL_TXT },

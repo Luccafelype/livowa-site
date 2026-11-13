@@ -207,6 +207,7 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .vd-et small{color:var(--m);font-weight:500}
 /* 13/11: Ajustes (frases e parâmetros por escopo) */
 .aj-ctl{display:grid;gap:10px}
+.aj-g{margin:16px 0 2px;font-size:.92rem;color:var(--m)}
 .aj-ctl label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--m);font-weight:600}
 .aj-ctl select{font:600 1rem system-ui;padding:10px;border:1.5px solid var(--l);border-radius:10px;background:var(--s);color:var(--fg)}
 .aj-txt{width:100%;box-sizing:border-box;font:1rem/1.45 system-ui;padding:10px;border:1.5px solid var(--l);border-radius:10px;background:var(--bg);color:var(--fg);resize:vertical;min-height:84px}
@@ -497,7 +498,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
 <script src="uso.js?v=20261113b"></script>
-<script src="kits.js?v=20261113c"></script>
+<script src="kits.js?v=20261113d"></script>
 <script src="roteiro.js?v=20261113a"></script>
 <script src="gravar-analise.js?v=20261113a"></script>
 <script>
@@ -710,6 +711,7 @@ const AJ_PARAMS = [['toque_dias', 'Toques depois da análise (dias)', [1, 3, 7],
   ['verde_min', 'Resposta verde até (min)', 5, 1, 240], ['ambar_min', 'Resposta âmbar até (min)', 60, 1, 1440], ['roteiro_espera_s', 'Espera pelo roteiro do Claude antes do estoque (s)', 30, 5, 120]];
 const AJ_VARS = ['nome', 'lv', 'desejo', 'incomodo', 'idade', 'h1', 'h2', 'link', 'proximo_teste'];
 function padraoCfg(k){
+  const tx = window.KITS?.texto?.(k); if (tx) return tx.padrao;   // 13/11: texto dos kits (braço, pernas, pele…)
   const K = window.KITS?.['pele-idade'], pr = AJ_PARAMS.find(x => x[0] === k);
   if (pr) return pr[2];
   if (k === 'combinado') return K?.conversa?.find(x => x.titulo === 'O combinado')?.fala || '';
@@ -731,6 +733,13 @@ function cfgDe(k, l, cadeia){
   return { v:padraoCfg(k), de:'padrão' };
 }
 const cfg = (k, l, funil) => cfgDe(k, l, escoposDe(l, funil)).v;
+// texto de kit: coorte do lead → o teste dono do texto → geral → o de hoje
+const cadeiaTexto = (k, l) => { const tx = window.KITS?.texto?.(k); return tx ? [...coortesDe(l).map(c => 'coorte:' + c), 'teste:' + tx.dono, 'geral'] : escoposDe(l); };
+window.KITS?.ligar?.((chave, padrao) => {
+  const l = LEADS.find(x => x.codigo === codigoAtual) || null;
+  for (const e of cadeiaTexto(chave, l)){ const v = CFG.linhas[e]?.[chave]; if (typeof v === 'string' && v) return v; }
+  return padrao;
+});
 function cfgN(k, l){   // parâmetro numérico, conferido (fora da faixa: o padrão)
   const pr = AJ_PARAMS.find(x => x[0] === k), v = cfg(k, l), [, , d, min, max] = pr, dentro = n => Number.isFinite(+n) && +n >= min && +n <= max;
   if (Array.isArray(d)) return Array.isArray(v) && v.length === d.length && v.every(dentro) && v.every((n, i) => !i || +n > +v[i - 1]) ? v.map(Number) : d;
@@ -1776,7 +1785,7 @@ function pintaClaudePI(){
 window.aoMudarClaude = () => pintaClaudePI();
 function redesenhaKitsPI(){
   document.querySelectorAll('#out .kit[data-kb]').forEach(sec => {
-    const i = +sec.dataset.kb; if (KB[i]?.t !== 'pele-idade') return;
+    const i = +sec.dataset.kb; if (!KB[i]) return;   // 13/11: todos os kits (os Ajustes mudam qualquer frase)
     const abertos = [...sec.querySelectorAll('details[open]')].map(d => d.dataset.p).filter(Boolean);
     sec.innerHTML = kitCorpo(i);
     abertos.forEach(p => sec.querySelector(`details.passo[data-p="${p}"]`)?.setAttribute('open', ''));
@@ -2291,7 +2300,7 @@ $('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').va
 // volta ao app (iPhone): recarrega a caixa
 // ---------- 13/11: a aba Ajustes ----------
 const AJ = { escopo:'geral', lead:'', tempo:{} };
-const AJ_TESTES = [['pele-idade', 'Pele: idade e vitalidade'], ['teste-braco', 'Idade muscular (braço)'], ['teste-pernas', 'Pernas'], ['quiz-longevidade', 'Quiz da longevidade'], ['pele2', 'Pele 2'], ['teste-emagrecimento', 'Emagrecimento']];
+const AJ_TESTES = [['pele-idade', 'Pele: idade e vitalidade'], ['teste-braco', 'Idade muscular (braço)'], ['teste-pernas', 'Pernas'], ['quiz-longevidade', 'Quiz da longevidade'], ['pele2', 'Pele 2'], ['pele', 'Pele (selfie, antiga)'], ['teste-emagrecimento', 'Emagrecimento']];
 const AJ_COORTES = [['treino', 'Treino'], ['pele', 'PELE'], ['pernas', 'PERNAS'], ['musculo', 'MÚSCULO'], ['idade', 'IDADE'], ['bio', 'Bio'], ['direct', 'Direct'], ['whatsapp', 'WhatsApp']];
 const nomeEscopo = e => e === 'padrão' || e === 'geral' ? e : e.startsWith('coorte:') ? 'coorte ' + e.slice(7).toUpperCase() : e.slice(6);
 const cadeiaAj = () => AJ.escopo === 'geral' ? ['geral'] : [AJ.escopo, 'geral'];
@@ -2314,7 +2323,7 @@ function leadPrevia(){
 }
 function previaAj(k){
   if (AJ_PARAMS.some(x => x[0] === k)) return '';
-  const l = leadPrevia(), { v, de } = cfgDe(k, l), raw = k === 'audioFala' || k === 'toque3';
+  const l = leadPrevia(), { v, de } = cfgDe(k, l, cadeiaTexto(k, l)), raw = k === 'audioFala' || k === 'toque3';
   const txt = raw ? esc(v) : KITS.pedacos(v, varsLead(l)).map(x => x.falta ? `<mark>${esc(x.s)}</mark>` : esc(x.s)).join('');
   return `<small>Prévia · ${esc(nomeLead(l) || l.codigo)}${de !== AJ.escopo ? ' · vem de ' + esc(nomeEscopo(de)) : ''}</small>${txt}`;
 }
@@ -2341,7 +2350,10 @@ function desenhaAjustes(){
   $('aj-lead').innerHTML = (ls.length ? ls : [EXEMPLO]).map(l => `<option value="${esc(l.codigo)}"${l.codigo === AJ.lead ? ' selected' : ''}>${esc((nomeLead(l) || l.codigo) + ' · ' + l.codigo + (ehTreino(l) ? ' · treino' : ''))}</option>`).join('');
   $('aj-aviso').hidden = CFG.ok; $('aj-aviso').textContent = 'Só para ler: o banco ainda não guarda os ajustes.';
   const abertos = [...document.querySelectorAll('#aj-corpo details[open]')].map(d => [...d.classList].find(c => /^aj-/.test(c)));
-  $('aj-corpo').innerHTML = `<div class="card"><h2>Mensagens</h2>${AJ_MSGS.map(([k, t]) => campoAj(k, t)).join('')}</div>
+  // 13/11: num teste, primeiro os textos dele (kits.js), por grupo
+  const dono = AJ.escopo.startsWith('teste:') ? AJ.escopo.slice(6) : '', tx = dono ? (window.KITS?.textos || []).filter(t => t.dono === dono) : [];
+  const deste = tx.length ? `<div class="card aj-teste"><h2>Textos deste teste</h2>${[...new Set(tx.map(t => t.grupo))].map(g => `<h3 class="aj-g">${esc(g)}</h3>` + tx.filter(t => t.grupo === g).map(t => campoAj(t.chave, t.rotulo)).join('')).join('')}</div>` : '';
+  $('aj-corpo').innerHTML = `${deste}<div class="card"><h2>${tx.length ? 'Mensagens gerais' : 'Mensagens'}</h2>${AJ_MSGS.map(([k, t]) => campoAj(k, t)).join('')}</div>
     <div class="card"><h2>Números</h2>${AJ_PARAMS.map(([k, t]) => campoAj(k, t)).join('')}</div>`;
   abertos.forEach(c => c && document.querySelector('#aj-corpo .' + c)?.setAttribute('open', ''));
 }
