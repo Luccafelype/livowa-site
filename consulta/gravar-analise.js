@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1211c';
+const VERSAO = '1211d';
 const W = 720, H = 1280, FPS = 30, MAX_S = 90;
 const CIRC = { cx:W - 24 - 120, cy:H - 24 - 120, r:120 };   // câmera dele
 const TOPO = 150;                                           // nome e CRM no alto do vídeo
@@ -71,7 +71,7 @@ function monta(){
     <div class="ga-quadro">
       <canvas class="ga-tela" width="${W}" height="${H}" aria-label="Vídeo que vai ser gravado"></canvas>
       <video class="ga-cam" playsinline muted autoplay aria-hidden="true"></video>
-      <div class="ga-prompt" aria-live="polite"><div class="ga-p-topo"><b class="ga-p-tit"></b><span class="ga-p-pos"></span><button type="button" class="ga-aa" aria-label="Tamanho do texto">Aa</button></div><p class="ga-p-txt"></p><p class="ga-p-dep"></p></div>
+      <div class="ga-prompt" aria-live="polite"><div class="ga-p-topo"><b class="ga-p-tit"></b><span class="ga-p-pos"></span><button type="button" class="ga-aa" aria-label="Tamanho do texto">Aa</button></div><p class="ga-p-txt"></p><div class="ga-p-opc" hidden></div><p class="ga-p-dep"></p></div>
       <div class="ga-conta" hidden></div>
       <div class="ga-aviso" hidden></div>
       <div class="ga-nota" hidden></div>
@@ -104,7 +104,7 @@ function monta(){
   </div>`;
   document.body.append(el);
   const q = s => el.querySelector(s);
-  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pDep:q('.ga-p-dep'),
+  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'),
     conta:q('.ga-conta'), aviso:q('.ga-aviso'), nota:q('.ga-nota'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
     fechar:q('.ga-fechar'), ant:q('.ga-ant'), rec:q('.ga-rec-b'), recT:q('.ga-rec-t'), prox:q('.ga-prox'), grav:q('.ga-grav'), rev:q('.ga-rev'), fim:q('.ga-fim'),
     refazer:q('.ga-refazer'), enviar:q('.ga-enviar'), baixar:q('.ga-baixar'), marcar:q('.ga-marcar'), denovo:q('.ga-denovo'), info:q('.ga-info'), tentar:q('.ga-tentar') };
@@ -323,7 +323,9 @@ function pontosSinais(g, media){
   const P = g.P, i = g.iod, m = (...ks) => media(ks.map(k => P[k]));
   return { iod:i, pts:{
     linhas_testa:[{ x:P[151].x, y:P[151].y - .2 * i }],
+    glabela:[{ x:P[9].x, y:P[9].y }],
     olhos:[{ x:P[33].x - .13 * i, y:P[33].y + .05 * i }, { x:P[263].x + .13 * i, y:P[263].y + .05 * i }],
+    olheira:[{ x:P[145].x, y:P[145].y + .12 * i }, { x:P[374].x, y:P[374].y + .12 * i }],
     sulco_nasolabial:[m(129, 61, 206), m(358, 291, 426)],
     manchas:[{ x:P[50].x - .06 * i, y:P[50].y + .06 * i }, { x:P[280].x + .06 * i, y:P[280].y + .06 * i }],
     flacidez:[m(172, 150, 136), m(397, 379, 365)] } };
@@ -335,7 +337,7 @@ function arrumaLupas(c, f){
   const dentro = q => ({ x:lim(q.x, r + 10, W - r - 10), y:lim(q.y, TOPO + r + 10, H - r - 10) });
   const postos = [];
   for (const l of c.lupas){
-    const cs = (G.rosto.pts[l.id] || []).map((p, lado) => {
+    const cs = (G.rosto.pts[l.id] || G.rosto.pts[l.parte_de] || []).map((p, lado) => {   // sub-região sem ponto próprio (papada): o da região-mãe
       const t = naTela(f, p, z), d = dentro(t);
       let s = -2 * Math.hypot(d.x - t.x, d.y - t.y);
       if (cam && Math.hypot(d.x - CIRC.cx, d.y - CIRC.cy) < CIRC.r + r + 10) s -= 1000;   // embaixo da câmera dele
@@ -480,15 +482,14 @@ function cenaDentro(ctx, c, t){
   ctx.globalAlpha = 1;
 }
 
-// desejo: cartão "O que importa aos {idade}" com 3 itens (o arquivo da pesquisa); sem itens, nada no canvas (a nota avisa)
+// desejo: cartão "O que importa aos {idade}" com 3 itens (só o "t" do arquivo da pesquisa); sem itens, nada no canvas (a nota avisa)
 function cenaDesejo(ctx, c, t){
   const its = (c.itens || []).slice(0, 3); if (!its.length) return;
   escurece(ctx, .82 * sai(t / 250));
   const x0 = 40, w = 640;
   ctx.font = `700 44px ${FONTE}`; const tl = quebra(ctx, c.titulo || '', w - 64, 2);
   ctx.font = `500 31px ${FONTE}`; const il = its.map(s => quebra(ctx, s, w - 140, 3));
-  ctx.font = `500 20px ${FONTE}`; const ft = c.fontes && c.fontes.length ? quebra(ctx, 'Fontes: ' + c.fontes.join('; '), w - 64, 1) : [];
-  const h = 34 + tl.length * 54 + 30 + il.reduce((s, l) => s + Math.max(2, l.length) * 40 + 22, 0) + (ft.length ? 34 : 0) + 18;
+  const h = 34 + tl.length * 54 + 30 + il.reduce((s, l) => s + l.length * 40 + 34, 0) + 18;
   const y0 = Math.max(TOPO + 20, Math.round((TOPO + 20 + 880 - h) / 2)), p = sai(t / 300);
   ctx.globalAlpha = p;
   ctx.fillStyle = 'rgba(10,15,13,.92)'; caixa(ctx, x0, y0, w, h, 22); ctx.fill();
@@ -498,7 +499,7 @@ function cenaDesejo(ctx, c, t){
   let y = y0 + 34 + tl.length * 54 + 4;
   ctx.fillStyle = AMARELO; ctx.fillRect(x0 + 32, y, 64, 3); y += 26;
   il.forEach((ls, k) => {
-    const q = sai((t - 250 - k * 400) / 300), bh = Math.max(2, ls.length) * 40 + 22;
+    const q = sai((t - 250 - k * 400) / 300), bh = ls.length * 40 + 34;
     if (q > 0){
       ctx.globalAlpha = q;
       ctx.lineWidth = 2.5; ctx.strokeStyle = AMARELO; ctx.beginPath(); ctx.arc(x0 + 56, y + 22, 22, 0, Math.PI * 2); ctx.stroke();
@@ -508,7 +509,6 @@ function cenaDesejo(ctx, c, t){
     }
     y += bh;
   });
-  if (ft.length){ ctx.globalAlpha = p; ctx.fillStyle = APAGADO; ctx.font = `500 20px ${FONTE}`; ctx.fillText(ft[0], x0 + 32, y + 4); }
   ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
 }
 
@@ -524,6 +524,9 @@ function prompter(){
     if (m){ const sp = document.createElement('span'); sp.className = 'ga-dica'; sp.textContent = 'aponte: ' + m[1].trim(); D.pTxt.append(sp); }
     else if (pedaco) D.pTxt.append(document.createTextNode(pedaco));
   });
+  // 12/11: notas só para ele (nome popular do sinal, o que acompanha a idade, o porquê de cada item do cartão): nunca no canvas
+  D.pOpc.textContent = ''; (b.notas || []).forEach(t => { const q = document.createElement('p'); q.textContent = t; D.pOpc.append(q); });
+  D.pOpc.hidden = !(b.notas && b.notas.length);
   D.pDep.textContent = G.bloco < n - 1 ? 'Depois: ' + (bs[G.bloco + 1].titulo || '') : 'Último bloco';
   D.prompt.style.setProperty('--fs', fsPrompt + 'px');
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;

@@ -1,0 +1,70 @@
+{
+  "versao": "2026-11-12",
+  "nota": "Itens gerais, que valem para todos da faixa. Os que dependem de hábito ficam em 'condicionais' e só entram se a pessoa marcou o hábito (regra 6 do ajuste pele-idade). Fontes e limites em o-que-importa-idade.md.",
+  "idade": {
+    "ate34": {
+      "f": [
+        { "t": "Protetor solar no rosto, todo dia", "porque": "Num estudo de quatro anos e meio, quem usou todo dia não mostrou piora detectável.", "fonte": "Hughes 2013, Ann Intern Med, ensaio randomizado, 903 adultos com menos de 55 anos (PMID 23732711)" },
+        { "t": "Sono de 7 horas ou mais", "porque": "É o mínimo indicado para adultos, e dormir mal aparece na pele.", "fonte": "AASM/SRS 2015, consenso (PMID 25979105); Oyetakin-White 2015, 60 mulheres (PMID 25266053)" },
+        { "t": "Músculo treinado duas vezes por semana", "porque": "A OMS indica força duas vezes por semana para todo adulto.", "fonte": "OMS 2020, diretriz de atividade física (Bull 2020, PMID 33239350; texto PMC7719906)" }
+      ],
+      "m": [
+        { "t": "Protetor solar no rosto, todo dia", "porque": "Num estudo de quatro anos e meio, quem usou todo dia não mostrou piora detectável.", "fonte": "Hughes 2013, Ann Intern Med, ensaio randomizado, homens e mulheres com menos de 55 anos (PMID 23732711)" },
+        { "t": "Sono de 7 horas ou mais", "porque": "É o mínimo indicado para adultos, e dormir mal aparece na pele.", "fonte": "AASM/SRS 2015, consenso (PMID 25979105); Oyetakin-White 2015 (PMID 25266053)" },
+        { "t": "Músculo treinado duas vezes por semana", "porque": "A OMS indica força duas vezes por semana para todo adulto.", "fonte": "OMS 2020 (Bull 2020, PMID 33239350; texto PMC7719906)" }
+      ]
+    },
+    "35a49": {
+      "f": [
+        { "t": "Glicose medida a partir dos 35", "porque": "Medir é indicado a partir dos 35, e glicose alta já aparece no rosto.", "fonte": "SBD 2025, diretriz de rastreamento (Rodacki 2025, PMID 40038723); Noordam 2011, Leiden, 602 pessoas (PMID 22102339)" },
+        { "t": "Perimenopausa: acompanhar as mudanças com calma", "porque": "Começa em média aos 47, e a pele pode mudar junto.", "fonte": "McKinlay 1992, 2.570 americanas, mediana de início 47,5 anos (PMID 1565019); Luebberding 2014, 200 alemães (PMID 24267416)" },
+        { "t": "Músculo treinado duas vezes por semana", "porque": "A OMS indica força duas vezes por semana para todo adulto.", "fonte": "OMS 2020 (Bull 2020, PMID 33239350; texto PMC7719906)" }
+      ],
+      "m": [
+        { "t": "Glicose medida a partir dos 35", "porque": "Medir é indicado a partir dos 35, e glicose alta já aparece no rosto.", "fonte": "SBD 2025 (Rodacki 2025, PMID 40038723); Noordam 2011 (PMID 22102339)" },
+        { "t": "Pressão medida todo ano depois dos 40", "porque": "Medir todo ano é indicado a partir dos 40.", "fonte": "USPSTF 2021, rastreamento de pressão alta em adultos, grau A" },
+        { "t": "Protetor solar no rosto, todo dia", "porque": "Em homens, pele que queima e sol o verão todo somaram idade ao rosto.", "fonte": "Gunn 2015, Br J Dermatol, 318 holandeses de 45 a 75 anos (PMID 25627783); Hughes 2013 (PMID 23732711)" }
+      ]
+    },
+    "50a64": {
+      "f": [
+        { "t": "Na menopausa, cuidar de pele e osso juntos", "porque": "Depois da menopausa, colágeno da pele e osso diminuem no mesmo ritmo.", "fonte": "Brincat 1987, Obstet Gynecol (PMID 3120067)" },
+        { "t": "Pressão medida todo ano", "porque": "Nas mulheres, a pressão foi o fator do coração mais ligado ao rosto.", "fonte": "USPSTF 2021, grau A; Gunn 2012, Leiden, 514 pessoas, média de 63 anos (PMID 22879455)" },
+        { "t": "Músculo treinado duas vezes por semana", "porque": "A OMS indica força duas vezes por semana, em toda idade adulta.", "fonte": "OMS 2020 (Bull 2020, PMID 33239350; texto PMC7719906)" }
+      ],
+      "m": [
+        { "t": "Pressão medida todo ano", "porque": "Medir todo ano é indicado a partir dos 40.", "fonte": "USPSTF 2021, grau A" },
+        { "t": "Músculo treinado duas vezes por semana", "porque": "A OMS indica força duas vezes por semana, em toda idade adulta.", "fonte": "OMS 2020 (Bull 2020, PMID 33239350; texto PMC7719906)" },
+        { "t": "Protetor solar também depois dos 50", "porque": "Nos gêmeos, o efeito do sol no rosto ficou maior com a idade.", "fonte": "Guyuron 2009, Plast Reconstr Surg, 186 pares de gêmeos idênticos (PMID 19337100)" }
+      ]
+    },
+    "65mais": {
+      "f": [
+        { "t": "Equilíbrio e força, três vezes por semana", "porque": "A OMS indica esse treino depois dos 65 para a capacidade do dia a dia.", "fonte": "OMS 2020, recomendação para 65 anos ou mais (Bull 2020, PMID 33239350; texto PMC7719906)" },
+        { "t": "Medir o osso a partir dos 65", "porque": "A diretriz americana indica medir o osso em toda mulher a partir dos 65.", "fonte": "USPSTF 2025, rastreamento em mulheres de 65 anos ou mais, grau B" },
+        { "t": "Dentes cuidados todos os dias", "porque": "Poucos dentes e dentadura entraram na conta de quem aparentava mais idade.", "fonte": "Gunn 2015, Br J Dermatol, mulheres de 45 a 75 anos (PMID 25627783)" }
+      ],
+      "m": [
+        { "t": "Equilíbrio e força, três vezes por semana", "porque": "A OMS indica esse treino depois dos 65 para a capacidade do dia a dia.", "fonte": "OMS 2020 (Bull 2020, PMID 33239350; texto PMC7719906)" },
+        { "t": "Pressão medida todo ano", "porque": "Medir todo ano é indicado a partir dos 40.", "fonte": "USPSTF 2021, grau A" },
+        { "t": "Dentes e fio dental, todo dia", "porque": "Em homens, dentadura e não usar fio dental somaram idade ao rosto.", "fonte": "Gunn 2015, Br J Dermatol, 318 holandeses de 45 a 75 anos (PMID 25627783)" }
+      ]
+    }
+  },
+  "condicionais": {
+    "cigarro": { "quando": "fuma hoje ou às vezes", "t": "Ficar longe do cigarro", "porque": "Em gêmeos idênticos, cada 10 anos de cigarro somaram cerca de 2 anos ao rosto.", "fonte": "Guyuron 2009 (PMID 19337100); é a frase permitida pela regra 5 do ajuste pele-idade" },
+    "sono": { "quando": "dorme 6 h ou menos, ou acorda cansado(a), a partir dos 35", "t": "Sono de 7 horas ou mais", "porque": "É o mínimo indicado para adultos, e dormir mal aparece na pele.", "fonte": "AASM/SRS 2015 (PMID 25979105); Oyetakin-White 2015 (PMID 25266053)" },
+    "peso_65mais": { "quando": "65 anos ou mais e contou que perdeu peso sem querer", "t": "Peso estável, sem emagrecer sem querer", "porque": "Em gêmeos acima de 70, peso baixo andou junto com rosto mais velho.", "fonte": "Rexbye 2006, Age Ageing, 1.826 gêmeos de 70 anos ou mais (PMID 16407433)" }
+  },
+  "rotulos": {
+    "linhas_testa": { "popular": "rugas da testa", "faixa": "Linhas da testa", "acompanha": "Ficam mais marcadas com a idade; nos homens, costumam ser as primeiras.", "fonte": "Luebberding 2014, Dermatol Surg, 200 alemães de 20 a 70 anos (PMID 24267416)", "cuidado": null },
+    "glabela": { "parte_de": "linhas_testa", "popular": "marca entre as sobrancelhas", "faixa": "Entre as sobrancelhas", "acompanha": "Num estudo com 200 alemães, não apareceu antes dos 40, em homens e mulheres.", "fonte": "Luebberding 2014 (PMID 24267416)", "cuidado": "Não usar 'cara de brava/bravo': julga o humor da pessoa. O '11' e a 'ruga do bravo' não apareceram nos comentários coletados." },
+    "olhos": { "popular": "pés de galinha", "faixa": "Canto dos olhos", "acompanha": "Nas mulheres, costumam ser a primeira linha a aparecer.", "fonte": "Luebberding 2014 (PMID 24267416)", "cuidado": "O nível da edge junta pés de galinha e olheira num número só: confira na foto qual dos dois aparece antes de dar o nome." },
+    "olheira": { "parte_de": "olhos", "popular": "olheira", "faixa": "Abaixo dos olhos", "acompanha": "Costuma vir de família e começa, em média, aos 24 anos.", "fonte": "Matsui 2015, An Bras Dermatol, brasileiros; financiado pela Estée Lauder (PMID 26375218)", "cuidado": "Não ligar ao sono: no mesmo estudo o sono não se correlacionou com a olheira. 'Cara de cansada' só se foi ela que marcou; 'panda' nunca." },
+    "sulco_nasolabial": { "popular": "bigode chinês", "faixa": "Do nariz à boca", "acompanha": "Todo rosto tem esse vinco; com os anos, o osso ao lado do nariz diminui.", "fonte": "Rohrich 2007 (PMID 17519724); Mendelson 2012 (PMID 22580543)", "cuidado": "É o nome que elas usam, mas tem 'bigode' (no rosto de mulher) e referência étnica. Na faixa, só o neutro. Na fala, só se ela usou, ou como 'o que muita gente chama de bigode chinês'." },
+    "manchas": { "popular": "manchas", "faixa": "Manchas e tom", "acompanha": "Em qualquer idade, é o sinal mais ligado ao sol.", "fonte": "Flament 2013, Clin Cosmet Investig Dermatol, 298 francesas de 30 a 78 anos; financiado pela L'Oréal (PMID 24101874)", "cuidado": "Nunca dizer 'melasma' nem 'mancha de sol': é diagnóstico pela tela. Não usar 'rosto manchado', 'mapa' ou 'enferrujada'. Com grau moderado ou marcado, vale a frase de segurança da mancha nova." },
+    "textura_poros": { "popular": "poros abertos", "faixa": "Textura e poros", "acompanha": "O poro acompanha mais o óleo da pele do que a idade.", "fonte": "Roh 2006, Br J Dermatol, 60 pessoas (PMID 17034515); Flament 2015, 2.585 mulheres, o poro estabiliza com a idade (PMID 25733918)", "cuidado": "Fica fora da idade do rosto no resultado da /pele/ (app.js, SINAL). Não dizer 'fechar os poros'." },
+    "flacidez": { "popular": "rosto caindo", "faixa": "Contorno do rosto", "acompanha": "É o sinal que mais acompanha a idade, e quase não muda com o sol.", "fonte": "Flament 2013 (PMID 24101874); Ezure 2009, 108 japonesas de 20 a 60 anos (PMID 19624426)", "cuidado": "'Flácida' pesa; 'buldogue' e 'derretendo' ofendem. Só repetir se foram palavras dela. 'Rosto caindo' é a opção que ela marca no teste (DOR caindo)." },
+    "papada": { "parte_de": "flacidez", "popular": "papada", "faixa": "Linha da mandíbula", "acompanha": null, "fonte": null, "cuidado": "A edge tira o pescoço da foto. O que se vê é a borda da mandíbula, que entra no nível de flacidez. Use 'papada' só se ela marcou 'o pescoço e a papada'." }
+  }
+}

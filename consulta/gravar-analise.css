@@ -22,6 +22,10 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
 .ga-p-txt{margin:4px 0 0;font-size:var(--fs);line-height:1.32;font-weight:650;text-shadow:0 1px 2px #000}
 .ga-dica{display:inline-block;margin:0 4px;padding:0 8px;border-radius:8px;background:#ffd60a;color:#000;font-size:.72em;font-weight:800;vertical-align:.12em;text-shadow:none}
 .ga-p-dep{margin:6px 0 0;font-size:.78rem;color:#b7c7c0}
+/* 12/11: notas só para ele (nome popular, o que acompanha a idade, o porquê do cartão) */
+.ga-p-opc{margin:6px 0 0;font-size:calc(var(--fs) * .66);line-height:1.3;color:#cfe3da;font-weight:600;text-shadow:0 1px 2px #000}
+.ga-p-opc p{margin:3px 0 0}
+.ga-p-opc[hidden]{display:none}
 .ga-conta{position:absolute;inset:0;display:grid;place-items:center;font:800 7rem/1 system-ui;color:#fff;text-shadow:0 2px 12px #000;pointer-events:none}
 .ga-conta[hidden]{display:none}
 .ga-aviso{position:absolute;left:12px;right:12px;bottom:24%;background:rgba(138,82,0,.95);color:#fff;border-radius:12px;padding:8px 12px;font-size:.9rem;font-weight:600;pointer-events:none}
