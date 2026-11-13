@@ -46,6 +46,12 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .filtro{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .filtro button{background:var(--s);color:var(--fg);border:1.5px solid var(--l);padding:8px 12px;font-weight:600;font-size:.9rem;border-radius:999px}
 .filtro button[aria-pressed="true"]{background:var(--a2);border-color:var(--a);color:var(--a)}
+.f-et{position:relative;display:inline-flex}
+.f-et select{appearance:none;-webkit-appearance:none;background:var(--s);color:var(--fg);border:1.5px solid var(--l);padding:8px 14px;font:600 .9rem system-ui;border-radius:999px;max-width:220px}
+.f-et.on select{background:var(--a2);border-color:var(--a);color:var(--a)}
+.f-et:not(.on) select{width:6.4em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.f-testes{display:block;margin:14px auto 4px;background:none;color:var(--m);font:500 .85rem system-ui;padding:6px 10px;text-decoration:underline}
 .lead{background:var(--s);border:1px solid var(--l);border-radius:16px;padding:12px 14px;margin-bottom:10px}
 .lead.novo{border-left:5px solid var(--w)}
 .topo{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
@@ -420,7 +426,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
 // 13/11: sem a chave, a Caixa mostra só isto (nada desenha por cima: desenhaCaixa e carregar param aqui)
-const SEM_CHAVE = 'Este link está sem a sua chave. Abra o CRM pelo botão “Abrir a Caixa de leads” no topo da Central, ou pelo atalho Leads do iPhone.';
+const SEM_CHAVE = 'Este link está sem a sua chave. Abra o CRM pelo botão “Abrir o CRM” no topo da Central, ou pelo atalho do iPhone.';
 const avisoSemChave = () => `<p class="aviso sem-chave">${SEM_CHAVE}</p>`;
 function semChave(){
   document.querySelector('#caixa .conta').classList.add('sem'); $('filtro').classList.add('sem'); $('filtro').innerHTML = '';
@@ -515,9 +521,13 @@ function desenhaCaixa(){
   const naFila = reais.filter(l => FILA.includes(etapaDe(l)));
   $('n-esperam').textContent = naFila.length; $('n-conversa').textContent = n('conversa'); $('n-nutrir').textContent = n('nutrir');
   const treino = LEADS.filter(ehTreino);
-  const fs = [['fila', 'Responder agora', naFila.length], ...(treino.length || filtro === 'treino' ? [['treino', 'Treino', treino.length]] : []),
-    ...ETAPAS.map(([e, t]) => [e, t, n(e)]).filter(([e, , q]) => q || filtro === e), ['todos', 'Todos', reais.length], ['testes', 'Mostrar testes', null]];
-  $('filtro').innerHTML = fs.map(([f, t, q]) => `<button type="button" data-f="${f}" aria-pressed="${filtro === f}">${esc(t)}${q != null ? ` <small>${q}</small>` : ''}</button>`).join('');
+  // 13/11 (pedido do Lucca: 9 botões de filtro era demais): Responder agora · Treino (se houver) · Etapa ▾ (lista com as
+  // contagens) · Todos; "Mostrar testes" é um link pequeno no fim da lista
+  const bt = (f, t, q) => `<button type="button" data-f="${f}" aria-pressed="${filtro === f}">${esc(t)}${q != null ? ` <small>${q}</small>` : ''}</button>`;
+  const ets = ETAPAS.map(([e, t]) => [e, t, n(e)]).filter(([e, , q]) => q || filtro === e), naEtapa = ets.some(([e]) => e === filtro);
+  $('filtro').innerHTML = bt('fila', 'Responder agora', naFila.length) + (treino.length || filtro === 'treino' ? bt('treino', 'Treino', treino.length) : '')
+    + `<label class="f-et${naEtapa ? ' on' : ''}"><span class="sr">Etapa</span><select id="f-etapa" aria-label="Etapa"><option value="">Etapa ▾</option>${ets.map(([e, t, q]) => `<option value="${e}"${filtro === e ? ' selected' : ''}>${esc(t)} (${q})</option>`).join('')}</select></label>`
+    + bt('todos', 'Todos', reais.length);
   // Treino: como a fila (mais antigo primeiro, próxima ação, passo a passo), mas com todas as etapas, para ele ir até o fim
   const xs = filtro === 'fila' ? [...naFila].sort((a, b) => new Date(a.chegou) - new Date(b.chegou))
     : filtro === 'treino' ? [...treino].sort((a, b) => new Date(a.chegou) - new Date(b.chegou))
@@ -529,6 +539,7 @@ function desenhaCaixa(){
     const esp = reais.filter(l => etapaDe(l) === 'analisei' && diasDesde(l.atualizado_em) >= 1).sort((a, b) => new Date(a.atualizado_em) - new Date(b.atualizado_em));
     if (esp.length) h += `<h2 class="espera-h">Análise enviada, sem resposta (${esp.length})</h2>` + esp.map(cartaoToque).join('');
   }
+  h += filtro === 'testes' ? '<button type="button" class="f-testes" data-f="fila">Voltar para Responder agora</button>' : '<button type="button" class="f-testes" data-f="testes">Mostrar testes</button>';
   $('lista').innerHTML = h;
 }
 function quemHtml(l){
@@ -700,10 +711,11 @@ document.addEventListener('click', ev => {
   const cp = ev.target.closest('.l-copiar'); if (cp){ copiaDaLista(cp); return; }
   const ac = ev.target.closest('.l-acao'); if (ac){ acaoLista(ac); return; }
   const v = ev.target.closest('[data-ver]'); if (v){ abrirCodigo(v.dataset.ver, true); return; }
-  const f = ev.target.closest('#filtro button');
+  const f = ev.target.closest('#filtro button, .f-testes');
   if (f){ filtro = f.dataset.f; document.querySelectorAll('#filtro button').forEach(b => b.setAttribute('aria-pressed', b === f)); CARREGOU ? desenhaCaixa() : carregar(); }
 });
-document.addEventListener('change', ev => { const s = ev.target.closest('.et-sel'); if (s) marcar(s.dataset.c, s.value); });
+document.addEventListener('change', ev => { const s = ev.target.closest('.et-sel'); if (s) marcar(s.dataset.c, s.value);
+  if (ev.target.id === 'f-etapa' && ev.target.value){ filtro = ev.target.value; CARREGOU ? desenhaCaixa() : carregar(); } });
 const timers = {};
 document.addEventListener('input', ev => {
   const t = ev.target; if (!t.classList.contains('nota')) return;
