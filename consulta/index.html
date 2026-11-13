@@ -5,13 +5,14 @@
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="apple-mobile-web-app-title" content="Leads">
+<meta name="apple-mobile-web-app-title" content="CRM">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Caixa de leads</title>
+<title>CRM</title>
 <link rel="stylesheet" href="gravar-analise.css?v=20261112c">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
-   Quatro abas: Caixa (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX), Portas (tema e % de
+   13/11: o nome passou a ser CRM (pedido do Lucca); a aba dos leads é "Leads".
+   Quatro abas: Caixa/Leads (os leads que chegaram, com status em 1 toque), Código (buscar um LV-XXXX), Portas (tema e % de
    cada teste na bio e no Direct, desde 01/11) e Funil (onde as pessoas caem em cada teste, por etapa, desde 01/11). Na tela do código, cada braço/pernas/pele traz o bloco "Responder"
    (kits.js: faixa, mensagens prontas, atalhos e o modo revisão), que roda só aqui e não manda nada a servidor.
    02/11: Pele 2 (3 ângulos + acne) com fotos, achados por região, respostas do quiz e kit; modo revisão para o iPad
@@ -133,6 +134,28 @@ button{font:700 1rem system-ui;padding:12px 18px;border:0;border-radius:12px;bac
 .conta.tres{grid-template-columns:repeat(3,minmax(0,1fr))}
 /* 13/11: aberta sem o #k= (a chave): só o aviso, sem números nem filtros (em 05/11 e 12/11 o "0 esperam você" pareceu caixa vazia) */
 .conta.sem,.filtro.sem{display:none}
+.sec{border-top:1px solid var(--l);margin-top:8px}
+.sec>summary{cursor:pointer;padding:10px 0;display:flex;align-items:baseline;gap:8px;list-style:none}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary::before{content:'▸';color:var(--m);font-size:.8rem}
+.sec[open]>summary::before{content:'▾'}
+.sec>summary b{flex:none}
+.sec>summary span{color:var(--m);font-size:.88rem;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sec-c{padding-bottom:6px}
+/* 13/11 (Lucca: "CRM bem pobrinho, informações inúteis para o card inicial, muitas informações, muitas ações possíveis"): cartão mínimo */
+.lc{background:var(--s);border:1px solid var(--l);border-radius:14px;padding:12px 12px 12px 14px;margin-bottom:10px}
+.lc .l1{display:flex;align-items:baseline;gap:4px 8px;flex-wrap:wrap}
+.lc .l-nome{font-size:1.1rem;font-weight:800;overflow-wrap:anywhere}
+.lc .l-cod{color:var(--m);font-size:.75rem;font-family:ui-monospace,monospace}
+.lc .l-teste{font-size:.8rem;font-weight:600;color:var(--a);background:var(--a2);border-radius:999px;padding:1px 8px}
+.lc .l-t{margin-left:auto;color:var(--m);font-size:.85rem;white-space:nowrap}
+.lc .l-t.tarde{color:var(--r);font-weight:700}
+.lc .l-apaga{width:9px;height:9px;border-radius:50%;background:#e8a317;display:inline-block;align-self:center}
+.lc .l2{color:var(--m);font-size:.92rem;margin-top:2px}
+.lc .l-bt{display:flex;gap:8px;margin-top:10px}
+.lc .l-acao{flex:1;min-height:48px;font-size:1.02rem}
+.lc .l-acao.feito{background:var(--a2);color:var(--a)}
+.lc .l-mais{flex:none;width:52px;min-height:48px;padding:0;background:var(--bg);color:var(--fg);border:1.5px solid var(--l);font-size:1.3rem;line-height:1}
 .sem-chave{color:inherit;background:var(--s);border:1px solid var(--l);border-radius:14px;padding:14px 16px;font-weight:600;line-height:1.45}
 .conta.tres b{font-size:1.4rem}
 .fn-queda{border-radius:12px;padding:10px 12px;background:var(--w2);color:var(--fg);font-size:.92rem;margin-bottom:12px}
@@ -325,9 +348,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </head>
 <body>
 <main>
-  <h1 id="tit">Caixa de leads</h1>
+  <h1 id="tit">CRM</h1>
   <div class="abas" role="tablist">
-    <button role="tab" id="t-caixa" aria-selected="true">Caixa</button>
+    <button role="tab" id="t-caixa" aria-selected="true">Leads</button>
     <button role="tab" id="t-cod" aria-selected="false">Código</button>
     <button role="tab" id="t-portas" aria-selected="false">Portas</button>
     <button role="tab" id="t-funil" aria-selected="false">Funil</button>
@@ -354,7 +377,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   </section>
 
   <section id="busca" hidden>
-    <button type="button" class="voltar" id="voltar" hidden>Voltar para a caixa</button>
+    <button type="button" class="voltar" id="voltar" hidden>Voltar para os leads</button>
     <form id="f"><input id="c" placeholder="LV-XXXX" autocomplete="off" autocapitalize="characters"><button>Ver</button></form>
     <div id="gestao"></div>
     <div id="out"></div>
@@ -389,14 +412,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div id="conv" class="conv" role="dialog" aria-modal="true" aria-labelledby="conv-tit" hidden>
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
-<script src="kits.js?v=20261112d"></script>
-<script src="roteiro.js?v=20261112c"></script>
+<script src="kits.js?v=20261113a"></script>
+<script src="roteiro.js?v=20261113a"></script>
 <script src="gravar-analise.js?v=20261112e"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
 // 13/11: sem a chave, a Caixa mostra só isto (nada desenha por cima: desenhaCaixa e carregar param aqui)
-const SEM_CHAVE = 'Este link está sem a sua chave. Abra a Caixa pelo botão “Abrir a Caixa de leads” no topo da Central, ou pelo atalho Leads do iPhone.';
+const SEM_CHAVE = 'Este link está sem a sua chave. Abra o CRM pelo botão “Abrir a Caixa de leads” no topo da Central, ou pelo atalho Leads do iPhone.';
 const avisoSemChave = () => `<p class="aviso sem-chave">${SEM_CHAVE}</p>`;
 function semChave(){
   document.querySelector('#caixa .conta').classList.add('sem'); $('filtro').classList.add('sem'); $('filtro').innerHTML = '';
@@ -511,37 +534,46 @@ function quemHtml(l){
   const nm = nomeLead(l);
   return `<span class="quem">${nm ? `<b class="nm-l">${esc(nm)}</b>` : ''}${l.instagram ? `<span class="ig">@${esc(l.instagram)}</span>` : `<span class="cod">${esc(l.codigo)}</span>`}</span>`;
 }
-function cartaoLead(l, naFila){
+// 13/11: o cartão da lista é o mínimo: quem (nome em negrito; sem nome, o código) · o teste em 1 palavra · há quanto tempo
+// (vermelho depois de 24 h na fila); na pele nova, o incômodo dela; UM botão que já faz a próxima ação e o ⋯ que abre o lead
+// inteiro. Etapa, nota, aceite, etiquetas, resumo e "a foto apaga" ficam dentro do lead (a foto vira um ponto nos 2 últimos dias).
+const TESTE_1 = p => p.etapa === 'pele-resultado' || p.funil === 'pele2' || p.funil === 'pele-idade' ? 'Pele'
+  : { 'teste-pernas':'Pernas', 'quiz-longevidade':'Quiz', 'teste-braco':'Braço', 'teste-emagrecimento':'Emagrecimento' }[p.funil] || p.funil || '';
+const INC_PI = { cansada:m => m ? 'cara de cansado' : 'cara de cansada', caindo:() => 'rosto caindo', pescoco:() => 'pescoço e papada', palpebra:() => 'pálpebra pesando',
+  manchas:() => 'manchas e rugas', velho:m => m ? 'parece mais velho' : 'parece mais velha' };
+function incomodoCurto(l){
+  const p = (l.partes || []).find(x => x.funil === 'pele-idade'); if (!p) return '';
+  const r = p.dados?.respostas || {};
+  if (r.espelho === 'outro') return String(r.espelho_texto || '').split(/\s+/).filter(Boolean).slice(0, 5).join(' ');
+  return INC_PI[r.espelho]?.((r.sexo || p.dados?.sexo) === 'm') || '';
+}
+// a próxima ação, em 1 toque: [rótulo, ação]
+function acaoDe(l, et){
+  const pi = ehPI(l);
+  if (pi && soSemAnalise(l) && (et === 'novo' || et === 'audio')) return ['Pedir a foto', 'foto'];
+  if (pi && et === 'novo') return ['Mandar áudio', 'audio'];
+  if (pi && et === 'audio') return ['Gravar análise', 'gravar'];
+  if (pi && et === 'respondeu') return ['Mandar convite', 'convite'];
+  if (pi && et === 'analisei'){ const d = diasDesde(l.atualizado_em); return d >= 7 ? ['Copiar toque do dia 7', 'toque7'] : d >= 3 ? ['Toque do dia 3 (áudio)', 'toque3'] : d >= 1 ? ['Copiar toque do dia 1', 'toque1'] : ['Abrir', 'abrir']; }
+  if (pi && et === 'conversa') return ['Fazer a conversa', 'conversa'];
+  if (FILA.includes(et)) return ['Responder', 'abrir'];   // os outros testes: o kit do teste, dentro do lead
+  return ['Abrir', 'abrir'];
+}
+function cartaoLead(l, modo){
+  const naFila = modo === true || modo === 'fila', toque = modo === 'toque', c = l.codigo, et = etapaDe(l), nm = nomeLead(l);
   const quando = new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-  const funis = [...new Set((l.partes || []).map(NOME_FUNIL))], et = etapaDe(l);
-  const canais = (l.canais || []).map(c => c === 'whatsapp' ? 'WhatsApp' : 'Direct');
-  const tarde = naFila && Date.now() - new Date(l.chegou).getTime() > 24 * 3600e3, ap = temPele(l) ? apagaFoto(l) : '';
-  const copiaAudio = naFila && et === 'novo' && ehPI(l) && !!nomeLead(l);   // sem nome, abre o lead (o nome se digita lá)
-  return `<article class="lead ${naFila ? 'fila' : et === 'novo' ? 'novo' : ''}${tarde ? ' tarde' : ''}" data-c="${esc(l.codigo)}">
-      <div class="topo">${quemHtml(l)}${naFila ? `<span class="espera${tarde ? ' tarde' : ''}" title="${esc(quando)}">chegou ${esc(espera(l.chegou))}${tarde ? ' · passou de 24 h' : ''}</span>` : `<span class="quando">${esc(quando)}</span>`}</div>
-      ${l.instagram ? `<div class="sub-ig">veio pelo Direct · ${esc(l.codigo)}</div>` : l.lv ? `<div class="sub-ig">veio pelo Direct (o @ aparece quando o OpenReply responder)</div>` : ''}
-      <div class="prox">${esc(proxAcao(l, et))}</div>
-      ${ap ? `<div class="apaga">${esc(ap)}</div>` : ''}
-      <div class="tags"><span class="tag e">${esc(NOME_ET[et] || et)}</span>${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
-        <span class="tag">${canais.length ? 'Tocou em ' + esc([...new Set(canais)].join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${ehTreino(l) ? '<span class="tag t">treino</span>' : antesDoCorte(l) ? '<span class="tag t">teste seu</span>' : ehTeste(l) ? '<span class="tag t">teste</span>' : ''}</div>
-      <div class="resumo">${esc(resumo(l))}</div>
-      <div class="l-acoes"><button type="button" data-ver="${esc(l.codigo)}">${naFila ? 'Responder' : 'Ver resultado completo'}</button>
-        ${copiaAudio ? `<button type="button" class="sec l-copiar" data-copia="audio" data-c="${esc(l.codigo)}">Copiar “recebi o seu teste”</button>` : ''}
-        ${etapaSel(l)}</div>
-      ${aceiteBox(l)}
-      <textarea class="nota" data-c="${esc(l.codigo)}" maxlength="500" rows="1" placeholder="Nota (ex.: mandei áudio, volta segunda)">${esc(l.nota || '')}</textarea>
-      <div class="acoes"><small id="ok-${esc(l.codigo)}">${l.atualizado_em ? 'Marcado ' + esc(new Date(l.atualizado_em).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })) : ''}</small></div>
+  const tarde = naFila && Date.now() - new Date(l.chegou).getTime() > 24 * 3600e3;
+  const testes = [...new Set((l.partes || []).map(TESTE_1).filter(Boolean))], [rot, acao] = acaoDe(l, et), inc = incomodoCurto(l);
+  const ap = temPele(l) ? apagaFoto(l) : '', apPerto = /apaga em [12] dias?$/.test(ap);
+  const tag = ehTreino(l) ? '<span class="tag t">treino</span>' : antesDoCorte(l) ? '<span class="tag t">teste seu</span>' : ehTeste(l) ? '<span class="tag t">teste</span>' : '';
+  return `<article class="lead lc${toque ? ' l-toque' : ''}" data-c="${esc(c)}" data-et="${esc(et)}">
+      <div class="l1"><b class="l-nome">${esc(nm || c)}</b>${nm ? `<small class="l-cod">${esc(c)}</small>` : ''}${testes.length ? `<span class="l-teste">${esc(testes.join(' + '))}</span>` : ''}${tag}${apPerto ? `<i class="l-apaga" role="img" aria-label="${esc(ap)}" title="${esc(ap)}"></i>` : ''}
+        <span class="l-t${tarde ? ' tarde' : ''}" title="${esc(quando)}">${toque ? 'análise ' + esc(espera(l.atualizado_em)) : esc(espera(l.chegou))}</span></div>
+      ${inc ? `<div class="l2">${esc(inc)}</div>` : ''}
+      <div class="l-bt"><button type="button" class="l-acao" data-acao="${acao}" data-c="${esc(c)}">${esc(rot)}</button><button type="button" class="l-mais" data-ver="${esc(c)}" aria-label="Abrir o lead inteiro">⋯</button></div>
     </article>`;
 }
-function cartaoToque(l){
-  const d = diasDesde(l.atualizado_em), K = window.KITS?.['pele-idade'], nm = nomeLead(l);
-  const desejo = (() => { const p = (l.partes || []).find(x => x.funil === 'pele-idade'), r = p?.dados?.respostas || {}; try { return r.futuro ? valPI('futuro', r.futuro, p.dados) : ''; } catch { return ''; } })();
-  const qual = d >= 7 ? 'toque7' : d >= 3 ? 'toque3' : 'toque1', txt = K ? KITS.preencher(K.v3[qual], { nome:nm || null, desejo:desejo || null }) : '';
-  return `<div class="toque" data-c="${esc(l.codigo)}"><div class="topo">${quemHtml(l)}<span class="espera">análise ${d === 1 ? 'há 1 dia' : `há ${d} dias`}</span></div>
-    <div class="prox">${esc(proxAcao(l, 'analisei'))}</div>${txt ? `<div class="kit-txt">${esc(txt)}</div>` : ''}
-    <div class="l-acoes">${qual !== 'toque3' && txt ? `<button type="button" class="sec l-copiar" data-copia="${qual}" data-c="${esc(l.codigo)}">Copiar</button>` : ''}<button type="button" data-ver="${esc(l.codigo)}">Abrir</button>${etapaSel(l)}</div>
-    <small id="ok-${esc(l.codigo)}"></small></div>`;
-}
+const cartaoToque = l => cartaoLead(l, 'toque');
 const etapaSel = l => `<select class="et-sel" data-c="${esc(l.codigo)}" aria-label="Etapa">${ETAPAS.map(([e, t]) => `<option value="${e}"${etapaDe(l) === e ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
 // 03/11 (decisão do Lucca: "você deveria saber quem concordou e quem recusou"): aceita orientações e novos testes?
 // Ele pergunta na conversa e marca aqui. sim | nao | '' (sem resposta) + a data em que mudou. Só aparece quando o banco
@@ -574,7 +606,7 @@ async function carregar(){
     const j = await r.json();
     if (!j.ok) throw 0;
     LEADS = j.leads || []; CARREGOU = true; desenhaCaixa();
-  } catch { $('lista').innerHTML = '<p class="aviso">Não consegui carregar a caixa agora. Puxe para atualizar.</p>'; }
+  } catch { $('lista').innerHTML = '<p class="aviso">Não consegui carregar os leads agora. Puxe para atualizar.</p>'; }
 }
 // grava a etapa (e a nota) de um código; devolve true quando o servidor aceitou
 async function marcar(c, etapa, nota){
@@ -610,24 +642,62 @@ function pintaEtapa(c, et){
   document.querySelectorAll(`.st button[data-c="${c}"]`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === et)));
   document.querySelectorAll(`.et-sel[data-c="${c}"]`).forEach(s => { s.value = et; });
 }
-function copiaTexto(txt, btn){
+// copia e mostra no botão; devolve true quando copiou
+async function copiaTexto(txt, btn){
   const volta = btn.dataset.volta || (btn.dataset.volta = btn.textContent);
   const feito = m => { btn.textContent = m; btn.classList.add('feito'); clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = volta; btn.classList.remove('feito'); }, 1500); };
-  try { if (navigator.clipboard?.writeText) navigator.clipboard.writeText(txt).then(() => feito('Copiado'), () => feito('Não copiou')); else feito('Não copiou'); }
-  catch { feito('Não copiou'); }
+  try { if (!navigator.clipboard?.writeText) throw 0; await navigator.clipboard.writeText(txt); feito('Copiado'); return true; }
+  catch { feito('Não copiou'); return false; }
 }
-function copiaDaLista(btn){
-  const l = LEADS.find(x => x.codigo === btn.dataset.c), K = window.KITS?.['pele-idade']; if (!l || !K) return;
+function copiaDaLista(btn, qual = btn.dataset.copia){
+  const l = LEADS.find(x => x.codigo === btn.dataset.c), K = window.KITS?.['pele-idade']; if (!l || !K) return Promise.resolve(false);
   const p = (l.partes || []).find(x => x.funil === 'pele-idade'), r = p?.dados?.respostas || {};
   let desejo = null; try { desejo = r.futuro ? valPI('futuro', r.futuro, p.dados) : null; } catch { desejo = null; }
-  const tpl = btn.dataset.copia === 'audio' ? K.v3.audioTexto : K.v3[btn.dataset.copia];
-  copiaTexto(KITS.preencher(tpl, { nome:nomeLead(l) || null, lv:l.codigo, desejo }), btn);
+  const tpl = qual === 'audio' ? K.v3.audioTexto : K.v3[qual];
+  // sem nome: tira o "{nome}, " do começo; se ainda faltar dado ({desejo}…), não copia (null = abrir o lead)
+  const txt = KITS.preencher(tpl, { nome:nomeLead(l) || null, lv:l.codigo, desejo }).replace(/^\{nome\},\s*(.)/, (m, ch) => ch.toUpperCase());
+  if (/\{[a-z0-9_]+\}/.test(txt)) return Promise.resolve(null);
+  return copiaTexto(txt, btn);
+}
+// 13/11: o botão grande do cartão faz a próxima ação: copia (e marca a etapa) ou abre o lead no passo certo
+async function acaoLista(btn){
+  const c = btn.dataset.c, a = btn.dataset.acao, l = LEADS.find(x => x.codigo === c); if (!l) return;
+  if (a === 'audio'){
+    if (!nomeLead(l)) return abreLead(c, 1);   // sem nome: o nome se digita no passo 1
+    if (await copiaDaLista(btn, 'audio')) marcar(c, 'audio');
+    return;
+  }
+  if (a === 'foto' || a === 'toque1' || a === 'toque7'){ if (await copiaDaLista(btn, a === 'foto' ? 'pedirFoto' : a) === null) abreLead(c, a === 'foto' ? 1 : 3); return; }
+  if (a === 'gravar') return abreLead(c, 2, true);
+  if (a === 'convite' || a === 'toque3') return abreLead(c, 3);
+  if (a === 'conversa') return abreLead(c, 4);
+  return abreLead(c);
+}
+async function abreLead(c, passo, gravar){
+  await abrirCodigo(c, true);
+  if (codigoAtual !== c || $('busca').hidden) return;
+  const d = passo && document.querySelector(`#out details.passo[data-p="${passo}"]`);
+  if (d){ document.querySelectorAll('#out details.passo').forEach(x => { if (x !== d) x.open = false; }); d.open = true; d.scrollIntoView({ block:'start', behavior:'smooth' }); }
+  if (gravar) gravarQuandoPronto(c);
+}
+// "Gravar análise" da lista: abre o gravador quando o roteiro estiver pronto (o do Claude, se vier em até 30 s; senão, o do estoque)
+async function gravarQuandoPronto(c){
+  const t0 = Date.now(), espera = ms => new Promise(r => setTimeout(r, ms));
+  for (;;){
+    if (codigoAtual !== c || $('busca').hidden || window.GRAVADOR?._estado()) return;   // saiu do lead ou o gravador já abriu
+    const bt = document.querySelector('#out .pi-claude .ga-abrir'); if (bt && bt.disabled) return;   // sem fotos: fica no passo 2, com o aviso
+    const i = bt ? +bt.dataset.kb : -1, cl = KB[i] ? window.ROTEIRO?.claude(KB[i].e) : null;
+    if (bt && (Date.now() - t0 > 30000 || (cl && cl.lido && cl.estado !== 'gerando' && cl.estado !== 'lendo'))) return abreGravador(i);
+    if (Date.now() - t0 > 35000) return;
+    await espera(300);
+  }
 }
 document.addEventListener('click', ev => {
   const a = ev.target.closest('.ac button'); if (a){ marcarAceite(a.dataset.c, a.dataset.a); return; }
   const s = ev.target.closest('.st button');
   if (s){ s.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === s)); marcar(s.dataset.c, s.dataset.s); return; }
   const cp = ev.target.closest('.l-copiar'); if (cp){ copiaDaLista(cp); return; }
+  const ac = ev.target.closest('.l-acao'); if (ac){ acaoLista(ac); return; }
   const v = ev.target.closest('[data-ver]'); if (v){ abrirCodigo(v.dataset.ver, true); return; }
   const f = ev.target.closest('#filtro button');
   if (f){ filtro = f.dataset.f; document.querySelectorAll('#filtro button').forEach(b => b.setAttribute('aria-pressed', b === f)); CARREGOU ? desenhaCaixa() : carregar(); }
@@ -644,7 +714,7 @@ document.addEventListener('input', ev => {
 function aba(qual){
   $('t-caixa').setAttribute('aria-selected', qual === 'caixa'); $('t-cod').setAttribute('aria-selected', qual === 'cod'); $('t-portas').setAttribute('aria-selected', qual === 'portas'); $('t-funil').setAttribute('aria-selected', qual === 'funil');
   $('caixa').hidden = qual !== 'caixa'; $('busca').hidden = qual !== 'cod'; $('portas').hidden = qual !== 'portas'; $('funil').hidden = qual !== 'funil';
-  $('tit').textContent = qual === 'caixa' ? 'Caixa de leads' : qual === 'portas' ? 'Portas' : qual === 'funil' ? 'Funil' : 'Consulta por código';
+  $('tit').textContent = qual === 'caixa' ? 'CRM' : qual === 'portas' ? 'Portas' : qual === 'funil' ? 'Funil' : 'Consulta por código';
   if (qual === 'portas') carregaPortas();
   if (qual === 'funil') carregaFunil();
   if (qual === 'caixa'){ $('voltar').hidden = true; desenhaCaixa(); }
@@ -830,12 +900,26 @@ $('fn-corpo').addEventListener('click', ev => {
 });
 
 $('voltar').onclick = () => aba('caixa');
-function abrirCodigo(c, daCaixa){ aba('cod'); $('voltar').hidden = !daCaixa; $('c').value = c; ver(c); }
+function abrirCodigo(c, daCaixa){ aba('cod'); $('voltar').hidden = !daCaixa; $('c').value = c; return ver(c); }
+// 13/11: o lead aberto mostra tudo, em seções recolhidas (só o passo atual do passo a passo vem aberto)
+const secao = (titulo, sub, corpo, cls = '') => `<details class="sec${cls ? ' ' + cls : ''}"><summary><b>${esc(titulo)}</b>${sub ? `<span>${esc(sub)}</span>` : ''}</summary><div class="sec-c">${corpo}</div></details>`;
 function desenhaGestao(c){
-  const l = LEADS.find(x => x.codigo === c);
-  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2><div class="q">Etapa</div>${botoes(l || { codigo:c, status:'novo' })}${aceiteBox(l)}
+  const l = LEADS.find(x => x.codigo === c), lx = l || { codigo:c, status:'novo' }, et = etapaDe(lx);
+  const ac = l && 'aceite' in l ? secao('Aceita orientações', ({ sim:'sim', nao:'não' })[l.aceite] || 'sem resposta', aceiteBox(l), 'sec-ac') : '';
+  // o que saiu do cartão da lista (etiquetas, origem, canais, resumo, "a foto apaga") fica aqui
+  let orig = '';
+  if (l){
+    const funis = [...new Set((l.partes || []).map(NOME_FUNIL))], canais = [...new Set((l.canais || []).map(x => x === 'whatsapp' ? 'WhatsApp' : 'Direct'))], ap = temPele(l) ? apagaFoto(l) : '';
+    const tag = ehTreino(l) ? '<span class="tag t">treino</span>' : antesDoCorte(l) ? '<span class="tag t">teste seu</span>' : ehTeste(l) ? '<span class="tag t">teste</span>' : '';
+    orig = secao('Origem e resumo', origem(l.origem), `<div class="tags"><span class="tag e">${esc(NOME_ET[et] || et)}</span>${funis.map(f => `<span class="tag f">${esc(f)}</span>`).join('')}<span class="tag">${esc(origem(l.origem))}</span>
+      <span class="tag">${canais.length ? 'Tocou em ' + esc(canais.join(' e ')) : 'Não tocou em WhatsApp/Direct'}</span>${tag}</div>
+      ${l.instagram ? `<div class="sub-ig">@${esc(l.instagram)} · veio pelo Direct</div>` : l.lv ? '<div class="sub-ig">veio pelo Direct (o @ aparece quando o OpenReply responder)</div>' : ''}
+      <div class="resumo">${esc(resumo(l))}</div>${ap ? `<div class="apaga">${esc(ap)}</div>` : ''}
+      <small class="aviso">Chegou ${esc(new Date(l.chegou).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }))}${l.atualizado_em ? ' · marcado ' + esc(new Date(l.atualizado_em).toLocaleString('pt-BR', { timeZone:TZ, day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })) : ''}</small>`, 'sec-orig');
+  }
+  $('gestao').innerHTML = `<div class="card"><h2>${esc(c)}</h2>${secao('Etapa e nota', (NOME_ET[et] || et) + (l?.nota ? ' · com nota' : ''), `${botoes(lx)}
     <textarea class="nota" data-c="${esc(c)}" maxlength="500" rows="1" placeholder="Nota">${esc(l?.nota || '')}</textarea>
-    <div class="acoes"><small id="ok-${esc(c)}"></small></div></div>`;
+    <div class="acoes"><small id="ok-${esc(c)}"></small></div>`, 'sec-et')}${ac}${orig}</div>`;
 }
 
 // ---------- Consulta de um código (a de 28/10) ----------
@@ -898,8 +982,8 @@ function cartaoPele2(e, quando, g){
   const sobre = [['Faixa de idade da pele', d.faixa], ['Confiança', d.confianca], ['Qualidade da foto', d.qualidade], ['Fotos enviadas', d.enviadas],
     ['Ângulos', Array.isArray(d.angulos) ? d.angulos.join(', ') : d.angulos], ['Origem da foto', ORIG[d.origem] || d.origem], ['Marca do Direct', d.lv]]
     .filter(([, v]) => v != null && v !== '').map(([k, v]) => `<div class="l"><span>${esc(k)}</span><b>${esc(num(v))}</b></div>`).join('');
-  return `<div class="card"><h2>Pele 2</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}${rotP(e)}
-    <div class="res">${esc(resumoAch)}</div>${achados}${resp}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>${rotB(e)}${kitBloco(e)}</div>`;
+  return `<div class="card"><h2>Pele 2</h2><div class="q">${esc(quando)}</div>${secao('Resultado', resumoAch, `${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
+    <div class="res">${esc(resumoAch)}</div>${achados}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>`, 'sec-res')}${rotP(e)}${secao('Respostas', '', resp, 'sec-resp')}${rotSec(e)}${kitBloco(e)}</div>`;
 }
 // ---------- Pele: idade e vitalidade (04/11): livowa.com/pele, funnelId pele-idade (rótulos de pele/index.html) ----------
 const ROTPI = {
@@ -939,12 +1023,13 @@ function cartaoPeleIdade(e, quando, g){
   const sobre = [['Faixa (idade do rosto)', d.faixa], ['Caso da régua', caso], ['Frases de vitalidade na página', frases.join(', ')], ['Confiança', { media:'média' }[d.confianca] || d.confianca], ['Qualidade da foto', d.qualidade],
     ['Fotos enviadas', d.enviadas], ['Ângulos', Array.isArray(d.angulos) ? d.angulos.join(', ') : d.angulos], ['Origem da foto', ORIG[d.origem] || d.origem], ['Fim sorteado', { A:'A (fala em vídeo)', B:'B (sem falar em vídeo)' }[d.fim] || d.fim], ['Marca do Direct', d.lv]]
     .filter(([, v]) => v != null && v !== '').map(([k, v]) => `<div class="l"><span>${esc(k)}</span><b>${esc(num(v))}</b></div>`).join('');
-  return `<div class="card"><h2>${esc(NOME_PI)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
-    <div class="res">${esc(res)}</div>${resp}${sinais}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>${rotB(e)}${kitBloco(e)}</div>`;
+  return `<div class="card"><h2>${esc(NOME_PI)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado', res, `${g ? blocoFotos(g, e) : '<div class="fotos-pe"><span>Sem fotos guardadas para este resultado.</span></div>'}
+    <div class="res">${esc(res)}</div>${sinais}<div class="p2"><h3>Sobre a análise</h3>${sobre}</div>`, 'sec-res')}${secao('Respostas', '', resp, 'sec-resp')}${rotSec(e)}${kitBloco(e)}</div>`;
 }
 const EXPR = { olhos:'sorriso', linhas_testa:'sobrancelhas' };
 // Roteiro do react pelo Claude e "Parecido com isto" (03/11, roteiro.js); sem o arquivo, nada aparece.
 const rotB = e => window.ROTEIRO ? ROTEIRO.bloco(e) : '', rotP = e => window.ROTEIRO ? ROTEIRO.parecido(e) : '';
+const rotSec = e => { const h = rotB(e); return h ? secao('Roteiro do react', 'texto e trocas', h, 'sec-rot') : ''; };   // 13/11 (CRM): recolhido como o resto
 let FOTOS = [], codigoAtual = '';
 const num = v => typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits:2 }) : v;
 // ---------- Detalhe legível (05/11): rótulo de leigo por funil, uma resposta por linha, nunca JSON ----------
@@ -1134,7 +1219,7 @@ async function ver(c){
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2' || e.funil === 'pele-idade') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
       if (e.funil === 'pele-idade') return cartaoPeleIdade(e, quando, g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${g ? blocoFotos(g, e) + rotP(e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${detalhe(e)}${rotB(e)}${kitBloco(e)}</div>`;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado e respostas', resDet(e) || '', `${g ? blocoFotos(g, e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${detalhe(e)}`, 'sec-res')}${g ? rotP(e) : ''}${rotSec(e)}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : '');

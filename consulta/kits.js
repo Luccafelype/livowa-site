@@ -784,6 +784,8 @@ const V3_PI = {
   toque1:'{nome}, conseguiu ver a sua análise?',
   toque3:'Áudio curto seu: retome 1 coisa da análise e repita a pergunta.',
   toque7:'{nome}, você ainda quer {desejo}?',
+  // 13/11 (CRM, botão "Pedir a foto" de quem bateu no limite da análise): texto do Claude, sem promessa de vídeo nem prazo
+  pedirFoto:'{nome}, recebi o seu teste ({lv}). A análise automática da foto não rodou. Pode me mandar aqui uma foto do seu rosto, de frente, com a luz de uma janela?',
 };
 // Agora não → o próximo teste pelo desejo dela (v3, proposta do Claude). 'entender' não está no mapa da v3: vai ao quiz.
 const NUTRIR_PI = { braco:{ teste:'livowa.com/braco', tema:'sobre a sua idade muscular' }, longevidade:{ teste:'livowa.com/longevidade', tema:'sobre o que pesa nos seus próximos 10 anos' } };

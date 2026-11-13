@@ -541,7 +541,7 @@ async function lerGravados(c){
       redesenhaTodos();
     }
   } catch { /* sem conexão: segue com o estoque */ }
-  if (c === CODIGO) autoPI(c);
+  if (c === CODIGO){ B.forEach(b => { b.lido = true; }); autoPI(c); }   // 13/11: lido = já sabe se há roteiro guardado (o CRM espera isto para abrir o gravador)
 }
 async function montarTodos(){
   B.forEach(b => { if (!b.est) b.estado = 'lendo'; }); redesenhaTodos();
@@ -642,7 +642,7 @@ function partesClaude(txt){
 function claude(e){
   const b = B.find(x => x.e === e); if (!b) return null;
   const partes = b.roteiro ? partesClaude(b.roteiro.roteiro) : null, ok = !!(partes && partes.blocos.length);
-  return { estado:b.estado, erro:b.erro, tem:ok, usar:ok && !b.usarEstoque, usarEstoque:!!b.usarEstoque, partes, palavras:b.roteiro?.palavras ?? null,
+  return { estado:b.estado, erro:b.erro, lido:!!b.lido, tem:ok, usar:ok && !b.usarEstoque, usarEstoque:!!b.usarEstoque, partes, palavras:b.roteiro?.palavras ?? null,
     conferir:b.roteiro?.avisos || [], modelo:b.roteiro?.modelo || '', respUsada:b.respUsada ?? null, teto:USO };
 }
 function usarEstoque(e, sim){ const i = B.findIndex(x => x.e === e); if (i < 0) return; B[i].usarEstoque = !!sim; redesenha(i); }
