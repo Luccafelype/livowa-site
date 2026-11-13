@@ -1,5 +1,5 @@
 {
- "versao": "estoque-v2 · 13/11/2026 (narrativa em 6 blocos)",
+ "versao": "estoque-v3 · 13/11/2026 (narrativa em 6 blocos em todos os testes, pele nova no PROMPT-PELE-IDADE v3)",
  "sobre": "Blocos prontos do roteiro do react (vídeo de ~1 min). A Caixa (roteiro.js) monta o roteiro de cada lead na hora, sem API: abertura [0-8 s], o que o resultado mostra [8-30 s], mecanismo [30-45 s], ponte [45-52 s], pergunta de 1 toque [52-60 s]. Cada bloco tem 2 ou 3 variações (botão Trocar). Regras: livowa-empresa/tarefas/revisao-entrega-nutricao/roteiro-lead/regras-roteiro-v1.md (o número entre parênteses em 'f' é a regra de lá). Entre chaves, o que a Caixa preenche com o dado do lead. Frases de segurança são fixas (regra 20): não têm variação. 13/11 (d-20261113-narrativa-analise-todas-iscas): UMA narrativa em 6 blocos para todos os testes (abertura, resultado com a referência da idade, o que está conservado e onde aparece, o que pesa, o que conserva na idade, desejo e pergunta de interesse); muda só o que entra nas lacunas (tarefas/venda-pele-conversa/video-analise-duracao-roteiro.md, 3A e 3B). A pergunta de interesse fecha todos, no lugar da pergunta de 1 toque. Nome na abertura: doutor Lucca Marques.",
  "comum": {
   "seguranca": {
@@ -51,6 +51,9 @@
    ],
    "exemplo_idade": [
     "Olha este exemplo, de gente da sua idade: {ex_fala}."
+   ],
+   "importa_geral": [
+    "O que mais conserva a sua saúde, em qualquer idade, é {item}."
    ]
   },
   "_antes_1311": {
@@ -338,7 +341,10 @@
      "A foto mostra a parte de fora. O resto da idade do corpo eu só sei medindo com calma."
     ]
    }
-  }
+  },
+  "sem_numero": [
+   "A foto não deu segurança para estimar a idade da pele, então não vou te dar número."
+  ]
  },
  "pernas": {
   "abertura": {
@@ -602,7 +608,10 @@
      "{nome}, aqui é o doutor Lucca Marques. Uma resposta sua me chamou atenção: \"{acontece}\". Vou te explicar."
     ]
    }
-  }
+  },
+  "resultado_sem": [
+   "Este teste não mede um número; são as suas respostas."
+  ]
  },
  "quiz-longevidade": {
   "abertura": {
@@ -689,53 +698,8 @@
  },
  "pele-idade": {
   "_sobre": "04/11/2026 · livowa.com/pele (funnelId pele-idade): a idade que o rosto aparenta ao lado da idade real, e a vitalidade pelas respostas. Não é análise de pele: nada de produto, rotina, procedimento ou programa (regras 4, 5 e 23). Frases com número só de livowa-empresa/tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11); no máximo um número de estudo por vídeo, no mecanismo (regra 15).",
-  "abertura": {
-   "f": "regra 6 (o nome e o que ela respondeu, nas palavras dela); tarefas/pele-idade-vitalidade/quiz.md §3.3 (o vídeo abre repetindo o 'daqui a 10 anos'); v3 (04/11 noite): com a dor do espelho, abre por ela (pesquisa/voz-pele-potencia.md, tema A: espelho, cara de cansada, rosto caindo, papada, pálpebra); CL pdf 16",
-   "com_resposta": [
-    "{nome}, você me contou que fez o teste porque {resposta}."
-   ],
-   "com_espelho": [
-    "{nome}, aqui é o doutor Lucca Marques. Você me contou que o que mais te incomoda no espelho é {espelho}.",
-    "{nome}, aqui é o doutor Lucca Marques. Você disse que, no espelho, o que mais te incomoda hoje é {espelho}."
-   ],
-   "com_futuro": [
-    "{nome}, aqui é o doutor Lucca Marques. Você contou que daqui a 10 anos quer {futuro}. Olhei a sua foto com isso em mente.",
-    "{nome}, aqui é o doutor Lucca Marques. Olhei a sua foto e as suas respostas. Daqui a 10 anos, você quer {futuro}."
-   ],
-   "sem_futuro": [
-    "{nome}, aqui é o doutor Lucca Marques. Olhei a sua foto e as suas respostas com calma. Vou te mostrar o que eu vi.",
-    "{nome}, aqui é o doutor Lucca Marques. Você fez a foto com cuidado. Vou te mostrar o que ela conta sobre a sua idade."
-   ]
-  },
-  "idade": {
-   "f": "regra 25 (toda idade é estimativa, nunca idade biológica; mais de 5 anos acima: sem número); pele/app.js (régua e frases de alívio, corte de 3 anos; 'erra alguns anos para cada lado'); CFM 2.336 art. 11 §2º 'e' (nada de 'X anos a mais')",
-   "mais_novo": [
-    "Pela foto, o seu rosto aparenta entre {min} e {max} anos, e você tem {idade}. Fica abaixo da sua idade. É estimativa, erra alguns anos para cada lado.",
-    "O seu rosto aparenta entre {min} e {max} anos na foto. Você tem {idade}: o rosto mostra menos. É estimativa, e erra alguns anos."
-   ],
-   "igual": [
-    "Pela foto, o seu rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto acompanha a sua idade. É estimativa, erra alguns anos para cada lado.",
-    "O seu rosto aparenta entre {min} e {max} anos, e você tem {idade}. A foto mostra a idade que você tem. É estimativa, e erra alguns anos."
-   ],
-   "mais_velho": [
-    "Pela foto, o seu rosto aparenta entre {min} e {max} anos, um pouco acima dos seus {idade}. É estimativa, erra alguns anos. E isso é comum.",
-    "O seu rosto aparenta entre {min} e {max} anos na foto, um pouco acima dos seus {idade}. É estimativa, e isso tem explicação."
-   ],
-   "mais_velho_sem_numero": [
-    "Na foto, o seu rosto aparenta um pouco mais que os seus {idade} anos. É estimativa, e isso é comum.",
-    "O rosto ficou um pouco acima dos seus {idade} anos na foto. É comum, e tem explicação."
-   ],
-   "sem_numero": [
-    "A foto não deu segurança para estimar a idade do rosto, então não vou te dar número.",
-    "Pela foto, não deu para estimar a idade do rosto com segurança. Prefiro não te dar número."
-   ]
-  },
   "bem": {
    "f": "regras 6 e 7 (primeiro o que está bem; elogio só verdadeiro); respostas de pele/app.js",
-   "texto": [
-    "E tem coisa boa no que você contou: {bem}.",
-    "Nas suas respostas tem coisa boa: {bem}."
-   ],
    "itens": {
     "cigarro": "você nunca fumou",
     "sol": "o seu rosto quase não pega sol sem protetor",
@@ -745,52 +709,199 @@
     "sono": "você dorme bem"
    }
   },
-  "habito": {
-   "f": "regras 2, 3, 12 e 14 (o que ela contou e, quando houver, o sinal da foto com onde circular; uma ideia por vídeo); falas de pele/app.js (vitalidade)",
-   "texto": [
-    "Você contou que {habito}.",
-    "Você me disse que {habito}."
-   ],
-   "com_foto": [
-    "Você contou que {habito}. Na foto, {nafoto}.",
-    "Você me disse que {habito}. E na foto, {nafoto}."
-   ],
-   "frase": {
-    "cigarro": {
-     "hoje": "fuma hoje",
-     "parou_menos10": "parou de fumar há menos de 10 anos",
-     "parou_mais10": "parou de fumar há mais de 10 anos",
-     "parou": "já fumou e parou",
-     "as_vezes": "fuma ou usa vape às vezes"
+  "_antes_1311": {
+   "nota": "Estoque v2 da pele nova (5 blocos, com estudos falados), fora do uso desde 13/11 (v3, 6 blocos; nenhum estudo falado). Não aparece nos Ajustes.",
+   "mecanismo": {
+    "f": "regra 15 (um número de estudo por vídeo, dizendo de onde vem); evidencia.md: cigarro e sol Guyuron 2009 (PMID 19337100; '2 anos' na legenda da fig. 3); pressão Gunn 2012 (PMID 22879455); glicose Noordam 2011 (PMID 22102339); sono Oyetakin-White 2015 (PMID 25266053); movimento Mayes 2010 (PMID 21179450); gêmeos Christensen 2009 (PMID 20008378)",
+    "cigarro": [
+     "Em gêmeos idênticos, cada 10 anos de cigarro somou cerca de 2 anos à idade que o rosto aparentava.",
+     "O cigarro tem o número mais claro no rosto: em gêmeos idênticos, 10 anos de cigarro somaram cerca de 2 anos."
+    ],
+    "sol": [
+     "O sol marca a pele por fora. Nos estudos com gêmeos, mais sol andou junto com um rosto mais velho.",
+     "Nos gêmeos, o rosto que pegava mais sol aparentava mais idade. Essa parte é pele por fora, não o corpo por dentro."
+    ],
+    "metabolico": [
+     "Pressão e glicose são números de dentro. Nos estudos, mais altas andaram junto com um rosto mais velho, mesmo sem doença.",
+     "Nos estudos, pressão e glicose mais altas apareceram no rosto, mesmo em quem não tinha doença. A foto não mede nenhuma das duas."
+    ],
+    "sono": [
+     "Dormir mal aparece na pele: num estudo com mulheres, quem dormia mal tinha mais sinais de envelhecimento.",
+     "Num estudo, quem dormia mal tinha mais sinais de envelhecimento na pele do que quem dormia bem."
+    ],
+    "movimento": [
+     "Mexer o corpo também aparece no rosto: num estudo com mulheres, a atividade moderada andou junto com um rosto mais novo.",
+     "Nos estudos, a atividade moderada andou junto com um rosto mais novo."
+    ],
+    "gemeos": [
+     "Num estudo com gêmeos de 70 anos ou mais, a idade que o rosto aparentava acompanhou a força e a memória.",
+     "Em gêmeos mais velhos, a idade que o rosto aparentava andou junto com a força e a memória. Boa parte disso vem de família."
+    ]
+   },
+   "ponte": {
+    "f": "regra 6 (ponte até 20 palavras, sem produto, preço, prazo ou vaga); pele/app.js ('O rosto é a parte que dá para ver. Força, sono e exames o Dr. Lucca vê com você')",
+    "texto": [
+     "O rosto é a parte da idade que dá para ver. Força, sono e exames eu só sei medindo.",
+     "A foto mostra a idade por fora. O resto do corpo eu só sei medindo com calma."
+    ],
+    "com_futuro": [
+     "Daqui a 10 anos você quer {futuro}. O rosto é a parte que dá para ver; força, sono e exames eu só sei medindo.",
+     "A foto mostra a idade por fora. Daqui a 10 anos você quer {futuro}, e o resto do corpo eu só sei medindo."
+    ]
+   },
+   "interesse": {
+    "f": "12/11 (v3, decisão d-20261112-proximo-passo-analise, nas palavras do Lucca): o vídeo fecha com a pergunta de interesse, sem preço (roteiro-v3-1211.md, Etapa 2, bloco 6). 12/11 noite (regras-ajuste-pele-idade.md): vai no mesmo bloco da ponte, que já diz o desejo (o desejo aparece uma vez); o incômodo vira 'o que te incomoda no espelho' (sem repetir a frase dela nem 'e … e').",
+    "com_espelho": [
+     "{nome}, isso dá para trabalhar: o que pesa por dentro e o que te incomoda no espelho. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+    ],
+    "sem_nada": [
+     "{nome}, isso dá para trabalhar. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+    ]
+   },
+   "habito": {
+    "f": "regras 2, 3, 12 e 14 (o que ela contou e, quando houver, o sinal da foto com onde circular; uma ideia por vídeo); falas de pele/app.js (vitalidade)",
+    "texto": [
+     "Você contou que {habito}.",
+     "Você me disse que {habito}."
+    ],
+    "com_foto": [
+     "Você contou que {habito}. Na foto, {nafoto}.",
+     "Você me disse que {habito}. E na foto, {nafoto}."
+    ],
+    "frase": {
+     "cigarro": {
+      "hoje": "fuma hoje",
+      "parou_menos10": "parou de fumar há menos de 10 anos",
+      "parou_mais10": "parou de fumar há mais de 10 anos",
+      "parou": "já fumou e parou",
+      "as_vezes": "fuma ou usa vape às vezes"
+     },
+     "sol": {
+      "todo_dia": "o seu rosto pega sol sem protetor quase todo dia",
+      "fds": "o seu rosto pega um pouco de sol sem protetor, ou só no fim de semana"
+     },
+     "metabolico": {
+      "pressao": "já te disseram que a pressão estava alta",
+      "glicose": "já te disseram que a glicose estava alta",
+      "ambas": "já te disseram que a pressão e a glicose estavam altas",
+      "nunca": "nunca mediu a pressão e a glicose, ou não lembra"
+     },
+     "sono": {
+      "curto": "dorme 5 horas ou menos",
+      "cansado_f": "acorda cansada mesmo dormindo",
+      "cansado_m": "acorda cansado mesmo dormindo",
+      "cansado": "acorda sem descanso mesmo dormindo"
+     },
+     "movimento": {
+      "quase_nada": "se mexe quase nada numa semana comum",
+      "ate2": "se mexe até 2 horas numa semana comum"
+     }
     },
-    "sol": {
-     "todo_dia": "o seu rosto pega sol sem protetor quase todo dia",
-     "fds": "o seu rosto pega um pouco de sol sem protetor, ou só no fim de semana"
-    },
-    "metabolico": {
-     "pressao": "já te disseram que a pressão estava alta",
-     "glicose": "já te disseram que a glicose estava alta",
-     "ambas": "já te disseram que a pressão e a glicose estavam altas",
-     "nunca": "nunca mediu a pressão e a glicose, ou não lembra"
-    },
-    "sono": {
-     "curto": "dorme 5 horas ou menos",
-     "cansado_f": "acorda cansada mesmo dormindo",
-     "cansado_m": "acorda cansado mesmo dormindo",
-     "cansado": "acorda sem descanso mesmo dormindo"
-    },
-    "movimento": {
-     "quase_nada": "se mexe quase nada numa semana comum",
-     "ate2": "se mexe até 2 horas numa semana comum"
+    "circular": {
+     "cigarro": "a resposta do cigarro na tela",
+     "sol": "a resposta do sol na tela",
+     "metabolico": "a resposta da pressão e da glicose na tela",
+     "sono": "a resposta do sono na tela",
+     "movimento": "a resposta do movimento na tela"
     }
    },
-   "circular": {
-    "cigarro": "a resposta do cigarro na tela",
-    "sol": "a resposta do sol na tela",
-    "metabolico": "a resposta da pressão e da glicose na tela",
-    "sono": "a resposta do sono na tela",
-    "movimento": "a resposta do movimento na tela"
+   "abertura": {
+    "f": "regra 6 (o nome e o que ela respondeu, nas palavras dela); tarefas/pele-idade-vitalidade/quiz.md §3.3 (o vídeo abre repetindo o 'daqui a 10 anos'); v3 (04/11 noite): com a dor do espelho, abre por ela (pesquisa/voz-pele-potencia.md, tema A: espelho, cara de cansada, rosto caindo, papada, pálpebra); CL pdf 16",
+    "com_resposta": [
+     "{nome}, você me contou que fez o teste porque {resposta}."
+    ],
+    "com_espelho": [
+     "{nome}, aqui é o doutor Lucca Marques. Você me contou que o que mais te incomoda no espelho é {espelho}.",
+     "{nome}, aqui é o doutor Lucca Marques. Você disse que, no espelho, o que mais te incomoda hoje é {espelho}."
+    ],
+    "com_futuro": [
+     "{nome}, aqui é o doutor Lucca Marques. Você contou que daqui a 10 anos quer {futuro}. Olhei a sua foto com isso em mente.",
+     "{nome}, aqui é o doutor Lucca Marques. Olhei a sua foto e as suas respostas. Daqui a 10 anos, você quer {futuro}."
+    ],
+    "sem_futuro": [
+     "{nome}, aqui é o doutor Lucca Marques. Olhei a sua foto e as suas respostas com calma. Vou te mostrar o que eu vi.",
+     "{nome}, aqui é o doutor Lucca Marques. Você fez a foto com cuidado. Vou te mostrar o que ela conta sobre a sua idade."
+    ]
    },
+   "idade": {
+    "f": "regra 25 (toda idade é estimativa, nunca idade biológica; mais de 5 anos acima: sem número); pele/app.js (régua e frases de alívio, corte de 3 anos; 'erra alguns anos para cada lado'); CFM 2.336 art. 11 §2º 'e' (nada de 'X anos a mais')",
+    "mais_novo": [
+     "Pela foto, o seu rosto aparenta entre {min} e {max} anos, e você tem {idade}. Fica abaixo da sua idade. É estimativa, erra alguns anos para cada lado.",
+     "O seu rosto aparenta entre {min} e {max} anos na foto. Você tem {idade}: o rosto mostra menos. É estimativa, e erra alguns anos."
+    ],
+    "igual": [
+     "Pela foto, o seu rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto acompanha a sua idade. É estimativa, erra alguns anos para cada lado.",
+     "O seu rosto aparenta entre {min} e {max} anos, e você tem {idade}. A foto mostra a idade que você tem. É estimativa, e erra alguns anos."
+    ],
+    "mais_velho": [
+     "Pela foto, o seu rosto aparenta entre {min} e {max} anos, um pouco acima dos seus {idade}. É estimativa, erra alguns anos. E isso é comum.",
+     "O seu rosto aparenta entre {min} e {max} anos na foto, um pouco acima dos seus {idade}. É estimativa, e isso tem explicação."
+    ],
+    "mais_velho_sem_numero": [
+     "Na foto, o seu rosto aparenta um pouco mais que os seus {idade} anos. É estimativa, e isso é comum.",
+     "O rosto ficou um pouco acima dos seus {idade} anos na foto. É comum, e tem explicação."
+    ],
+    "sem_numero": [
+     "A foto não deu segurança para estimar a idade do rosto, então não vou te dar número.",
+     "Pela foto, não deu para estimar a idade do rosto com segurança. Prefiro não te dar número."
+    ]
+   },
+   "bem_texto": [
+    "E tem coisa boa no que você contou: {bem}.",
+    "Nas suas respostas tem coisa boa: {bem}."
+   ]
+  },
+  "abertura": {
+   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 1; d-20261113-nome-dr-lucca-marques",
+   "texto": [
+    "{nome}, aqui é o doutor Lucca Marques. Vamos olhar o seu rosto juntos."
+   ],
+   "com_resposta": [
+    "Você me contou: \"{resposta}\"."
+   ],
+   "com_espelho": [
+    "Você me contou o que mais te incomoda no espelho: {espelho}.",
+    "Você me disse o que mais te incomoda hoje no espelho: {espelho}."
+   ]
+  },
+  "idade": {
+   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 2, a leitura pela FAIXA; regra 25 (toda idade é estimativa; mais de 5 anos acima: sem número)",
+   "igual": [
+    "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: está na sua idade. É estimativa."
+   ],
+   "mais_novo": [
+    "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto mostra menos. É estimativa."
+   ],
+   "mais_velho": [
+    "Pela sua foto, o rosto aparenta entre {min} e {max} anos. Você tem {idade}: o rosto mostra um pouco mais. É estimativa."
+   ],
+   "mais_velho_sem_numero": [
+    "Pela sua foto, o rosto mostra um pouco mais que os seus {idade} anos. É estimativa."
+   ],
+   "sem_numero": [
+    "Pela foto, não deu para estimar a idade do rosto com segurança, então não vou te dar número."
+   ],
+   "sem_foto": [
+    "Desta vez a análise da foto não rodou, então não vou te dar número."
+   ]
+  },
+  "foto": {
+   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 3 (o conservado antes; a região do incômodo primeiro, pouco = alívio; achado com nome neutro); nomes de pele/app.js",
+   "conservado": [
+    "Primeiro, o que está conservado: {bem}."
+   ],
+   "mais": [
+    "Onde a foto mostra mais é aqui: {achado}."
+   ],
+   "alivio": [
+    "Onde você se preocupa, a foto mostrou pouco: {achado}."
+   ],
+   "tambem": [
+    "Aqui também {achado}."
+   ],
+   "sem_nada": [
+    "Primeiro, uma coisa boa: você quis olhar para isso com calma."
+   ],
    "sinal": {
     "linhas_testa": [
      "a testa aparece lisa",
@@ -821,54 +932,96 @@
      "o contorno do rosto aparece levemente menos firme",
      "o contorno do rosto aparece menos firme",
      "o contorno do rosto aparece bem menos firme"
+    ],
+    "glabela": [
+     "o espaço entre as sobrancelhas aparece liso",
+     "aparece uma marca leve entre as sobrancelhas",
+     "aparece uma marca visível entre as sobrancelhas",
+     "a marca entre as sobrancelhas aparece bem visível"
+    ],
+    "olheira": [
+     "a área abaixo dos olhos aparece lisa",
+     "aparece uma sombra leve abaixo dos olhos",
+     "aparece uma sombra visível abaixo dos olhos",
+     "aparece uma sombra bem visível abaixo dos olhos"
+    ],
+    "papada": [
+     "a linha da mandíbula aparece firme",
+     "a linha da mandíbula aparece levemente menos firme",
+     "a linha da mandíbula aparece menos firme",
+     "a linha da mandíbula aparece bem menos firme"
     ]
    }
   },
-  "mecanismo": {
-   "f": "regra 15 (um número de estudo por vídeo, dizendo de onde vem); evidencia.md: cigarro e sol Guyuron 2009 (PMID 19337100; '2 anos' na legenda da fig. 3); pressão Gunn 2012 (PMID 22879455); glicose Noordam 2011 (PMID 22102339); sono Oyetakin-White 2015 (PMID 25266053); movimento Mayes 2010 (PMID 21179450); gêmeos Christensen 2009 (PMID 20008378)",
-   "cigarro": [
-    "Em gêmeos idênticos, cada 10 anos de cigarro somou cerca de 2 anos à idade que o rosto aparentava.",
-    "O cigarro tem o número mais claro no rosto: em gêmeos idênticos, 10 anos de cigarro somaram cerca de 2 anos."
+  "dentro": {
+   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 4 (até 2 hábitos: pressão ou glicose alta > fuma > sono > sol > movimento; sem dado de estudo nem nome de doença)",
+   "um": [
+    "Do que você me contou, {h1}."
    ],
-   "sol": [
-    "O sol marca a pele por fora. Nos estudos com gêmeos, mais sol andou junto com um rosto mais velho.",
-    "Nos gêmeos, o rosto que pegava mais sol aparentava mais idade. Essa parte é pele por fora, não o corpo por dentro."
+   "dois": [
+    "Do que você me contou, {h1}. E {h2}."
    ],
-   "metabolico": [
-    "Pressão e glicose são números de dentro. Nos estudos, mais altas andaram junto com um rosto mais velho, mesmo sem doença.",
-    "Nos estudos, pressão e glicose mais altas apareceram no rosto, mesmo em quem não tinha doença. A foto não mede nenhuma das duas."
+   "exame": [
+    "Isso vale olhar com exame, com calma."
    ],
-   "sono": [
-    "Dormir mal aparece na pele: num estudo com mulheres, quem dormia mal tinha mais sinais de envelhecimento.",
-    "Num estudo, quem dormia mal tinha mais sinais de envelhecimento na pele do que quem dormia bem."
+   "a_favor": [
+    "Do que você me contou, tem coisa a favor: {b1}."
    ],
-   "movimento": [
-    "Mexer o corpo também aparece no rosto: num estudo com mulheres, a atividade moderada andou junto com um rosto mais novo.",
-    "Nos estudos, a atividade moderada andou junto com um rosto mais novo."
-   ],
-   "gemeos": [
-    "Num estudo com gêmeos de 70 anos ou mais, a idade que o rosto aparentava acompanhou a força e a memória.",
-    "Em gêmeos mais velhos, a idade que o rosto aparentava andou junto com a força e a memória. Boa parte disso vem de família."
+   "frase": {
+    "cigarro": {
+     "hoje": "você fuma hoje",
+     "as_vezes": "você fuma ou usa vape às vezes",
+     "parou_menos10": "você parou de fumar há menos de 10 anos",
+     "parou_mais10": "você parou de fumar há mais de 10 anos",
+     "parou": "você já fumou e parou"
+    },
+    "sol": {
+     "todo_dia": "o seu rosto pega sol sem protetor quase todo dia",
+     "fds": "o seu rosto pega um pouco de sol sem protetor"
+    },
+    "metabolico": {
+     "pressao": "já te disseram que a pressão estava alta",
+     "glicose": "já te disseram que a glicose estava alta",
+     "ambas": "já te disseram que a pressão e a glicose estavam altas",
+     "nunca": "você nunca mediu a pressão e a glicose, ou não lembra"
+    },
+    "sono": {
+     "curto": "você dorme 5 horas ou menos",
+     "cansado_f": "você acorda cansada mesmo dormindo",
+     "cansado_m": "você acorda cansado mesmo dormindo",
+     "cansado": "você acorda sem descanso mesmo dormindo"
+    },
+    "movimento": {
+     "quase_nada": "você se mexe quase nada numa semana comum",
+     "ate2": "você se mexe até 2 horas numa semana comum"
+    }
+   },
+   "a_favor_2": [
+    "E {b2}."
    ]
   },
-  "ponte": {
-   "f": "regra 6 (ponte até 20 palavras, sem produto, preço, prazo ou vaga); pele/app.js ('O rosto é a parte que dá para ver. Força, sono e exames o Dr. Lucca vê com você')",
+  "importa": {
+   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 5 (1 item de O QUE CONSERVA; cigarro e sono ruim marcados na frente; o exemplo é a imagem do kit)",
    "texto": [
-    "O rosto é a parte da idade que dá para ver. Força, sono e exames eu só sei medindo.",
-    "A foto mostra a idade por fora. O resto do corpo eu só sei medindo com calma."
+    "Aos {idade} anos, o que mais conserva a sua saúde e o rosto é {item}."
    ],
-   "com_futuro": [
-    "Daqui a 10 anos você quer {futuro}. O rosto é a parte que dá para ver; força, sono e exames eu só sei medindo.",
-    "A foto mostra a idade por fora. Daqui a 10 anos você quer {futuro}, e o resto do corpo eu só sei medindo."
+   "sem_idade": [
+    "O que mais conserva a sua saúde e o rosto é {item}."
    ]
   },
   "interesse": {
-   "f": "12/11 (v3, decisão d-20261112-proximo-passo-analise, nas palavras do Lucca): o vídeo fecha com a pergunta de interesse, sem preço (roteiro-v3-1211.md, Etapa 2, bloco 6). 12/11 noite (regras-ajuste-pele-idade.md): vai no mesmo bloco da ponte, que já diz o desejo (o desejo aparece uma vez); o incômodo vira 'o que te incomoda no espelho' (sem repetir a frase dela nem 'e … e').",
-   "com_espelho": [
-    "{nome}, isso dá para trabalhar: o que pesa por dentro e o que te incomoda no espelho. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+   "f": "regras-ajuste-pele-idade.md v3 (PROMPT-PELE-IDADE): bloco 6 (o desejo uma vez; o rótulo do bloco 1 volta; d-20261112-proximo-passo-analise)",
+   "desejo": [
+    "Daqui a 10 anos você quer {futuro}."
    ],
-   "sem_nada": [
-    "{nome}, isso dá para trabalhar. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+   "parte": [
+    "O rosto é o que dá para ver; o que pesa por dentro eu só sei medindo."
+   ],
+   "trabalhar": [
+    "Isso dá para trabalhar: {espelho} e o que pesa por dentro."
+   ],
+   "trabalhar_sem": [
+    "Isso dá para trabalhar: o que pesa por dentro."
    ]
   }
  }

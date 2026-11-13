@@ -189,7 +189,7 @@ let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o b
 async function carregaEstoque(){
   if (EST) return EST;
   const [est, imp] = await Promise.all([
-    fetch('roteiros-estoque.json?v=20261113x', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('roteiros-estoque.json?v=20261113z', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch('o-que-importa-idade.json?v=20261113', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null)]);
   EST = est; IMP = imp;   // 13/11: o bloco 5 ("o que conserva na idade") sai do mesmo arquivo do cartão do gravador
   if (EST) estoqueEditavel(EST);
@@ -237,6 +237,8 @@ const T6 = ['0-6 s', '6-16 s', '16-34 s', '34-48 s', '48-58 s', '58-72 s'], T6C 
 let IMP = null;   // o-que-importa-idade.json (o mesmo do cartão "O que conserva" do gravador)
 const FX_IMP = n => n <= 34 ? 'ate34' : n <= 49 ? '35a49' : n <= 64 ? '50a64' : '65mais';
 const MOV_RE = /músculo|força/i;   // braço, pernas e longevidade: o item de músculo ou força, quando a faixa tem
+// o item depois de "… o que mais conserva a sua saúde é": os que não cabem nessa frase, na ordem que cabe
+const falaItem = t => !t ? t : t.replace(/^na menopausa, (.+)$/i, '$1, na menopausa').replace(/^perimenopausa: acompanhar as mudanças com calma$/i, 'acompanhar com calma as mudanças da perimenopausa');
 const FORA_PELE = /músculo|força|pressão|glicose|sono/i;   // PROMPT-NARRATIVA: fora da pele, isso antes do protetor solar
 /** O item da faixa e do sexo: o 1º que casa com pref (músculo/força nos testes de movimento; fora da pele, nada de protetor
     antes); sem sexo, só os comuns aos dois. Dorme mal a partir dos 35: o sono vai na frente (condicionais do arquivo). */
@@ -246,7 +248,7 @@ function itemImporta(fx, sexo, pref, o = {}){
   if (o.dormeMal && fx !== 'ate34' && IMP.condicionais?.sono?.t) return min(IMP.condicionais.sono.t);
   const ts = s => (L[s] || []).map(x => x.t);
   const lista = sexo === 'f' || sexo === 'm' ? ts(sexo) : ts('f').filter(t => ts('m').includes(t));
-  return min((pref && lista.find(t => pref.test(t))) || (o.foraPele && lista.find(t => FORA_PELE.test(t))) || lista[0]);
+  return falaItem(min((pref && lista.find(t => pref.test(t))) || (o.foraPele && lista.find(t => FORA_PELE.test(t))) || lista[0]));
 }
 /** Um bloco feito de frases (cada uma com as suas variações): as variações do bloco combinam as frases 1 a 1.
     Frase sem dado (alguma {chave} vazia) sai do bloco; bloco sem nenhuma frase sai do roteiro. */
@@ -258,16 +260,19 @@ function bloco6(id, tempo, partes, V, o = {}){
   return { id, tempo, opcoes:opc, circular:o.circular || null, fonte:o.f || '', fixo:!!o.fixo, regiao:o.regiao || null };
 }
 /** Bloco 6: o desejo (se ela disse), "{o que o teste mostra} é uma parte", o rótulo do bloco 1 e a pergunta de interesse. */
-/** Passou do alvo (150 palavras por minuto, fora dos colchetes): corta na ordem do PROMPT-NARRATIVA. 1º o "acompanha" do
-    bloco 3 (sem ela, o bloco sai), depois o exemplo do bloco 5. */
+/** Passou do alvo (150 palavras por minuto, média das variações, fora dos colchetes): troca o bloco pela versão menor, na
+    ordem dada: o 2º item de um bloco (2º achado ou 2º hábito), o "acompanha", o exemplo. Nunca some um bloco: corte sem
+    versão menor (null) não vale. Ainda acima do alvo: fica assim (o gravador corta só aos 105 s). */
 const palavrasE = t => String(t).replace(/\[[A-Z]+:[^\]]*\]/g, '').split(/\s+/).filter(Boolean).length;
-function cabe(out, maxS, sem, V, T){
-  const n = () => out.filter(Boolean).reduce((s, b) => s + b.opcoes.reduce((t, o) => t + palavrasE(o), 0) / b.opcoes.length, 0);   // a média das variações
-  const k = out.findIndex(b => b && b.id === 'conserva');
-  if (n() / 2.5 > maxS && k >= 0) out[k] = sem || null;
-  const j = out.findIndex(b => b && b.id === 'importa');
-  if (n() / 2.5 > maxS && j >= 0 && V && V.ex_id){ V.ex_id = null; out[j] = importa6(EST.comum.narrativa, V, T); }
+function cabe(out, maxS, cortes){
+  const n = () => out.filter(Boolean).reduce((s, b) => s + b.opcoes.reduce((t, o) => t + palavrasE(o), 0) / b.opcoes.length, 0);
+  for (const [id, bl] of cortes){
+    if (n() / 2.5 <= maxS) return;
+    const k = out.findIndex(b => b && b.id === id);
+    if (k >= 0 && bl) out[k] = bl;
+  }
 }
+const semExemplo = (N, V, T) => V.ex_id ? importa6(N, { ...V, ex_id:null }, T) : null;
 // ---------- o exemplo por imagem (13/11, d-20261113-exemplos-por-imagem) ----------
 // O catálogo vem da edge (consultar-codigo, ação "exemplos": id, testes, liga, idade, fala; nunca a imagem). Sem ele, sem exemplo.
 let EXE = null;
@@ -290,9 +295,9 @@ function escolheExemplo(teste, termos, idade, exigeLiga){
   return { ex_id:ex.id, ex_fala:/^[A-ZÀ-Ú](?![A-ZÀ-Ú])/.test(fala) ? fala[0].toLowerCase() + fala.slice(1) : fala, ex_perto:!!perto };
 }
 const interesse6 = (N, V, T, desejo, f) => bloco6('interesse', T[5], [desejo, N.parte, N.trabalhar, N.interesse], V, { f:(f ? f + ' · ' : '') + N.f });
-const importa6 = (N, V, T) => bloco6('importa', T[4], [V.idade ? N.importa_idade : N.importa_faixa,
+const importa6 = (N, V, T) => { if (!V.item){ V = { ...V, item:itemImporta('ate34', null, MOV_RE), geral:true }; } return bloco6('importa', T[4], [V.geral ? N.importa_geral : V.idade ? N.importa_idade : N.importa_faixa,
   V.ex_id ? (V.ex_perto ? N.exemplo_idade : N.exemplo).map(t => `[IMAGEM: ${V.ex_id}] ` + t) : null], V,
-  { f:'o-que-importa-idade.json (idade e sexo); fora da pele, só o item' + (V.ex_id ? '; o exemplo é a imagem ' + V.ex_id + ' do kit' : '') });
+  { f:'o-que-importa-idade.json (idade e sexo; sem idade, o item de qualquer idade); fora da pele, só o item' + (V.ex_id ? '; o exemplo é a imagem ' + V.ex_id + ' do kit' : '') }); };
 
 function rotPele(d, t, c, E){
   const P = E.pele, C = E.comum, N = C.narrativa, p2 = t === 'pele2', V = {}, out = [], avisos = [];
@@ -317,7 +322,8 @@ function rotPele(d, t, c, E){
   out.push(bloco6('abertura', T6[0], [N.abertura, V.queixa ? P.contou : null], V, { f:N.f, circular:V.queixa ? 'a resposta "o que incomoda" na tela' : null }));
   // 2 · a idade aparente (pele2) ou a faixa (pele antiga), só quando a regra do kit deixa
   const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), aparente = c?.idadeFaixa?.aparente;
-  if (c?.idadeFaixa?.dizer && mF) out.push(bloco6('resultado', T6[1], [aparente ? P.idade_aparente.texto : P.faixa_idade.texto], { ...V, min:mF[1], max:mF[2] },
+  const temFaixa = !!(c?.idadeFaixa?.dizer && mF);
+  if (temFaixa) out.push(bloco6('resultado', T6[1], [aparente ? P.idade_aparente.texto : P.faixa_idade.texto], { ...V, min:mF[1], max:mF[2] },
     { f:(aparente ? P.idade_aparente : P.faixa_idade).f, circular:aparente ? 'a idade aparente no topo do resultado' : 'a faixa de idade na tela' }));
   else if (d.faixa) avisos.push('Faixa de idade fora do vídeo: ' + (c?.idadeFaixa?.txt || 'regra do kit.'));
   // 3 · o que está conservado, onde aparece mais (até 2 achados) e o mecanismo do principal
@@ -329,9 +335,13 @@ function rotPele(d, t, c, E){
   });
   if (ordem.length > 2) avisos.push('Também apareceram (fora do vídeo, para 1 ideia só): ' + ordem.slice(2).map(s => P.achados[s.id].nome).join(', ') + '.');
   const seg = com.some(s => s.id === 'manchas' && s.grau >= 2) ? C.seguranca.pele : null;
-  const s0 = ordem[0];
-  out.push(bloco6('conserva', T6[2], [V.bem ? P.bem.com_lista : P.bem.sem_lista, ...achados, principal ? P.achados[principal.id].mecanismo : null, seg], V,
-    { f:P.bem.f, circular:s0 ? `${s0.foto}, ${REG_CURTA[s0.id] || s0.regioes.join(' e ') || 'rosto'}` : null }));
+  const s0 = ordem[0], mec = principal ? P.achados[principal.id].mecanismo : null;
+  // sem a faixa, a âncora do bloco 2 é o achado principal (PROMPT-NARRATIVA); sem achado, "sem número"
+  if (!temFaixa) out.push(bloco6('resultado', T6[1], [achados.length ? achados[0] : P.sem_numero], V, { f:P.bem.f, circular:s0 ? `${s0.foto}, ${REG_CURTA[s0.id] || 'rosto'}` : null }));
+  const ach3 = temFaixa ? achados : achados.slice(1);
+  const b3 = (as, m) => bloco6('conserva', T6[2], [V.bem ? P.bem.com_lista : P.bem.sem_lista, ...as, m, seg], V,
+    { f:P.bem.f, circular:s0 ? `${s0.foto}, ${REG_CURTA[s0.id] || s0.regioes.join(' e ') || 'rosto'}` : null });
+  out.push(b3(ach3, mec));
   // 4 · o que pesa: a pele não pergunta hábito (fica de fora)
   // 5 · o que conserva na idade dela
   V.item = V.idade ? itemImporta(FX_IMP(+V.idade), resp.sexo, null) : null;
@@ -341,7 +351,7 @@ function rotPele(d, t, c, E){
   out.push(interesse6(N, V, T6, null));
   if (['gravida', 'amamentando', 'tentando'].includes(resp.seguranca)) avisos.push(`Ela marcou "${P2.seguranca[1][resp.seguranca]}": nada de produto, remédio ou procedimento, nem por escrito.`);
   if (['sensivel', 'reacao'].includes(resp.alergia)) avisos.push(`Alergia: "${P2.alergia[1][resp.alergia]}". Nada de nome de produto.`);
-  cabe(out, 75, bloco6('conserva', T6[2], [V.bem ? P.bem.com_lista : P.bem.sem_lista, ...achados, seg], V, { f:P.bem.f }), V, T6);
+  cabe(out, 75, [['conserva', ach3.length > 1 ? b3(ach3.slice(0, 1), mec) : null], ['conserva', mec ? b3(ach3.slice(0, 1), null) : null], ['importa', semExemplo(N, V, T6)]]);
   if (c?.notaAcne) avisos.push(c.notaAcne);
   if (!principal) avisos.push('Nenhum achado com grau 1 ou mais: o vídeo pode ficar curto.');
   return { blocos:out.filter(Boolean), avisos, rotulo:V.queixa };
@@ -354,8 +364,18 @@ const ATENCAO_PI = { cigarro:['hoje', 'as_vezes', 'parou', 'parou_menos10', 'par
 const FOTO_HAB = { cigarro:['sulco_nasolabial', 'flacidez', 'olhos'], sol:['manchas', 'linhas_testa'], sono:['olhos'] };
 const ZONA_SIN = { linhas_testa:['testa'], olhos:['olhos_canto'], sulco_nasolabial:['sulco'], manchas:['bochecha'], flacidez:['mandibula'] };
 const REG_PI = { linhas_testa:'testa', olhos:'canto dos olhos', sulco_nasolabial:'do nariz à boca', manchas:'bochechas', flacidez:'contorno do rosto' };
+// 13/11: os 6 blocos do PROMPT-PELE-IDADE v3 (regras-ajuste-pele-idade.md): abertura · idade do rosto · foto (o conservado e
+// onde a foto mostra mais) · por dentro (até 2 hábitos) · o que conserva aos {idade} (com o exemplo por imagem) · desejo e
+// pergunta. Nenhum estudo falado; nada de "melhorar", "mais novo" ou "rejuvenescer". 150 a 185 palavras (60 a 75 s).
+const DOR_PI_R = { cansada:['olhos', 'olheira'], caindo:['sulco_nasolabial', 'flacidez'], pescoco:['flacidez', 'papada'], palpebra:['olhos'], manchas:['manchas', 'linhas_testa', 'glabela', 'olhos'] };
+const LIGA_ESPELHO = { cansada:['cansada', 'sono', 'olheira', 'olhos'], caindo:['caindo', 'sulco', 'flacidez', 'contorno'], pescoco:['papada', 'pescoco', 'flacidez'],
+  palpebra:['palpebra', 'olhos'], manchas:['manchas', 'rugas', 'sol'] };
+const ORDEM_DENTRO = ['metabolico', 'cigarro', 'sono', 'sol', 'movimento'];   // pressão ou glicose alta > fuma > sono > sol > movimento
+const ALTO_PI = ['pressao', 'glicose', 'ambas'];
+const PESA_PI = { metabolico:ALTO_PI, cigarro:['hoje', 'as_vezes'], sono:['curto', 'cansado'], sol:['todo_dia', 'fds'], movimento:['quase_nada', 'ate2'] };
+const nomeSinal = id => (IMP && IMP.rotulos && IMP.rotulos[id] && IMP.rotulos[id].faixa) || REG_PI[id] || id;   // o nome da lupa
 function rotPeleIdade(d, c, E){
-  const P = E['pele-idade'], C = E.comum, r = d.respostas || {}, out = [], avisos = [];
+  const P = E['pele-idade'], C = E.comum, N = C.narrativa, r = d.respostas || {}, out = [], avisos = [];
   if (!P) return { blocos:[], avisos:['O estoque não tem o bloco pele-idade.'] };
   if (c?.refazer){
     const V = { motivo:E.pele.refazer.motivo[d.qualidade === 'ruim' ? 'ruim' : 'padrao'] };
@@ -365,60 +385,71 @@ function rotPeleIdade(d, c, E){
     return { blocos:out.filter(Boolean), avisos };
   }
   const mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = d.idade ?? r.idade;
-  const V = { futuro:c?.vars?.futuro || window.KITS?.['pele-idade']?.futuro?.[r.futuro] || null, idade:idade != null ? String(idade) : null, min:mF ? mF[1] : null, max:mF ? mF[2] : null,
-    espelho:c?.vars?.espelho || null, resposta:RESP[CODIGO] || null };
-  // v3: a abertura cita a dor do espelho com as palavras dela; o desejo de 10 anos passa para a ponte.
-  // 12/11 (v3, etapa 2): se ela respondeu o áudio antes e ele colou a resposta no passo 2, a abertura usa a resposta.
-  const ab = V.resposta && P.abertura.com_resposta ? P.abertura.com_resposta : V.espelho ? P.abertura.com_espelho : V.futuro ? P.abertura.com_futuro : P.abertura.sem_futuro;
-  out.push(blocoE('abertura', TEMPO[0], ab, V, { f:P.abertura.f, circular:V.resposta ? null : V.espelho ? 'a resposta "o que mais incomoda no espelho" na tela' : V.futuro ? 'a resposta "daqui a 10 anos" na tela' : null }));
-  // a idade do rosto: com número só se a página mostrou e a regra deixa (mais de 5 anos acima: sem número)
-  const caso = c?.caso || 'sem_numero', dizer = !!(c?.idadeFaixa?.dizer && mF);
-  // 12/11: a leitura segue a FAIXA (idade dentro da faixa = "acompanha a sua idade"; abaixo do mínimo = o rosto mostra
-  // mais; acima do máximo = mostra menos), não o meio da faixa ±3 (Carla, 45 com rosto 45-52, ouvia "um pouco acima")
   const iN = idade != null && idade !== '' && !isNaN(+idade) ? +idade : null;
+  const V = { futuro:c?.vars?.futuro || window.KITS?.['pele-idade']?.futuro?.[r.futuro] || null, idade:iN != null ? String(iN) : null, min:mF ? mF[1] : null, max:mF ? mF[2] : null,
+    espelho:c?.vars?.espelho || null, resposta:RESP[CODIGO] || null };
+  // 1 · abertura: a resposta ao áudio (se ele colou no passo 2); senão, o incômodo do espelho nas palavras dela
+  out.push(bloco6('abertura', '0-6 s', [P.abertura.texto, V.resposta ? P.abertura.com_resposta : V.espelho ? P.abertura.com_espelho : null], V,
+    { f:P.abertura.f, circular:V.resposta ? null : V.espelho ? 'a resposta "o que mais incomoda no espelho" na tela' : null }));
+  // 2 · a idade do rosto pela FAIXA (dentro = na sua idade; abaixo do mínimo = mostra um pouco mais; acima do máximo = mostra
+  // menos); mais de 5 anos acima: sem número; sem análise: sem número
+  const caso = c?.caso || 'sem_numero', dizer = !!(c?.idadeFaixa?.dizer && mF);
   const lido = caso === 'sem_numero' || !mF || iN == null ? caso : iN < +mF[1] ? 'mais_velho' : iN > +mF[2] ? 'mais_novo' : 'igual';
-  const chave = lido === 'sem_numero' ? 'sem_numero' : lido === 'mais_velho' && !dizer ? 'mais_velho_sem_numero' : lido;
-  const bi = d.sem_analise ? null : blocoE('idade', TEMPO[1], P.idade[chave], V, { f:P.idade.f, circular:chave === 'sem_numero' ? null : dizer ? 'a régua: a faixa do rosto e a sua idade' : 'a foto de frente inteira' });
-  if (bi) bi.regiao = null;
-  out.push(bi);
-  if (d.sem_analise) avisos.push('A análise automática não rodou (limite do dia): não há foto nem número. Peça a foto no WhatsApp; este roteiro usa só as respostas, sem o bloco da idade do rosto.');
+  const chave = d.sem_analise ? 'sem_foto' : lido === 'sem_numero' ? 'sem_numero' : lido === 'mais_velho' && !dizer ? 'mais_velho_sem_numero' : lido;
+  out.push(bloco6('idade', '6-16 s', [P.idade[chave]], V, { f:P.idade.f, circular:dizer && !d.sem_analise ? 'a régua: a faixa do rosto e a sua idade' : null }));
+  if (d.sem_analise) avisos.push('A análise automática não rodou (limite do dia): não há foto nem número. Peça a foto no WhatsApp; este roteiro usa só as respostas.');
   if (c?.idadeFaixa && !c.idadeFaixa.dizer) avisos.push(c.idadeFaixa.txt);
-  // o que está bem
-  const bons = [r.cigarro === 'nunca' && P.bem.itens.cigarro, r.sol === 'quase_nenhum' && P.bem.itens.sol, r.metabolico === 'nao_medi' && P.bem.itens.metabolico,
+  // 3 · foto: o conservado antes; a região do incômodo primeiro (pouco = alívio); depois, onde a foto mostra mais
+  const comFoto = !!mF && !d.sem_analise;   // a página só mostrou sinais quando mostrou número
+  const sin = comFoto ? Object.fromEntries((d.sinais || []).filter(s => P.foto.sinal[s.id] && s.visivel !== false && s.nivel != null).map(s => [s.id, Math.max(0, Math.min(3, Math.round(+s.nivel) || 0))])) : {};
+  const fr = id => P.foto.sinal[id][sin[id]];
+  const dor = (DOR_PI_R[r.espelho] || []).filter(id => sin[id] != null).sort((a, b) => sin[b] - sin[a])[0] || null;
+  const bonsResp = [r.cigarro === 'nunca' && P.bem.itens.cigarro, r.sol === 'quase_nenhum' && P.bem.itens.sol, r.metabolico === 'nao_medi' && P.bem.itens.metabolico,
     r.sono === 'bem' && P.bem.itens.sono, ['2a5', 'mais5'].includes(r.movimento) && P.bem.itens['movimento_' + r.movimento]].filter(Boolean);
-  if (bons.length) out.push(blocoE('bem', TEMPO[1], P.bem.texto, { ...V, bem:listaE(bons.slice(0, 2)) }, { f:P.bem.f }));
-  // hábitos que pesam: até 2 no vídeo (uma ideia só); o 1º leva o sinal da foto e o mecanismo
-  // 12/11: pressão ou glicose alta vem antes do sol (sinal de saúde pesa mais que a pele por fora)
-  const ordemHab = ['pressao', 'glicose', 'ambas'].includes(r.metabolico) ? ['cigarro', 'metabolico', 'sol', 'sono', 'movimento'] : ORDEM_HAB;
-  const hab = ordemHab.filter(k => (ATENCAO_PI[k] || []).includes(r[k]));
-  const comFoto = !!mF;   // a página só mostrou sinais quando mostrou número
-  const sin = Object.fromEntries((d.sinais || []).map(s => [s.id, s.visivel !== false && s.nivel != null ? +s.nivel || 0 : null]));
+  const lisos = Object.keys(sin).filter(id => sin[id] === 0 && id !== dor).map(fr);
+  const bem3 = lisos.length ? lisos.slice(0, 2) : bonsResp.slice(0, 2), bemUsadoResp = !lisos.length && bonsResp.length > 0;
+  const fortes = Object.keys(sin).filter(id => sin[id] >= 2 && id !== dor).sort((a, b) => sin[b] - sin[a]);
+  const ach = [];   // [frase, id]
+  if (dor) ach.push([sin[dor] <= 1 ? P.foto.alivio : P.foto.mais, dor]);
+  else { const top = Object.keys(sin).filter(id => sin[id] >= 1).sort((a, b) => sin[b] - sin[a])[0]; if (top) ach.push([P.foto.mais, top]); }
+  const seg2 = fortes.find(id => !ach.some(a => a[1] === id));
+  if (seg2) ach.push([P.foto.tambem, seg2]);
+  const seg = comFoto && (sin.manchas || 0) >= 2 ? C.seguranca.pele : null;   // nunca se corta
+  const b3 = as => {
+    const partes = [bem3.length ? P.foto.conservado : null, ...as.map(([t, id]) => t.map(x => preenche(x, { achado:fr(id) })))];
+    if (!partes.some(Boolean)) partes.push(P.foto.sem_nada);
+    const b = bloco6('foto', '16-34 s', [...partes, seg], { ...V, bem:listaE(bem3) }, { f:P.foto.f, circular:as.length ? 'foto de frente, ' + as.map(a => nomeSinal(a[1]).toLowerCase()).join(' e ') : null });
+    if (b){ b.aponte = as.map(a => nomeSinal(a[1])); b.regiao = as.length ? ZONA_SIN[as[0][1]] || null : null; }
+    return b;
+  };
+  out.push(b3(ach));
+  // 4 · por dentro: até 2 hábitos que pesam; nenhum, a coisa a favor que ainda não foi dita
   const fem = r.sexo === 'f' ? 'cansado_f' : r.sexo === 'm' ? 'cansado_m' : 'cansado';
-  hab.slice(0, 2).forEach((k, i) => {
-    const frase = P.habito.frase[k][k === 'sono' && r.sono === 'cansado' ? fem : r[k]];
-    const ids = comFoto && i === 0 ? (FOTO_HAB[k] || []).filter(id => sin[id] >= 1) : [];
-    const top = ids.length ? ids.reduce((a, b) => sin[b] > sin[a] ? b : a) : null;
-    const W = { ...V, habito:frase, nafoto:top ? P.habito.sinal[top][sin[top]] : null };
-    const b = blocoE('habito-' + k, TEMPO[1], top ? P.habito.com_foto : P.habito.texto, W, { f:P.habito.f, circular:top ? `foto de frente, ${REG_PI[top]}` : P.habito.circular[k] });
-    if (b) b.regiao = top ? ZONA_SIN[top] : null;
-    out.push(b);
-  });
-  if (hab.length > 2) avisos.push('Também pesam (fora do vídeo, uma ideia só): ' + hab.slice(2).map(k => P.habito.frase[k][k === 'sono' && r.sono === 'cansado' ? fem : r[k]]).join('; ') + '.');
-  if (comFoto && (sin.manchas || 0) >= 2) out.push(blocoE('seguranca', TEMPO[1], C.seguranca.pele, V, { f:C.seguranca.f, fixo:true }));
-  const mec = hab[0] || 'gemeos';
-  out.push(blocoE('mecanismo', TEMPO[2], P.mecanismo[mec], V, { f:P.mecanismo.f }));
-  // 12/11: ponte e pergunta de interesse num bloco só, com o desejo UMA vez no vídeo (se a abertura já disse o desejo, aqui não)
-  // e o incômodo como "o que te incomoda no espelho" (sem repetir a frase dela nem "e … e")
-  const desejoNaAbertura = !V.resposta && !V.espelho && !!V.futuro, PI6 = P.interesse;
-  // 12/11 (v3, bloco 6): a pergunta de interesse no lugar da pergunta de 1 toque; troca pelo que ela marcou
-  if (PI6){
-    const pontes = V.futuro && !desejoNaAbertura ? P.ponte.com_futuro : P.ponte.texto, perg = PI6[V.espelho ? 'com_espelho' : 'sem_nada'] || PI6.sem_nada;
-    out.push(blocoE('interesse', '45-60 s', pontes.flatMap(pt => perg.map(q => pt + ' ' + q)), V, { f:P.ponte.f + ' · ' + PI6.f }));
-  } else {
-    out.push(blocoE('ponte', TEMPO[3], V.espelho && V.futuro ? P.ponte.com_futuro : P.ponte.texto, V, { f:P.ponte.f }));
-    out.push(blocoE('pergunta', TEMPO[4], C.narrativa.interesse, V, { f:C.narrativa.f }));   // 13/11: a pergunta de interesse fecha todos
-  }
-  if (['pressao', 'glicose', 'ambas'].includes(r.metabolico)) avisos.push('Ela marcou pressão ou glicose alta: sinal de saúde (regra 17). Vale olhar com exame; fale com ela também por escrito. Sem nome de doença nem de remédio.');
+  const hab = ORDEM_DENTRO.filter(k => (PESA_PI[k] || []).includes(r[k]));   // só o que ela tem ("nunca fumou" e "parou" ficam de fora)
+  const fh = k => P.dentro.frase[k][k === 'sono' && r.sono === 'cansado' ? fem : r[k]];
+  const b4 = hs => hs.length ? bloco6('dentro', '34-48 s', [hs.length > 1 ? P.dentro.dois : P.dentro.um, hs.some(k => k === 'metabolico' && ALTO_PI.includes(r.metabolico)) ? P.dentro.exame : null],
+      { ...V, h1:fh(hs[0]), h2:hs[1] ? fh(hs[1]) : null }, { f:P.dentro.f, circular:'as respostas na tela' })
+    : !bemUsadoResp && bonsResp.length ? bloco6('dentro', '34-48 s', [P.dentro.a_favor, bonsResp[1] ? P.dentro.a_favor_2 : null], { ...V, b1:bonsResp[0], b2:bonsResp[1] || null }, { f:P.dentro.f }) : null;
+  out.push(b4(hab.slice(0, 2)));
+  if (hab.length > 2) avisos.push('Também pesam (fora do vídeo, uma ideia só): ' + hab.slice(2).map(fh).join('; ') + '.');
+  // 5 · o que conserva aos {idade}: cigarro e sono ruim marcados na frente; o exemplo é a imagem do kit
+  const fx = iN != null ? FX_IMP(iN) : null;
+  V.item = ['hoje', 'as_vezes'].includes(r.cigarro) && IMP?.condicionais?.cigarro ? IMP.condicionais.cigarro.t[0].toLowerCase() + IMP.condicionais.cigarro.t.slice(1)
+    : fx && fx !== 'ate34' && ['curto', 'cansado'].includes(r.sono) && IMP?.condicionais?.sono ? IMP.condicionais.sono.t[0].toLowerCase() + IMP.condicionais.sono.t.slice(1)
+    : fx ? itemImporta(fx, r.sexo, r.espelho === 'manchas' ? /protetor/i : null) : null;
+  if (!V.item) V.item = itemImporta('ate34', null, MOV_RE);
+  Object.assign(V, escolheExemplo('pele-idade', [...(LIGA_ESPELHO[r.espelho] || []), ...ach.flatMap(a => LIGA_SINAL[a[1]] || [a[1]])], iN, true) || {});
+  const b5 = W => bloco6('importa', '48-58 s', [W.idade ? P.importa.texto : P.importa.sem_idade, W.ex_id ? (W.ex_perto ? N.exemplo_idade : N.exemplo).map(t => `[IMAGEM: ${W.ex_id}] ` + t) : null], W,
+    { f:P.importa.f + (W.ex_id ? '; o exemplo é a imagem ' + W.ex_id + ' do kit' : '') });
+  out.push(b5(V));
+  // 6 · desejo e pergunta: o desejo uma vez, o rótulo do incômodo volta, a pergunta de interesse
+  const trab = !V.espelho ? P.interesse.trabalhar_sem : / e /.test(V.espelho) ? P.interesse.trabalhar.map(t => t.replace('{espelho} e ', '{espelho}, e ')) : P.interesse.trabalhar;   // sem "… e … e" colado
+  out.push(bloco6('interesse', '58-72 s', [V.futuro ? P.interesse.desejo : null, P.interesse.parte, trab, N.interesse], V,
+    { f:P.interesse.f }));
+  // passou de 75 s: o 2º achado, o 2º hábito, o exemplo (regra 7); a segurança e a pergunta nunca saem
+  cabe(out, 75, [['foto', ach.length > 1 ? b3(ach.slice(0, 1)) : null], ['dentro', hab.length > 1 ? b4(hab.slice(0, 1)) : null], ['importa', V.ex_id ? b5({ ...V, ex_id:null }) : null]]);
+  if (ALTO_PI.includes(r.metabolico)) avisos.push(`Por escrito depois: "${{ pressao:'A pressão alta vale', glicose:'A glicose alta vale', ambas:'A pressão e a glicose altas valem' }[r.metabolico]} olhar com exame, com calma." (sem nome de doença nem de remédio)`);
+  if (seg) avisos.push('Manchas visíveis: a frase de segurança está no bloco da foto e vai também por escrito.');
   if (r.cigarro === 'hoje') avisos.push('Fuma hoje: tom de alívio e explicação, sem cobrança (regra 22).');
   if (caso === 'sem_numero' && !c?.refazer) avisos.push('A página não mostrou número. Se ela quiser o número, mande o atalho /pirefazer.');
   avisos.push('Não é análise de pele: nada de produto, rotina, procedimento ou programa no vídeo (regras 4, 5 e 23).');
@@ -457,7 +488,8 @@ function rotMov(t, d, c, E){
   out.push(importa6(N, V, T6C));
   // 6 · sem desejo (o teste não pergunta): "{o braço / as pernas} é uma parte…" e a pergunta de interesse
   out.push(interesse6(N, V, T6C, null));
-  cabe(out, 60, conservado ? bloco6('conserva', T6C[2], [N.conservado], { ...V, conserva:f === 2 && M.conservado_2 ? M.conservado_2 : M.conservado }, { f:M.mecanismo.f }) : null, V, T6C);
+  cabe(out, 60, [['conserva', conservado ? bloco6('conserva', T6C[2], [N.conservado], { ...V, conserva:f === 2 && M.conservado_2 ? M.conservado_2 : M.conservado }, { f:M.mecanismo.f }) : null],
+    ['importa', semExemplo(N, V, T6C)]]);   // sem o conservado, o "acompanha" é o bloco 3 inteiro: fica
   if (c?.simples) avisos.push('Leitura do kit: ' + c.simples);
   if (f === 4) avisos.push('Faixa 4: fale com ela também por escrito (regra 17).');
   if (!V.resposta) avisos.push('Sem a resposta dela ao áudio: a abertura usa o rótulo do teste. Cole a resposta no campo do passo 2 para abrir com as palavras dela.');
@@ -481,7 +513,7 @@ function rotEmag(d, E){
   // 1 · abertura com a resposta dela entre aspas
   out.push(bloco6('abertura', T6[0], [N.abertura, V.acontece ? Q.contou : null], V, { f:Q.abertura.f, circular:'a resposta "o que mais acontece"' }));
   // 2 · a âncora é o perfil (sem régua de idade; o IMC fica fora da fala)
-  out.push(bloco6('resultado', T6[1], [Q.resultado], V, { f:Q.rotulo.f, circular:'o perfil no topo do resultado' }));
+  out.push(bloco6('resultado', T6[1], [V.rotulo ? Q.resultado : Q.resultado_sem], V, { f:Q.rotulo.f, circular:'o perfil no topo do resultado' }));
   // 3 · o que está bem e o mecanismo do perfil
   const bemK = r.exames === 'nada' ? 'exames_ok' : ['7', '8', '9mais'].includes(r.sono) ? 'sono_ok' : ['1', '2mais'].includes(r.forca) ? 'forca_ok' : 'geral';
   out.push(bloco6('conserva', T6[2], [Q.bem[bemK], Q.mecanismo[perfil]], V, { f:Q.bem.f + ' · ' + Q.mecanismo.f, circular:bemK === 'geral' ? null : 'essa resposta na tela' }));
@@ -496,13 +528,14 @@ function rotEmag(d, E){
   out.push(importa6(N, V, T6));
   // 6 · o objetivo dela (o teste não pergunta "daqui a 10 anos") e a pergunta de interesse
   out.push(interesse6(N, V, T6, N.desejo_agora));
-  cabe(out, 75, bloco6('conserva', T6[2], [Q.bem[bemK]], V, { f:Q.bem.f }), V, T6);
+  cabe(out, 75, [['pesa', sin.length > 1 ? bloco6('pesa', T6[3], [Q.sinais[sin[0]]], V, { f:Q.sinais.f }) : null], ['conserva', Q.mecanismo[perfil] ? bloco6('conserva', T6[2], [Q.bem[bemK]], V, { f:Q.bem.f }) : null],
+    ['importa', semExemplo(N, V, T6)]]);
   if (d.imc) avisos.push(`IMC ${n1(d.imc)} (${d.faixa || 'sem faixa'}) fica fora da fala; só por escrito se ela perguntar (regra 22).`);
   if (r.fase === 'gravida') avisos.push('Grávida: peso não é meta agora; nada de dieta, nem por escrito.');
   return { blocos:out.filter(Boolean), avisos, rotulo:V.rotulo, desejo:V.desejo };
 }
 // longevidade: idade do quiz em faixas → a faixa do arquivo "o que importa" (as que caem em duas faixas ficam de fora)
-const FX_LONG = { '40-49':'35a49', '50-59':'50a64', '70+':'65mais' };
+const FX_LONG = { ate39:'ate34', '40-49':'35a49', '50-59':'50a64', '60-69':'50a64', '70+':'65mais' };
 function rotLong(d, E){
   const Q = E['quiz-longevidade'], C = E.comum, N = C.narrativa, r = d.respostas || {}, out = [], avisos = [];
   const arr = v => Array.isArray(v) ? v : v ? String(v).split('+') : [];
@@ -526,7 +559,7 @@ function rotLong(d, E){
   out.push(importa6(N, V, T6C));
   // 6 · daqui a 10 anos, o que ela quer, e a pergunta de interesse
   out.push(interesse6(N, V, T6C, N.desejo));
-  cabe(out, 60, bloco6('conserva', T6C[2], [prin ? Q.incomoda[prin] : null], V, { f:Q.incomoda.f }), V, T6C);
+  cabe(out, 60, [['conserva', prin ? bloco6('conserva', T6C[2], [Q.incomoda[prin]], V, { f:Q.incomoda.f }) : null], ['importa', semExemplo(N, V, T6C)]]);
   if (inc.length > 1) avisos.push('Também marcou: ' + inc.filter(x => x !== prin).map(x => LONG.incomoda[1][x]).join('; ') + '.');
   if (r.ajuda) avisos.push(`Prefere fazer: ${LONG.ajuda[1][r.ajuda] || r.ajuda}.`);
   return { blocos:out.filter(Boolean), avisos, rotulo:V.rotulo || V.objetivo, desejo:V.objetivo };
@@ -747,21 +780,32 @@ async function preencheParecidos(){
 }
 
 // Modo revisão da pele-idade: os passos são os blocos do roteiro montado, com a variação escolhida na tela.
-const ROT_BLOCO = { resultado:'O resultado', conserva:'O que está conservado', pesa:'O que pesa', importa:'O que conserva na idade', abertura:'Abertura', idade:'Idade do rosto', bem:'O que está bem', 'habito-cigarro':'Cigarro', 'habito-sol':'Sol', 'habito-metabolico':'Pressão e glicose',
+const ROT_BLOCO = { foto:'Foto', dentro:'Por dentro', resultado:'O resultado', conserva:'O que está conservado', pesa:'O que pesa', importa:'O que conserva na idade', abertura:'Abertura', idade:'Idade do rosto', bem:'O que está bem', 'habito-cigarro':'Cigarro', 'habito-sol':'Sol', 'habito-metabolico':'Pressão e glicose',
   'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', ponte:'Ponte', pergunta:'Pergunta', interesse:'Desejo e pergunta', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
 // 12/11: o roteiro do Claude (pele-idade) em partes: blocos cortados pelos marcadores [a-b s], o [APONTE: …] de cada bloco,
 // as linhas do POR ESCRITO DEPOIS e os AVISOS. null = não é do formato.
 const TIT_CL = { 0:['Abertura', 'cl-abertura'], 8:['Idade do rosto', 'cl-idade'], 18:['Foto', 'cl-foto'], 32:['Por dentro', 'cl-dentro'], 48:['Desejo e pergunta', 'cl-desejo'] };
+// 13/11 (v3): o bloco pelo que diz (as frases fixas do PROMPT-NARRATIVA e do PROMPT-PELE-IDADE); o 1º é a abertura e o último, o desejo
+function idPelaFala(fala, j, n){
+  if (j === 0) return ['Abertura', 'cl-abertura'];
+  if (j === n - 1 || /se interessaria/i.test(fala)) return ['Desejo e pergunta', 'cl-desejo'];
+  if (/\[IMAGEM:|o que mais conserva/i.test(fala)) return ['O que conserva', 'cl-importa'];
+  if (/^Do que você me contou/i.test(fala)) return ['Por dentro', 'cl-dentro'];
+  if (j === 1) return ['O resultado', 'cl-idade'];
+  if (/conservado|\[APONTE:|onde a foto mostra/i.test(fala)) return ['Foto', 'cl-foto'];
+  return ['Bloco ' + (j + 1), 'cl-' + (j + 1)];
+}
 function partesClaude(txt){
   const s = String(txt || ''), i = s.search(/^ROTEIRO\b/m), e = s.search(/^POR ESCRITO DEPOIS/m), f = s.search(/^AVISOS PARA O LUCCA/m);
   if (i < 0) return null;
   const fim = [e, f].filter(x => x > i).sort((a, b2) => a - b2)[0], corpo = s.slice(i + 7, fim);
   const re = /\[(\d+)\s*-\s*(\d+)\s*s\]/g, marcas = []; let m;
   while ((m = re.exec(corpo))) marcas.push({ a:+m[1], b:+m[2], ini:m.index, fim:m.index + m[0].length });
+  const v3 = marcas.length >= 6 || marcas.some(k => !TIT_CL[k.a]);   // 13/11: a narrativa em 6 blocos ([0-6 s], [6-16 s]…)
   const blocos = marcas.map((k, j) => {
     const fala = corpo.slice(k.fim, j + 1 < marcas.length ? marcas[j + 1].ini : undefined).replace(/\s+/g, ' ').trim()
-      .replace(/^(Abertura|Idade|Foto|Por dentro|Desejo e pergunta)\s*:\s*/i, '');
-    const [titulo, id] = TIT_CL[k.a] || ['Bloco ' + (j + 1), 'cl-' + (j + 1)];
+      .replace(/^(Abertura|Idade|Foto|Por dentro|O que conserva|Âncora|Desejo e pergunta)\s*:\s*/i, '');
+    const [titulo, id] = TIT_CL[k.a] && !v3 ? TIT_CL[k.a] : idPelaFala(fala, j, marcas.length);
     return { id, titulo, tempo:`${k.a}-${k.b} s`, fala, aponte:[...fala.matchAll(/\[(?:APONTE|CIRCULAR):\s*([^\]]+)\]/gi)].map(x => x[1].trim()) };
   }).filter(x => x.fala);
   const linhas = (a, b2) => a < 0 ? [] : s.slice(a, b2 > a ? b2 : undefined).split('\n').slice(1).map(l => l.replace(/^\s*[-•]\s*/, '').trim()).filter(Boolean);
@@ -785,7 +829,7 @@ function passosReact(e){
     fala:x.fala, aponte:x.aponte, regiao:null, nota:'', claude:true, rotulo }));
   if (!b || !b.est || !b.est.blocos.length) return [{ bloco:'Foto', foto:'frente', tempo:'', tela:'Foto de frente inteira', fala:'', nota:'O roteiro do estoque não carregou: use o cartão.' }];
   return b.est.blocos.map(bl => ({ id:bl.id, bloco:ROT_BLOCO[bl.id] || bl.id, foto:'frente', tempo:bl.tempo, tela:bl.circular ? 'Circular: ' + bl.circular : 'Foto de frente inteira',
-    fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, nota:bl.fixo ? 'Frase fixa: não cortar.' : '', rotulo }));
+    fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, aponte:bl.aponte || [], nota:bl.fixo ? 'Frase fixa: não cortar.' : '', rotulo }));
 }
 /** A resposta dela ao áudio antes (colada pelo Lucca no passo 2) abre o roteiro (pele-idade, braço e pernas). Só nesta tela. */
 let RESP = {};

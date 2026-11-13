@@ -515,7 +515,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </div>
 <script src="uso.js?v=20261113y"></script>
 <script src="kits.js?v=20261113p"></script>
-<script src="roteiro.js?v=20261113x"></script>
+<script src="roteiro.js?v=20261113z"></script>
 <script src="gravar-analise.js?v=20261113y"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
@@ -1869,13 +1869,14 @@ function faixaPI(id, b, p){
   // roteiro do Claude: a faixa pelo bloco (abertura, idade, foto, por dentro, desejo)
   if (id === 'cl-abertura') return faixaPI('abertura', b);
   if (id === 'cl-idade') return faixaPI('idade', b);
-  if (id === 'cl-foto') return p?.aponte?.length ? 'Na foto: ' + p.aponte.join(' · ').replace(/(o que muita gente chama de )?bigode chin[eê]s/gi, 'do nariz à boca') : faixaPI('bem', b);   // "bigode chinês" nunca no vídeo (o-que-importa-idade.json)
-  if (id === 'cl-dentro'){   // o hábito que o bloco cita primeiro (entre os que ela tem); sem citação, a prioridade das regras
+  if (id === 'cl-foto' || id === 'foto') return p?.aponte?.length ? 'Na foto: ' + p.aponte.join(' · ').replace(/(o que muita gente chama de )?bigode chin[eê]s/gi, 'do nariz à boca') : faixaPI('bem', b);   // "bigode chinês" nunca no vídeo (o-que-importa-idade.json)
+  if (id === 'cl-dentro' || id === 'dentro'){   // o hábito que o bloco cita primeiro (entre os que ela tem); sem citação, a prioridade das regras
     const tem = temPI(r), PAL = HAB_PAL;
     const fala = String(p?.fala || ''), achados = Object.keys(PAL).filter(k => tem[k]).map(k => [k, fala.search(PAL[k])]).filter(([, x]) => x >= 0).sort((x, y) => x[1] - y[1]);
     const k = achados[0]?.[0] || ['metabolico', 'cigarro', 'sono', 'sol', 'movimento'].find(x => tem[x]);
     return k ? `${ROTPI[k][0]}: ${v(k)}` : null; }
   if (id === 'cl-desejo') return faixaPI('ponte', b);
+  if (id === 'cl-importa' || id === 'importa') return idade != null ? `O que conserva aos ${idade}` : null;
   if (id === 'abertura') return window.ROTEIRO?.respostaDe(codigoAtual) ? null : r.espelho && r.espelho !== 'nada' ? 'No espelho: ' + v('espelho') : r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
   if (id === 'idade') return c.idadeFaixa?.dizer && mF ? `Rosto: ${mF[1]} a ${mF[2]} anos · você tem ${idade}` : idade != null && c.caso !== 'sem_numero' ? `Você tem ${idade} anos` : null;
   if (id === 'bem'){ const bons = [r.cigarro === 'nunca' && 'nunca fumou', r.sol === 'quase_nenhum' && 'quase sem sol no rosto', r.metabolico === 'nao_medi' && 'pressão e glicose normais', r.sono === 'bem' && 'dorme bem',
@@ -1949,7 +1950,7 @@ function cenaPI(id, b, p, fala){
   const d = b.d, r = d.respostas || {}, c = b.c || {}, mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = Number(d.idade ?? r.idade);
   if (id === 'cl-idade' || id === 'idade')
     return !d.sem_analise && c.idadeFaixa?.dizer && mF && isFinite(idade) ? { tipo:'idade', min:+mF[1], max:+mF[2], idade } : null;
-  if (id === 'cl-foto'){
+  if (id === 'cl-foto' || id === 'foto'){
     if (d.sem_analise) return null;
     const N = Object.fromEntries((d.sinais || []).filter(s => SIN_LUPA.includes(s.id) && s.visivel !== false && s.nivel != null).map(s => [s.id, Math.max(0, Math.min(3, Math.round(+s.nivel) || 0))]));
     const dor = d.espelho_regiao && N[d.espelho_regiao] != null ? [d.espelho_regiao] : (DOR_PI[r.espelho] || []).filter(k => N[k] != null).sort((x, y) => N[y] - N[x]).slice(0, 1);
@@ -1961,7 +1962,7 @@ function cenaPI(id, b, p, fala){
       ...ids.map(k => [k, rotuloDe(k)]).filter(([, v]) => v?.acompanha && v?.fonte).map(([k, v]) => `Se quiser, ${rotuloSinal(k).toLowerCase()}: ${v.acompanha}`)];
     return { tipo:'foto', lupas:ids.map(k => ({ id:k, parte_de:rotuloDe(k)?.parte_de || null, nome:rotuloSinal(k), nivel:N[k] })), notas };
   }
-  if (id === 'cl-dentro' || id === 'bem' || /^habito-\w+$/.test(id)){
+  if (id === 'cl-dentro' || id === 'dentro' || id === 'bem' || /^habito-\w+$/.test(id)){
     const m = /^habito-(\w+)$/.exec(id), txt = String(fala ?? p?.fala ?? ''), tem = temPI(r);
     const ks = m ? [m[1]] : Object.keys(HAB_PAL).map(k => [k, txt.search(HAB_PAL[k])]).filter(([k, x]) => x >= 0 && r[k] != null && r[k] !== '').sort((x, y) => x[1] - y[1]).map(([k]) => k);
     const habitos = ks.filter(k => HAB_CURTO[k] && r[k] != null).slice(0, 3).map(k => ({ id:k, nome:HAB_CURTO[k][0](r),
@@ -1969,7 +1970,9 @@ function cenaPI(id, b, p, fala){
       tom:tem[k] ? 'pesa' : (BEM_PI[k] || []).includes(r[k]) ? 'bem' : 'neutro' }));
     return habitos.length ? { tipo:'dentro', habitos } : null;
   }
-  if (id === 'cl-desejo' || id === 'interesse' || id === 'ponte') return { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo, r) };
+  // 13/11 (v3): o cartão "O que conserva" vai no bloco 5; roteiro sem ele (v2), no do desejo
+  if (id === 'cl-importa' || id === 'importa') return { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo, r) };
+  if (id === 'cl-desejo' || id === 'interesse' || id === 'ponte') return (b.ids || []).some(x => x === 'cl-importa' || x === 'importa') ? null : { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo, r) };
   return null;
 }
 // 13/11: "[APONTE: região dos olhos]" → o nome que a lupa mostra no vídeo (rotulos[id].faixa: "Canto dos olhos")
@@ -2017,7 +2020,7 @@ async function comExemplo(blocos){
 }
 // 13/11: fora da pele nova, a cena do bloco 2 é a régua (o número do teste ao lado da idade dela), quando os dois são números
 function cenaOutro(id, b){
-  if (id !== 'resultado') return null;
+  if (id !== 'resultado' && id !== 'cl-idade') return null;
   const d = b.d || {}, idade = Number(d.idade);
   if (!isFinite(idade) || idade <= 0) return null;
   if (b.t === 'braco'){ const n = b.c?.medida?.idadeM; return Number.isFinite(n) ? { tipo:'idade', min:n, max:n, idade, rot:'Músculo' } : null; }
