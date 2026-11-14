@@ -1,5 +1,5 @@
 {
- "versao": "estoque-v4 · 13/11/2026 (o fio narrativo em todos os testes; fecho \"estaria disposta a investir nisso\"; assuntos para a conversa)",
+ "versao": "estoque-v5 · 14/11/2026 (pele-idade: abertura nova, como se forma, como se trabalha, o caminho em frentes e a pergunta nova do Lucca; em todos: ponte da abertura, \"atividade física\", protetor com cor) · antes: estoque-v4 · 13/11/2026 (o fio narrativo em todos os testes; fecho \"estaria disposta a investir nisso\"; assuntos para a conversa)",
  "sobre": "Blocos do roteiro do vídeo de análise, montado na hora pela Caixa (roteiro.js), sem API. Desde 13/11 (v4, d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md) o FIO em 6 blocos, um respondendo ao anterior: 1 incômodo dela + \"acho que sei por quê\"; 2 boa notícia, o número dela ao lado da idade e a ponte \"vem daqui:\"; 3 onde aparece; 4 \"E por que…?\" com as respostas dela ligadas; 5 o outro hábito e a imagem do kit (mesmo sexo, idade perto); 6 o que dá pra ver × o que só medindo e a pergunta do Lucca. Entre chaves, o que a Caixa preenche com o dado do lead; frase sem o dado sai do bloco. Toda frase é editável nos Ajustes (e_<teste>_<caminho>). Chaves com \"_\" na frente (as versões antigas) e \"f\" (a fonte) ficam fora dos Ajustes.",
  "comum": {
   "seguranca": {
@@ -81,7 +81,7 @@
    "nota": "Frases da narrativa v3 (6 blocos soltos, até 13/11 15h50), fora do uso desde o fio v4. Não aparecem nos Ajustes."
   },
   "fio": {
-   "f": "d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md; PROMPT-NARRATIVA v4 (regras-narrativa-geral.md): cada bloco responde ao anterior e termina com a ponte; frases curtas, \"pra\", \"dá pra\"; zero promessa; a pergunta do fecho é a do Lucca, palavra por palavra",
+   "f": "d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md; PROMPT-NARRATIVA v4 (regras-narrativa-geral.md): cada bloco responde ao anterior e termina com a ponte; frases curtas, \"pra\", \"dá pra\"; zero promessa; a pergunta do fecho é a do Lucca, palavra por palavra · v5 (14/11, pedido do Lucca vendo o gravador): a ponte da abertura deixa de ser \"acho que sei por quê\" (\"parece fraco\") e vira \"dá pra ver de onde isso vem. Vou te mostrar.\"; a pergunta do fecho é a nova dele (\"…que coubesse na sua rotina e valesse o investimento, você se interessaria?\"); \"se mexe\" vira \"atividade física\"; protetor \"com cor\" (o comum não barra a luz visível: Mahmoud 2010, PMID 20410914; Castanedo-Cazares 2014, PMID 24313385; Boukari 2015, PMID 25443629; conferidos no PubMed em 14/11)",
    "abertura": [
     "{nome}, aqui é o doutor Lucca Marques."
    ],
@@ -92,19 +92,19 @@
     "Você quis saber {rotulo}."
    ],
    "ponte_foto": [
-    "Olhando sua foto e suas respostas, acho que sei por quê."
+    "Analisei sua foto e suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
    ],
    "ponte_respostas": [
-    "Olhando suas respostas, acho que sei por quê."
+    "Analisei suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
    ],
    "ponte_teste": [
-    "Olhando seu teste, acho que sei por quê."
+    "Analisei seu teste, e dá pra ver de onde isso vem. Vou te mostrar."
    ],
    "ponte_quis": [
     "Olhando seu teste, dá pra te dizer bastante coisa."
    ],
    "ponte_comecar": [
-    "Olhando suas respostas, acho que sei por onde começar."
+    "Analisei suas respostas, e dá pra ver por onde começar. Vou te mostrar."
    ],
    "boa": [
     "Primeiro, a boa notícia: {bem}."
@@ -134,7 +134,7 @@
     "Olha esse exemplo, de gente da sua idade: {ex_fala}."
    ],
    "solucao": {
-    "sol": "Por isso o protetor todo dia.",
+    "sol": "Por isso o protetor com cor, todo dia.",
     "cigarro": "Por isso, longe do cigarro.",
     "sono": "Por isso o sono conta tanto."
    },
@@ -162,7 +162,7 @@
    "trabalhar": [
     "Isso dá pra trabalhar."
    ],
-   "pergunta": "{nome}, se hoje existisse um plano feito pra você, que você confiasse pra seguir e que coubesse no seu bolso, você estaria {disposta} a investir nisso pra {desejo}?",
+   "pergunta": "{nome}, pra finalizar, eu tenho uma pergunta: se hoje você encontrasse um acompanhamento pra {desejo}, que coubesse na sua rotina e valesse o investimento, você se interessaria?",
    "medir_itens": {
     "sono": "sono",
     "glicose": "glicose",
@@ -170,7 +170,10 @@
     "pressao": "pressão",
     "musculo": "o músculo",
     "exames": "os exames"
-   }
+   },
+   "espero": [
+    "Espero que a análise tenha te ajudado."
+   ]
   },
   "assuntos": {
    "f": "ASSUNTOS PARA A CONVERSA (PROMPT-NARRATIVA v4): sem o roteiro do Claude, o que ela marcou e o vídeo deixou para medir ou conversar, até 5; mulher de 40 a 60, sempre a fase hormonal (o sintoma primeiro; nunca ligada a pele, rosto ou envelhecer: reposicao-hormonal-mulher.md, Res. CFM 1.999/2012)",
@@ -190,7 +193,7 @@
    "hormonios": "{ciclo_pelos}: olhar os hormônios com exame",
    "menopausa": "menopausa ou chegando nela",
    "remedio": "remédio todo dia: não parar nem trocar por conta própria",
-   "movimento": "movimento baixo: {movimento}",
+   "movimento": "atividade física baixa: {movimento}",
    "forca": "ainda não faz exercício de força",
    "sol": "sol sem protetor: {sol}",
    "sol_pele": "sol por dia: {sol}",
@@ -518,7 +521,7 @@
    "Você quis olhar a sua pele com calma."
   ],
   "ponte_so_foto": [
-   "Olhando sua foto, acho que sei por quê."
+   "Analisei sua foto, e dá pra ver de onde isso vem. Vou te mostrar."
   ],
   "ponte_sem_queixa": [
    "Olhando sua foto, dá pra te mostrar bastante coisa."
@@ -998,7 +1001,7 @@
    ]
   },
   "ponte": {
-   "comeco": "Olhando suas respostas, acho que sei por onde começar."
+   "comeco": "Analisei suas respostas, e dá pra ver por onde começar. Vou te mostrar."
   },
   "boa": {
    "f": "PROMPT-NARRATIVA v4, quiz-emagrecimento: a boa notícia (o que está bem nas respostas)",
@@ -1175,7 +1178,7 @@
   "abertura": {
    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 1 (o incômodo do espelho nas palavras dela + \"acho que sei por quê\")",
    "contou": {
-    "cansada": "Você me contou que acorda com cara de {cansada}, mesmo dormindo.",
+    "cansada": "Você me contou que te incomoda a cara de {cansada}, mesmo quando você dorme.",
     "caindo": "Você me contou que te incomoda o rosto caindo, na bochecha e no bigode chinês.",
     "pescoco": "Você me contou que te incomodam o pescoço e a papada.",
     "palpebra": "Você me contou que te incomoda a pálpebra pesando.",
@@ -1185,13 +1188,13 @@
     "outro": "Você me contou: {espelho}."
    },
    "ponte": [
-    "Olhando sua foto e suas respostas, acho que sei por quê."
+    "Analisei sua foto e suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
    ],
    "ponte_nada": [
     "Olhando sua foto e suas respostas, dá pra te mostrar bastante coisa."
    ],
    "ponte_sem_foto": [
-    "Olhando suas respostas, acho que sei por quê."
+    "Analisei suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
    ]
   },
   "rotulo": {
@@ -1344,7 +1347,7 @@
    "ja": {
     "cigarro": "sem fumar",
     "sol": "se protegendo do sol",
-    "movimento": "se mexendo",
+    "movimento": "fazendo atividade física",
     "sono": "dormindo bem"
    },
    "mecanismo": {
@@ -1364,8 +1367,8 @@
      "6h": "dorme umas 6 horas"
     },
     "movimento": {
-     "quase_nada": "se mexe quase nada na semana",
-     "ate2": "se mexe até duas horas por semana"
+     "quase_nada": "quase não faz atividade física",
+     "ate2": "faz até duas horas de atividade física por semana"
     }
    },
    "a_favor": [
@@ -1379,8 +1382,8 @@
     "fds": "E o sol sem protetor, mesmo só no fim de semana, vai somando no rosto."
    },
    "sol_manchas": {
-    "todo_dia": "As manchinhas vêm muito do sol de todo dia sem protetor.",
-    "fds": "As manchinhas vêm muito do sol sem protetor, mesmo só no fim de semana."
+    "todo_dia": "E as manchinhas vêm muito do sol de todo dia.",
+    "fds": "E as manchinhas vêm muito do sol, mesmo só no fim de semana."
    },
    "cigarro": {
     "hoje": "E o cigarro também aparece no rosto, com os anos.",
@@ -1402,7 +1405,9 @@
     "parecer": "se reconhecer no espelho",
     "devagar": "cuidar da saúde com o passar dos anos"
    },
-   "desejo_sem": "cuidar da sua saúde e do seu rosto"
+   "desejo_sem": "cuidar da sua saúde e do seu rosto",
+   "caminho_pra": "Esse seria o caminho pra você {desejo}.",
+   "objetivo": "alcançar esse objetivo"
   },
   "escrito": {
    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): POR ESCRITO DEPOIS (pressão ou glicose alta marcada)",
@@ -1416,8 +1421,8 @@
     "cigarro": "você nunca fumou",
     "sol": "o seu rosto quase não pega sol sem protetor",
     "metabolico": "a pressão e a glicose estavam normais",
-    "movimento_2a5": "você se mexe de 2 a 5 horas por semana",
-    "movimento_mais5": "você se mexe mais de 5 horas por semana",
+    "movimento_2a5": "você faz de 2 a 5 horas de atividade física por semana",
+    "movimento_mais5": "você faz mais de 5 horas de atividade física por semana",
     "sono": "você dorme bem"
    }
   },
@@ -1505,8 +1510,8 @@
       "cansado": "acorda sem descanso mesmo dormindo"
      },
      "movimento": {
-      "quase_nada": "se mexe quase nada numa semana comum",
-      "ate2": "se mexe até 2 horas numa semana comum"
+      "quase_nada": "quase não faz atividade física numa semana comum",
+      "ate2": "faz até 2 horas de atividade física numa semana comum"
      }
     },
     "circular": {
@@ -1637,8 +1642,8 @@
       "cansado": "você acorda sem descanso mesmo dormindo"
      },
      "movimento": {
-      "quase_nada": "você se mexe quase nada numa semana comum",
-      "ate2": "você se mexe até 2 horas numa semana comum"
+      "quase_nada": "você quase não faz atividade física numa semana comum",
+      "ate2": "você faz até 2 horas de atividade física numa semana comum"
      }
     },
     "a_favor_2": [
@@ -1679,6 +1684,64 @@
     ]
    },
    "nota": "Frases da v3 (6 blocos do PROMPT-PELE-IDADE v3), fora do uso desde o fio v4 de 13/11. Não aparecem nos Ajustes."
+  },
+  "mecanismo": {
+   "f": "v5 (14/11, pedido do Lucca: \"mostrar brevemente uma explicação da pele sobre um ponto mais específico, como a formação das manchas, das linhas de expressão, da face caída; em um segundo momento, o mecanismo dos consertos\"). Como se forma: luz e pigmento (Mahmoud 2010, PMID 20410914); o sol aumenta as enzimas que quebram o colágeno (Fisher 1997, NEJM, PMID 9358139); a gordura do rosto fica em compartimentos que mudam com a idade (Rohrich e Pessa 2007, PMID 17519724). Como se trabalha: protetor com óxido de ferro na mancha (Castanedo-Cazares 2014, PMID 24313385); a tretinoína repõe parte da formação de colágeno na pele com dano de sol (Griffiths 1993, NEJM, PMID 8336752). Conferidos no PubMed em 14/11. \"Do açúcar alto\" (glicação do colágeno): mecanismo, sem ensaio conferido. Nenhum nome de remédio nem de estudo na fala; a tela mostra \"Varia de pessoa para pessoa.\"",
+   "forma": {
+    "manchas": "Mancha se forma assim: a luz chega na célula do pigmento, e ela fabrica a mais naquele ponto.",
+    "linhas": "Linha se forma assim: embaixo da pele tem uma rede de colágeno. Com o sol e os anos ela afina, e a pele dobra.",
+    "firmeza": "O contorno muda assim: a rede de colágeno afina, e a gordura do rosto desce."
+   },
+   "conserta": {
+    "manchas": "Como se trabalha isso? Barrando a luz, a célula para de receber o sinal, e um creme prescrito age no pigmento.",
+    "linhas": "Como se trabalha isso? Protegendo da luz, a rede afina mais devagar, e um creme prescrito estimula colágeno novo.",
+    "firmeza": "Como se trabalha isso? Protegendo a rede que você tem, da luz, do cigarro e do açúcar alto."
+   },
+   "titulo": {
+    "forma": {
+     "manchas": "Como a mancha se forma",
+     "linhas": "Como a linha se forma",
+     "firmeza": "Como o contorno muda"
+    },
+    "conserta": {
+     "manchas": "Como se trabalha a mancha",
+     "linhas": "Como se trabalha a linha",
+     "firmeza": "Como se trabalha o contorno"
+    }
+   }
+  },
+  "caminho": {
+   "f": "v5 (14/11, pedido do Lucca: \"um resumão do passo a passo do que teria que fazer, de forma complexa para contrastar com acompanhamento simples\"). Cada frente sai do que ELA marcou ou do que a foto mostrou; a alimentação entra sempre. Sem nome de remédio, sem dose, sem promessa. No cartão do vídeo, o rótulo curto de cada frente.",
+   "abre": "No seu caso, o caminho teria várias frentes:",
+   "itens": {
+    "manchas": "protetor com cor, creme prescrito pras manchas",
+    "colageno": "creme prescrito à noite",
+    "protetor": "protetor todo dia",
+    "protetor_cor": "protetor com cor",
+    "creme_ambos": "creme prescrito à noite",
+    "sono": "investigar esse sono",
+    "sono_curto": "arrumar o sono",
+    "metabolico": "cuidar da pressão e da glicose",
+    "medir": "medir pressão e glicose",
+    "cigarro": "sair do cigarro",
+    "forca": "treino de força",
+    "alimentacao": "uma alimentação que caiba no seu dia"
+   },
+   "cartao": {
+    "manchas": "Protetor com cor + creme prescrito",
+    "colageno": "Creme prescrito à noite",
+    "protetor": "Protetor todo dia",
+    "protetor_cor": "Protetor com cor, todo dia",
+    "creme_ambos": "Creme prescrito à noite",
+    "sono": "Sono: investigar",
+    "sono_curto": "Sono: arrumar",
+    "metabolico": "Pressão e glicose: cuidar",
+    "medir": "Pressão e glicose: medir",
+    "cigarro": "Sair do cigarro",
+    "forca": "Treino de força",
+    "alimentacao": "Alimentação que cabe no dia"
+   },
+   "fim": "{sozinha}, é muita coisa pra acertar. Com acompanhamento, fica simples."
   }
  }
 }

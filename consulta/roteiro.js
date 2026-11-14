@@ -67,7 +67,7 @@ const PI = {
   cigarro:['Você fuma ou já fumou?', { nunca:'Nunca fumei', parou:'Já fumei e parei', parou_mais10:'Parei há mais de 10 anos', parou_menos10:'Parei há menos de 10 anos', as_vezes:'Fumo ou uso vape às vezes', hoje:'Fumo hoje / todo dia' }],
   sol:['Quanto sol o rosto pega (sem protetor)', { quase_nenhum:'Quase nenhum', fds:'Um pouco, ou só no fim de semana', todo_dia:'Quase todo dia' }],
   metabolico:['Já te disseram que a pressão ou a glicose estava alta?', { nao_medi:'Não, e medi no último ano', nunca:'Nunca medi ou não lembro', pressao:'Sim, a pressão', glicose:'Sim, a glicose', ambas:'Sim, as duas' }],
-  movimento:['Quanto se mexe numa semana comum', { quase_nada:'Quase nada', ate2:'Até 2 horas', '2a5':'De 2 a 5 horas', mais5:'Mais de 5 horas' }],
+  movimento:['Atividade física numa semana comum', { quase_nada:'Quase nada', ate2:'Até 2 horas', '2a5':'De 2 a 5 horas', mais5:'Mais de 5 horas' }],
   sono:['Como são as noites', { bem:'Durmo 7 horas ou mais e acordo bem', '6h':'Durmo umas 6 horas', curto:'Durmo 5 horas ou menos', cansado:'Durmo, mas acordo cansada(o)' }],
   futuro:['Daqui a 10 anos, o que mais quer', { disposicao:'Ter a mesma disposição de hoje', parecer:'Parecer a idade que eu sinto', chegar10:'Chegar aos (idade + 10) com força e memória', antes:'Cuidar da saúde antes de aparecer problema', reconhecer:'Me reconhecer no espelho', independente:'Não depender de ninguém', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça', devagar:'Envelhecer mais devagar' }],
 };
@@ -189,7 +189,7 @@ let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o b
 async function carregaEstoque(){
   if (EST) return EST;
   const [est, imp] = await Promise.all([
-    fetch('roteiros-estoque.json?v=20261113v4', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('roteiros-estoque.json?v=20261114v5', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch('o-que-importa-idade.json?v=20261113', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null)]);
   EST = est; IMP = imp;   // 13/11: o bloco 5 ("o que conserva na idade") sai do mesmo arquivo do cartão do gravador
   if (EST) estoqueEditavel(EST);
@@ -430,6 +430,12 @@ const DOR_PI_R = { cansada:['olhos', 'olheira'], caindo:['sulco_nasolabial', 'fl
 const LIGA_ESPELHO = { cansada:['cansada', 'sono', 'olheira', 'olhos'], caindo:['caindo', 'sulco', 'flacidez', 'contorno'], pescoco:['papada', 'pescoco', 'flacidez'],
   palpebra:['palpebra', 'olhos'], manchas:['manchas', 'rugas', 'sol'] };
 const SONO_RUIM = ['curto', 'cansado', '6h'], MOV_BAIXO = ['quase_nada', 'ate2'];
+// 14/11 (v5, pedido do Lucca vendo o gravador): depois da foto, COMO SE FORMA o achado principal (a cena desenha a pele em
+// corte); antes do fecho, COMO SE TRABALHA e O CAMINHO em frentes (o que ela marcou + o que a foto mostrou; a alimentação
+// sempre), dito "de forma complexa para contrastar com acompanhamento simples"; o fecho é a pergunta nova dele. Olheira
+// não tem desenho: sem o bloco.
+const TEMA_SIN = { manchas:'manchas', linhas_testa:'linhas', olhos:'linhas', glabela:'linhas', sulco_nasolabial:'firmeza', flacidez:'firmeza', papada:'firmeza' };
+const MAX_PI = 118;   // segundos a 2,5 palavras por segundo (o gravador avisa aos 120 e corta aos 135)
 const nomeSinal = id => (IMP && IMP.rotulos && IMP.rotulos[id] && IMP.rotulos[id].faixa) || REG_PI[id] || id;   // o nome da lupa
 function rotPeleIdade(d, c, E){
   const P = E['pele-idade'], C = E.comum, F = C.fio, A = C.assuntos, r = d.respostas || {}, out = [], avisos = [], escrito = [];
@@ -491,6 +497,10 @@ function rotPeleIdade(d, c, E){
     return b;
   };
   out.push(b3(ach));
+  // 3b · como se forma (v5): o achado principal em 1 frase; a cena desenha a pele em corte
+  const tema = comFoto && P.mecanismo ? (r.espelho === 'manchas' && ach.includes('manchas') ? 'manchas' : ach.map(a => TEMA_SIN[a]).find(Boolean)) || null : null;
+  const temas = [...new Set(ach.map(a => TEMA_SIN[a]).filter(Boolean))];
+  if (tema){ const b = bloco6('forma', null, [P.mecanismo.forma[tema]], V, { f:P.mecanismo.f }); if (b){ b.dados = { tema, fase:'forma', titulo:P.mecanismo.titulo.forma[tema] }; out.push(b); } }
   // 4 · o porquê: "E por que, mesmo…?" + "Porque…" + as respostas dela ligadas (alta > sono > movimento > nunca mediu)
   const L = P.porque.liga, lig = [];
   if (ALTO_PI.includes(r.metabolico)) lig.push(L.metabolico[r.metabolico]);
@@ -520,7 +530,7 @@ function rotPeleIdade(d, c, E){
   if (!V.item) V.item = itemImporta('ate34', null, MOV_RE);
   Object.assign(V, escolheExemplo('pele-idade', [...(LIGA_ESPELHO[r.espelho] || []), ...ach.flatMap(a => LIGA_SINAL[a] || [a])], { fortes:hab ? [hab] : [], idade:iN, sexo, exigeLiga:true, habitos }) || {});
   const id5 = W => habFrase ? 'habito' : W.ex_id ? 'exemplo' : 'importa';
-  const b5 = W => habFrase || W.ex_id ? bloco6(id5(W), T4[4], [habFrase, ...(W.ex_id ? exemploPartes(F, W) : [F.solucao[hab]])], W,
+  const b5 = W => habFrase || W.ex_id ? bloco6(id5(W), T4[4], [habFrase, ...(W.ex_id ? exemploPartes(F, P.caminho ? { ...W, ex_sol:null } : W) : [P.caminho ? null : F.solucao[hab]])], W,   // v5: a solução vem no "como se trabalha" e no caminho
       { f:P.habito.f + (W.ex_id ? '; o exemplo é a imagem ' + W.ex_id + ' do kit' : '') })
     : bloco6('importa', T4[4], [W.idade ? P.importa.texto : P.importa.sem_idade], W, { f:P.importa.f });
   out.push(b5(V));
@@ -528,9 +538,22 @@ function rotPeleIdade(d, c, E){
   const medir = [SONO_RUIM.includes(r.sono) && 'sono', ['nunca', 'glicose', 'ambas'].includes(r.metabolico) && 'glicose', hormonal(sexo, iN) && 'hormonio',
     ['nunca', 'pressao', 'ambas'].includes(r.metabolico) && 'pressao', MOV_BAIXO.includes(r.movimento) && 'musculo'].filter(Boolean);
   const desejo = P.fecho.desejo[r.futuro] || c?.vars?.futuro || P.fecho.desejo_sem;
-  out.push(fecho4(F, V, T4, { medir, desejo }));
-  // passou de 84 s: o 2º achado, a 3ª resposta ligada, a imagem (regra 7); as pontes e a pergunta nunca saem
-  cabe(out, MAX_LONGO, [['foto', ach.length > 1 ? b3(ach.slice(0, 1)) : null], ['dentro', ligs.length > 2 ? b4(2) : null], [id5(V), V.ex_id ? b5({ ...V, ex_id:null }) : null]]);
+  if (P.caminho && P.fecho.objetivo){
+    // 6a · como se trabalha (v5): o mesmo desenho, agora com o conserto
+    if (tema){ const b = bloco6('conserto', null, [P.mecanismo.conserta[tema]], V, { f:P.mecanismo.f }); if (b){ b.dados = { tema, fase:'conserta', titulo:P.mecanismo.titulo.conserta[tema] }; out.push(b); } }
+    // 6b · o caminho em frentes: a pele (o que a foto mostrou), o cigarro, o sono, a pressão e a glicose, a força; a alimentação sempre
+    const pele = temManchas && temas.some(t => t !== 'manchas') ? ['protetor_cor', 'creme_ambos'] : temManchas ? ['manchas'] : temas.length ? [habSol && 'protetor', 'colageno'] : [habSol && 'protetor'];
+    const fr = [...pele, habCig && 'cigarro', r.sono === 'cansado' ? 'sono' : SONO_RUIM.includes(r.sono) && 'sono_curto',
+      ALTO_PI.includes(r.metabolico) ? 'metabolico' : r.metabolico === 'nunca' && 'medir', MOV_BAIXO.includes(r.movimento) && 'forca'].filter(k => k && P.caminho.itens[k]).slice(0, 4);
+    fr.push('alimentacao');
+    const bc = bloco6('caminho', null, [P.caminho.abre, listaE(fr.map(k => P.caminho.itens[k])) + '.', P.caminho.fim], { ...V, sozinha:gen(sexo, 'Sozinha', 'Sozinho') }, { f:P.caminho.f });
+    if (bc){ bc.dados = { passos:fr.map(k => ({ k, t:P.caminho.cartao[k] || P.caminho.itens[k] })) }; out.push(bc); }
+    // 7 · o fecho: o caminho pra o desejo dela, e a pergunta do Lucca (14/11), palavra por palavra
+    out.push(bloco6('destino', null, [preenche(P.fecho.caminho_pra, { desejo }), F.espero], V, { f:P.fecho.f }));   // em dois blocos: no iPhone a pergunta inteira não cabia junto no painel
+    out.push(bloco6('interesse', null, [F.pergunta], { ...V, desejo:P.fecho.objetivo }, { f:P.fecho.f, fixo:true }));
+  } else out.push(fecho4(F, V, T4, { medir, desejo }));
+  // passou do alvo: o 2º achado, a 3ª resposta ligada, a imagem (regra 7); as pontes e a pergunta nunca saem
+  cabe(out, P.caminho ? MAX_PI : MAX_LONGO, [['dentro', ligs.length > 2 ? b4(2) : null], [id5(V), V.ex_id ? b5({ ...V, ex_id:null }) : null], ['foto', ach.length > 1 ? b3(ach.slice(0, 1)) : null]]);
   if (ALTO_PI.includes(r.metabolico)) escrito.push(P.escrito[r.metabolico]);
   if (comFoto && (sin.manchas || 0) >= 2) escrito.push(C.seguranca.pele);
   if (r.cigarro === 'hoje') avisos.push('Fuma hoje: tom de alívio e explicação, sem cobrança (regra 22).');
@@ -917,7 +940,7 @@ async function preencheParecidos(){
 // Modo revisão da pele-idade: os passos são os blocos do roteiro montado, com a variação escolhida na tela.
 const ROT_BLOCO = { foto:'Onde a foto mostra', dentro:'O porquê', resultado:'Boa notícia e resultado', onde:'Onde aparece', porque:'O porquê', habito:'Hábito e exemplo', exemplo:'Exemplo',
   conserva:'O que está conservado', pesa:'O que pesa', importa:'O que conserva na idade', abertura:'Abertura', idade:'Boa notícia e idade', bem:'O que está bem', 'habito-cigarro':'Cigarro', 'habito-sol':'Sol', 'habito-metabolico':'Pressão e glicose',
-  'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', ponte:'Ponte', pergunta:'Pergunta', interesse:'Fecho e pergunta', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
+  'habito-sono':'Sono', 'habito-movimento':'Movimento', seguranca:'Frase de segurança', mecanismo:'Por que pesa', forma:'Como se forma', conserto:'Como se trabalha', caminho:'O caminho', destino:'Pra onde leva', ponte:'Ponte', pergunta:'Pergunta', interesse:'Fecho e pergunta', refazer:'Refazer a foto', 'refazer-pergunta':'Pergunta' };
 // 12/11: o roteiro do Claude (pele-idade) em partes: blocos cortados pelos marcadores [a-b s], o [APONTE: …] de cada bloco,
 // as linhas do POR ESCRITO DEPOIS e os AVISOS. null = não é do formato.
 const TIT_CL = { 0:['Abertura', 'cl-abertura'], 8:['Idade do rosto', 'cl-idade'], 18:['Foto', 'cl-foto'], 32:['Por dentro', 'cl-dentro'], 48:['Desejo e pergunta', 'cl-desejo'] };
@@ -927,6 +950,9 @@ const TIT_CL = { 0:['Abertura', 'cl-abertura'], 8:['Idade do rosto', 'cl-idade']
 function idPelaFala(fala, j, n){
   if (j === 0) return ['Abertura', 'cl-abertura'];
   if (j === n - 1) return ['Fecho e pergunta', 'cl-desejo'];
+  if (/se forma assim|muda assim/i.test(fala)) return ['Como se forma', 'cl-forma'];   // v5
+  if (/^Como se trabalha/i.test(fala)) return ['Como se trabalha', 'cl-conserto'];   // v5
+  if (/caminho teria/i.test(fala)) return ['O caminho', 'cl-caminho'];   // v5
   if (/o que mais conserva/i.test(fala)) return ['O que conserva', 'cl-importa'];   // v3
   if (/^(E )?por que\b|^Do que você me contou/i.test(fala)) return ['O porquê', 'cl-dentro'];
   if (/^\[IMAGEM:/i.test(fala)) return ['Exemplo', 'cl-exemplo'];
@@ -959,7 +985,11 @@ function partesClaude(txt){
 function claude(e){
   const b = B.find(x => x.e === e); if (!b) return null;
   const partes = b.roteiro ? partesClaude(b.roteiro.roteiro) : null, ok = !!(partes && partes.blocos.length);
-  return { estado:b.estado, erro:b.erro, lido:!!b.lido, tem:ok, usar:ok && !b.usarEstoque, usarEstoque:!!b.usarEstoque, partes, palavras:b.roteiro?.palavras ?? null,
+  // 14/11 (v5): roteiro do Claude da pele-idade sem o bloco "O caminho" foi escrito pelo prompt de antes ("mesmo quando eu durmo", o cartão
+  // "O que importa", a pergunta antiga): fica na tela para ler, e o gravador começa pelo estoque.
+  const velho = ok && b.teste === 'pele-idade' && !partes.blocos.some(x => x.id === 'cl-caminho' || x.id === 'refazer' || /consegue refazer hoje/i.test(x.fala));
+  const ue = b.usarEstoque ?? velho;   // o de antes da v5 começa no estoque; o botão "Usar o do Claude" segue valendo
+  return { estado:b.estado, erro:b.erro, lido:!!b.lido, tem:ok, velho, usar:ok && !ue, usarEstoque:!!ue, partes, palavras:b.roteiro?.palavras ?? null,
     conferir:b.roteiro?.avisos || [], modelo:b.roteiro?.modelo || '', respUsada:b.respUsada ?? null, teto:USO };
 }
 /** 13/11 (v4): os assuntos para a conversa (Detalhes e passo da conversa): os do Claude, se vieram; senão, os das respostas. */
@@ -976,10 +1006,10 @@ function passosReact(e){
   const cl = b && b.teste === 'pele-idade' ? claude(e) : null;
   const rotulo = b?.est?.rotulo || null;   // 13/11: o rótulo do bloco 1, destacado no teleprompter
   if (cl && cl.usar) return cl.partes.blocos.map(x => ({ id:x.id, bloco:x.titulo, foto:'frente', tempo:x.tempo, tela:x.aponte.length ? 'Aponte: ' + x.aponte.join('; ') : 'Foto de frente inteira',
-    fala:x.fala, aponte:x.aponte, regiao:null, nota:'', claude:true, rotulo }));
+    fala:x.fala, aponte:x.aponte, regiao:null, nota:'', claude:true, rotulo, dados:(b.est?.blocos || []).find(k => 'cl-' + k.id === x.id)?.dados || null }));
   if (!b || !b.est || !b.est.blocos.length) return [{ bloco:'Foto', foto:'frente', tempo:'', tela:'Foto de frente inteira', fala:'', nota:'O roteiro do estoque não carregou: use o cartão.' }];
   return b.est.blocos.map(bl => ({ id:bl.id, bloco:ROT_BLOCO[bl.id] || bl.id, foto:'frente', tempo:bl.tempo, tela:bl.circular ? 'Circular: ' + bl.circular : 'Foto de frente inteira',
-    fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, aponte:bl.aponte || [], nota:bl.fixo ? 'Frase fixa: não cortar.' : '', rotulo }));
+    fala:bl.opcoes[idx(b, bl)], regiao:bl.regiao || null, aponte:bl.aponte || [], nota:bl.fixo ? 'Frase fixa: não cortar.' : '', rotulo, dados:bl.dados || null }));
 }
 /** A resposta dela ao áudio antes (colada pelo Lucca no passo 2) abre o roteiro (pele-idade, braço e pernas). Só nesta tela. */
 let RESP = {};

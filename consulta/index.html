@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f2f4f1">
 <script>try { var t = localStorage.getItem('livowa_crm_tema'); if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t; } catch (e) { /* sem armazenamento: segue o sistema */ }</script>
 <title>CRM</title>
-<link rel="stylesheet" href="gravar-analise.css?v=20261113zb">
+<link rel="stylesheet" href="gravar-analise.css?v=20261114a">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    13/11: o nome passou a ser CRM (pedido do Lucca); a aba dos leads é "Leads".
@@ -516,9 +516,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
 <script src="uso.js?v=20261113y"></script>
-<script src="kits.js?v=20261113v4"></script>
-<script src="roteiro.js?v=20261113v4"></script>
-<script src="gravar-analise.js?v=20261113zb"></script>
+<script src="kits.js?v=20261114v5"></script>
+<script src="roteiro.js?v=20261114v5"></script>
+<script src="gravar-analise.js?v=20261114a"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -730,8 +730,8 @@ const AJ_MSGS = [['audioTexto', 'Confirmação de recebimento'], ['audioFala', '
 const AJ_PARAMS = [['toque_dias', 'Toques depois da análise (dias)', [1, 3, 7], 1, 60], ['nutrir_dias', 'Nutrir: próximo toque em (dias)', 14, 1, 180],
   ['verde_min', 'Resposta verde até (min)', 5, 1, 240], ['ambar_min', 'Resposta âmbar até (min)', 60, 1, 1440], ['roteiro_espera_s', 'Espera pelo roteiro do Claude antes do estoque (s)', 30, 5, 120],
   // 13/11 (2º treino da Carla): o gravador. A chave do banco não aceita ponto: gravar_<nome> (o pedido falou gravar.<nome>)
-  ['gravar_ritmo_palavras_s', 'Gravador: ritmo da fala (palavras por segundo)', 2.5, 1, 5, 0.1], ['gravar_salto_fecho_s', 'Gravador: pula para a pergunta aos (s)', 75, 30, 170],
-  ['gravar_alvo_s', 'Gravador: alvo do vídeo (s)', 90, 30, 180], ['gravar_teto_s', 'Gravador: corta o vídeo aos (s)', 105, 45, 180]];
+  ['gravar_ritmo_palavras_s', 'Gravador: ritmo da fala (palavras por segundo)', 2.5, 1, 5, 0.1], ['gravar_salto_fecho_s', 'Gravador: pula para a pergunta aos (s)', 115, 30, 170],
+  ['gravar_alvo_s', 'Gravador: alvo do vídeo (s)', 120, 30, 180], ['gravar_teto_s', 'Gravador: corta o vídeo aos (s)', 135, 45, 180]];   // 14/11 (v5): o roteiro ganhou como se forma, como se trabalha e o caminho
 const AJ_VARS = ['nome', 'lv', 'desejo', 'incomodo', 'idade', 'h1', 'h2', 'link', 'proximo_teste'];
 function padraoCfg(k){
   const tx = window.KITS?.texto?.(k); if (tx) return tx.padrao;   // 13/11: texto dos kits (braço, pernas, pele…)
@@ -1920,15 +1920,15 @@ function faixaPI(id, b, p){
   if (id === 'abertura') return window.ROTEIRO?.respostaDe(codigoAtual) ? null : r.espelho && r.espelho !== 'nada' ? 'No espelho: ' + v('espelho') : r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
   if (id === 'idade') return c.idadeFaixa?.dizer && mF ? `Rosto: ${mF[1]} a ${mF[2]} anos · você tem ${idade}` : idade != null && c.caso !== 'sem_numero' ? `Você tem ${idade} anos` : null;
   if (id === 'bem'){ const bons = [r.cigarro === 'nunca' && 'nunca fumou', r.sol === 'quase_nenhum' && 'quase sem sol no rosto', r.metabolico === 'nao_medi' && 'pressão e glicose normais', r.sono === 'bem' && 'dorme bem',
-    ['2a5', 'mais5'].includes(r.movimento) && 'se mexe ' + v('movimento')].filter(Boolean); return bons.length ? 'O que está bem: ' + bons.slice(0, 2).join(' · ') : null; }
+    ['2a5', 'mais5'].includes(r.movimento) && 'atividade física: ' + String(v('movimento')).toLowerCase()].filter(Boolean); return bons.length ? 'O que está bem: ' + bons.slice(0, 2).join(' · ') : null; }
   const m = /^habito-(\w+)$/.exec(id || ''); if (m && ROTPI[m[1]]) return `${ROTPI[m[1]][0]}: ${v(m[1]) || '—'}`;
   if (id === 'mecanismo'){ const hab = ['cigarro', 'sol', 'metabolico', 'sono', 'movimento'].find(k => (b.ids || []).includes('habito-' + k)); return ESTUDO_PI[hab || 'gemeos']; }
-  if (id === 'ponte' || id === 'interesse') return r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
+  if (id === 'ponte' || id === 'interesse' || id === 'destino') return r.futuro ? 'Daqui a 10 anos: ' + v('futuro') : null;
   return null;
 }
 // ---------- 12/11: montagem automática do vídeo (o gravador desenha a cena de cada bloco sozinho) ----------
 // hábitos: as palavras que o bloco usa para cada um e o que ela tem (pesa) ou tem a favor
-const HAB_PAL = { metabolico:/press[ãa]o|glicose/i, cigarro:/fum|cigarro|vape/i, sono:/dorm|sono|cansad/i, sol:/\bsol\b|protetor/i, movimento:/\bmex|moviment|caminh|exerc/i };
+const HAB_PAL = { metabolico:/press[ãa]o|glicose/i, cigarro:/fum|cigarro|vape/i, sono:/dorm|sono|cansad/i, sol:/\bsol\b|protetor/i, movimento:/\bmex|moviment|caminh|exerc|atividade f[ií]sica/i };
 const temPI = r => ({ metabolico:['pressao', 'glicose', 'ambas'].includes(r.metabolico), cigarro:['hoje', 'as_vezes', 'parou', 'parou_menos10', 'parou_mais10'].includes(r.cigarro),
   sono:['curto', 'cansado'].includes(r.sono), sol:['todo_dia', 'fds'].includes(r.sol), movimento:['quase_nada', 'ate2'].includes(r.movimento) });
 const BEM_PI = { metabolico:['nao_medi'], cigarro:['nunca'], sono:['bem'], sol:['quase_nenhum'], movimento:['2a5', 'mais5'] };
@@ -1936,8 +1936,8 @@ const HAB_CURTO = {   // rótulo curto do vídeo: nome do hábito + a resposta d
   metabolico:[r => ({ pressao:'Pressão', glicose:'Glicose' }[r.metabolico] || 'Pressão e glicose'), { nao_medi:'normais no último ano', nunca:'nunca mediu', pressao:'alta', glicose:'alta', ambas:'as duas altas' }],
   cigarro:[() => 'Cigarro', { nunca:'nunca fumou', parou:'parou', parou_mais10:'parou há mais de 10 anos', parou_menos10:'parou há menos de 10 anos', as_vezes:'às vezes', hoje:'fuma hoje' }],
   sono:[() => 'Sono', { bem:'7 h ou mais, acorda bem', '6h':'umas 6 h', curto:'5 h ou menos', cansado:'acorda cansada(o)' }],
-  sol:[() => 'Sol sem protetor', { quase_nenhum:'quase nenhum', fds:'no fim de semana', todo_dia:'quase todo dia' }],
-  movimento:[() => 'Movimento', { quase_nada:'quase nada', ate2:'até 2 h por semana', '2a5':'2 a 5 h por semana', mais5:'mais de 5 h por semana' }],
+  sol:[() => 'Sol no rosto', { quase_nenhum:'quase nenhum', fds:'no fim de semana', todo_dia:'quase todo dia' }],
+  movimento:[() => 'Atividade física', { quase_nada:'quase nada', ate2:'até 2 h por semana', '2a5':'2 a 5 h por semana', mais5:'mais de 5 h por semana' }],
 };
 // sinais: a região do incômodo (= DOR de pele/app.js, com as sub-regiões do arquivo) e as palavras do [APONTE: …]
 const DOR_PI = { cansada:['olhos', 'olheira'], caindo:['sulco_nasolabial', 'flacidez'], pescoco:['flacidez', 'papada'], palpebra:['olhos'], manchas:['manchas', 'linhas_testa', 'glabela', 'olhos'] };
@@ -2010,6 +2010,10 @@ function cenaPI(id, b, p, fala){
       tom:tem[k] ? 'pesa' : (BEM_PI[k] || []).includes(r[k]) ? 'bem' : 'neutro' }));
     return habitos.length ? { tipo:'dentro', habitos } : null;
   }
+  // 14/11 (v5): como se forma e como se trabalha (a pele em corte) e o caminho em frentes; com o caminho, o fecho fica sem cartão
+  if (/^(cl-)?(forma|conserto)$/.test(id)) return p?.dados?.tema ? { tipo:'mecanismo', tema:p.dados.tema, fase:p.dados.fase, titulo:p.dados.titulo } : null;
+  if (/^(cl-)?caminho$/.test(id)) return p?.dados?.passos?.length ? { tipo:'caminho', titulo:'O caminho', passos:p.dados.passos, fim:'Com acompanhamento, fica simples.' } : null;
+  if (id === 'destino' || ((id === 'cl-desejo' || id === 'interesse') && (b.ids || []).some(x => /^(cl-)?caminho$/.test(x)))) return null;
   // 13/11 (v3): o cartão "O que conserva" vai no bloco 5; roteiro sem ele (v2), no do desejo
   if (id === 'cl-importa' || id === 'importa') return { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo, r) };
   if (id === 'cl-desejo' || id === 'interesse' || id === 'ponte') return (b.ids || []).some(x => x === 'cl-importa' || x === 'importa') ? null : { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo, r) };
@@ -2058,8 +2062,8 @@ async function comExemplo(blocos){
   for (const x of blocos){
     const m = RE_IMG.exec(x.fala); if (!m){ out.push(x); continue; }
     const antes = x.fala.slice(0, m.index).trim(), depois = x.fala.slice(m.index + m[0].length).replace(/\[IMAGEM:[^\]]*\]/gi, '').trim(), e = ex[m[1].toLowerCase()];
-    if (antes) out.push({ ...x, fala:antes, tempo:null });   // partido em dois: o tempo de cada parte sai das palavras
-    out.push({ titulo:'Exemplo', tempo:null, fala:depois, faixa:null, destaque:null, imagem:e ? (e.legenda || []).join(' × ') || 'na tela' : '',
+    // 14/11 (o Lucca: "para que focasse tanto nisso?"): um bloco só, a imagem entra junto com a frase do hábito (antes eram duas telas)
+    out.push({ titulo:antes ? x.titulo : 'Exemplo', tempo:null, fala:[antes, depois].filter(Boolean).join(' '), faixa:null, destaque:null, imagem:e ? (e.legenda || []).join(' × ') || 'na tela' : '',
       cena:e ? { tipo:'exemplo', id:e.id, url:e.url, recorte:e.recorte, legenda:e.legenda || [], credito:e.credito || '', nota:e.nota || '', paineis:paineisExemplo(e) } : null,
       notas:e ? [] : ['A imagem do exemplo não veio: pule esta parte.'] });
   }

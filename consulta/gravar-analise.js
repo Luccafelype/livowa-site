@@ -27,11 +27,11 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1311zb';
+const VERSAO = '1411a';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
-const PADRAO = { ritmo:2.5, salto:75, alvo:90, teto:105 };
+const PADRAO = { ritmo:2.5, salto:115, alvo:120, teto:135 };   // 14/11 (v5: como se forma, como se trabalha e o caminho entram no roteiro)
 function params(o){
   const p = { ...PADRAO }, q = (o && o.params) || {};
   for (const k of Object.keys(PADRAO)){ const v = Number(q[k]); if (Number.isFinite(v) && v > 0) p[k] = v; }
@@ -61,7 +61,7 @@ const FS_K = 'livowa_ga_fs';
 const AMARELO = '#ffd60a', AZUL = '#5ab8ff', VERDE = '#5fd68a', LARANJA = '#ff9f43', APAGADO = 'rgba(255,255,255,.66)';
 const MONO = 'ui-monospace, "SF Mono", Menlo, Consolas, monospace';
 const GRAU = ['sem achado', 'leve', 'moderado', 'marcado'], COR_GRAU = [VERDE, AZUL, AMARELO, LARANJA];
-const R_LUPA = [52, 84], LUPA_X = 1.7;   // raio da lupa no quadro (px) e o aumento dentro dela
+const R_LUPA = [72, 118], LUPA_X = 1.7;   // raio da lupa no quadro (px) e o aumento dentro dela
 const COR_TOM = { pesa:AMARELO, bem:VERDE, neutro:AZUL };
 const sai = x => { const t = Math.max(0, Math.min(1, x)); return 1 - (1 - t) * (1 - t) * (1 - t); };   // ease-out
 const ROSTO_URL = (() => { try { return new URL('../pele/rosto.js?v=2', (document.currentScript && document.currentScript.src) || location.href).href; } catch (e) { return '/pele/rosto.js?v=2'; } })();
@@ -88,6 +88,7 @@ function monta(){
     <div class="ga-p-topo"><div class="ga-p-passos" aria-hidden="true"></div><span class="ga-p-pos"></span><button type="button" class="ga-aa" aria-label="Tamanho do texto">Aa</button></div>
     <b class="ga-p-tit"></b>
     <div class="ga-p-rola"><p class="ga-p-txt"></p><div class="ga-p-opc" hidden></div></div>
+    <div class="ga-foco" role="group" aria-label="Foco no vídeo" hidden></div>
     <div class="ga-nota" hidden></div>
     <p class="ga-p-dep" aria-hidden="true"></p>
   </div>
@@ -126,7 +127,7 @@ function monta(){
   </div>`;
   document.body.append(el);
   const q = s => el.querySelector(s);
-  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'),
+  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'), foco:q('.ga-foco'),
     conta:q('.ga-conta'), aviso:q('.ga-aviso'), nota:q('.ga-nota'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
     fechar:q('.ga-fechar'), ant:q('.ga-ant'), rec:q('.ga-rec-b'), recT:q('.ga-rec-t'), prox:q('.ga-prox'), grav:q('.ga-grav'), rev:q('.ga-rev'), fim:q('.ga-fim'),
     refazer:q('.ga-refazer'), enviar:q('.ga-enviar'), baixar:q('.ga-baixar'), marcar:q('.ga-marcar'), denovo:q('.ga-denovo'), info:q('.ga-info'), tentar:q('.ga-tentar') };
@@ -151,8 +152,11 @@ function encaixa(){
 function cabeTexto(){
   if (!G || !D || D.prompt.hidden) return;
   let fs = fsPrompt; const r = D.pRola;
+  D.foco.classList.remove('aperto');
   D.prompt.style.setProperty('--fs', fs + 'px');
-  while (fs > 14 && D.pTxt.offsetHeight > r.clientHeight + 1){ fs--; D.prompt.style.setProperty('--fs', fs + 'px'); }   // só a fala decide; as notas ficam com o que sobrar (rolam)
+  const sobra = () => D.pTxt.getBoundingClientRect().height > r.clientHeight + .5;   // 14/11: medida com fração (78,4 px num painel de 77 passava por "coube")
+  while (fs > 14 && sobra()){ fs--; D.prompt.style.setProperty('--fs', fs + 'px'); }   // só a fala decide; as notas ficam com o que sobrar (rolam)
+  if (sobra() && !D.foco.hidden) D.foco.classList.add('aperto');   // 14/11: a fala não coube nem com 14 px: os botões de foco saem (no celular, o toque no ponto do rosto faz o mesmo)
   r.scrollTop = 0;
 }
 
@@ -291,6 +295,8 @@ function montagem(ctx, agora){
     else if (c.tipo === 'dentro') fez = cenaDentro(ctx, c, t);
     else if (c.tipo === 'desejo') fez = cenaDesejo(ctx, c, t);
     else if (c.tipo === 'exemplo') fez = cenaExemplo(ctx, c, t);
+    else if (c.tipo === 'mecanismo') fez = cenaMecanismo(ctx, c, t);
+    else if (c.tipo === 'caminho') fez = cenaCaminho(ctx, c, t);
   } finally {
     ctx.restore();
     ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -392,7 +398,7 @@ function pontosSinais(g, media){
 const escala = (f, z) => f.bw / f.img.naturalWidth * z.s;
 const naTela = (f, p, z = f.z) => { const a = escala(f, z); return { x:z.ox + p.x * a, y:z.oy + p.y * a }; };
 function arrumaLupas(c, f){
-  const z = f.base, r = lim(.2 * G.rosto.iod * escala(f, z), R_LUPA[0], R_LUPA[1]), cam = G.mostraCam && G.cam;
+  const z = f.base, r = lim(.3 * G.rosto.iod * escala(f, z), R_LUPA[0], R_LUPA[1]), cam = G.mostraCam && G.cam;
   const dentro = q => ({ x:lim(q.x, r + 10, W - r - 10), y:lim(q.y, TOPO + r + 10, H - r - 10) });
   const postos = [];
   for (const l of c.lupas){
@@ -411,8 +417,8 @@ function arrumaLupas(c, f){
   // rótulos: para o lado do meio do quadro, acima ou abaixo da lupa, sem cobrir outra lupa nem outro rótulo
   const ctx = D.ctx, caixas = [];
   for (const q of postos){
-    ctx.font = `700 30px ${FONTE}`; const w1 = ctx.measureText(q.nome).width; ctx.font = `600 25px ${FONTE}`;
-    const w = Math.ceil(Math.max(w1, ctx.measureText(GRAU[q.nivel] || '').width)) + 32, h = 84, dir = q.d.x <= W / 2 ? 1 : -1;
+    ctx.font = `700 32px ${FONTE}`;
+    const w = Math.ceil(ctx.measureText(q.nome).width) + 36, h = 60, dir = q.d.x <= W / 2 ? 1 : -1;   // 14/11: só o nome (o grau fica no botão dele)
     const tenta = [[dir, -1], [dir, 1], [dir, 0], [-dir, -1], [-dir, 1]].map(([sx, sy]) => {
       let x = sx > 0 ? q.d.x + r + 34 : q.d.x - r - 34 - w, y = sy < 0 ? q.d.y - r - 14 - h : sy > 0 ? q.d.y + r + 14 : q.d.y - h / 2;
       x = lim(x, 12, W - 12 - w);
@@ -428,25 +434,46 @@ function arrumaLupas(c, f){
   }
   return { r, postos };
 }
+// 14/11 (o Lucca: "só o wrapper para eu colocar o foco em cima e falar"): nada aparece sozinho. As regiões são botões no painel
+// dele (e as teclas 1, 2, 3; ou um toque no ponto do rosto); a que ele escolhe entra no vídeo: a lupa e o nome, sem o grau.
 function cenaFoto(ctx, c, agora){
   const R0 = G.rosto, f = G.fotos[G.foto];
+  G.lupasVis = []; G.lupasPos = [];
   if (!R0 || R0.estado !== 'ok' || G.foto !== R0.k || !f || !f.img || !c.lupas || !c.lupas.length) return false;
   const chave = G.bloco + ':' + (G.mostraCam && G.cam ? 1 : 0);
   if (!G.lupasLay || G.lupasLay.chave !== chave) G.lupasLay = { chave, ...arrumaLupas(c, f) };
-  const L = G.lupasLay, t = agora - Math.max(G.blocoT || 0, G.rostoT || 0), a = escala(f, f.z);
-  const vis = L.postos.map((q, k) => {
-    const t0 = 200 + k * 800, raw = naTela(f, q.p), cx = lim(raw.x, L.r + 10, W - L.r - 10), cy = lim(raw.y, TOPO + L.r + 10, H - L.r - 10);
-    return { q, x:cx, y:cy, g:sai((t - t0) / 350), gl:sai((t - t0 - 300) / 250), gr:sai((t - t0 - 450) / 220) };
-  }).filter(v => v.g > 0);
-  G.lupasVis = vis.map(v => ({ id:v.q.id, x:v.x, y:v.y, r:L.r, img:v.q.p, nivel:v.q.nivel, nome:v.q.nome }));   // para conferir (teste)
+  const L = G.lupasLay, a = escala(f, f.z);
+  const pos = q => { const raw = naTela(f, q.p); return { x:lim(raw.x, L.r + 10, W - L.r - 10), y:lim(raw.y, TOPO + L.r + 10, H - L.r - 10) }; };
+  G.lupasPos = L.postos.map(q => ({ id:q.id, ...pos(q), r:L.r }));   // onde tocar no rosto
+  const q = G.foco && L.postos.find(x => x.id === G.foco);
+  if (!q) return L.postos.length > 0;   // sem foco: a foto limpa (e sem a faixa verde)
+  const t = agora - (G.focoT || 0), { x, y } = pos(q);
+  const v = { q, x, y, g:sai(t / 300), gl:sai((t - 200) / 220), gr:sai((t - 320) / 200) };
+  G.lupasVis = [{ id:q.id, x, y, r:L.r, img:q.p, nivel:q.nivel, nome:q.nome }];   // para conferir (teste)
   const al = .5 * sai(t / 300);
-  if (al > 0){
-    ctx.fillStyle = `rgba(4,7,6,${al.toFixed(3)})`; ctx.beginPath(); ctx.rect(0, 0, W, H);
-    vis.forEach(v => { const rr = L.r * v.g; ctx.moveTo(v.x + rr, v.y); ctx.arc(v.x, v.y, rr, 0, Math.PI * 2, true); });
-    ctx.fill('evenodd');
+  ctx.fillStyle = `rgba(4,7,6,${al.toFixed(3)})`; ctx.beginPath(); ctx.rect(0, 0, W, H);
+  const rr = L.r * v.g; ctx.moveTo(x + rr, y); ctx.arc(x, y, rr, 0, Math.PI * 2, true);
+  ctx.fill('evenodd');
+  lupa(ctx, f, v, L.r, a);
+  return true;
+}
+function focar(id){
+  if (!G || !['prep', 'conta', 'rec'].includes(G.estado)) return;
+  const c = (G.o.blocos[G.bloco] || {}).cena; if (!c || c.tipo !== 'foto' || !(c.lupas || []).some(l => l.id === id)) return;
+  if (G.rosto && G.rosto.estado === 'ok' && G.foto !== G.rosto.k){ G.foto = G.rosto.k; G.anel = null; D.fotos.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.f === G.foto))); }   // as lupas são da foto de frente
+  G.foco = G.foco === id ? null : id; G.focoT = performance.now();
+  if (G.foco) G.focos = (G.focos || 0) + 1;
+  botoesFoco(); nota();
+}
+function botoesFoco(){
+  const c = (G.o.blocos[G.bloco] || {}).cena, ls = c && c.tipo === 'foto' ? c.lupas || [] : [];
+  const k = G.bloco + '|' + ls.map(l => l.id).join(',');
+  if (D.foco.dataset.k !== k){
+    D.foco.dataset.k = k;
+    D.foco.innerHTML = ls.map((l, i) => `<button type="button" class="ga-foco-b" data-id="${esc(l.id)}" aria-pressed="false"><kbd>${i + 1}</kbd><b>${esc(l.nome)}</b><small>${esc(GRAU[l.nivel] || '')}</small></button>`).join('');
   }
-  vis.forEach(v => lupa(ctx, f, v, L.r, a));
-  return L.postos.length > 0;
+  D.foco.hidden = !ls.length || G.estado === 'rev' || G.estado === 'fim';
+  D.foco.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === G.foco)));
 }
 // pedaço da imagem com a origem dentro dos limites (o Safari não desenha nada se a origem sai da imagem)
 function pedaco(ctx, img, sx, sy, sw, sh, dx, dy, dw, dh){
@@ -456,7 +483,7 @@ function pedaco(ctx, img, sx, sy, sw, sh, dx, dy, dw, dh){
   ctx.drawImage(img, x0, y0, x1 - x0, y1 - y0, dx + (x0 - sx) * kx, dy + (y0 - sy) * ky, (x1 - x0) * kx, (y1 - y0) * ky);
 }
 function lupa(ctx, f, v, r0, a){
-  const r = r0 * v.g, { x, y } = v, q = v.q, cor = COR_GRAU[q.nivel] || AMARELO;
+  const r = r0 * v.g, { x, y } = v, q = v.q, cor = AMARELO;   // 14/11: uma cor só (o grau não vai ao vídeo)
   // dentro: o que está sob a lupa, aumentado
   const ix = (x - f.z.ox) / a, iy = (y - f.z.oy) / a, m = r / (a * LUPA_X);
   ctx.save(); ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.clip();
@@ -484,8 +511,7 @@ function lupa(ctx, f, v, r0, a){
   ctx.fillStyle = 'rgba(6,10,9,.86)'; caixa(ctx, bx, by, R.w, R.h, 12); ctx.fill();
   ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.stroke();
   ctx.textAlign = 'left'; ctx.textBaseline = 'top';
-  ctx.fillStyle = '#fff'; ctx.font = `700 30px ${FONTE}`; ctx.fillText(q.nome, bx + 16, by + 11);
-  ctx.fillStyle = cor; ctx.font = `600 25px ${FONTE}`; ctx.fillText(GRAU[q.nivel] || '', bx + 16, by + 49);
+  ctx.fillStyle = '#fff'; ctx.font = `700 32px ${FONTE}`; ctx.fillText(q.nome, bx + 18, by + 13);
   ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
 }
 
@@ -639,6 +665,157 @@ function cenaExemplo(ctx, c, t){
   return true;
 }
 
+// 14/11 (pedido do Lucca: "mostrar brevemente uma explicação da pele sobre um ponto mais específico, como a formação das
+// manchas, das linhas de expressão, da face caída; em um segundo momento, o mecanismo dos consertos"): a pele em corte, de
+// traço fino. tema = manchas | linhas | firmeza; fase = forma (como aparece) | conserta (como se trabalha).
+//  - manchas: a luz chega na célula do pigmento, o pigmento sobe e junta num ponto; conserta: o protetor com cor barra a luz
+//    e parte do pigmento some (nunca tudo: sem promessa);
+//  - linhas: a rede de colágeno afina e a pele dobra; conserta: o protetor e fibras novas (a dobra fica como está);
+//  - firmeza: a rede afina e a gordura desce; conserta: a rede protegida para de afinar.
+// No pé: "Esquema. Varia de pessoa para pessoa." Fontes no estoque (pele-idade.mecanismo.f).
+const MEC = { x0:50, x1:670, sup:520, jun:612, base:870, sol:{ x:596, y:356 } };
+const PIG = '#c98a4b';
+function cenaMecanismo(ctx, c, t){
+  const M = MEC, tema = c.tema, cons = c.fase === 'conserta', ent = sai(t / 400);
+  escurece(ctx, .94 * sai(t / 250));
+  ctx.globalAlpha = ent; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#fff'; ctx.font = `700 44px ${FONTE}`;
+  quebra(ctx, c.titulo || '', 620, 2).forEach((l, i) => ctx.fillText(l, M.x0, 222 + i * 52));
+  ctx.fillStyle = cons ? VERDE : AMARELO; ctx.fillRect(M.x0, 222 + 18, 64, 3);
+  // o quanto o dano andou (0 a 1), a dobra, a descida e o escudo
+  const q = tema === 'manchas' ? 0 : cons ? (tema === 'firmeza' ? .7 : 1) : sai((t - 1200) / 2400);
+  const dobra = tema === 'linhas' ? 40 * q : 0, cai = tema === 'firmeza' ? 30 * q : 0;
+  const esc = cons ? sai((t - 400) / 600) : 0;
+  const u = x => (x - M.x0) / (M.x1 - M.x0);
+  const des = x => dobra * Math.exp(-(((x - 360) / 26) ** 2)) + cai * (.5 - .5 * Math.cos(Math.PI * lim(u(x), 0, 1)));
+  const ySup = x => M.sup + des(x), yJun = x => M.jun + 12 * Math.sin((x - M.x0) / 34) + .5 * des(x);
+  // derme e epiderme
+  ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.beginPath(); ctx.moveTo(M.x0, yJun(M.x0));
+  for (let x = M.x0; x <= M.x1; x += 6) ctx.lineTo(x, yJun(x));
+  ctx.lineTo(M.x1, M.base); ctx.lineTo(M.x0, M.base); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(240,190,150,.24)'; ctx.beginPath(); ctx.moveTo(M.x0, ySup(M.x0));
+  for (let x = M.x0; x <= M.x1; x += 6) ctx.lineTo(x, ySup(x));
+  for (let x = M.x1; x >= M.x0; x -= 6) ctx.lineTo(x, yJun(x));
+  ctx.closePath(); ctx.fill();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 1.5; ctx.beginPath();
+  for (let x = M.x0; x <= M.x1; x += 6) x === M.x0 ? ctx.moveTo(x, yJun(x)) : ctx.lineTo(x, yJun(x));
+  ctx.stroke();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.beginPath();
+  for (let x = M.x0; x <= M.x1; x += 4) x === M.x0 ? ctx.moveTo(x, ySup(x)) : ctx.lineTo(x, ySup(x));
+  ctx.stroke();
+  // gordura do rosto (firmeza): desce com o dano
+  if (tema === 'firmeza'){
+    const gy = M.base - 46 + 44 * q;
+    ctx.fillStyle = 'rgba(255,214,10,.16)'; ctx.strokeStyle = 'rgba(255,214,10,.75)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(360, gy, 170, 34, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  }
+  // rede de colágeno: fios ondulados; com o dano, mais finos e interrompidos
+  const fio = (y0, k, cor, lw, ate) => { ctx.strokeStyle = cor; ctx.lineWidth = lw; ctx.beginPath();
+    for (let x = M.x0 + 14; x <= ate; x += 6){ const y = y0 + 9 * Math.sin((x - M.x0) / 19 + k * 1.3) + .3 * des(x); x === M.x0 + 14 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+    ctx.stroke(); };
+  const nF = tema === 'firmeza' ? 5 : 7, aF = tema === 'manchas' ? .22 : .85 - .4 * q;
+  ctx.setLineDash(q > .02 ? [70 * (1 - q) + 18, 4 + 16 * q] : []);
+  for (let k = 0; k < nF; k++) fio(M.jun + 44 + k * 30, k, `rgba(90,184,255,${aF.toFixed(2)})`, 4.5 * (1 - .5 * q), M.x1 - 14);
+  ctx.setLineDash([]);
+  if (cons && tema === 'linhas'){   // fibras novas, verdes, entrando da esquerda para a direita
+    for (let k = 0; k < 3; k++){ const n = sai((t - 1400 - k * 500) / 1500); if (n > 0) fio(M.jun + 59 + k * 60, k + 4, VERDE, 4.5, M.x0 + 14 + (M.x1 - M.x0 - 28) * n); }
+  }
+  // sol e raios (param no escudo, se houver)
+  const rs = sai((t - 500) / 700);
+  ctx.globalAlpha = ent; icone(ctx, 'sol', M.sol.x, M.sol.y, 92, AMARELO);
+  const alvos = tema === 'manchas' ? [300, 360, 420] : [200, 280, 440];
+  const yEsc = x => M.sup - 44 - 46 * Math.sin(Math.PI * lim((x - 120) / 480, 0, 1));
+  if (rs > 0){
+    ctx.strokeStyle = 'rgba(255,214,10,.85)'; ctx.lineWidth = 3; ctx.setLineDash([10, 9]);
+    alvos.forEach(ax => {
+      const ay = ySup(ax), dx = ax - M.sol.x, dy = ay - M.sol.y, n = Math.hypot(dx, dy), x0 = M.sol.x + dx / n * 50, y0 = M.sol.y + dy / n * 50;
+      let k = rs;
+      if (esc > 0){ let lo = 0, hi = 1; for (let i = 0; i < 12; i++){ const m = (lo + hi) / 2, xx = x0 + (ax - x0) * m, yy = y0 + (ay - y0) * m; if (yy < yEsc(xx)) lo = m; else hi = m; } k = Math.min(rs, lo + (1 - lo) * (1 - esc)); }
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + (ax - x0) * k, y0 + (ay - y0) * k); ctx.stroke();
+      if (!cons && tema !== 'manchas' && rs >= 1){ ctx.globalAlpha = .35 * ent; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + dx / n * 120, ay + dy / n * 120); ctx.stroke(); ctx.globalAlpha = ent; }   // a luz entra até a rede
+    });
+    ctx.setLineDash([]);
+  }
+  if (esc > 0){   // o escudo: o protetor por cima da pele
+    ctx.strokeStyle = VERDE; ctx.lineWidth = 10; ctx.beginPath();
+    const ate = 120 + 480 * esc; for (let x = 120; x <= ate; x += 8) x === 120 ? ctx.moveTo(x, yEsc(x)) : ctx.lineTo(x, yEsc(x));
+    ctx.stroke();
+  }
+  // manchas: a célula do pigmento e o pigmento que sobe e junta
+  if (tema === 'manchas'){
+    [200, 360, 520].forEach(x => { const y = yJun(x) - 4; ctx.strokeStyle = PIG; ctx.lineWidth = 3.5;
+      [-2.2, -1.57, -.94].forEach(a => { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 28 * Math.cos(a), y + 28 * Math.sin(a)); ctx.stroke(); });
+      ctx.fillStyle = PIG; ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill(); });
+    const N = 24, fica = 9;
+    for (let k = 0; k < N; k++){
+      const tx = 360 + ((k * 37) % 92 - 46), ty = M.sup + 16 + (k * 53) % 44;
+      const p = cons ? 1 : sai((t - 1400 - k * 90) / 700); if (p <= 0) continue;
+      const some = cons && k >= fica ? 1 - sai((t - 1500 - (N - k) * 110) / 800) : 1; if (some <= 0) continue;
+      ctx.globalAlpha = ent * some; ctx.fillStyle = '#b0703a';
+      ctx.beginPath(); ctx.arc(360 + (tx - 360) * p, yJun(360) - 14 + (ty - yJun(360) + 14) * p, 5.5, 0, Math.PI * 2); ctx.fill();
+    }
+    const sp = cons ? 1 - .45 * sai((t - 1800) / 1900) : sai((t - 2600) / 1200);
+    if (sp > 0){ ctx.globalAlpha = ent * .92; ctx.fillStyle = 'rgba(150,90,45,.95)'; ctx.beginPath(); ctx.ellipse(360, M.sup + 1, 64 * sp, 9 * sp, 0, 0, Math.PI * 2); ctx.fill(); }
+  }
+  // rótulos (poucos, de traço fino)
+  const rot = (txt, x, y, ax, ay, a, cor) => { if (a <= 0) return; ctx.globalAlpha = ent * a;
+    ctx.font = `600 27px ${FONTE}`; const w = ctx.measureText(txt).width, acima = y < ay;   // a linha sai do fim do texto (rótulo de cima) ou do alto dele (rótulo de baixo): nunca por cima das letras
+    const lx = acima ? (ax >= x + w ? x + w + 8 : x + w / 2) : lim(ax, x + 8, x + w - 8), ly = acima ? (ax >= x + w ? y - 9 : y + 8) : y - 30;
+    ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(ax, ay); ctx.stroke();
+    ctx.fillStyle = cor || '#fff'; ctx.fillText(txt, x, y); };
+  const yR = M.base + 48;
+  if (tema === 'manchas'){
+    rot('célula do pigmento', M.x0, yR, 200, yJun(200) + 12, sai((t - 300) / 400));
+    if (!cons) rot('mancha', M.x0 + 4, M.sup - 34, 300, M.sup - 2, sai((t - 3000) / 500), AMARELO);
+    else { rot('protetor com cor', M.x0 + 4, M.sup - 118, 190, yEsc(190) - 6, esc, VERDE); rot('creme prescrito', 392, yR, 372, M.sup + 40, sai((t - 1700) / 500), VERDE); }
+  } else {
+    rot('rede de colágeno', M.x0, yR, 150, M.jun + 80, sai((t - 300) / 400), AZUL);
+    if (tema === 'linhas' && !cons) rot('linha', M.x0 + 4, M.sup - 34, 344, M.sup + 14, sai((t - 2600) / 500), AMARELO);
+    if (tema === 'firmeza') rot('gordura do rosto', 400, yR, 430, M.base - 20 + 44 * q, sai((t - 600) / 400), AMARELO);
+    if (cons){ rot(tema === 'linhas' ? 'protetor' : 'luz, cigarro e açúcar alto: barrados', M.x0 + 4, M.sup - 118, 190, yEsc(190) - 6, esc, VERDE);
+      if (tema === 'linhas') rot('colágeno novo', 400, yR, 430, M.jun + 119, sai((t - 1900) / 500), VERDE); }
+  }
+  // pé: ao lado da câmera
+  ctx.globalAlpha = ent; ctx.fillStyle = APAGADO; ctx.font = `500 20px ${FONTE}`;
+  ctx.fillText('Esquema. Varia de pessoa para pessoa.', 24, CIRC.cy - CIRC.r + 40);
+  ctx.globalAlpha = 1;
+  return true;
+}
+// 14/11 (o Lucca sobre o cartão "O que importa aos 45": "a imagem tá uma merda, esse card com esses pontos"): o caminho em
+// frentes, uma embaixo da outra numa linha só, cada uma com o seu número; no fim, o contraste "Com acompanhamento, fica simples."
+function cenaCaminho(ctx, c, t){
+  const ps = (c.passos || []).slice(0, 5); if (!ps.length) return false;
+  escurece(ctx, .94 * sai(t / 250));
+  const x0 = 50, xn = 96, y0 = 350, passo = Math.min(124, (880 - y0) / Math.max(1, ps.length - 1 || 1)), ent = sai(t / 350);
+  ctx.globalAlpha = ent; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#fff'; ctx.font = `700 52px ${FONTE}`; ctx.fillText(c.titulo || 'O caminho', x0, 232);
+  ctx.fillStyle = AMARELO; ctx.fillRect(x0, 250, 64, 3);
+  const ult = sai((t - 300 - (ps.length - 1) * 550) / 400), yFim = y0 + (ps.length - 1) * passo;
+  const anda = lim((t - 300) / (Math.max(1, ps.length - 1) * 550), 0, 1);
+  ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(xn, y0); ctx.lineTo(xn, y0 + (yFim - y0) * anda); ctx.stroke();
+  ps.forEach((p, k) => {
+    const g = sai((t - 300 - k * 550) / 350); if (g <= 0) return;
+    const y = y0 + k * passo;
+    ctx.globalAlpha = g;
+    ctx.fillStyle = '#0b100e'; ctx.beginPath(); ctx.arc(xn, y, 27, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = AMARELO; ctx.beginPath(); ctx.arc(xn, y, 27, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = AMARELO; ctx.font = `700 28px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(k + 1), xn, y + 1);
+    ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = `650 37px ${FONTE}`;
+    const ls = quebra(ctx, p.t || '', W - 160 - 30, 2), dy = ls.length > 1 ? -21 : 0;
+    ls.forEach((l, i) => ctx.fillText(l, 152 + (1 - g) * 18, y + dy + i * 43 + 1));
+    ctx.textBaseline = 'alphabetic';
+  });
+  if (ult > 0 && c.fim){   // o contraste, depois da última frente
+    const tf = sai((t - 900 - (ps.length - 1) * 550) / 400); ctx.globalAlpha = tf;
+    ctx.font = `700 30px ${FONTE}`; const larg = CIRC.cx - CIRC.r - 18 - 24, ls = quebra(ctx, c.fim, larg - 36, 2), h = ls.length * 40 + 26, yb = H - 24 - h;
+    ctx.fillStyle = 'rgba(13,106,77,.96)'; caixa(ctx, 24, yb, larg, h, 18); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.textBaseline = 'top'; ls.forEach((l, i) => ctx.fillText(l, 42, yb + 15 + i * 40)); ctx.textBaseline = 'alphabetic';
+  }
+  ctx.globalAlpha = 1;
+  return true;
+}
+
 // ---------- teleprompter (só DOM) ----------
 function prompter(){
   const bs = G.o.blocos, b = bs[G.bloco] || { titulo:'', fala:'' }, n = bs.length;
@@ -660,8 +837,9 @@ function prompter(){
   D.pDep.textContent = G.bloco < n - 1 ? String(bs[G.bloco + 1].fala || '').replace(/\[[^\]]*\]/g, ' ').replace(/\{nome\}/g, '').replace(/\s+/g, ' ').replace(/^[\s,]+/, '').trim() : '';
   cabeTexto();
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
-  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
   marcaTempo();
+  botoesFoco();
   nota();
 }
 // 13/11 (d-20261113-narrativa-analise-todas-iscas): o rótulo do bloco 1 (o incômodo ou objetivo nas palavras dela) em destaque
@@ -708,6 +886,7 @@ function estado(e){
   D.rec.disabled = e === 'prep' && (!G.pronto || !!G.aguarda);
   D.fotos.querySelectorAll('button').forEach(b => { b.disabled = rev; });
   D.zoom.disabled = rev; D.cami.disabled = rev || !G.cam;
+  botoesFoco();
   nota();
 }
 
@@ -873,7 +1052,7 @@ function terminou(g){
   info(`${mmss(g.take.ms)} · ${fmtMB(blob.size)} · ${extOf(type)}. Assista antes de mandar.`);
   duracao(g.take).then(d => { if (G && G.take && G.take.url === url){ G.take.dur = d; confere(G.take); } });
   diag('fim', g);
-  window.USO?.sinal('gravacao-fim', { ms:g.ms || 0, anel:g.anelUsos || 0, pinca:g.pincas || 0, blocos:(g.blocosVistos || new Set()).size,
+  window.USO?.sinal('gravacao-fim', { ms:g.ms || 0, anel:g.anelUsos || 0, pinca:g.pincas || 0, foco:g.focos || 0, blocos:(g.blocosVistos || new Set()).size,
     ms_blocos:(g.msBlocos || []).map(Math.round), bloco_fim:g.blocoFim ?? g.bloco, salto_fecho:!!g.saltou });   // 13/11: sem precisar do vídeo
 }
 // duração real do arquivo (o webm do Chrome vem com Infinity até buscar o fim)
@@ -960,7 +1139,7 @@ function baixou(ev){
     return;
   }
   if (G.ptrs.size === 1){
-    G.gesto = null;
+    G.gesto = null; G.tap = { t:performance.now(), x:p.x, y:p.y };
     clearTimeout(G.seguraT);
     G.seguraT = setTimeout(() => { if (G && G.ptrs.size === 1 && !G.gesto){ const q = [...G.ptrs.values()][0]; G.anel = { x:q.x, y:q.y, ativo:true, solto:0 }; G.anelUsos = (G.anelUsos || 0) + 1; } }, 160);
   }
@@ -981,8 +1160,13 @@ function moveu(ev){
 }
 function soltou(ev){
   if (!G || !G.ptrs.has(ev.pointerId)) return;
+  const fim = G.ptrs.get(ev.pointerId), tp = G.tap; G.tap = null;
   G.ptrs.delete(ev.pointerId);
   clearTimeout(G.seguraT);
+  if (tp && ev.type === 'pointerup' && !G.gesto && performance.now() - tp.t < 300 && Math.hypot(fim.x - tp.x, fim.y - tp.y) < 24){   // 14/11: toque curto no ponto = foco
+    const alvo = (G.lupasPos || []).map(q => ({ q, d:Math.hypot(q.x - fim.x, q.y - fim.y) })).filter(o => o.d < o.q.r * 1.3).sort((a, b) => a.d - b.d)[0];
+    if (alvo) focar(alvo.q.id);
+  }
   if (G.ptrs.size < 2) G.gesto = null;
   if (G.ptrs.size === 1 && G.fotos[G.foto]){ /* sobrou um dedo depois da pinça: não vira anel */ }
   if (!G.ptrs.size && G.anel && G.anel.ativo){ G.anel.ativo = false; G.anel.solto = performance.now(); }
@@ -1000,6 +1184,7 @@ function liga(){
   const tocaTexto = ev => { if (!G || !['prep', 'rec'].includes(G.estado) || ev.target.closest('button')) return; D.prox.click(); };   // 13/11: o texto é o alvo grande
   D.pTxt.addEventListener('click', tocaTexto); D.pDep.addEventListener('click', tocaTexto);
   D.ant.onclick = () => { if (G && G.bloco > 0){ G.bloco--; prompter(); } };
+  D.foco.onclick = ev => { const b = ev.target.closest('button[data-id]'); if (b) focar(b.dataset.id); };
   D.fotos.onclick = ev => { const b = ev.target.closest('button[data-f]'); if (!b || !G) return; G.foto = +b.dataset.f; G.anel = null; D.fotos.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); nota(); };
   D.zoom.onclick = () => { const f = G && G.fotos[G.foto]; if (f && f.base) f.z = { ...f.base }; };
   D.cami.onclick = () => { if (!G || !G.cam) return; G.mostraCam = !G.mostraCam; D.cami.setAttribute('aria-pressed', String(G.mostraCam)); D.cam.style.visibility = G.mostraCam ? '' : 'hidden'; };
@@ -1024,6 +1209,7 @@ function liga(){
     if (!G) return;
     const vale = ['prep', 'rec'].includes(G.estado);
     if (ev.key === ' ' && vale && !ev.target.closest?.('input, textarea')){ ev.preventDefault(); if (document.activeElement?.closest?.('.ga')) document.activeElement.blur(); if (!ev.repeat) D.prox.click(); return; }   // 13/11: espaço avança (sem acionar o botão em foco)
+    if (/^[1-9]$/.test(ev.key) && vale && !ev.target.closest?.('input, textarea')){ const b = D.foco.querySelectorAll('button')[+ev.key - 1]; if (b && !D.foco.hidden){ ev.preventDefault(); focar(b.dataset.id); } return; }   // 14/11: 1, 2, 3 = foco
     if (ev.key === 'ArrowRight'){ ev.preventDefault(); D.prox.click(); }
     else if (ev.key === 'ArrowLeft'){ ev.preventDefault(); D.ant.click(); }
     else if (ev.key === 'Escape' && G.estado !== 'rec'){ ev.preventDefault(); D.fechar.click(); }
@@ -1049,7 +1235,7 @@ function diag(motivo, g){
 }
 
 // 13/11: o roteiro do Claude chegou com o gravador aberto e ainda sem gravar: troca os blocos e volta ao 1º
-function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; prompter(); return true; }
+function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; prompter(); return true; }
 // 13/11 19h45: o "Gravar análise" da lista abre o gravador na hora, com o Gravar segurado até o roteiro do Claude chegar (ou o prazo vencer)
 function liberar(){ if (!G || !G.aguarda) return; G.aguarda = false; if (G.estado === 'prep'){ estado('prep'); if (G.pronto) D.rec.focus(); } }
 return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo };

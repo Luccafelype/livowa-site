@@ -101,3 +101,17 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
   .ga-l2{max-width:640px}
 }
 @supports (height:100dvh){@media (min-width:700px){.ga{grid-template-columns:min(48vw,56.25dvh) minmax(0,1fr)}}}
+/* 14/11: o foco das lupas. Só aparece no vídeo a região que ele escolhe aqui (ou nas teclas 1, 2, 3; ou tocando no ponto do rosto) */
+.ga-foco{flex:none;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+.ga-foco[hidden]{display:none}
+.ga-foco-b{display:inline-flex;align-items:baseline;gap:7px;min-height:40px;padding:6px 12px;border-radius:12px;border:1.5px solid rgba(255,214,10,.55);background:transparent;color:#fff;font:650 .92rem/1.2 system-ui,-apple-system,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ga-foco-b kbd{font:700 .72rem ui-monospace,Menlo,monospace;color:#ffd60a;border:1px solid rgba(255,214,10,.5);border-radius:5px;padding:0 5px}
+.ga-foco-b small{font-weight:500;font-size:.76rem;color:#b7c7c0}
+.ga-foco-b[aria-pressed="true"]{background:#ffd60a;border-color:#ffd60a;color:#000}
+.ga-foco-b[aria-pressed="true"] kbd{color:#000;border-color:rgba(0,0,0,.4)}
+.ga-foco-b[aria-pressed="true"] small{color:rgba(0,0,0,.7)}
+.ga-foco-b:focus-visible{outline:2px solid #8fe0bd;outline-offset:2px}
+@media (pointer:coarse){.ga-foco-b kbd{display:none}}
+@media (max-width:699px){.ga-foco{flex-wrap:nowrap;overflow-x:auto;margin-top:5px;scrollbar-width:none}.ga-foco::-webkit-scrollbar{display:none}
+  .ga-foco-b{flex:none;min-height:34px;padding:3px 10px;font-size:.8rem;white-space:nowrap}.ga-foco-b small{display:none}}
+.ga-foco.aperto{display:none}
