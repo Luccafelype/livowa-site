@@ -518,7 +518,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <script src="uso.js?v=20261113y"></script>
 <script src="kits.js?v=20261114v5"></script>
 <script src="roteiro.js?v=20261114v5"></script>
-<script src="gravar-analise.js?v=20261114a"></script>
+<script src="gravar-analise.js?v=20261114b"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -1736,7 +1736,7 @@ function quadrosQuiz(b){
   const doc = new DOMParser().parseFromString(`<div>${detalhe(b.e)}</div>`, 'text/html');
   const ls = [...doc.querySelectorAll('.p2 .l, .l')].map(l => ({ rot:l.querySelector('span')?.textContent?.trim() || '', val:l.querySelector('b')?.textContent?.trim() || '' }))
     .filter(x => x.rot && x.val && !/^nome$/i.test(x.rot)).filter((x, k, a) => a.findIndex(y => y.rot === x.rot) === k).slice(0, 4);
-  return [{ chave:'resultado', rot:'Respostas', url:quadro(`${b.c?.titulo || 'Quiz'} · as respostas dela`, ls.length ? ls : [{ rot:'Respostas', val:'—' }]) }];
+  return [{ chave:'resultado', rot:'Respostas', url:quadro(`${b.c?.titulo || 'Quiz'} · suas respostas`, ls.length ? ls : [{ rot:'Respostas', val:'—' }]) }];
 }
 function kitBloco(e){
   const t = window.KITS && kitTeste(e); if (!t) return '';
@@ -2031,7 +2031,7 @@ async function blocosGravador(b){
   await carregaImporta();
   const blocos = passos.map(p => { const fala = KITS.preencher(p.fala, { ...(b.c?.vars || {}), nome:nome || null }).replace(/\[(APONTE|CIRCULAR):\s*([^\]]*)\]/gi, (m, t, x) => `[${t.toUpperCase()}: ${regiaoLupa(x)}]`);
     const cena = PI ? cenaPI(p.id, b, p, fala) : cenaOutro(p.id, b);
-    return { titulo:p.bloco, fala, tempo:p.tempo || null, faixa:PI ? faixaPI(p.id, b, p) : p.id === 'resultado' ? (b.c?.simples || null) : null, cena, notas:cena?.notas || [], destaque:p.rotulo || null }; });
+    return { titulo:p.bloco, fala, tempo:p.tempo || null, faixa:PI ? faixaPI(p.id, b, p) : p.id === 'resultado' ? faixaVideo(b) : null, cena, notas:cena?.notas || [], destaque:p.rotulo || null }; });
   return { blocos:await comExemplo(blocos), fonte:passos.some(p => p.claude) ? 'claude' : 'estoque' };
 }
 // 13/11 (d-20261113-exemplos-por-imagem): o exemplo do bloco 5 é imagem de estudo, de licença restrita, no bucket privado
@@ -2069,6 +2069,10 @@ async function comExemplo(blocos){
   }
   return out;
 }
+// 14/11 (mapa do vídeo): o que vai no quadro do vídeo fala com ela, nunca dela, e sem "frágil" (o resultado dela nunca mostrou essa palavra)
+const paraLead = t => t == null ? t : String(t).replace(/faixa pré-frágil/gi, 'abaixo do esperado').replace(/faixa frágil/gi, 'bem abaixo do esperado')
+  .replace(/\(tem (\d+)\)/g, '(você tem $1)').replace(/; tem (\d+) anos/g, '; você tem $1 anos');
+const faixaVideo = b => b.t === 'quiz-emagrecimento' || b.t === 'quiz-longevidade' ? null : paraLead(b.c?.simples || null);   // nos quizzes o quadro já mostra as respostas
 // 13/11: fora da pele nova, a cena do bloco 2 é a régua (o número do teste ao lado da idade dela), quando os dois são números
 function cenaOutro(id, b){
   if (id !== 'resultado' && id !== 'cl-idade') return null;
@@ -2193,7 +2197,7 @@ function quadrosMov(b){
       { chave:'resultado', rot:'Resultado', url:quadro('Idade muscular · teste do braço', [
         { rot:'Movimentos em 10 segundos', val:n0(m.roscas), grande:true },
         { rot:'Velocidade média do cotovelo', val:m.v ? `${n0(m.v)} °/s` : '—' },
-        { rot:'Idade muscular estimada', val:m.faixaTxt || '—', cor:COR_Q[c.faixa] },
+        { rot:'Idade muscular estimada', val:paraLead(m.faixaTxt) || '—', cor:COR_Q[c.faixa] },
         { rot:'Idade de verdade', val:d.idade ? `${d.idade} anos` : 'não informou' },
       ], c.faixa ? `Faixa ${c.faixa} de 4 · ${c.titulo}. Estimativa comparada com estudos de população; não é diagnóstico.` : '') },
       { chave:'referencia', rot:'Referência', url:quadro('Referência · teste do braço', [
