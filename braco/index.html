@@ -71,10 +71,12 @@ p{margin:0}
 
 /* permissão do sensor */
 .screen.c{text-align:center}
-.sensor-ill{width:min(190px,50vw);height:auto;margin:16px auto 0;display:block;overflow:visible}
-.sensor-ill .antebraco{transform-box:view-box;transform-origin:80px 140px;animation:cotovelo 1.5s ease-in-out infinite alternate}
-@keyframes cotovelo{from{transform:rotate(-12deg)}to{transform:rotate(-138deg)}}
-@media (prefers-reduced-motion:reduce){.sensor-ill .antebraco{animation:none;transform:rotate(-75deg)}}
+/* 15/11 (Lucca): no lugar do boneco desenhado, o homem das telas anteriores (o mesmo vídeo, recortado da cabeça à coxa:
+   470 × 700 px a partir de 70,15 do quadro de 540 × 1278) e, por cima, as linhas que acompanham o celular (canvas) */
+.sensor-foto{position:relative;height:clamp(210px,42vh,340px);aspect-ratio:470/700;margin:6px auto 0;border-radius:22px;overflow:hidden;background:#e8e6e2;border:1px solid var(--line)}
+.sensor-foto.menor{height:clamp(180px,33vh,300px)}   /* "Sensor liberado": o texto de baixo é mais comprido e tem de caber acima do botão */
+.sensor-foto video{position:absolute;left:-14.894%;top:-2.143%;width:114.894%;height:auto;aspect-ratio:540/1278;display:block}
+.sensor-foto canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .ok-sensor{display:inline-flex;align-self:center;align-items:center;gap:8px;background:var(--accent-2);color:var(--accent);border-radius:999px;padding:8px 16px;font:600 .95rem var(--body)}
 
 /* medição */
@@ -106,14 +108,12 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .cadeado{position:absolute;inset:0;display:grid;place-items:center;padding:16px}
 .cadeado div{display:flex;align-items:center;gap:10px;background:var(--fg);color:#fff;border-radius:999px;padding:10px 16px;font:600 .92rem var(--body)}
 .cadeado svg{width:18px;height:18px;flex:none}
-.cod-ref{color:var(--muted);font-size:.88rem}
 .logo-anim{display:block;width:min(170px,44vw);height:auto;margin:20px auto 0;mix-blend-mode:darken}
 .loadrow{display:flex;justify-content:space-between;font:600 .82rem var(--body);letter-spacing:.02em;margin-top:14px}
 .loadbar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
 .loadbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s ease}
-.cod-ref b{font:600 .88rem var(--mono);color:var(--fg);letter-spacing:.04em;white-space:nowrap}
 
-/* 02/11: o mesmo fim da pele2 (capa com o médico, resultado com um botão só, tela final de um passo) */
+/* 02/11: o mesmo fim da pele2 (capa com o médico, resultado com um botão só); 15/11: sem a tela final de um passo */
 .medico{display:flex;gap:14px;align-items:center}
 .medico img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--surface);box-shadow:0 2px 12px rgba(0,0,0,.12);flex:none}
 .medico b{display:block;font:700 1.1rem var(--display)}
@@ -127,18 +127,22 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .medida b{font:800 1.7rem/1.15 var(--display);color:var(--accent)}
 .res-txt{font-size:1.02rem;text-align:left}
 .res-txt b{font-weight:600}
-.screen.fim{gap:14px}
-.f-acao{display:flex;flex-direction:column;gap:8px;margin-top:6px}
-.f-nota{text-align:center;font-size:.88rem;color:var(--muted)}
 .link-alt{align-self:center;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 12px;background:none;border:0;cursor:pointer;color:var(--accent);font:600 .95rem var(--body);text-decoration:underline;text-underline-offset:3px}
-.screen.fim .cod-ref{margin-top:auto;text-align:center;font-size:.8rem;padding-top:4px}
-.screen.fim{padding-bottom:24px}
-/* 09/11 (Lucca): prazo da análise sem custo (30 min do 1º resultado). Discreto: corpo normal + relógio pequeno, algarismos tabulares */
-.prazo{font-size:.98rem;line-height:1.4;text-align:center;text-wrap:balance;margin:0 0 4px}
-.prazo-rel{display:block;margin-top:2px;font:600 .88rem var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
-.prazo.acabou{color:var(--muted)}
-.prazo-mini{text-align:center;font:500 .88rem var(--body);color:var(--muted);font-variant-numeric:tabular-nums}
+/* 09/11 (Lucca): prazo da análise sem custo (30 min do 1º resultado), junto do botão. Discreto, algarismos tabulares */
+.prazo-mini{text-align:center;font:500 .88rem var(--body);color:var(--muted);font-variant-numeric:tabular-nums;text-wrap:balance}
 .prazo-mini b{font:600 .88rem var(--mono);color:var(--accent)}
+/* 15/11 (Lucca): o resultado é a tela final. O botão abre o WhatsApp com a mensagem e o código; o Direct fica embaixo. */
+.screen.final{padding-bottom:226px}
+.cta.fim{padding-top:26px;background:linear-gradient(to top,var(--bg) 88%,transparent)}   /* barra mais alta (prazo + botão + Direct): o texto não aparece por trás */
+.cta .link-alt{min-height:40px;margin-top:-4px}
+#cta-link{font-size:min(1.08rem,4vw);padding-inline:12px;gap:8px}   /* a frase inteira numa linha em 375 px */
+.trava{cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* 15/11 (Lucca): tocou no resultado trancado → tudo embaça, menos o botão, e volta devagar (3 s) */
+@keyframes desembaca{0%{filter:blur(0)}7%,22%{filter:blur(9px)}100%{filter:blur(0)}}
+body.foco [data-s="resultado"]>*,body.foco #r-prazo,body.foco #cta-dm{animation:desembaca 3s linear both}
+@keyframes chama{0%{box-shadow:0 0 0 0 rgba(13,106,77,.5)}70%,100%{box-shadow:0 0 0 16px rgba(13,106,77,0)}}
+body.foco #cta-link{animation:chama 1.1s ease-out 2}
+@media (prefers-reduced-motion:reduce){body.foco #cta-link{animation:none}}
 
 .cta{position:fixed;left:0;right:0;bottom:0;padding:14px max(20px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
   background:linear-gradient(to top,var(--bg) 70%,transparent)}
@@ -181,8 +185,8 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
     <div class="anim mini-anim" aria-hidden="true"><video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video></div>
     <ol class="steps">
       <li><em>1</em><span>Fique em pé e segure o celular muito firme na mão.</span></li>
-      <li><em>2</em><span>Dobre e estique o cotovelo o mais rápido que conseguir, com o punho firme, igual ao movimento mostrado acima.</span></li>
-      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 10 segundos, sem parar. Um bip avisa o começo; dois bips, o fim.</span></li>
+      <li><em>2</em><span>Dobre e estique o cotovelo o mais rápido que conseguir, com a mão firme, igual ao movimento mostrado acima.</span></li>
+      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 10 segundos, sem parar. A tela verde avisa o começo; dois bips e outra tela verde indicam o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
   </section>
@@ -201,30 +205,17 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   </section>
 
   <section class="screen c" data-s="sensor" data-p="60" hidden>
-    <!-- 09/11 (Lucca: o celular parado com arcos não dava a ideia de movimento): braço de lado, o antebraço com o celular
-         na mão dobra e estica no cotovelo, em loop. O mesmo desenho serve para "Sensor liberado". -->
-    <svg class="sensor-ill" viewBox="0 0 200 245" aria-hidden="true">
-      <defs><marker id="seta" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.2" markerHeight="3.2" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--accent)"/></marker></defs>
-      <path d="M124 234.3A104 104 0 0 0 165.2 80.3" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 11" marker-start="url(#seta)" marker-end="url(#seta)"/>
-      <circle cx="70" cy="20" r="17" fill="var(--line)"/>
-      <rect x="42" y="40" width="50" height="150" rx="24" fill="var(--line)"/>
-      <path d="M80 58V138" stroke="var(--muted)" stroke-width="17" stroke-linecap="round"/>
-      <!-- 11/11 23h (Lucca: “eu queria só que os semicírculos do celular ficassem melhores”): o oval da mão cobria o meio
-           do celular e deixava duas meias-luas brancas. Agora: punho fechado arredondado no fim do antebraço e o celular
-           saindo dele, com proporção de iPhone (24 × 49, ~1:2), moldura escura, tela branca e a ilha no alto -->
-      <g class="antebraco">
-        <path d="M80 140V183" stroke="var(--muted)" stroke-width="14" stroke-linecap="round"/>
-        <rect x="68" y="185" width="24" height="49" rx="5.5" fill="var(--fg)"/>
-        <rect x="70.4" y="187.4" width="19.2" height="44.2" rx="3.6" fill="var(--surface)"/>
-        <rect x="76.5" y="228" width="7" height="2.3" rx="1.15" fill="var(--fg)"/>
-        <rect x="63.5" y="182" width="33" height="21" rx="8.5" fill="var(--muted)"/>
-      </g>
-      <circle cx="80" cy="140" r="7" fill="var(--surface)" stroke="var(--muted)" stroke-width="3"/>
-    </svg>
+    <!-- 15/11 (Lucca, lote l-mwhz04rg: “seria melhor pegar a imagem do cara das páginas anteriores e colocar um motion de
+         movimento no celular, com linhas acompanhando o celular”): o vídeo real do movimento, recortado no braço, e um
+         rastro desenhado por cima que segue o celular quadro a quadro (script: RASTRO). Serve também para "Sensor liberado". -->
+    <div class="sensor-foto" id="sensor-foto" aria-hidden="true">
+      <video id="sensor-video" src="img/movimento.mp4" poster="img/movimento.jpg" muted loop playsinline preload="auto"></video>
+      <canvas id="sensor-rastro"></canvas>
+    </div>
     <h2>Libere o sensor de movimento do celular</h2>
     <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o sensor de movimento. Toque em <b>Permitir</b>.</p>
     <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
-    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 10 segundos. Um bip avisa o começo; dois bips, o fim.</p>
+    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 10 segundos. A tela verde avisa o começo; dois bips e outra tela verde indicam o fim.</p>
   </section>
 
   <section class="screen" data-s="medir" data-p="80" hidden>
@@ -246,33 +237,21 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   </section>
 
   <!-- resultado (02/11, molde da pele2): o número continua só na conversa (decisão de 28/10); a tela repete o que foi
-       medido e cita as respostas. Um botão só: o Dr. Lucca explica em vídeo (02/11: o link do lembrete de 4 semanas saiu). -->
+       medido e cita as respostas. Um botão só: o Dr. Lucca explica (02/11: o link do lembrete de 4 semanas saiu).
+       15/11 (Lucca, lote l-mwhz04rg): esta é a TELA FINAL (a antiga 'fechar' saiu). O botão abre o WhatsApp com a mensagem
+       pronta e o código; o Direct fica embaixo; o código não aparece na tela (segue na mensagem e no banco).
+       Tocar no resultado trancado embaça tudo, menos o botão (script: FOCO). -->
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Teste concluído</span>
     <h2>Seu teste está <em>pronto</em></h2>
     <div class="medida"><span class="rot">O que o sensor mediu</span><b id="res-medida">0 movimentos em 10 s</b></div>
-    <div class="trava" aria-label="Resultado bloqueado: o Dr. Lucca explica">
+    <div class="trava" id="trava" aria-label="Resultado bloqueado: o Dr. Lucca explica">
       <span class="rot" id="res-rot">A sua idade muscular × a sua idade</span>
       <div class="regua" aria-hidden="true"><div class="trilho"></div><i class="a"></i><i class="b"></i><span style="left:38%">00 anos</span><span style="left:66%">00 anos</span></div>
       <div class="cadeado"><div><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>O Dr. Lucca te explica</div></div>
     </div>
     <p class="res-txt" id="res-txt1"></p>
     <p class="res-txt" id="res-txt2"></p>
-  </section>
-
-  <!-- tela final (02/11, molde da pele2): UM passo só, em 3ª pessoa. -->
-  <section class="screen fim" data-s="fechar" data-p="100" hidden>
-    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
-      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
-    <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado.</h2>
-    <div class="f-acao">
-      <!-- 09/11 (Lucca): urgência real, 30 min contados da 1ª vez que a pessoa vê o resultado (o relógio está no script, PRAZO) -->
-      <p class="prazo" id="f-prazo"><span id="f-prazo-txt">Envie a solicitação de análise para o Dr. Lucca. Se enviar nos próximos 30 minutos, será sem custo.</span> <span class="prazo-rel" id="f-prazo-rel">Faltam 30:00</span></p>
-      <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="f-wa-txt">Enviar meu código pelo WhatsApp</span></a>
-      <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
-      <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
-    </div>
-    <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b></span></p>
   </section>
 
   <section class="screen c" data-s="erro" data-p="60" hidden>
@@ -283,6 +262,8 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
   <div class="cta" id="cta-bar"><div>
     <p class="prazo-mini" id="r-prazo" hidden></p>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
+    <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span>Quero que o Dr. Lucca me explique</span></a>
+    <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><span>ou pelo Direct do Instagram</span></a>
   </div></div>
   <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
   <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
@@ -327,7 +308,7 @@ const DURACAO = 10000, ESPERA_MAX = 15000;   // 10 s (decisão do Lucca, 31/10);
 // 09/11: os 10 s (e o bip do começo) saem do 1º movimento; sem movimento em 15 s depois do toque, encerra com o aviso de erro.
 const ua = navigator.userAgent;
 const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
-const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro','fechar'];   // 'fechar' (02/11) no fim: não muda o número das outras etapas no Funil
+const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro'];   // 15/11: sem 'fechar' (o resultado é a tela final); era a última, o número das outras etapas no Funil não muda
 let cur = 'inicio', sexo = null, sensorOk = false;   // 02/11: sexo sem padrão (antes vinha Homem marcado)
 
 // ---------- rodinhas (iguais às do teste das pernas) ----------
@@ -367,28 +348,30 @@ document.querySelectorAll('[data-sexo]').forEach(b => b.addEventListener('click'
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
   document.documentElement.classList.toggle('medindo', s === 'medir');
-  if (s !== 'medir') document.body.classList.remove('valendo');
+  if (s !== 'medir'){ clearTimeout(verdeT); document.body.classList.remove('valendo'); }
+  if (s === 'sensor') rastroLigar(); else rastroDesligar();   // o vídeo do sensor só roda nessa tela (nada decodifica durante a medição)
   cur = s; const el = document.querySelector(`[data-s="${s}"]`);
   Analytics.track('step_view', { stepId:s, stepIndex:order.indexOf(s) });
   $('top').hidden = s === 'inicio' || s === 'medir' || s === 'analise' || s === 'resultado';
   $('progress').style.width = (el.dataset.p || 0) + '%';
   const cta = $('cta'); cta.hidden = false; cta.disabled = false; cta.classList.remove('off');
-  $('cta-bar').hidden = s === 'fechar';   // tela final: o botão mora na própria tela
+  $('cta-bar').classList.toggle('fim', s === 'resultado');
+  $('cta-link').hidden = $('cta-dm').hidden = s !== 'resultado';   // 15/11: no resultado (tela final) o botão é o link do WhatsApp, com o Direct embaixo
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Continuar'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); atualizarDados(); }   // sexo e os 2 números
   if (s === 'sensor') cta.textContent = sensorOk ? 'Começar' : 'Liberar o sensor';
   if (s === 'medir' || s === 'analise') cta.hidden = true;
-  // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
-  if (s === 'resultado'){ cta.textContent = 'Quero que o Dr. Lucca me explique'; iniciarPrazo(); }
+  // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu).
+  // 15/11: o botão já abre o WhatsApp com a mensagem pronta e o código (a tela 'fechar' saiu)
+  if (s === 'resultado'){ cta.hidden = true; iniciarPrazo(); $('cta-link').href = linkWA(); }
   pintarPrazo();   // a linha do prazo (junto do botão) só aparece no resultado
-  if (s === 'fechar') prepararFechamento();
   if (s === 'erro') cta.textContent = 'Tentar de novo';
   scrollTo(0, 0);
 }
 // iPhone: puxar a página para baixo recarrega o Safari e apagaria o teste; durante a medição o arraste fica desligado
 document.addEventListener('touchmove', e => { if (cur === 'medir') e.preventDefault(); }, { passive:false });
-$('back').addEventListener('click', () => { const i = order.indexOf(cur); show(cur === 'erro' ? 'sensor' : cur === 'fechar' ? 'resultado' : order[Math.max(0, i - 1)]); });
+$('back').addEventListener('click', () => { const i = order.indexOf(cur); show(cur === 'erro' ? 'sensor' : order[Math.max(0, i - 1)]); });
 $('cta').addEventListener('click', async () => {
   if (cur === 'inicio') return show('como');
   if (cur === 'como') return show('dados');
@@ -396,7 +379,6 @@ $('cta').addEventListener('click', async () => {
     if (faltam().length) return apontarDados();
     Analytics.track('answer', { stepId:'dados', valueText:'confirmado', props:{ idade:dados.idade, peso:dados.peso, como:Object.fromEntries(CHAVES.map(k => [k, confirmado[k] || 'padrao'])) } });
     return show('sensor'); }
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
   if (cur === 'sensor' && !sensorOk) return liberar();
   if (cur === 'sensor' || cur === 'erro') return sensorOk ? medir() : (show('sensor'));
 });
@@ -451,7 +433,7 @@ async function liberar(){
   await new Promise(r => setTimeout(r, 700));
   if (!hz.length){ Analytics.track('answer', { stepId:'sensor', valueText:'mudo', props:{ nav:NAV } }); return erro('O sensor não mandou leituras', NAV === 'instagram' ? 'Dentro do Instagram o sensor ficou mudo. ' + SAFARI : 'Toque em Tentar de novo.'); }
   sensorOk = true; Analytics.track('answer', { stepId:'sensor', valueText:'ok', props:{ nav:NAV, hz:hz.length } });
-  $('sensor-ok').hidden = false; $('sensor-prox').hidden = false; $('sensor-dica').hidden = true; show('sensor');
+  $('sensor-ok').hidden = false; $('sensor-prox').hidden = false; $('sensor-dica').hidden = true; $('sensor-foto').classList.add('menor'); show('sensor');
 }
 const vibrar = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
 let audio = null;
@@ -464,7 +446,7 @@ function medir(){
   try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume();   // libera o bip dentro do toque
         const o = audio.createOscillator(), g = audio.createGain(); g.gain.value = 0; o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + .05); } catch {}
   show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Pode começar: dobre e estique o cotovelo'; $('relogio').textContent = '10 s';
-  document.body.classList.add('valendo');
+  document.body.classList.add('valendo'); clearTimeout(verdeT); verdeAte = performance.now() + VERDE_MIN;
   amostras = []; picos = []; meias = []; estado = 0; picoAtual = 0; eixo = [1, 0, 0]; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
   clearTimeout(fim); fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 15 s, encerra
   clearInterval(relogioT); relogioT = setInterval(() => {
@@ -472,10 +454,14 @@ function medir(){
   }, 200);
 }
 
-// 1º movimento: bip, o fundo volta ao normal e os 10 s começam a contar
+// 1º movimento: bip, o fundo volta ao normal e os 10 s começam a contar.
+// 15/11 (Lucca: “A tela verde avisa o começo”): quem já sai mexendo via o verde por um instante só; agora ele fica no
+// mínimo VERDE_MIN na tela, contado do toque em Começar, mesmo que o movimento comece antes.
+const VERDE_MIN = 900; let verdeAte = 0, verdeT = null;
 function comecou(t){
   ini = t; clearTimeout(fim); fim = setTimeout(encerrar, DURACAO);
-  bip(); vibrar(60); document.body.classList.remove('valendo');
+  bip(); vibrar(60);
+  clearTimeout(verdeT); verdeT = setTimeout(() => { if (gravando) document.body.classList.remove('valendo'); }, Math.max(0, verdeAte - performance.now()));
   $('dica').textContent = 'Valendo! O máximo que conseguir, sem parar';
 }
 
@@ -484,7 +470,7 @@ const ALFA = 'ACDEFGHJKMNPQRTUVWXY34679';
 let codigo = null;
 function meuCodigo(){ if (!codigo){ const a = crypto.getRandomValues(new Uint8Array(4)); codigo = 'LV-' + [...a].map(x => ALFA[x % ALFA.length]).join(''); } return codigo; }
 function encerrar(){
-  if (!gravando) return; gravando = false; clearTimeout(fim); clearInterval(relogioT); bip(); setTimeout(bip, 420); vibrar([60, 60, 60]);
+  if (!gravando) return; gravando = false; clearTimeout(fim); clearTimeout(verdeT); clearInterval(relogioT); bip(); setTimeout(bip, 420); vibrar([60, 60, 60]);
   fechaMeia(); picos = meias;
   const reps = Math.floor(picos.length / 2);
   if (reps){ document.body.classList.add('valendo'); $('relogio').textContent = '0 s'; $('dica').textContent = 'Pronto! Pode parar'; }   // 09/11: fim dos 10 s = verde de novo
@@ -503,7 +489,6 @@ function encerrar(){
   const variab = amp.length > 2 ? Math.round(dp(amp) / media(amp) * 100) : null;
   const vmao = Math.max(...picos.filter((_, i) => i % 2 === 0).map(p => p.w)) * Math.PI / 180 * ANTEBRACO;
   setTimeout(() => analisar(() => {
-    $('res-cod').textContent = meuCodigo();
     // 02/11: a tela repete o que o sensor mediu (a pessoa viu o número subir) e cita as respostas dela em cada frase
     $('res-medida').textContent = `${reps} ${reps === 1 ? 'movimento' : 'movimentos'} em ${Math.round(DURACAO / 1000)}\u00a0s`;
     personalizar();
@@ -530,7 +515,7 @@ function analisar(fim){
 }
 // =====================================================================
 // FIM (02/11, molde da pele2): o resultado tem um botão só (o Dr. Lucca explica); o lembrete de 4 semanas saiu.
-// Tela final de um passo, em 3ª pessoa. Medição igual à pele2: cta_click com props.canal whatsapp/direct (é o que a
+// 15/11: o resultado é a tela final (sem a tela de um passo). Medição igual à pele2: cta_click com props.canal whatsapp/direct (é o que a
 // Caixa e o Funil contam como conversa) + props.escolha ('explicar') + props.codigo.
 // =====================================================================
 const escolha = () => 'explicar';
@@ -579,30 +564,21 @@ const noPrazo = () => { const r = prazoResta(); return r == null || r > 0; };
 const linhaPrazo = () => noPrazo() ? '(enviado no prazo da análise sem custo)' : '(enviado depois do prazo)';
 const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 function pintarPrazo(){
-  const r = prazoResta(), ok = r == null || r > 0;
-  $('r-prazo').hidden = cur !== 'resultado' || r == null || !ok;
+  const r = prazoResta(), ok = r == null || r > 0, el = $('r-prazo');
+  el.hidden = cur !== 'resultado' || r == null;
   if (r == null) return;
-  if (ok) $('r-prazo').innerHTML = `Análise sem custo se enviar em <b>${mmss(r)}</b>`;
-  $('f-prazo').classList.toggle('acabou', !ok);
-  const txt = ok ? 'Envie a solicitação de análise para o Dr. Lucca. Se enviar nos próximos 30 minutos, será sem custo.'
-                 : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
-  if ($('f-prazo-txt').textContent !== txt) $('f-prazo-txt').textContent = txt;
-  $('f-prazo-rel').hidden = !ok; $('f-prazo-rel').textContent = ok ? `Faltam ${mmss(r)}` : '';
-  if (cur === 'fechar') $('cta-link').href = linkWA();
+  // 15/11: vencido, a frase que ficava na antiga tela final passa para cá
+  if (ok) el.innerHTML = `Análise sem custo se enviar em <b>${mmss(r)}</b>`;
+  else el.textContent = 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  if (cur === 'resultado') $('cta-link').href = linkWA();
 }
 // 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
 // volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
 // O lv continua indo nos eventos (props.lv, pelo funnel-analytics).
-function prepararFechamento(){
-  $('res-cod').textContent = meuCodigo();
-  $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado.';   // 09/11: o "sem custo" mora na frase do prazo
-  $('cta-link').href = linkWA();
-  $('f-wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
-  $('cta-dm').hidden = false;
-}
+// 15/11: o botão do resultado é o próprio link do WhatsApp (medição igual à da pele nova: cta_click no stepId 'resultado').
 const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
 // o href é refeito no toque: a linha do prazo vale para o momento do envio, não para quando a tela abriu
-$('cta-link').addEventListener('click', () => { $('cta-link').href = linkWA(); Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', noPrazo:noPrazo(), ...fimProps() } }); });
+$('cta-link').addEventListener('click', () => { $('cta-link').href = linkWA(); Analytics.track('cta_click', { stepId:'resultado', valueText:'whatsapp', props:{ canal:'whatsapp', noPrazo:noPrazo(), ...fimProps() } }); });
 $('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 // Direct: o Instagram não aceita texto pronto; copia dentro do toque e deixa o link abrir o app (igual ao teste das pernas)
 function copiar(txt){
@@ -623,8 +599,93 @@ function abrirDirect(e){
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
 $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:cur, valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 
+// =====================================================================
+// FOCO (15/11, Lucca: “ao clicar aqui, o site poderia colocar tudo embaçado (e ir voltando devagar ao normal) menos o botão
+// de pedir a explicação”): tocar no resultado trancado embaça a tela por 3 s (CSS: desembaca) e deixa só o botão nítido.
+// =====================================================================
+let focoT = null;
+$('trava').addEventListener('click', () => {
+  const b = document.body; b.classList.remove('foco'); void b.offsetWidth; b.classList.add('foco');   // recomeça se tocar de novo
+  clearTimeout(focoT); focoT = setTimeout(() => b.classList.remove('foco'), 3100);
+  Analytics.track('answer', { stepId:'resultado', valueText:'tocou-trancado' });
+});
+
+// =====================================================================
+// RASTRO (15/11): na tela do sensor, as linhas que acompanham o celular do vídeo. TRILHA = o centro do celular em cada
+// quadro de um ciclo do movimento (32 quadros a 40 qps = 0,8 s; o vídeo tem 6 ciclos iguais), medido no próprio vídeo,
+// em px do quadro de 540 × 1278. Vídeo tocando: o rastro segue o quadro que está na tela. Vídeo parado (o aparelho não
+// deixou tocar): fica a foto e um celular desenhado percorre o arco. Com "reduzir movimento": foto e o arco, parados.
+// =====================================================================
+const TRILHA = [[372,663],[382,655],[407,633],[434,603],[456,567],[472,530],[482,489],[487,446],[486,404],[479,366],[467,332],[452,301],[434,277],[416,260],[403,249],[395,245],[396,246],[403,252],[418,264],[436,282],[455,307],[472,338],[486,373],[493,414],[494,455],[488,495],[478,532],[462,566],[444,596],[425,621],[405,639],[387,654]];
+const ARCO = { cx:239, cy:443, r:253 }, RECORTE = { x:70, y:15, w:470, h:700 }, QPS = 40;
+const CALMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sv = $('sensor-video'), sc = $('sensor-rastro');
+let rastroOn = false, rastroRaf = 0, quadroEm = -1e9, rastroModo = '';
+const ponto = f => { const n = TRILHA.length, g = ((f % n) + n) % n, i = Math.floor(g), k = g - i, a = TRILHA[i], b = TRILHA[(i + 1) % n];
+  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]; };
+function desenharRastro(f, desenhado){
+  const W = sc.clientWidth, H = sc.clientHeight; if (!W) return;
+  const dpr = Math.min(3, devicePixelRatio || 1);
+  if (sc.width !== Math.round(W * dpr)){ sc.width = Math.round(W * dpr); sc.height = Math.round(H * dpr); }
+  const c = sc.getContext('2d'), k = W / RECORTE.w, X = x => (x - RECORTE.x) * k, Y = y => (y - RECORTE.y) * k;
+  c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H); c.lineCap = 'round'; c.lineJoin = 'round';
+  // o caminho inteiro do celular, pontilhado e discreto
+  const a0 = Math.atan2(TRILHA[0][1] - ARCO.cy, TRILHA[0][0] - ARCO.cx), a1 = Math.atan2(TRILHA[16][1] - ARCO.cy, TRILHA[16][0] - ARCO.cx);
+  c.setLineDash([1, 7]); c.lineWidth = 2.4; c.strokeStyle = f == null ? 'rgba(13,106,77,.95)' : 'rgba(13,106,77,.38)';
+  c.beginPath(); c.arc(X(ARCO.cx), Y(ARCO.cy), ARCO.r * k, a0, a1, true); c.stroke(); c.setLineDash([]);
+  if (f == null){   // parado: pontas de seta nos dois extremos do arco
+    for (const [a, s] of [[a0, 1], [a1, -1]]){ const x = X(ARCO.cx + ARCO.r * Math.cos(a)), y = Y(ARCO.cy + ARCO.r * Math.sin(a)), t = a + s * Math.PI / 2;
+      c.fillStyle = 'rgba(13,106,77,.95)'; c.beginPath(); c.moveTo(x + 8 * Math.cos(t), y + 8 * Math.sin(t));
+      c.lineTo(x + 6 * Math.cos(t + 2.3), y + 6 * Math.sin(t + 2.3)); c.lineTo(x + 6 * Math.cos(t - 2.3), y + 6 * Math.sin(t - 2.3)); c.closePath(); c.fill(); }
+    return;
+  }
+  // três linhas de rastro atrás do celular (no meio e nas duas bordas dele), sumindo para trás
+  // Cada linha é pintada em camadas (a mais curta por último): perto do celular as camadas se somam, na ponta sobra uma só.
+  const N = 34, PASSO = .3, DE = 1, CAM = 9;
+  for (const [cor, alfa, l0, l1] of [['255,255,255', .2, 2.2, 2.6], ['13,106,77', .27, 1.1, 1.5]]){   // um fio branco por baixo (lê na parede e no short) e o verde por cima
+    for (const lado of [-1, 0, 1]){
+      const esc = 1 + lado * 23 / ARCO.r, n = Math.round(N * (lado ? .72 : 1));   // as de fora são um pouco mais curtas
+      for (let m = CAM; m >= 1; m--){
+        c.strokeStyle = `rgba(${cor},${alfa})`; c.lineWidth = l0 + l1 * (1 - m / CAM); c.beginPath();
+        for (let j = 0; j <= Math.round(n * m / CAM); j++){ const p = ponto(f - DE - j * PASSO), x = X(ARCO.cx + (p[0] - ARCO.cx) * esc), y = Y(ARCO.cy + (p[1] - ARCO.cy) * esc); j ? c.lineTo(x, y) : c.moveTo(x, y); }
+        c.stroke();
+      }
+    }
+  }
+  const [x, y] = ponto(f);
+  if (desenhado){   // vídeo parado: um celular desenhado faz o caminho (o da foto fica embaixo, na mão)
+    c.save(); c.translate(X(x), Y(y)); c.rotate(Math.atan2(y - ARCO.cy, x - ARCO.cx) - Math.PI / 2);
+    const w = 30 * k, h = 62 * k; c.fillStyle = '#141c17'; c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 1.5;
+    c.beginPath(); if (c.roundRect) c.roundRect(-w / 2, -h / 2, w, h, 5 * k); else c.rect(-w / 2, -h / 2, w, h); c.fill(); c.stroke(); c.restore();
+  }
+  window.__rastro = { f:+f.toFixed(2), x:+X(x).toFixed(1), y:+Y(y).toFixed(1), modo:desenhado ? 'desenhado' : 'video', W, H };   // só para o teste automático
+}
+function rastroQuadro(agora, meta){   // chamado a cada quadro do vídeo que vai para a tela (quando o navegador tem a função)
+  if (!rastroOn) return;
+  quadroEm = performance.now(); rastroModo = 'video'; desenharRastro(meta.mediaTime * QPS + .7, false);   // + 0,7 quadro: o desenho só aparece na pintura seguinte da tela
+  sv.requestVideoFrameCallback(rastroQuadro);
+}
+function rastroLaco(){
+  if (!rastroOn) return;
+  const agora = performance.now(), tocando = !sv.paused && sv.readyState >= 2;
+  if (sv.requestVideoFrameCallback){ if (agora - quadroEm > 450){ rastroModo = 'desenhado'; desenharRastro(agora / 1000 * QPS * .75, true); } }   // sem quadro novo há 0,45 s = vídeo parado
+  else if (tocando){ rastroModo = 'video'; desenharRastro(sv.currentTime * QPS, false); }
+  else { rastroModo = 'desenhado'; desenharRastro(agora / 1000 * QPS * .75, true); }
+  rastroRaf = requestAnimationFrame(rastroLaco);
+}
+function rastroLigar(){
+  if (rastroOn) return; rastroOn = true;
+  if (CALMO){ try { sv.pause(); } catch {} rastroModo = 'parado'; requestAnimationFrame(() => desenharRastro(null)); return; }
+  try { const p = sv.play(); if (p && p.catch) p.catch(() => {}); } catch {}   // dentro do toque em Continuar: toca até no modo de pouca energia
+  quadroEm = performance.now();   // dá 0,45 s para o 1º quadro chegar antes de cair no celular desenhado
+  if (sv.requestVideoFrameCallback) sv.requestVideoFrameCallback(rastroQuadro);
+  rastroRaf = requestAnimationFrame(rastroLaco);
+}
+function rastroDesligar(){ if (!rastroOn) return; rastroOn = false; cancelAnimationFrame(rastroRaf); try { sv.pause(); } catch {} }
+addEventListener('resize', () => { if (rastroOn && rastroModo === 'parado') desenharRastro(null); });
+
 show('inicio');
-window.__braco = { show, dados, DURACAO,   // só para teste automatizado
+window.__braco = { show, dados, DURACAO, rastro:() => ({ ...(window.__rastro || {}), on:rastroOn, modo:rastroModo, pausado:sv.paused, t:sv.currentTime }), mensagem:() => mensagem(), codigo:() => codigo,   // só para teste automatizado
   // resultado sem sensor: n movimentos fingidos (meio movimento a cada 0,4 s), passa pela análise e chega ao resultado
   testarResultado:n => { amostras = [{ t:0, v:[0,0,0], w:300, acc:0 }]; meias = Array.from({ length:2*n }, (_, k) => ({ t:k*400, w:300 + k, sentido:k % 2 ? -1 : 1 })); estado = 0; ini = 0; gravando = true; encerrar(); } };
 </script>
