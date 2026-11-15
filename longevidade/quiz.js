@@ -6,15 +6,8 @@
 // Conteúdo: config.js. Este arquivo não precisa mudar para trocar textos.
 // ============================================================
 
-import { CONFIG } from './config.js?v=lg4';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
+import { CONFIG } from './config.js?v=lg5';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
 import * as Analytics from './funnel-analytics.js?v=lg3';
-import { NO_INSTAGRAM, dicaDirect } from '/assets/js/dica-direct.js?v=3';
-// 03/11: o link "Ou meça suas pernas agora" leva a origem junto (utm_*, canal e o lv do link marcado), senão a sessão das
-// pernas perde ig_bio/ig_direct e a ponte da bio não reconhece quem veio da bio
-const comOrigem = url => { const q = new URLSearchParams(location.search), o = new URLSearchParams();
-  for (const [k, v] of q) if (/^utm_/.test(k) || k === 'canal' || k === 'lv') o.set(k, v);
-  const t = o.toString(); return t ? url + (url.includes('?') ? '&' : '?') + t : url; };
-
 const FLOW = CONFIG.flow;
 const N = FLOW.length;
 const LOADING_STEP = N + 1;
@@ -451,52 +444,27 @@ function playerVsl(vsl) {
   return box;
 }
 
-function copiar(texto) {
-  let ok = false;
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = texto; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
-    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, texto.length);
-    ok = document.execCommand('copy'); ta.remove();
-  } catch (e) {}
-  try { if (navigator.clipboard) navigator.clipboard.writeText(texto).catch(() => {}); } catch (e) {}
-  return ok;
-}
 const wa = (msg) => `https://wa.me/${CONFIG.whatsapp.number}?text=${encodeURIComponent(msg)}`;
 function clique(valor) {
   Analytics.track('cta_click', { stepId: 'resultado', stepIndex: RESULT_STEP, valueText: valor, props: { ajuda: state.answers.ajuda || null } });
 }
 
+// 15/11 (Lucca, lote l-mwhz04rg): um caminho só e um botão só (WhatsApp com a mensagem pronta e o código). Saíram a
+// pergunta 'ajuda', o código à vista, "Seguir @dr.luccamarques" e o botão do teste das pernas. O código continua
+// existindo: vai na mensagem e no evento 'complete' (props.codigo).
 function renderResult() {
-  const R = CONFIG.resultado, medico = state.answers.ajuda === 'medico';
+  const R = CONFIG.resultado;
   const vsl = escolherVsl();
   state.codigo = state.codigo || gerarCodigo();
-  const cod = state.codigo;
-
-  let main, alt;
-  if (medico) {
-    const msg = CONFIG.whatsapp.msgMedico(state, curto, op, cod);
-    main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_medico', onclick: () => clique('whatsapp_medico') }, R.medico.cta);
-    alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.direct, 'data-cta': 'direct',   // sem _blank: o toque abre o app do Instagram (universal link)
-      onclick: (e) => { const ok = copiar(msg); clique('direct'); if (NO_INSTAGRAM) { e.preventDefault(); dicaDirect({ mensagem: msg, copiou: ok }); return; } toast(R.medico.copiado); } }, R.medico.alt);
-  } else {
-    const msg = CONFIG.whatsapp.msgPlano(state, curto, op, cod);
-    main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_plano', onclick: () => clique('whatsapp_plano') }, R.sozinho.cta);
-    alt = el('a', { class: 'btn ghost', id: 'cta-alt', href: CONFIG.links.instagram, target: '_blank', rel: 'noopener', 'data-cta': 'seguir_instagram', onclick: () => clique('seguir_instagram') }, R.sozinho.alt);
-  }
-  // 08/11 (Lucca): WhatsApp em primeiro também para quem veio do Direct pelo link marcado (?lv=); nada volta sozinho
-  // para o Direct, então essa pessoa vê o mesmo fim (código + WhatsApp + Direct com a mensagem copiada). O lv segue no evento.
+  const msg = CONFIG.whatsapp.msg(state, curto, op, state.codigo);
+  const main = el('a', { class: 'btn', id: 'cta-main', href: wa(msg), target: '_blank', rel: 'noopener', 'data-cta': 'whatsapp_plano', onclick: () => clique('whatsapp_plano') }, R.cta);
   const video = playerVsl(vsl);
   return el('section', { class: 'screen info no-cta result' + (video ? ' com-video' : ''), 'data-id': 'resultado', 'data-vsl': vsl.id },
     pill(R.pill),
     el('h2', { html: fmt(vsl.titulo || '') }),
     vsl.frase ? el('p', { class: 'sub', html: fmt(vsl.frase) }) : null,
     video,
-    ctaInline(
-      el('div', { class: 'codigo' }, el('span', {}, R.codigoRotulo), el('b', { id: 'codigo' }, cod)),
-      el('p', { class: 'linha' }, R.codigoLinha),
-      main, alt),
-    CONFIG.links.teste ? el('a', { class: 'link-teste', id: 'cta-teste', href: comOrigem(CONFIG.links.teste), onclick: () => clique('teste_idade') }, R.teste) : null
+    ctaInline(main)
   );
 }
 

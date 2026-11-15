@@ -7,8 +7,9 @@
 // - Sem promessa de resultado, sem "grátis" ligado a consulta, sem depoimento,
 //   sem número de clientes, sem estrela (CFM 2.336/2023; regras da Livowa).
 // - Nada diz o que a pessoa "tem". Estudo entra com uma frase e a fonte embaixo.
-// - "6 perguntas" na capa é verdadeiro: objetivo, idade, rotina, incomoda,
-//   atrapalha, sozinho/médico. Se mudar o número de perguntas, mude a capa.
+// - "5 perguntas" na capa é verdadeiro: objetivo, idade, rotina, incomoda,
+//   atrapalha (15/11: a 6ª, sozinho/médico, saiu). Se mudar o número de perguntas, mude a capa
+//   e a descrição em index.html.
 // - value das opções = o que vai pro analytics. Não trocar (só label/curto).
 //
 // Marcação nos textos de tela (lida pelo quiz.js; o texto é escapado antes):
@@ -43,7 +44,6 @@ export const CONFIG = {
   pedirContatoAntes: false,
 
   links: {
-    teste: null,   // 10/11 D1: o teste das pernas saiu do funil, e o fim fica com uma chamada só (era '/idade/')
     direct: 'https://ig.me/m/dr.luccamarques',              // DM do Instagram (não aceita texto pronto)
     instagram: 'https://www.instagram.com/dr.luccamarques/',
     politica: ''                                            // URL da política de privacidade (vazio = sem link)
@@ -52,8 +52,8 @@ export const CONFIG = {
   // ---- Tela 1: capa ----
   // Desejo como processo ("pra chegar aos 70 subindo escada"), nunca prazo de resultado.
   hero: {
-    pill: '6 perguntas · leva 1 minuto',
-    title: 'Responda 6 perguntas e veja o que pesa pra chegar ==aos 70== *subindo escada sem pensar*',
+    pill: '5 perguntas · leva 1 minuto',
+    title: 'Responda 5 perguntas e veja o que pesa pra chegar ==aos 70== *subindo escada sem pensar*',
     subtitle: 'No fim, tem *um vídeo do Dr. Lucca pra quem está na sua fase*.',
     subtitleSemVideo: 'No fim, você vê *o próximo passo pra quem está na sua fase*.',   // usado enquanto nenhuma VSL tiver vídeo
     cta: 'Responder quiz de 1 minuto',
@@ -186,15 +186,8 @@ export const CONFIG = {
       ]
     },
 
-    // ---- Tela 9: decoy (pergunta 6) — decide o CTA ----
-    {
-      id: 'ajuda', type: 'single',
-      title: 'Você prefere fazer isso *por conta própria* ou com *um médico do lado*?',
-      options: [
-        { value: 'sozinho', emoji: '', label: 'Por conta própria, no meu ritmo',  desc: 'Um plano de 4 semanas pra fazer em casa.',  curto: 'por conta própria' },
-        { value: 'medico',  emoji: '', label: 'Com um médico do lado',  desc: 'O Dr. Lucca acompanha e ajusta com você.',  curto: 'com médico acompanhando de perto' }
-      ]
-    },
+    // 15/11 (Lucca, lote l-mwhz04rg): a pergunta "por conta própria ou com um médico do lado" (id 'ajuda') saiu do funil.
+    // O resultado ficou com um caminho só (o botão do plano). O CRM e o roteiro tratam a falta de 'ajuda' ("Quiz respondido").
 
     // ---- Contato antes do resultado (só se pedirContatoAntes = true) ----
     {
@@ -230,20 +223,11 @@ export const CONFIG = {
 
   // ---- Tela 11: resultado (mínimo: perfil + 1 frase + vídeo + botão) ----
   // Título e frase vêm da VSL escolhida (tabela vsls abaixo).
+  // 15/11 (Lucca): um botão só. Saíram da tela o código ("Seu código", LV-XXXX e a linha que o explicava), o link
+  // "Seguir @dr.luccamarques" e o botão do teste das pernas. O código segue na mensagem do WhatsApp e no evento 'complete'.
   resultado: {
     pill: 'Seu resultado está pronto',
-    codigoLinha: 'Seu código guarda suas respostas para o Dr. Lucca ver.',
-    codigoRotulo: 'Seu código',
-    teste: 'Ou meça suas pernas agora, em 1 minuto',
-    medico: {
-      cta: 'FALAR COM O DR. LUCCA',
-      alt: 'Prefiro pelo Direct',
-      copiado: 'Mensagem com o código copiada. No Direct, é só colar.'
-    },
-    sozinho: {
-      cta: 'QUERO O PLANO DE 4 SEMANAS',
-      alt: 'Seguir @dr.luccamarques'
-    }
+    cta: 'QUERO O PLANO DE 4 SEMANAS'
   },
 
   // ============================================================
@@ -307,18 +291,16 @@ export const CONFIG = {
   // ============================================================
   whatsapp: {
     number: '5562991774809',
-    msgMedico: (s, curto, op, codigo) =>
-      `Oi, Dr. Lucca! Fiz o quiz da longevidade. Meu código é ${codigo}.\n` +
-      `Queria fazer isso com você acompanhando de perto.`,
-    msgPlano: (s, curto, op, codigo) =>
+    // 15/11: uma mensagem só (a pessoa não escolhe mais "por conta própria" nem "com médico")
+    msg: (s, curto, op, codigo) =>
       `Oi! Fiz o quiz da longevidade. Meu código é ${codigo}.\n` +
-      `Quero o plano de 4 semanas pra fazer por conta própria.`
+      `Quero o plano de 4 semanas.`
   },
 
   // ============================================================
   // ANALYTICS — mesmo Supabase do quiz antigo. Em localhost só loga no console.
   // Eventos: view, step_view (cada tela), answer, lead_capture, complete, cta_click.
-  // complete: valueText = ajuda; props = { durationMs, codigo, vsl, respostas }.
+  // complete: valueText = null desde 15/11 (era a resposta 'ajuda'); props = { durationMs, codigo, vsl, respostas }.
   // ============================================================
   analytics: {
     enabled: true,
