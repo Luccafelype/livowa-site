@@ -90,7 +90,7 @@ function show(s){
   else pararQuadro();
   if ($('creditos-caixa').open) fecharCreditos();
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
-  if (s === 'resultado') prepararFechamento();   // um botão só (02/11), no cartão verde (16/11)
+  if (s === 'resultado'){ iniciarPrazo(); prepararFechamento(); }   // um botão só (02/11), no cartão verde com o prazo (16/11)
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nome1() + ', ' : ''; });
   window.scrollTo(0, 0);
   requestAnimationFrame(medirBarra);
@@ -423,11 +423,9 @@ function montarResultado(j, f){
   $('r-idade').innerHTML = !fx ? '' : daParaDizer
     ? `<small>Idade aparente do rosto</small><b>${fx.min} a ${fx.max} anos</b>
       <p>É quanto o seu rosto aparenta na foto: uma estimativa, que erra uns 4 a 5 anos para cada lado. Não é a sua idade nem um diagnóstico.${j.qualidade?.nota === 'regular' ? ' Com a foto regular, ela fica menos precisa.' : ''}</p>
-      <p class="por"><b>Por que isso importa.</b> Num estudo com 1.826 gêmeos dinamarqueses de 70 anos ou mais, a idade que outras pessoas davam olhando a foto acompanhou a força, a memória e o tempo de vida, mesmo descontando a idade real. <a href="https://doi.org/10.1136/bmj.b5262" target="_blank" rel="noopener">Christensen 2009, BMJ</a></p>
-      <a class="liga" href="/longevidade/?${qLong}">O rosto é uma parte da sua vitalidade. Veja o que mais pesa para chegar bem aos 70</a>`
+      <p class="por"><b>Por que isso importa.</b> Num estudo com 1.826 gêmeos dinamarqueses de 70 anos ou mais, a idade que outras pessoas davam olhando a foto acompanhou a força, a memória e o tempo de vida, mesmo descontando a idade real. Christensen 2009, BMJ.</p>`   // 16/11 (Lucca: uma ação só): sem link para o estudo nem para o quiz
     : `<small>Idade aparente do rosto</small><b>Não deu para estimar</b><p>A foto não deu segurança para estimar a idade do rosto. Com a luz de uma janela na frente, a estimativa sai melhor.</p>`;
   $('r-idade').hidden = !fx;
-  $('r-idade').querySelector('.liga')?.addEventListener('click', () => track('answer', { stepId:'resultado-longevidade', valueText:'abriu' }));
 
   // achados por região: grau ≥ 1, os que ela marcou primeiro entre os de mesmo grau
   const marcados = new Set(R.incomoda.flatMap(q => MAPA[q]?.sinais || []).map(id => id === 'comedoes' ? 'acne_ativa' : id));
@@ -594,7 +592,7 @@ function respostasLimpa(){ const { nome, ...r } = R; return { ...r, incomoda:R.i
 // =====================================================================
 const souA = () => R.sexo === 'm' ? 'o' : 'a';
 const sou = () => nomeBonito() ? `Sou ${souA()} ${nomeBonito()}` : '';
-function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz a análise da pele, código ${meuCodigo()}. Quero que você me explique o meu resultado.`; }
+function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz a análise da pele, código ${meuCodigo()}. Quero que você me explique o meu resultado.\n${linhaPrazo()}`; }
 const escolha = () => 'explicar';
 function prepararFechamento(){
   const nome = nomeBonito();
@@ -603,9 +601,44 @@ function prepararFechamento(){
   $('r-ponte-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 }
-const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo() });
+const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo(), noPrazo:noPrazo() });
+
+// =====================================================================
+// PRAZO (16/11, Lucca: "cadê a escassez de tempo?"): o mesmo da pele e do braço (decisão de 09/11): análise sem custo para
+// quem enviar em 30 min, contados da 1ª vez que vê o resultado (livowa_prazo no localStorage, pelo código LV).
+// =====================================================================
+const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele2', PRAZO_HERDA = 24 * 3600 * 1000, PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
+function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
+let prazoT0 = null, prazoIv = null;
+function iniciarPrazo(){
+  const m = lerPrazos(), c = meuCodigo(), agora = Date.now();
+  if (+m[c]?.t) prazoT0 = +m[c].t;
+  else {
+    if (prazoT0 == null){
+      const ult = Object.values(m).filter(x => x && x.teste === PRAZO_TESTE && +x.t && agora - x.t < PRAZO_HERDA).sort((a, b) => b.t - a.t)[0];
+      prazoT0 = ult ? +ult.t : agora;
+    }
+    for (const k of Object.keys(m)) if (!(agora - (+m[k]?.t || 0) < PRAZO_GUARDA)) delete m[k];
+    m[c] = { t:prazoT0, teste:PRAZO_TESTE }; gravarPrazos(m);
+  }
+  clearInterval(prazoIv); prazoIv = setInterval(pintarPrazo, 1000); pintarPrazo();
+}
+function prazoResta(){ const t = +lerPrazos()[codigo]?.t || prazoT0; return t ? Math.max(0, t + PRAZO_MS - Date.now()) : null; }
+function noPrazo(){ const r = prazoResta(); return r == null || r > 0; }
+function linhaPrazo(){ return noPrazo() ? '(enviado no prazo da análise sem custo)' : '(enviado depois do prazo)'; }
+const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+function pintarPrazo(){
+  const r = prazoResta(), ok = r == null || r > 0;
+  $('r-prazo').hidden = cur !== 'resultado' || r == null;
+  if (r == null) return;
+  $('r-prazo').classList.toggle('acabou', !ok);
+  const txt = ok ? 'Análise sem custo se enviar em' : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  if ($('r-prazo-txt').textContent !== txt) $('r-prazo-txt').textContent = txt;
+  $('r-prazo-rel').hidden = !ok; $('r-prazo-rel').textContent = ok ? mmss(r) : '';
+}
 const fimValor = (esc_ = escolha()) => `${esc_}|fim${FIM}`;   // valueText do cta_click final: 'explicar|fimA' ou 'explicar|fimB'
-$('cta-wa').addEventListener('click', () => { track('cta_click', { stepId:'resultado', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
+$('cta-wa').addEventListener('click', () => { $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`; track('cta_click', { stepId:'resultado', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
 $('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 
 // Direct: o Instagram não aceita texto pronto. Um toque só: copia DENTRO do toque (exigência do iOS), avisa e deixa o

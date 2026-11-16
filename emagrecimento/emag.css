@@ -274,3 +274,9 @@ details.completo .bloco{margin-bottom:12px}
 .ponte .btn{background:var(--surface);color:var(--accent);min-height:64px;font-size:1.2rem;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .ponte .btn.ico svg{width:26px;height:26px}
 .ponte .link-alt{color:var(--on-accent);margin-top:-4px}
+/* 16/11: prazo real no cartão (molde da pele), pontos de atenção numerados, fontes numa linha só */
+.r-prazo{display:flex;flex-direction:column;align-items:center;gap:2px;margin:2px 0 0;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.13);text-align:center;font-weight:600;font-size:1rem!important;text-wrap:balance}
+.r-prazo b{font-size:1.75rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--on-accent)}
+.r-prazo.acabou{font-weight:400}
+.sinais .sinal .pa{font:700 .74rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.fontes-linha{font-size:.74rem;color:var(--muted);text-align:center;margin:0;line-height:1.4}

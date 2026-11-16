@@ -127,6 +127,14 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .medida b{font:800 1.7rem/1.15 var(--display);color:var(--accent)}
 .res-txt{font-size:1.02rem;text-align:left}
 .res-txt b{font-weight:600}
+/* 16/11: os 3 pontos que o Dr. Lucca explica (texto do Lucca), numerados */
+#res-txt2 p{margin:0 0 8px}
+.pontos{margin:0;padding:0;list-style:none;counter-reset:p;display:flex;flex-direction:column;gap:8px}
+.pontos li{counter-increment:p;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font-weight:600}
+.pontos li::before{content:counter(p);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:.9rem}
+.ops{display:flex;flex-direction:column;gap:10px}
+.ops button{font:600 1.05rem var(--body);padding:16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;text-align:left}
+.ops button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .link-alt{align-self:center;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 12px;background:none;border:0;cursor:pointer;color:var(--accent);font:600 .95rem var(--body);text-decoration:underline;text-underline-offset:3px}
 /* 09/11 (Lucca): prazo da análise sem custo (30 min do 1º resultado), junto do botão. Discreto, algarismos tabulares */
 .prazo-mini{text-align:center;font:500 .88rem var(--body);color:var(--muted);font-variant-numeric:tabular-nums;text-wrap:balance}
@@ -204,6 +212,13 @@ body.foco #cta-link{animation:chama 1.1s ease-out 2}
     <p class="falta" id="falta">Role para escolher.</p>
   </section>
 
+  <!-- 16/11 (Lucca, texto do resultado: "Como essa melhora vai te fazer [objetivo especificado no quiz]"): o objetivo de
+       10 anos, com as opções pela faixa da idade real (a regra da pele de 11/11). Toque numa e segue sozinho. -->
+  <section class="screen" data-s="futuro" data-p="50" hidden>
+    <h2>Daqui a 10 anos você vai ter <span id="fut-i10">50</span>. O que mais quer?</h2>
+    <div class="ops" id="fut-ops" role="group" aria-label="O que mais quer daqui a 10 anos"></div>
+  </section>
+
   <section class="screen c" data-s="sensor" data-p="60" hidden>
     <!-- 15/11 (Lucca, lote l-mwhz04rg: “seria melhor pegar a imagem do cara das páginas anteriores e colocar um motion de
          movimento no celular, com linhas acompanhando o celular”): o vídeo real do movimento, recortado no braço, e um
@@ -251,7 +266,7 @@ body.foco #cta-link{animation:chama 1.1s ease-out 2}
       <div class="cadeado"><div><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>O Dr. Lucca te explica</div></div>
     </div>
     <p class="res-txt" id="res-txt1"></p>
-    <p class="res-txt" id="res-txt2"></p>
+    <div class="res-txt" id="res-txt2"></div>
   </section>
 
   <section class="screen c" data-s="erro" data-p="60" hidden>
@@ -308,7 +323,7 @@ const DURACAO = 10000, ESPERA_MAX = 15000;   // 10 s (decisão do Lucca, 31/10);
 // 09/11: os 10 s (e o bip do começo) saem do 1º movimento; sem movimento em 15 s depois do toque, encerra com o aviso de erro.
 const ua = navigator.userAgent;
 const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
-const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro'];   // 15/11: sem 'fechar' (o resultado é a tela final); era a última, o número das outras etapas no Funil não muda
+const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro','futuro'];   // 16/11: 'futuro' entra entre dados e sensor, mas fica no fim da lista para não mudar o número das outras etapas   // 15/11: sem 'fechar' (o resultado é a tela final); era a última, o número das outras etapas no Funil não muda
 let cur = 'inicio', sexo = null, sensorOk = false;   // 02/11: sexo sem padrão (antes vinha Homem marcado)
 
 // ---------- rodinhas (iguais às do teste das pernas) ----------
@@ -360,6 +375,7 @@ function show(s){
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') cta.textContent = 'Entendi';
   if (s === 'dados'){ cta.textContent = 'Continuar'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); atualizarDados(); }   // sexo e os 2 números
+  if (s === 'futuro'){ cta.hidden = true; montarFuturo(); }   // toque numa opção e segue
   if (s === 'sensor') cta.textContent = sensorOk ? 'Começar' : 'Liberar o sensor';
   if (s === 'medir' || s === 'analise') cta.hidden = true;
   // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu).
@@ -371,14 +387,14 @@ function show(s){
 }
 // iPhone: puxar a página para baixo recarrega o Safari e apagaria o teste; durante a medição o arraste fica desligado
 document.addEventListener('touchmove', e => { if (cur === 'medir') e.preventDefault(); }, { passive:false });
-$('back').addEventListener('click', () => { const i = order.indexOf(cur); show(cur === 'erro' ? 'sensor' : order[Math.max(0, i - 1)]); });
+$('back').addEventListener('click', () => { const i = order.indexOf(cur); show(cur === 'erro' ? 'sensor' : cur === 'sensor' ? 'futuro' : cur === 'futuro' ? 'dados' : order[Math.max(0, i - 1)]); });
 $('cta').addEventListener('click', async () => {
   if (cur === 'inicio') return show('como');
   if (cur === 'como') return show('dados');
   if (cur === 'dados'){
     if (faltam().length) return apontarDados();
     Analytics.track('answer', { stepId:'dados', valueText:'confirmado', props:{ idade:dados.idade, peso:dados.peso, como:Object.fromEntries(CHAVES.map(k => [k, confirmado[k] || 'padrao'])) } });
-    return show('sensor'); }
+    return show('futuro'); }
   if (cur === 'sensor' && !sensorOk) return liberar();
   if (cur === 'sensor' || cur === 'erro') return sensorOk ? medir() : (show('sensor'));
 });
@@ -494,7 +510,7 @@ function encerrar(){
     personalizar();
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
       valueText:`${reps} movimentos em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em 10 s ela mistura a aceleração do começo
-      props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
+      props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, futuro:dados.futuro || null, desejo:desejo(FUT_EU) || null, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
         queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'10s',
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
           leit5s:[0,1].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
@@ -526,11 +542,43 @@ function personalizar(){
   const i = dados.idade;
   $('res-rot').textContent = `A sua idade muscular × os seus ${i} anos`;
   $('res-txt1').innerHTML = `Para ${quem()} <b>${i}&nbsp;anos</b>, a velocidade desses movimentos mostra a potência dos braços.`;
-  $('res-txt2').innerHTML = `O Dr. Lucca compara a sua velocidade com a de <b>${pares()} de ${i}&nbsp;anos</b> e explica a idade que os seus músculos mostram.`;
+  // 16/11 (texto do Lucca, Central braço-08): os 3 pontos que ele explica; o 3º usa o objetivo de 10 anos dela
+  const d = desejo(FUT_VOCE);
+  $('res-txt2').innerHTML = `<p>O Dr. Lucca compara a sua velocidade com a de <b>${pares()} de ${i}&nbsp;anos</b> e te explica 3 pontos:</p>
+    <ol class="pontos"><li>Por que os seus braços têm essa potência hoje</li><li>O jeito certo de melhorar, no seu caso</li>
+    <li>${d ? `Como essa melhora te ajuda a ${esc(d)}` : 'O que essa melhora muda no seu dia a dia'}</li></ol>`;
 }
 function mensagem(){
-  return `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}. Quero que você me explique o meu resultado.\n${linhaPrazo()}`;
+  const d = desejo(FUT_EU), quer = d ? ` Daqui a 10 anos, quero ${d}.` : '';
+  return `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}.${quer} Quero que você me explique o meu resultado.\n${linhaPrazo()}`;
 }
+
+// ---------- daqui a 10 anos (16/11): opções pela faixa da idade real, como na pele (11/11, Lucca: "não faz sentido uma
+// pessoa de 30 anos falar que aos 40 não quer depender de ninguém"). Base: pesquisa/voz-pele-potencia.md. ----------
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const FUT_FAIXA = i => i < 35 ? 'ate34' : i < 50 ? '35a49' : i < 65 ? '50a64' : '65mais';
+const FUT_OPCOES = { ate34:['disposicao', 'devagar', 'antes'], '35a49':['disposicao', 'chegar10', 'devagar', 'antes'],
+  '50a64':['disposicao', 'chegar10', 'independente', 'antes'], '65mais':['chegar10', 'independente', 'disposicao'] };
+const FUT_ROT = { disposicao:'Ter a mesma disposição de hoje', chegar10:i => `Chegar aos ${i} com força`, independente:'Não depender de ninguém',
+  devagar:'Envelhecer mais devagar', antes:'Cuidar da saúde antes de aparecer problema' };
+const FUT_EU = { disposicao:'ter a mesma disposição de hoje', chegar10:i => `chegar aos ${i} com força`, independente:'não depender de ninguém',
+  devagar:'envelhecer mais devagar', antes:'cuidar da saúde antes de aparecer problema' };
+const FUT_VOCE = { ...FUT_EU, disposicao:'ter, daqui a 10 anos, a mesma disposição de hoje', independente:'não depender de ninguém daqui a 10 anos' };
+const i10 = () => (dados.idade || 40) + 10;
+const desejo = M => { const v = M[dados.futuro]; return typeof v === 'function' ? v(i10()) : v || ''; };
+function montarFuturo(){
+  const ops = FUT_OPCOES[FUT_FAIXA(dados.idade || 40)];
+  if (dados.futuro && !ops.includes(dados.futuro)) delete dados.futuro;   // voltou e trocou a idade: a resposta velha não vale
+  $('fut-i10').textContent = i10();
+  $('fut-ops').innerHTML = ops.map(v => { const r = FUT_ROT[v], txt = typeof r === 'function' ? r(i10()) : r;
+    return `<button type="button" data-v="${v}" aria-pressed="${dados.futuro === v}">${esc(txt)}</button>`; }).join('');
+}
+$('fut-ops').addEventListener('click', e => {
+  const b = e.target.closest('button[data-v]'); if (!b) return;
+  dados.futuro = b.dataset.v; $('fut-ops').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  Analytics.track('answer', { stepId:'futuro', valueText:dados.futuro, props:{ faixa:FUT_FAIXA(dados.idade || 40), desejo:desejo(FUT_EU) } });
+  setTimeout(() => show('sensor'), 250);
+});
 const linkWA = () => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 
 // =====================================================================

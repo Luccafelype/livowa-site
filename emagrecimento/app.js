@@ -69,7 +69,7 @@ function show(s){
   if (s === 'medidas') posicionar(['peso', 'altura']);
   if (VARIAS.includes(s)) cta.classList.toggle('off', !R[s].length);
   if (UM.includes(s)) cta.classList.toggle('off', R[s] == null);
-  if (s === 'resultado') prepararFechamento();   // um botão só (02/11), no cartão verde (16/11)
+  if (s === 'resultado'){ iniciarPrazo(); prepararFechamento(); }   // um botão só (02/11), no cartão verde com o prazo (16/11)
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nomeBonito() + ', ' : ''; });
   document.querySelectorAll('[data-g]').forEach(el => { const [f, m] = el.dataset.g.split('|'); el.textContent = g(f, m); });
   $('txt-constancia').textContent = `Começo ${g('animada', 'animado')} e paro em poucas semanas`;
@@ -356,7 +356,8 @@ function montarResultado(){
   $('r-metricas').innerHTML = mh;
 
   // os sinais de saúde
-  $('r-sinais').innerHTML = n ? S.map(s => `<div class="sinal"><h4>${esc(s.tit)}</h4><p>${esc(s.txt)}</p></div>`).join('') : '';
+  // 16/11 (Lucca: "aqui teria que enumerar os pontos: ponto de atenção 1, ponto de atenção 2"): o cartão do fim fala em "N pontos"
+  $('r-sinais').innerHTML = n ? S.map((s, i) => `<div class="sinal"><small class="pa">Ponto de atenção ${i + 1}</small><h4>${esc(s.tit)}</h4><p>${esc(s.txt)}</p></div>`).join('') : '';
 
   // o que mais acontece (o perfil), em uma fala simples
   const P = {
@@ -381,9 +382,6 @@ function montarResultado(){
   $('r-tentou').innerHTML = `<h3>Por que o que você tentou não segurou</h3><p>${esc(t)}</p>`;
 
   // a guia: o que está no caminho, o que pede, o custo do escuro, o que o teste não alcança e a pergunta (sem vídeo)
-  const passo = (S.find(s => s.passo) || {}).passo || (sonoCurto() ? 'Deite 1 hora mais cedo nas próximas noites e repare na vontade de comer no dia seguinte.'
-    : R.forca === '0' ? 'Comece com 2 treinos de força curtos por semana: é o que a OMS recomenda.' : 'Anote por uma semana a hora em que a vontade de comer aparece e o que veio antes.');
-  if (!S.find(s => s.passo)){ if (sonoCurto()) usa('watson'); else if (R.forca === '0') usa('bull'); }
   const objTxt = R.objetivo && R.objetivo !== 'outro' ? ROT.objetivo[R.objetivo].replace(/^./, c => c.toLowerCase()) : '';
   const obj = objTxt ? ` e chegar ao seu objetivo (“${objTxt}”)` : '';
   const isso = n ? lista(fora) : 'isso';
@@ -394,17 +392,9 @@ function montarResultado(){
     <p>${esc(caminho)}</p>
     <p class="escuro">${esc(escuro)} A boa notícia: isso se olha com calma, com exame e conversa, sem adivinhar.</p>
     <h3>O que este teste não consegue fazer</h3>
-    <p>Um teste não pede exame, não examina você e não conhece a sua história. ${n ? `Para saber se ${n === 1 ? 'esse ponto pesa' : 'esses pontos pesam'} no seu caso` : 'Para saber o que pesa no seu caso'}${obj}, alguém precisa olhar as suas respostas com você.</p>
-    <details class="duvidas"><summary>Antes de mandar</summary>
-      <p><b>Já tentei de tudo. Vale a pena?</b>${tent.length ? ` Você já tentou ${esc(lista(tent.map(x => ROT.tentou[x])))}.` : ''} As perguntas de saúde vieram antes justamente para mostrar o que as dietas deixam de fora.</p>
-      <p><b>Preciso ter exames em mãos?</b> Não. Se tiver exames do último ano, separe uma foto: ajuda na conversa.</p>
-      <p><b>Mandar a mensagem me compromete?</b> Não. É só uma mensagem. O que fazer depois, você decide.</p>
-    </details>
-    <p class="enquanto"><b>Enquanto isso:</b> ${esc(passo)}</p>`;
+    <p>Um teste não pede exame, não examina você e não conhece a sua história. ${n ? `Para saber se ${n === 1 ? 'esse ponto pesa' : 'esses pontos pesam'} no seu caso` : 'Para saber o que pesa no seu caso'}${obj}, alguém precisa olhar as suas respostas com você.</p>`;   // 16/11 (Lucca): sem "Antes de mandar" e sem "Enquanto isso": uma ação só, mandar a mensagem
 
-  $('r-fontes').innerHTML = `<ol class="fontes">${[...usadas].map(k => `<li><a href="${esc(F[k][1])}" target="_blank" rel="noopener">${esc(F[k][0])}</a></li>`).join('')}</ol>`;
-  $('r-completo').open = false;
-  $('r-completo').ontoggle = () => { if ($('r-completo').open) Analytics.track('answer', { stepId:'resultado-fontes', valueText:'abriu' }); };
+  $('r-fontes').textContent = usadas.size ? 'Fontes: ' + [...usadas].map(k => F[k][0]).join(' · ') : '';
 
   Analytics.track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:R.acontece,
     props:{ codigo:meuCodigo(), perfil:R.acontece, imc:m?.imc ?? null, faixa:m?.faixa ?? null, sinais:S.map(s => s.id).join('+') || 'nenhum', respostas:respostasLimpa() } });
@@ -419,7 +409,7 @@ function respostasLimpa(){ const { nome, faseAuto, ...r } = R; const o = { ...r,
 // Tela final de um passo só, em 3ª pessoa. Medição igual: cta_click com props.canal whatsapp/direct + props.escolha ('explicar').
 // =====================================================================
 const sou = () => nomeBonito() ? `Sou ${g('a', 'o')} ${nomeBonito()}` : '';
-function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste do emagrecimento, código ${meuCodigo()}. Quero que você olhe o meu caso.`; }
+function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste do emagrecimento, código ${meuCodigo()}. Quero que você olhe o meu caso.\n${linhaPrazo()}`; }
 const escolha = () => 'explicar';
 function prepararFechamento(){
   const nome = nomeBonito(), n = ULT.n;
@@ -429,8 +419,44 @@ function prepararFechamento(){
     : `O que mais pesa no seu caso, ${PERFIL[ULT.perfil] || 'o seu resultado'}, merece o olhar de um médico. O Dr. Lucca lê as suas respostas e te explica.`;
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 }
-const fimProps = e => ({ escolha:e, codigo:meuCodigo() });
-$('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'resultado', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
+const fimProps = e => ({ escolha:e, codigo:meuCodigo(), noPrazo:noPrazo() });
+
+// =====================================================================
+// PRAZO (16/11, Lucca: "cadê a escassez de tempo?"): o mesmo da pele e do braço (decisão de 09/11): análise sem custo para
+// quem enviar em 30 min, contados da 1ª vez que vê o resultado. Guardado no localStorage pelo código LV (livowa_prazo, o
+// mesmo objeto dos outros testes); quem recarrega e refaz em até 24 h herda o início do último resultado deste teste.
+// =====================================================================
+const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'emag', PRAZO_HERDA = 24 * 3600 * 1000, PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
+function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
+let prazoT0 = null, prazoIv = null;
+function iniciarPrazo(){
+  const m = lerPrazos(), c = meuCodigo(), agora = Date.now();
+  if (+m[c]?.t) prazoT0 = +m[c].t;
+  else {
+    if (prazoT0 == null){
+      const ult = Object.values(m).filter(x => x && x.teste === PRAZO_TESTE && +x.t && agora - x.t < PRAZO_HERDA).sort((a, b) => b.t - a.t)[0];
+      prazoT0 = ult ? +ult.t : agora;
+    }
+    for (const k of Object.keys(m)) if (!(agora - (+m[k]?.t || 0) < PRAZO_GUARDA)) delete m[k];
+    m[c] = { t:prazoT0, teste:PRAZO_TESTE }; gravarPrazos(m);
+  }
+  clearInterval(prazoIv); prazoIv = setInterval(pintarPrazo, 1000); pintarPrazo();
+}
+function prazoResta(){ const t = +lerPrazos()[codigo]?.t || prazoT0; return t ? Math.max(0, t + PRAZO_MS - Date.now()) : null; }
+function noPrazo(){ const r = prazoResta(); return r == null || r > 0; }
+function linhaPrazo(){ return noPrazo() ? '(enviado no prazo da análise sem custo)' : '(enviado depois do prazo)'; }
+const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+function pintarPrazo(){
+  const r = prazoResta(), ok = r == null || r > 0;
+  $('r-prazo').hidden = cur !== 'resultado' || r == null;
+  if (r == null) return;
+  $('r-prazo').classList.toggle('acabou', !ok);
+  const txt = ok ? 'Análise sem custo se enviar em' : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  if ($('r-prazo-txt').textContent !== txt) $('r-prazo-txt').textContent = txt;
+  $('r-prazo-rel').hidden = !ok; $('r-prazo-rel').textContent = ok ? mmss(r) : '';
+}
+$('cta-wa').addEventListener('click', () => { $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`; Analytics.track('cta_click', { stepId:'resultado', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
 $('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 
 // Direct: o Instagram não aceita texto pronto. Copia dentro do toque, avisa e deixa o link abrir o app (igual à pele2).
