@@ -199,7 +199,7 @@ async function carregaEstoque(){
 // (e_<teste>_<caminho>) no teste dono; a fonte ('f') e as notas ('_sobre') ficam de fora. 'comum' vale para todos (geral).
 const DONO_EST = { comum:['cm', ''], pele:['pl', 'pele'], pernas:['pe', 'teste-pernas'], braco:['br', 'teste-braco'],
   'quiz-emagrecimento':['qe', 'teste-emagrecimento'], 'quiz-longevidade':['ql', 'quiz-longevidade'], 'pele-idade':['pi', 'pele-idade'] };
-const POR_TESTE = new Set(['fio.pergunta']);   // 13/11 (v4): a pergunta do fecho vale no geral e cada teste pode ter a sua
+const POR_TESTE = new Set();   // 16/11 (d-20261116-fecho-pelo-teste): o fecho mora em <teste>.fecho (editável no teste dono); 13/11 era 'fio.pergunta', no geral
 function estoqueEditavel(e){
   const reg = window.KITS?.editavel; if (!reg) return;
   const rot = p => p.map(x => /^\d+$/.test(x) ? 'variação ' + (+x + 1) : x.replace(/_/g, ' ')).join(' › ');
@@ -237,7 +237,10 @@ function blocoE(id, tempo, textos, V, o = {}){
 //  3 onde aparece (fecha o "daqui") · 4 "E por que…?": o porquê com as respostas DELA ligadas ("essas três andam juntas") ·
 //  5 o outro hábito e a prova (imagem do kit: mesmo sexo e idade perto; sem hábito nem imagem, o que conserva na idade) ·
 //  6 o que dá pra ver × o que só medindo e a pergunta do Lucca ("…estaria disposta a investir nisso pra…?").
-// "Nunca mediu" é lacuna (vai ao fecho e aos assuntos), nunca coisa boa. Por escrito depois: "Pode me responder sim ou não."
+// "Nunca mediu" é lacuna (vai ao fecho e aos assuntos), nunca coisa boa.
+// 16/11 (d-20261116-fecho-pelo-teste): o fecho é o do teste (<teste>.fecho no estoque). A: pergunta o que ela já tentou (pele,
+// pele-idade, braço, pernas, longevidade); B: usa o que ela marcou e pede licença pra explicar (emagrecimento, que pergunta).
+// Por escrito depois: "Me responde aqui, do jeito mais fácil pra você: texto ou áudio." (B: "Pode me responder por aqui mesmo, em áudio ou texto.")
 // (depoisVideo, nos Ajustes) e a frase de segurança. Os assuntos que ficaram para medir vão ao lead ("Assuntos para a
 // conversa"). Alvo: pele, pele2, pele-idade e emagrecimento 170 a 210 palavras (até 84 s a 2,5 por segundo); braço, pernas e
 // longevidade 120 a 160 (até 64 s). Passou: corta o 2º achado, a 3ª resposta ligada, a imagem; nunca uma ponte nem a pergunta.
@@ -327,12 +330,13 @@ const exemploPartes = (F, W) => W.ex_id ? [(W.ex_perto ? F.exemplo_idade : F.exe
 /** O que conserva na idade (sem hábito nem imagem, o bloco 5 é isto). */
 const importa4 = (F, V, T, f) => { if (!V.item) V = { ...V, item:itemImporta('ate34', null, MOV_RE), geral:true };
   return bloco6('importa', T[4], [V.geral ? F.importa_geral : V.idade ? F.importa_idade : F.importa_faixa], V, { f:(f ? f + ' · ' : '') + 'o-que-importa-idade.json (idade e sexo; sem idade, o item de qualquer idade)' }); };
-/** 6 · o fecho: o que dá pra ver × o que só medindo (2 ou 3 assuntos dela) e a pergunta do Lucca, palavra por palavra. */
+/** 6 · o fecho: o que dá pra ver × o que só medindo (2 ou 3 assuntos dela) e o fecho do teste (o.pergunta), palavra por palavra.
+ *  16/11: o.antes (1ª frase, o que ela já tentou, no B) e o.F (as frases do "só medindo" do teste, se ele tiver as suas). */
 function fecho4(F, V, T, o){
   const its = (o.medir || []).slice(0, 3).map(k => F.medir_itens[k] || k).filter(Boolean);
-  const medir = o.medirTxt || (its.length ? its.join(', ') : null);
-  return bloco6('interesse', T[5], [o.ver === false ? null : o.ver || F.ver, medir ? F.medir : F.medir_sem, F.trabalhar, F.pergunta],
-    { ...V, medir, desejo:o.desejo || null }, { f:F.f });
+  const medir = o.medirTxt || (its.length ? its.join(', ') : null), G = o.F || {};
+  return bloco6('interesse', T[5], [o.antes || null, o.ver === false ? null : o.ver || F.ver, medir ? G.medir || F.medir : G.medir_sem || F.medir_sem, G.trabalhar || F.trabalhar, o.pergunta],
+    { ...V, medir, desejo:o.desejo || null }, { f:o.f || F.f });
 }
 /** Assuntos para a conversa, das respostas (sem o roteiro do Claude): até 5; a fase hormonal sempre na mulher de 40 a 60. */
 function assuntosDe(A, ls, o = {}){
@@ -405,14 +409,14 @@ function rotPele(d, t, c, E){
   out.push(b5(V));
   // 6 · o fecho e a pergunta (pele2: o objetivo dela; pele: cuidar do que incomoda)
   const desejo = p2 && P.desejo[resp.objetivo] ? P.desejo[resp.objetivo] : V.queixa ? preenche(P.desejo_sem, { de_queixa:deArt(V.queixa) }) : P.desejo_pele;
-  out.push(fecho4(F, V, T4, { desejo }));
+  out.push(fecho4(F, V, T4, { desejo, pergunta:P.fecho.pergunta, f:P.fecho.f }));
   if (com.some(s => s.id === 'manchas' && s.grau >= 2)) escrito.push(C.seguranca.pele);
   if (['gravida', 'amamentando', 'tentando'].includes(resp.seguranca)) avisos.push(`Ela marcou "${P2.seguranca[1][resp.seguranca]}": nada de produto, remédio ou procedimento, nem por escrito.`);
   if (['sensivel', 'reacao'].includes(resp.alergia)) avisos.push(`Alergia: "${P2.alergia[1][resp.alergia]}". Nada de nome de produto.`);
   cabe(out, MAX_LONGO, [['onde', ach.length > 1 ? b3(ach.slice(0, 1)) : null], [V.ex_id ? (habFrase ? 'habito' : 'exemplo') : '', V.ex_id ? b5({ ...V, ex_id:null }) : null]]);
   if (c?.notaAcne) avisos.push(c.notaAcne);
   if (!principal) avisos.push('Nenhum achado com grau 1 ou mais: o vídeo pode ficar curto.');
-  if (!sexo) avisos.push('Sem o sexo no teste: confira "disposta/disposto" na pergunta.');
+  if (!sexo) avisos.push('Sem o sexo no teste: confira a concordância (cansada/cansado).');
   const W = { ...V, sol:C.assuntos.v.sol[resp.sol] || null, sono:C.assuntos.v.sono[resp.sono] || null };
   const assuntos = assuntosDe(A, [V.resposta ? pa(A, 'resposta', V) : null, V.queixa ? pa(A, 'queixa', V) : null, sol ? pa(A, 'sol_pele', W) : null,
     habitos.has('sono') ? pa(A, 'sono_curto', W) : null], { hormonal:hormonal(sexo, iN) });
@@ -538,7 +542,7 @@ function rotPeleIdade(d, c, E){
   const medir = [SONO_RUIM.includes(r.sono) && 'sono', ['nunca', 'glicose', 'ambas'].includes(r.metabolico) && 'glicose', hormonal(sexo, iN) && 'hormonio',
     ['nunca', 'pressao', 'ambas'].includes(r.metabolico) && 'pressao', MOV_BAIXO.includes(r.movimento) && 'musculo'].filter(Boolean);
   const desejo = P.fecho.desejo[r.futuro] || c?.vars?.futuro || P.fecho.desejo_sem;
-  if (P.caminho && P.fecho.objetivo){
+  if (P.caminho){
     // 6a · como se trabalha (v5): o mesmo desenho, agora com o conserto
     if (tema){ const b = bloco6('conserto', null, [P.mecanismo.conserta[tema]], V, { f:P.mecanismo.f }); if (b){ b.dados = { tema, fase:'conserta', titulo:P.mecanismo.titulo.conserta[tema] }; out.push(b); } }
     // 6b · o caminho em frentes: a pele (o que a foto mostrou), o cigarro, o sono, a pressão e a glicose, a força; a alimentação sempre
@@ -548,17 +552,17 @@ function rotPeleIdade(d, c, E){
     fr.push('alimentacao');
     const bc = bloco6('caminho', null, [P.caminho.abre, listaE(fr.map(k => P.caminho.itens[k])) + '.', P.caminho.fim], { ...V, sozinha:gen(sexo, 'Sozinha', 'Sozinho') }, { f:P.caminho.f });
     if (bc){ bc.dados = { passos:fr.map(k => ({ k, t:P.caminho.cartao[k] || P.caminho.itens[k] })) }; out.push(bc); }
-    // 7 · o fecho: o caminho pra o desejo dela, e a pergunta do Lucca (14/11), palavra por palavra
-    out.push(bloco6('destino', null, [preenche(P.fecho.caminho_pra, { desejo }), F.espero], V, { f:P.fecho.f }));   // em dois blocos: no iPhone a pergunta inteira não cabia junto no painel
-    out.push(bloco6('interesse', null, [F.pergunta], { ...V, desejo:P.fecho.objetivo }, { f:P.fecho.f, fixo:true }));
-  } else out.push(fecho4(F, V, T4, { medir, desejo }));
+    // 7 · o fecho A (16/11, o da Carla na Central): o caminho pro desejo dela, e a pergunta do que ela já tentou
+    out.push(bloco6('destino', null, [preenche(P.fecho.caminho_pra, { desejo })], V, { f:P.fecho.f }));   // em dois blocos: no iPhone a pergunta inteira não cabia junto no painel
+    out.push(bloco6('interesse', null, [P.fecho.pergunta], V, { f:P.fecho.f, fixo:true }));
+  } else out.push(fecho4(F, V, T4, { medir, desejo, pergunta:P.fecho.pergunta, f:P.fecho.f }));
   // passou do alvo: o 2º achado, a 3ª resposta ligada, a imagem (regra 7); as pontes e a pergunta nunca saem
   cabe(out, P.caminho ? MAX_PI : MAX_LONGO, [['dentro', ligs.length > 2 ? b4(2) : null], [id5(V), V.ex_id ? b5({ ...V, ex_id:null }) : null], ['foto', ach.length > 1 ? b3(ach.slice(0, 1)) : null]]);
   if (ALTO_PI.includes(r.metabolico)) escrito.push(P.escrito[r.metabolico]);
   if (comFoto && (sin.manchas || 0) >= 2) escrito.push(C.seguranca.pele);
   if (r.cigarro === 'hoje') avisos.push('Fuma hoje: tom de alívio e explicação, sem cobrança (regra 22).');
   if (caso === 'sem_numero' && !c?.refazer && !semFoto) avisos.push('A página não mostrou número. Se ela quiser o número, mande o atalho /pirefazer.');
-  if (!sexo) avisos.push('Sem o sexo no teste: confira "cansada/cansado" e "disposta/disposto".');
+  if (!sexo) avisos.push('Sem o sexo no teste: confira "cansada/cansado" e "sozinha/sozinho".');
   avisos.push('Não é análise de pele: nada de produto, rotina, procedimento ou programa no vídeo (regras 4, 5 e 23).');
   const W = { ...V, sono:A.v.sono[r.sono] || null, movimento:A.v.movimento[r.movimento] || null, sol:A.v.sol[r.sol] || null, cigarro:A.v.cigarro[r.cigarro] || null };
   const assuntos = assuntosDe(A, [V.resposta ? pa(A, 'resposta', V) : null, r.sono === 'cansado' ? pa(A, 'sono_cansado', W) : SONO_RUIM.includes(r.sono) ? pa(A, 'sono_curto', W) : null,
@@ -599,13 +603,13 @@ function rotMov(t, d, c, E){
   Object.assign(V, escolheExemplo(t, ['força', 'músculo', 'potência', ...(t === 'pernas' ? ['pernas', 'cadeira'] : [])], { idade, sexo, habitos:new Set() }) || {});
   const b5 = W => W.ex_id ? bloco6('exemplo', T4C[4], exemploPartes(F, W), W, { f:'o exemplo é a imagem ' + W.ex_id + ' do kit' }) : importa4(F, W, T4C);
   out.push(b5(V));
-  // 6 · o fecho e a pergunta ("pra cuidar da força do seu braço"); o teste não pergunta o desejo
-  out.push(fecho4(F, V, T4C, { ver:false, medirTxt:M.medir, desejo:M.desejo }));
+  // 6 · o fecho A do braço ou das pernas (16/11); o teste não pergunta o desejo nem o que ela já tentou
+  out.push(fecho4(F, V, T4C, { ver:false, medirTxt:M.medir, desejo:M.desejo, pergunta:M.fecho.pergunta, f:M.fecho.f }));
   cabe(out, MAX_CURTO, [[V.ex_id ? 'exemplo' : '', V.ex_id ? b5({ ...V, ex_id:null }) : null]]);
   if (c?.simples) avisos.push('Leitura do kit: ' + c.simples);
   if (f === 4) avisos.push('Faixa 4: fale com ela também por escrito (regra 17).');
   if (!V.resposta) avisos.push('Sem a resposta dela ao áudio: a abertura usa o rótulo do teste. Cole a resposta no campo do passo 2 para abrir com as palavras dela.');
-  if (!sexo) avisos.push('Sem o sexo no teste: confira "disposta/disposto" na pergunta.');
+  if (!sexo) avisos.push('Sem o sexo no teste: confira a concordância (cansada/cansado).');
   const assuntos = assuntosDe(A, [V.resposta ? pa(A, 'resposta', V) : null, f >= 3 && c?.titulo ? pa(A, 'forca_teste', { resultado:c.titulo }) : null], { hormonal:hormonal(sexo, idade) });
   return { blocos:out.filter(Boolean), avisos, porEscrito:[C.seguranca.movimento], assuntos, rotulo:V.resposta || M.rotulo, desejo:M.desejo };
 }
@@ -656,15 +660,16 @@ function rotEmag(d, E){
   const id5 = W => habFrase ? 'habito' : W.ex_id ? 'exemplo' : 'importa';
   const b5 = W => habFrase || W.ex_id ? bloco6(id5(W), T4[4], [habFrase, ...exemploPartes(F, W)], W, { f:'PROMPT-NARRATIVA v4' + (W.ex_id ? '; o exemplo é a imagem ' + W.ex_id + ' do kit' : '') }) : importa4(F, W, T4);
   out.push(b5(V));
-  // 6 · o fecho e a pergunta com o objetivo dela
+  // 6 · o fecho B (16/11): o quiz já perguntou o que ela tentou; usa a resposta e pede licença pra explicar
   const medir = [['5menos', '6'].includes(r.sono) || sin.includes('ronco') ? 'sono' : null, sin.includes('metabolica') || sin.includes('sem_exames') ? 'glicose' : null,
     sin.includes('sop') || sin.includes('menopausa') || faixaH ? 'hormonio' : null, sin.includes('sem_exames') || lst('exames').includes('pressao') ? 'pressao' : null, sin.includes('tireoide') ? 'exames' : null].filter(Boolean);
   const desejo = Q.objetivo[r.objetivo] || Q.desejo_sem;
-  out.push(fecho4(F, V, T4, { ver:F.ver_respostas, medir, desejo }));
+  const marcouNenhum = String(r.tentou || '').split('+').includes('nenhum');
+  out.push(fecho4(F, V, T4, { ver:false, antes:V.tentou ? Q.fecho.tentou : marcouNenhum ? Q.fecho.nenhum : null, F:Q.fecho, medir, desejo, pergunta:Q.fecho.pergunta, f:Q.fecho.f }));
   cabe(out, MAX_LONGO, [['porque', ligs.length > 2 ? b4(2) : null], [id5(V), V.ex_id ? b5({ ...V, ex_id:null }) : null]]);
   if (d.imc) avisos.push(`IMC ${n1(d.imc)} (${d.faixa || 'sem faixa'}) fica fora da fala; só por escrito se ela perguntar (regra 22).`);
   if (r.fase === 'gravida') avisos.push('Grávida: peso não é meta agora; nada de dieta, nem por escrito.');
-  if (!sexo) avisos.push('Sem o sexo no teste: confira "disposta/disposto" na pergunta.');
+  if (!sexo) avisos.push('Sem o sexo no teste: confira a concordância (cansada/cansado).');
   const W = { ...V, sono:A.v.sono[r.sono] || null };
   const assuntos = assuntosDe(A, [V.resposta ? pa(A, 'resposta', V) : null, sin.includes('remedio') ? pa(A, 'remedio', W) : null, sin.includes('metabolica') && V.exames ? pa(A, 'exames', W) : null,
     sin.includes('sem_exames') ? pa(A, 'sem_exames', W) : null, ['5menos', '6'].includes(r.sono) ? pa(A, 'sono_curto', W) : null, sin.includes('ronco') ? pa(A, 'ronco', W) : null,
@@ -698,13 +703,13 @@ function rotLong(d, E){
   Object.assign(V, escolheExemplo('quiz-longevidade', [...(LIGA_LONG[prin] || []), 'longevidade'], { idadeMax:TETO_LONG[r.idade], sexo, habitos:new Set() }) || {});
   const b5 = W => W.ex_id ? bloco6('exemplo', T4C[4], exemploPartes(F, W), W, { f:'o exemplo é a imagem ' + W.ex_id + ' do kit' }) : importa4(F, W, T4C);
   out.push(b5(V));
-  // 6 · o fecho e a pergunta com o objetivo de 10 anos
+  // 6 · o fecho A (16/11) com o objetivo de 10 anos: "pra [objetivo], você já tentou cuidar disso antes, sozinha ou com alguém?"
   const desejo = obj[0] || (V.rotulo ? preenche(Q.desejo_sem, { de_rotulo:deArt(V.rotulo) }) : null) || 'cuidar da sua saúde';
-  out.push(fecho4(F, V, T4C, { ver:false, medirTxt:Q.medir, desejo }));
+  out.push(fecho4(F, { ...V, sozinha:gen(sexo, 'sozinha', 'sozinho') }, T4C, { ver:F.ver_respostas, medirTxt:Q.medir, desejo, pergunta:Q.fecho.pergunta, f:Q.fecho.f }));
   cabe(out, MAX_CURTO, [[V.ex_id ? 'exemplo' : '', V.ex_id ? b5({ ...V, ex_id:null }) : null]]);
   if (inc.length > 1) avisos.push('Também marcou: ' + inc.filter(x => x !== prin).map(x => LONG.incomoda[1][x]).join('; ') + '.');
   if (r.ajuda) avisos.push(`Prefere fazer: ${LONG.ajuda[1][r.ajuda] || r.ajuda}.`);
-  if (!sexo) avisos.push('O quiz não pergunta o sexo: confira "disposta/disposto" na pergunta.');
+  if (!sexo) avisos.push('O quiz não pergunta o sexo: confira "sozinha/sozinho" no fecho.');
   const assuntos = assuntosDe(A, [V.resposta ? pa(A, 'resposta', V) : null, ...inc.filter(x => x !== 'nada').map(x => pa(A, 'incomoda', { incomoda:LONG.incomoda[1][x].toLowerCase() })),
     at ? pa(A, 'atrapalha', { atrapalha:LONG.atrapalha[1][at].toLowerCase() }) : null, r.ajuda ? pa(A, 'ajuda', { ajuda:LONG.ajuda[1][r.ajuda].toLowerCase() }) : null],
     { hormonal:hormonal(sexo, TETO_LONG[r.idade]) });
@@ -751,8 +756,13 @@ function textoEstoque(b, nome){
     + (R.assuntos?.length ? `\nASSUNTOS PARA A CONVERSA\n${lista(R.assuntos)}` : '');
   return nome ? t.replace(/\{nome\}/g, nome) : t;
 }
-// 13/11 (v4): por escrito depois do vídeo: "Pode me responder sim ou não." (depoisVideo, nos Ajustes do CRM) e as do teste
-const escritoDe = b => [window.cfgTexto?.('depoisVideo', b.e?.funil) || 'Pode me responder sim ou não.', ...(b.est?.porEscrito || [])];
+// Por escrito depois do vídeo (depoisVideo, nos Ajustes do CRM) e as do teste. 16/11 (d-20261116-fecho-pelo-teste): a pergunta
+// não é mais de sim ou não. Padrão do fecho A: ESCRITO_A; no emagrecimento (fecho B), o do estoque. O "sim ou não" guardado
+// nos Ajustes de antes não volta.
+const ESCRITO_A = 'Me responde aqui, do jeito mais fácil pra você: texto ou áudio.', ESCRITO_VELHO = /^Pode me responder sim ou não\.?$/;
+const escritoBase = (teste, v) => { if (!v || ESCRITO_VELHO.test(String(v).trim())) v = ESCRITO_A;
+  return v === ESCRITO_A && teste === 'quiz-emagrecimento' ? EST?.['quiz-emagrecimento']?.fecho?.escrito || v : v; };
+const escritoDe = b => [escritoBase(b.teste, window.cfgTexto?.('depoisVideo', b.e?.funil)), ...(b.est?.porEscrito || [])];
 const palavras = b => (b.est?.blocos || []).reduce((s, bl) => s + (bl.opcoes[idx(b, bl)].replace(/\{nome\}/g, 'nome').match(/[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*/gu) || []).length, 0);
 const CURTOS = new Set(['braco', 'pernas', 'quiz-longevidade']);
 const destaca = s => esc(s).replace(/\{nome\}/g, '<b class="rot-n">{nome}</b>');
@@ -987,7 +997,10 @@ function claude(e){
   const partes = b.roteiro ? partesClaude(b.roteiro.roteiro) : null, ok = !!(partes && partes.blocos.length);
   // 14/11 (v5): roteiro do Claude da pele-idade sem o bloco "O caminho" foi escrito pelo prompt de antes ("mesmo quando eu durmo", o cartão
   // "O que importa", a pergunta antiga): fica na tela para ler, e o gravador começa pelo estoque.
-  const velho = ok && b.teste === 'pele-idade' && !partes.blocos.some(x => x.id === 'cl-caminho' || x.id === 'refazer' || /consegue refazer hoje/i.test(x.fala));
+  // 16/11 (d-20261116-fecho-pelo-teste): roteiro do Claude, de qualquer teste, que fecha com a pergunta de antes ("…você se interessaria?",
+  // "estaria disposta a investir") também começa pelo estoque, que já tem o fecho A ou B.
+  const velho = ok && (b.teste === 'pele-idade' && !partes.blocos.some(x => x.id === 'cl-caminho' || x.id === 'refazer' || /consegue refazer hoje/i.test(x.fala))
+    || partes.blocos.some(x => /voc[êe] se interessaria\?|estaria dispost[ao] a investir/i.test(x.fala)));
   const ue = b.usarEstoque ?? velho;   // o de antes da v5 começa no estoque; o botão "Usar o do Claude" segue valendo
   return { estado:b.estado, erro:b.erro, lido:!!b.lido, tem:ok, velho, usar:ok && !ue, usarEstoque:!!ue, partes, palavras:b.roteiro?.palavras ?? null,
     conferir:b.roteiro?.avisos || [], modelo:b.roteiro?.modelo || '', respUsada:b.respUsada ?? null, teto:USO };
@@ -1078,5 +1091,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { exemplos, assuntos, catalogo:id => (EXE || []).find(x => x.id === id) || null, carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
+return { escritoBase:(e, v) => escritoBase(testeDe(e), v), exemplos, assuntos, catalogo:id => (EXE || []).find(x => x.id === id) || null, carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
 })();

@@ -1,5 +1,5 @@
 {
- "versao": "estoque-v5 · 14/11/2026 (pele-idade: abertura nova, como se forma, como se trabalha, o caminho em frentes e a pergunta nova do Lucca; em todos: ponte da abertura, \"atividade física\", protetor com cor) · antes: estoque-v4 · 13/11/2026 (o fio narrativo em todos os testes; fecho \"estaria disposta a investir nisso\"; assuntos para a conversa)",
+ "versao": "estoque-v6 · 16/11/2026 (fecho pelo teste: A, que pergunta o que ela já tentou, na pele, pele-idade, braço, pernas e longevidade; B, que usa o que ela marcou e pede licença pra explicar, no emagrecimento; sai \"você se interessaria?\" e o \"sim ou não\") · antes: estoque-v5 · 14/11/2026 (pele-idade: abertura nova, como se forma, como se trabalha, o caminho em frentes e a pergunta nova do Lucca; em todos: ponte da abertura, \"atividade física\", protetor com cor) · antes: estoque-v4 · 13/11/2026 (o fio narrativo em todos os testes; fecho \"estaria disposta a investir nisso\"; assuntos para a conversa)",
  "sobre": "Blocos do roteiro do vídeo de análise, montado na hora pela Caixa (roteiro.js), sem API. Desde 13/11 (v4, d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md) o FIO em 6 blocos, um respondendo ao anterior: 1 incômodo dela + \"acho que sei por quê\"; 2 boa notícia, o número dela ao lado da idade e a ponte \"vem daqui:\"; 3 onde aparece; 4 \"E por que…?\" com as respostas dela ligadas; 5 o outro hábito e a imagem do kit (mesmo sexo, idade perto); 6 o que dá pra ver × o que só medindo e a pergunta do Lucca. Entre chaves, o que a Caixa preenche com o dado do lead; frase sem o dado sai do bloco. Toda frase é editável nos Ajustes (e_<teste>_<caminho>). Chaves com \"_\" na frente (as versões antigas) e \"f\" (a fonte) ficam fora dos Ajustes.",
  "comum": {
   "seguranca": {
@@ -63,7 +63,7 @@
      "Isso dá para trabalhar: {rotulo_curto} e o que pesa por dentro."
     ],
     "interesse": [
-     "Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+     "Agora me conta, {nome}: você já tentou cuidar disso antes? Do rosto e da saúde junto, ou de um pedaço só? Me responde aqui."
     ],
     "contou_resposta": [
      "Você me contou: \"{rotulo}\"."
@@ -81,7 +81,7 @@
    "nota": "Frases da narrativa v3 (6 blocos soltos, até 13/11 15h50), fora do uso desde o fio v4. Não aparecem nos Ajustes."
   },
   "fio": {
-   "f": "d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md; PROMPT-NARRATIVA v4 (regras-narrativa-geral.md): cada bloco responde ao anterior e termina com a ponte; frases curtas, \"pra\", \"dá pra\"; zero promessa; a pergunta do fecho é a do Lucca, palavra por palavra · v5 (14/11, pedido do Lucca vendo o gravador): a ponte da abertura deixa de ser \"acho que sei por quê\" (\"parece fraco\") e vira \"dá pra ver de onde isso vem. Vou te mostrar.\"; a pergunta do fecho é a nova dele (\"…que coubesse na sua rotina e valesse o investimento, você se interessaria?\"); \"se mexe\" vira \"atividade física\"; protetor \"com cor\" (o comum não barra a luz visível: Mahmoud 2010, PMID 20410914; Castanedo-Cazares 2014, PMID 24313385; Boukari 2015, PMID 25443629; conferidos no PubMed em 14/11)",
+   "f": "d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md; PROMPT-NARRATIVA v4 (regras-narrativa-geral.md): cada bloco responde ao anterior e termina com a ponte; frases curtas, \"pra\", \"dá pra\"; zero promessa; a pergunta do fecho é a do Lucca, palavra por palavra · v5 (14/11, pedido do Lucca vendo o gravador): a ponte da abertura deixa de ser \"acho que sei por quê\" (\"parece fraco\") e vira \"dá pra ver de onde isso vem. Vou te mostrar.\"; a pergunta do fecho é a nova dele (\"…que coubesse na sua rotina e valesse o investimento, você se interessaria?\"); \"se mexe\" vira \"atividade física\"; protetor \"com cor\" (o comum não barra a luz visível: Mahmoud 2010, PMID 20410914; Castanedo-Cazares 2014, PMID 24313385; Boukari 2015, PMID 25443629; conferidos no PubMed em 14/11) · v6 (16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): a pergunta de interesse saiu; cada teste tem o seu fecho, em <teste>.fecho)",
    "abertura": [
     "{nome}, aqui é o doutor Lucca Marques."
    ],
@@ -162,7 +162,6 @@
    "trabalhar": [
     "Isso dá pra trabalhar."
    ],
-   "pergunta": "{nome}, pra finalizar, eu tenho uma pergunta: se hoje você encontrasse um acompanhamento pra {desejo}, que coubesse na sua rotina e valesse o investimento, você se interessaria?",
    "medir_itens": {
     "sono": "sono",
     "glicose": "glicose",
@@ -170,10 +169,7 @@
     "pressao": "pressão",
     "musculo": "o músculo",
     "exames": "os exames"
-   },
-   "espero": [
-    "Espero que a análise tenha te ajudado."
-   ]
+   }
   },
   "assuntos": {
    "f": "ASSUNTOS PARA A CONVERSA (PROMPT-NARRATIVA v4): sem o roteiro do Claude, o que ela marcou e o vídeo deixou para medir ou conversar, até 5; mulher de 40 a 60, sempre a fase hormonal (o sintoma primeiro; nunca ligada a pele, rosto ou envelhecer: reposicao-hormonal-mulher.md, Res. CFM 1.999/2012)",
@@ -631,7 +627,11 @@
    "parar_gastar": "parar de gastar com o que não funciona"
   },
   "desejo_sem": "cuidar {de_queixa}",
-  "desejo_pele": "cuidar da sua pele"
+  "desejo_pele": "cuidar da sua pele",
+  "fecho": {
+   "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A (o teste não pergunta o que ela já tentou), depois do \"só medindo\"",
+   "pergunta": "Agora me conta, {nome}: você já tentou cuidar disso antes? Do rosto e da saúde junto, ou de um pedaço só? Me responde aqui."
+  }
  },
  "pernas": {
   "abertura": {
@@ -758,7 +758,11 @@
    "pergunta_bem": "E por que isso importa?",
    "mecanismo": "Porque potência é força com velocidade, e é das primeiras coisas que o músculo perde com os anos."
   },
-  "medir": "pressão, glicose, o músculo"
+  "medir": "pressão, glicose, o músculo",
+  "fecho": {
+   "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A das pernas",
+   "pergunta": "{nome}, me conta: você já tentou cuidar disso antes? Da força das pernas, com treino ou com médico? Me responde aqui."
+  }
  },
  "braco": {
   "abertura": {
@@ -884,7 +888,11 @@
    "pergunta_bem": "E por que isso importa?",
    "mecanismo": "Porque potência é força com velocidade, e é das primeiras coisas que o músculo perde com os anos."
   },
-  "medir": "pressão, glicose, o músculo"
+  "medir": "pressão, glicose, o músculo",
+  "fecho": {
+   "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A do braço",
+   "pergunta": "{nome}, me conta: você já tentou cuidar disso antes? Da força do braço, com treino ou com médico? Me responde aqui."
+  }
  },
  "quiz-emagrecimento": {
   "abertura": {
@@ -1054,7 +1062,17 @@
   "remedio": [
    "Você toma remédio todo dia: não pare nem troque por conta própria."
   ],
-  "desejo_sem": "cuidar do seu peso"
+  "desejo_sem": "cuidar do seu peso",
+  "fecho": {
+   "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho B (o quiz já perguntou o que ela tentou: usa a resposta e pede licença pra explicar)",
+   "tentou": "Você me contou que já tentou {tentou}.",
+   "nenhum": "Você me contou que ainda não tentou nada específico. Isso é bom: dá pra começar pelo certo.",
+   "medir": "O que pesa por dentro, {medir}, nenhuma dieta enxerga: só medindo.",
+   "medir_sem": "O que pesa por dentro, nenhuma dieta enxerga: só medindo.",
+   "trabalhar": "Pelo que eu vi nas suas respostas, isso dá pra trabalhar.",
+   "pergunta": "{nome}, quer que eu te explique como eu faria no seu caso?",
+   "escrito": "Pode me responder por aqui mesmo, em áudio ou texto."
+  }
  },
  "quiz-longevidade": {
   "abertura": {
@@ -1171,7 +1189,11 @@
    "independente": "não depender de ninguém"
   },
   "medir": "pressão, glicose, o músculo",
-  "desejo_sem": "cuidar {de_rotulo}"
+  "desejo_sem": "cuidar {de_rotulo}",
+  "fecho": {
+   "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A da longevidade, com o objetivo de 10 anos dela (o quiz pergunta o que trava, não o que ela já tentou)",
+   "pergunta": "{nome}, me conta: pra {desejo}, você já tentou cuidar disso antes, {sozinha} ou com alguém? Me responde aqui."
+  }
  },
  "pele-idade": {
   "_sobre": "04/11/2026 · livowa.com/pele (funnelId pele-idade): a idade que o rosto aparenta ao lado da idade real, e a vitalidade pelas respostas. Não é análise de pele: nada de produto, rotina, procedimento ou programa (regras 4, 5 e 23). Frases com número só de livowa-empresa/tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11); no máximo um número de estudo por vídeo, no mecanismo (regra 15).",
@@ -1400,14 +1422,14 @@
    ]
   },
   "fecho": {
-   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 6 (o que dá pra ver × o que só medindo; o desejo de 10 anos dela como verbo, na pergunta do Lucca); \"parecer a idade que sente\" vira \"se reconhecer no espelho\"",
+   "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A, o da Carla: o caminho pro desejo de 10 anos dela e a pergunta do que ela já tentou; \"parecer a idade que sente\" vira \"se reconhecer no espelho\". Saem \"Espero que a análise tenha te ajudado.\" e a pergunta de interesse",
    "desejo": {
     "parecer": "se reconhecer no espelho",
     "devagar": "cuidar da saúde com o passar dos anos"
    },
    "desejo_sem": "cuidar da sua saúde e do seu rosto",
-   "caminho_pra": "Esse seria o caminho pra você {desejo}.",
-   "objetivo": "alcançar esse objetivo"
+   "caminho_pra": "Esse é o caminho pra você {desejo}.",
+   "pergunta": "Agora me conta, {nome}: você já tentou cuidar disso antes? Do rosto e da saúde junto, ou de um pedaço só? Me responde aqui."
   },
   "escrito": {
    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): POR ESCRITO DEPOIS (pressão ou glicose alta marcada)",
@@ -1469,10 +1491,10 @@
    "interesse": {
     "f": "12/11 (v3, decisão d-20261112-proximo-passo-analise, nas palavras do Lucca): o vídeo fecha com a pergunta de interesse, sem preço (roteiro-v3-1211.md, Etapa 2, bloco 6). 12/11 noite (regras-ajuste-pele-idade.md): vai no mesmo bloco da ponte, que já diz o desejo (o desejo aparece uma vez); o incômodo vira 'o que te incomoda no espelho' (sem repetir a frase dela nem 'e … e').",
     "com_espelho": [
-     "{nome}, isso dá para trabalhar: o que pesa por dentro e o que te incomoda no espelho. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+     "Agora me conta, {nome}: você já tentou cuidar disso antes? Do rosto e da saúde junto, ou de um pedaço só? Me responde aqui."
     ],
     "sem_nada": [
-     "{nome}, isso dá para trabalhar. Se você quiser, eu te mostro numa conversa rápida como seria o acompanhamento comigo. Você se interessaria?"
+     "Agora me conta, {nome}: você já tentou cuidar disso antes? Do rosto e da saúde junto, ou de um pedaço só? Me responde aqui."
     ]
    },
    "habito": {

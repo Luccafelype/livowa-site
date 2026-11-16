@@ -761,7 +761,7 @@ const cfg = (k, l, funil) => cfgDe(k, l, escoposDe(l, funil)).v;
 const cadeiaTexto = (k, l) => { const tx = window.KITS?.texto?.(k); if (!tx) return escoposDe(l);
   const ts = tx.dono ? [tx.dono] : tx.porTeste ? (window.KITS.funilAtual ? [window.KITS.funilAtual] : testesDe(l)) : [];
   return [...coortesDe(l).map(c => 'coorte:' + c), ...ts.map(t => 'teste:' + t), 'geral']; };
-// 13/11 (v4): o roteiro do estoque lê os textos do CRM (o "Pode me responder sim ou não." de depois do vídeo)
+// 13/11 (v4): o roteiro do estoque lê os textos do CRM (o "por escrito" de depois do vídeo; 16/11: não é mais "sim ou não")
 window.cfgTexto = (k, funil) => { const l = LEADS.find(x => x.codigo === codigoAtual) || { codigo:codigoAtual }; return cfgDe(k, l, escoposDe(l, funil)).v; };
 window.KITS?.ligar?.((chave, padrao) => {
   const l = LEADS.find(x => x.codigo === codigoAtual) || null;
@@ -1864,7 +1864,7 @@ function claudeHtml(i){
   if (cl?.tem && cl.estado !== 'gerando') bts.push(`<button type="button" class="sec pi-cl-estoque" data-kb="${i}">${cl.usarEstoque ? 'Usar o do Claude' : 'Usar o do estoque'}</button>`);
   if (bts.length) h += `<div class="l-acoes">${bts.join('')}</div>`;
   const est = window.ROTEIRO?.doEstoque?.(b.e);
-  const escrito = cl?.usar && cl.partes.porEscrito.length ? cl.partes.porEscrito : [V3.depoisVideo, ...(est?.porEscrito || [])];   // 13/11 (v4)
+  const escrito = cl?.usar && cl.partes.porEscrito.length ? cl.partes.porEscrito : [window.ROTEIRO?.escritoBase?.(b.e, V3.depoisVideo) || V3.depoisVideo, ...(est?.porEscrito || [])];   // 13/11 (v4); 16/11: o por escrito do fecho A/B, nunca o "sim ou não"
   h += escrito.map((t, k) => kitMsg(t, i, { rotulo:k ? 'Por escrito também' : 'Logo depois do vídeo, por escrito' })).join('');
   return h;
 }

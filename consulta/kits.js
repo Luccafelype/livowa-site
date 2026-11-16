@@ -775,7 +775,7 @@ const V3_PI = {
   audioTexto:'{nome}, recebi o seu teste ({lv}). Nas próximas horas eu te mando a sua análise.',   // 13/11: texto do Lucca ("Confirmar recebimento")
   audioFala:'Oi! Aqui é o doutor Lucca Marques. Recebi o seu teste e eu mesmo vou olhar com calma o seu resultado e o que você respondeu. Enquanto isso, me conta: o que te fez fazer o teste agora?',   // 13/11: o nome decidido; sem "foto" (vale para todos os testes)
   audioDica:'Grave uma vez (uns 15 s, sem nome), deixe salvo e reenvie sempre o mesmo: grave na conversa "Eu" (você mesmo) do WhatsApp Business e encaminhe.',
-  depoisVideo:'Pode me responder sim ou não.',   // 13/11 (v4, d-20261113-fio-narrativo-fecho-investimento): a pergunta agora é a do fim do vídeo
+  depoisVideo:'Me responde aqui, do jeito mais fácil pra você: texto ou áudio.',   // 16/11 (d-20261116-fecho-pelo-teste): o fecho pergunta o que ela já tentou, não é sim ou não (no emagrecimento, o roteiro troca pelo do fecho B)
   convite:'Que bom, {nome}. Vamos conversar 15 minutos por vídeo: eu entendo melhor o seu caso e te mostro como funciona. Tenho {h1} ou {h2}. Qual fica melhor? Se preferir outro horário, escolha aqui: {link}',
   conviteAgora:'Se ela disser que pode agora: ligue agora ("show rate de agora é 100%", LN pdf 21).',
   preco:'Depende do que você precisa, por isso eu prefiro te mostrar na conversa. São 15 minutos e você decide com calma. Tenho {h1} ou {h2}.',
