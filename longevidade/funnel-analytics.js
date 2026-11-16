@@ -94,7 +94,9 @@ export function track(eventType, opts = {}) {
     if (!cfg.enabled) return;
     const props = { ...(opts.props || {}) };
     if (!contextSent) { Object.assign(props, collectContext()); contextSent = true; }
-    if ((eventType === 'complete' || eventType === 'cta_click') && !props.lv) { const lv = getLv(); if (lv) props.lv = lv; }
+    // 16/11 (Lucca: "eu deveria saber quem foi a pessoa"): a marca do link pessoal vai em TODO evento, para saber até onde
+    // cada pessoa foi e em qual tela parou, e não só em quem terminou
+    if (!props.lv) { const lv = getLv(); if (lv) props.lv = lv; }
     send('log_funnel_event', {
       p_event_id: uuid(),
       p_funnel_id: cfg.funnelId,
