@@ -217,7 +217,7 @@ export const CONFIG = {
       'O que incomoda: ' + curto('incomoda'),
       'O que trava: ' + curto('atrapalha')
     ],
-    final: 'Gerando o seu código…',
+    final: 'Preparando o seu resultado…',
     durationMs: 3800
   },
 

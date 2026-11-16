@@ -6,7 +6,7 @@
 // Conteúdo: config.js. Este arquivo não precisa mudar para trocar textos.
 // ============================================================
 
-import { CONFIG } from './config.js?v=lg5';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
+import { CONFIG } from './config.js?v=lg6';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
 import * as Analytics from './funnel-analytics.js?v=lg3';
 const FLOW = CONFIG.flow;
 const N = FLOW.length;

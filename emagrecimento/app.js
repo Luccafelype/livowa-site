@@ -397,11 +397,11 @@ function montarResultado(){
     <p class="escuro">${esc(escuro)} A boa notícia: isso se olha com calma, com exame e conversa, sem adivinhar.</p>
     <h3>O que este teste não consegue fazer</h3>
     <p>Um teste não pede exame, não examina você e não conhece a sua história. ${n ? `Para saber se ${n === 1 ? 'esse ponto pesa' : 'esses pontos pesam'} no seu caso` : 'Para saber o que pesa no seu caso'}${obj}, alguém precisa olhar as suas respostas com você.</p>
-    <div class="quer"><b>É isso que você quer resolver?</b><p>Se for, mande o seu código para o Dr. Lucca. Ele lê as suas respostas${n ? `, começando ${n === 1 ? 'pelo ponto' : 'pelos pontos'} acima,` : ''} e responde você.</p></div>
+    <div class="quer"><b>É isso que você quer resolver?</b><p>Se for, fale com o Dr. Lucca. Ele lê as suas respostas${n ? `, começando ${n === 1 ? 'pelo ponto' : 'pelos pontos'} acima,` : ''} e responde você.</p></div>
     <details class="duvidas"><summary>Antes de mandar</summary>
       <p><b>Já tentei de tudo. Vale a pena?</b>${tent.length ? ` Você já tentou ${esc(lista(tent.map(x => ROT.tentou[x])))}.` : ''} As perguntas de saúde vieram antes justamente para mostrar o que as dietas deixam de fora.</p>
       <p><b>Preciso ter exames em mãos?</b> Não. Se tiver exames do último ano, separe uma foto: ajuda na conversa.</p>
-      <p><b>Mandar o código me compromete?</b> Não. É uma mensagem com o seu código. O que fazer depois, você decide.</p>
+      <p><b>Mandar a mensagem me compromete?</b> Não. É só uma mensagem. O que fazer depois, você decide.</p>
     </details>
     <p class="enquanto"><b>Enquanto isso:</b> ${esc(passo)}</p>`;
 
@@ -426,13 +426,13 @@ function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''
 const escolha = () => 'explicar';
 function prepararFechamento(){
   const nome = nomeBonito();
-  $('cod').textContent = meuCodigo();
+  // 16/11 (Lucca: "nada de código" em nenhum funil): o código saiu da tela; segue na mensagem pronta e no banco
   // 03/11 ~23h (Lucca): sem promessa de vídeo nem de prazo; o título é o passo, a frase é o problema dela
-  $('f-tit').textContent = nome ? `${nome}, mande o seu código para o Dr. Lucca` : 'Mande o seu código para o Dr. Lucca';
+  $('f-tit').textContent = nome ? `${nome}, fale com o Dr. Lucca sobre o seu caso` : 'Fale com o Dr. Lucca sobre o seu caso';
   $('f-sub').textContent = ULT.n ? `${NUM_TXT[ULT.n] ? NUM_TXT[ULT.n][0].toUpperCase() + NUM_TXT[ULT.n].slice(1) : ULT.n} ${ULT.n === 1 ? 'ponto das suas respostas merece' : 'pontos das suas respostas merecem'} o olhar de um médico.`
     : `O que mais pesa no seu caso, ${PERFIL[ULT.perfil] || 'o seu resultado'}, merece o olhar de um médico.`;
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
+  $('wa-txt').textContent = 'Quero que o Dr. Lucca olhe o meu caso';
   $('cta-dm').hidden = false;
 }
 const fimProps = e => ({ escolha:e, codigo:meuCodigo() });

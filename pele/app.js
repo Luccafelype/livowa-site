@@ -21,9 +21,11 @@
 // 11/11 23h (lote l-mwcww64n): o resultado vira a TELA FINAL (a antiga 'fechar' saiu). O botão do cartão verde abre o
 // WhatsApp com a mensagem pronta e o código (cta_click canal whatsapp, como a tela final gravava), com o Direct, o código
 // e o cronômetro real de 30 min no mesmo cartão. Título com o nome e o incômodo do espelho; texto com o desejo de 10 anos.
+// 15/11 (lote l-mwhz04rg): o detector de rosto é aquecido durante o quiz e a câmera abre sem esperar por ele; a instrução
+// do oval não pisca mais (scan.js); o “Seu código: LV-XXXX” saiu do cartão final (segue na mensagem e no banco).
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
-import * as Scan from './scan.js?v=3';
+import * as Scan from './scan.js?v=4';
 import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=2';
 
 const $ = id => document.getElementById(id);
@@ -127,9 +129,16 @@ function pintarBarra(s){
   window.__barra = Math.round(p*100);
 }
 
+// 15/11 (Lucca: a câmera levou 10-15 s para abrir): o detector de rosto (~7 MB entre MediaPipe, wasm e modelo) começa a
+// baixar e a ser criado quando a pessoa passa da capa, e não mais no toque que abre a câmera. Uma vez só; se falhar
+// (rede), Scan.abrir() tenta de novo na hora da câmera.
+let aqueceu = false;
+function aquecerCamera(){ if (aqueceu) return; aqueceu = true; setTimeout(() => { Scan.aquecer().catch(() => {}); }, 700); }   // 0,7 s: depois da troca de tela e do 1º evento
+
 let cur = 'capa';
 function show(s){
   if (cur === 'scan' && s !== 'scan') Scan.parar();
+  if (s !== 'capa') aquecerCamera();
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
   cur = s;
   track('step_view', { stepId:s, stepIndex:ORDEM.indexOf(s) });
@@ -384,7 +393,7 @@ async function enviar(f){
   try {
     const r = await fetch(PELE_ENDPOINT, { method:'POST', signal:ctl.signal, headers:{ 'Content-Type':'application/json', apikey:SUPA_KEY }, body:JSON.stringify(corpo) });
     const j = await r.json().catch(() => null);
-    if (r.status === 429){ clearInterval(tick); gravarLimite(); return erro('Muita gente fez a análise hoje e a automática parou por agora. As suas respostas chegaram: mande o seu código ao Dr. Lucca e ele te responde direto.', true, true); }
+    if (r.status === 429){ clearInterval(tick); gravarLimite(); return erro('Muita gente fez a análise hoje e a automática parou por agora. As suas respostas chegaram: fale com o Dr. Lucca e ele te responde direto.', true, true); }
     if (!r.ok || !j){ clearInterval(tick); return erro('Pode ser a internet. É só tentar de novo.', true); }
     if (!j.ok){ clearInterval(tick); return erro('A foto não deu para ler direito. Tente de novo com luz frontal, o rosto bem iluminado e inteiro no oval.', false); }
     const resta = MIN - (performance.now() - t0);
@@ -579,8 +588,7 @@ function mensagem(){
 }
 const linkWA = () => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 function prepararFechamento(){
-  $('cod').textContent = meuCodigo();   // o código fica na última linha do cartão
-  $('r-cta').href = linkWA();
+  $('r-cta').href = linkWA();   // 15/11 (Lucca): o código saiu da tela; segue na mensagem pronta e no banco (complete, props.codigo)
 }
 const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo() });
 

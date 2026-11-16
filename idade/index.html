@@ -335,8 +335,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
       <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
       <a class="link-alt" id="f-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
     </div>
-    <p class="cod-ref"><span id="f-cod">Seu código: <b id="res-cod">LV-0000</b></span></p>
-  </section>
+      </section>
 
   <!-- ===================== PELE ===================== -->
   <section class="screen c" data-s="pele-inicio" data-p="20" hidden>
@@ -398,7 +397,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
     <span class="pill">Último passo</span>
     <h2 id="pr-tit">Sua foto está <em>em análise</em></h2>
     <p class="sub" id="pr-sub">Só falta um passo para você receber a análise total da sua pele: mandar uma mensagem para o Dr. Lucca. Escolha o WhatsApp ou o Direct do Instagram.</p>
-    <p class="cod-ref">A mensagem já vai pronta, com o seu código <b id="pr-cod">LV-0000</b>. No Direct, ela vai copiada: é só colar.</p>
+    <p class="cod-ref">A mensagem já vai pronta. No Direct, ela vai copiada: é só colar.</p>
   </section>
 
   <div class="cta" id="cta-bar"><div>
@@ -789,7 +788,6 @@ function resultado(c){
   const eq = faixaEquivalente(sexo, rel), pc = Math.round(percentil(sexo, idade, rel));
   // decisão do Lucca (28/10): o resultado NÃO aparece na tela; vai no evento 'complete' com o código e ele responde por áudio
   // 02/11: a tela repete o que a câmera mediu (a pessoa viu o tempo correr) e cita as respostas dela em cada frase
-  $('res-cod').textContent = meuCodigo();
   $('res-medida').textContent = `${c.reps} movimentos em ${fmt(t)}\u00a0s`;   // 09/11 (Lucca): "movimentos", não "levantadas"
   personalizar();
   pernas = { rel, idade, faixa:eq.txt };
@@ -893,11 +891,11 @@ function mensagemFim(){
   return `Oi, Dr. Lucca! Fiz o teste das pernas, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
 }
 function prepararFechamento(){
-  $('res-cod').textContent = meuCodigo();
+  // 16/11 (Lucca: "nada de código" em nenhum funil): o código saiu da tela; segue na mensagem pronta e no banco
   $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado, sem custo';
   $('f-sub').textContent = '';
   $('f-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagemFim())}`;
-  $('f-wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
+  $('f-wa-txt').textContent = 'Quero que o Dr. Lucca me explique';
   $('f-dm').hidden = false;
 }
 const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
@@ -1322,7 +1320,7 @@ async function enviarPele(){
       body: JSON.stringify({ imagens, modo, ocultas, codigo:meuCodigo() }) });
     const j = await r.json().catch(() => null);
     clearInterval(tick);
-    if (r.status === 429) return erroPele('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou mande o seu código ao Dr. Lucca e fale com ele direto.', true, true);
+    if (r.status === 429) return erroPele('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou fale direto com o Dr. Lucca.', true, true);
     if (!r.ok || !j) return erroPele('Pode ser a internet. É só tentar de novo.', true);
     if (!j.ok) return erroPele((j.dica ? j.dica + ' ' : '') + 'Tente de novo de frente para a luz, com o rosto inteiro na tela.', false);
     $('pele-bar').style.width = '100%'; $('pele-pct').textContent = '100%';
@@ -1339,7 +1337,6 @@ function resultadoPele(j){
   const { min, max } = j.faixa, idade = dadosOk ? (dados.idade ?? null) : null;
   peleRes = { min, max };
   $('pr-tit').innerHTML = (ultimoEnvio?.n || 1) > 1 ? 'Suas fotos estão <em>em análise</em>' : 'Sua foto está <em>em análise</em>';
-  $('pr-cod').textContent = meuCodigo();
   $('pr-sub').textContent = `Só falta um passo para você receber a análise total da sua pele${pernas ? ' e das suas pernas' : ''}: mandar uma mensagem para o Dr. Lucca. Escolha o WhatsApp ou o Direct do Instagram.`;
   ctaPernas();
   const { modo, ocultas, origem, n } = ultimoEnvio || {};

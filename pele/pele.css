@@ -223,8 +223,6 @@ b,strong{font-weight:700}
 .r-ponte .btn{background:var(--surface);color:var(--accent);min-height:64px;font-size:var(--tg);box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .r-ponte .btn.ico svg{width:26px;height:26px}
 .r-ponte .link-alt{color:var(--on-accent);margin-top:-4px}
-.r-cod{text-align:center;color:rgba(255,255,255,.9)}
-.r-cod b{color:var(--on-accent);letter-spacing:.04em;white-space:nowrap}
 .toast{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;width:min(440px,calc(100% - 32px));background:var(--fg);color:#fff;border-radius:var(--raio);padding:12px 16px;font-size:var(--t3);text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 .toast b{display:block;font-size:var(--t2)}
 .aviso-dm{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:20px}

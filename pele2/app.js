@@ -291,7 +291,7 @@ async function enviar(f){
   try {
     const r = await fetch(PELE_ENDPOINT, { method:'POST', signal:ctl.signal, headers:{ 'Content-Type':'application/json', apikey:SUPA_KEY }, body:JSON.stringify(corpo) });
     const j = await r.json().catch(() => null);
-    if (r.status === 429){ clearInterval(tick); return erro('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou mande o seu código ao Dr. Lucca e fale com ele direto.', true, true); }
+    if (r.status === 429){ clearInterval(tick); return erro('Muita gente fez a análise agora. Tente de novo em alguns minutos, ou fale direto com o Dr. Lucca.', true, true); }
     if (!r.ok || !j){ clearInterval(tick); return erro('Pode ser a internet. É só tentar de novo.', true); }
     if (!j.ok){ clearInterval(tick); return erro('A foto não deu para ler direito. Tente de novo de frente para a luz, com o rosto inteiro no oval.', false); }
     const resta = MIN - (performance.now() - t0);
@@ -600,12 +600,12 @@ function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''
 const escolha = () => 'explicar';
 function prepararFechamento(){
   const nome = nomeBonito();
-  $('cod').textContent = meuCodigo();
+  // 16/11 (Lucca: "nada de código" em nenhum funil): o código saiu da tela; segue na mensagem pronta e no banco
   const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado';
   $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
   $('f-sub').textContent = '';   // 09/11: decisão do Lucca de 03/11 (tirar os dois textos do A/B: vídeo um por um e 24 h)
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  $('wa-txt').textContent = 'Enviar meu código pelo WhatsApp';
+  $('wa-txt').textContent = 'Quero que o Dr. Lucca me explique';
   $('cta-dm').hidden = false;
 }
 const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo() });

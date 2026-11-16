@@ -4,6 +4,14 @@
 // baixo (#scan-dica) fica só para leitor de tela. Anel de risquinhos que acende, ✓ por lado (chips Esquerda/Frente/
 // Direita), foto automática, voz curta que o botão “Desligar voz” (canto inferior direito) desliga. Malha medida no próprio elemento de vídeo (Safari do
 // iPhone); vídeo e canvas espelhados pelo CSS (scaleX(-1)); o desenho é feito em coordenadas da imagem crua.
+// 15/11 (Lucca, lote l-mwhz04rg: “demorou muito para abrir a câmera, tipo 10-15 segundos, e deu uns mini bugs na hora de
+// orientar a posição da cabeça, alternando uma orientação e outra muito rapidamente, décimos de segundo”):
+//  (a) ABERTURA: o detector de rosto (MediaPipe + wasm + modelo, ~7 MB) só começava a baixar no toque que abre a câmera,
+//      e a câmera só era pedida depois dele. Agora aquecer() baixa e cria o detector durante o quiz (app.js chama na 2ª
+//      tela) e abrir() pede a câmera na hora: a imagem aparece enquanto o detector termina (“Só um instante…”).
+//  (b) ORIENTAÇÃO: cada limite ganhou folga para sair do aviso (histerese, passou()) e a instrução do oval só troca
+//      depois de ficar estável (estavel(): 0,5 s; 0,25 s para o “Segure”). A foto de frente sai com os mesmos limites;
+//      a de lado aceita a cabeça voltar 0,02 depois de ter chegado ao alvo (0,12), para o “Segure” não cair numa tremida.
 import { criarFace, FaceLandmarker, medir, pose, geometria, caixa, OVAL, NITIDEZ_MIN, subirTesta, olhoMedioY } from './rosto.js?v=2';
 
 const $ = id => document.getElementById(id);
@@ -17,11 +25,39 @@ const ORDEM = ['frente', 'esquerda', 'direita'];
 // yaw > 0,5 = a pessoa virou para a ESQUERDA dela (ver pose() em rosto.js). Na tela espelhada isso aparece à esquerda.
 const SINAL = { esquerda:1, direita:-1 };
 
-let face = null, stream = null, rodando = false, raf = null, ts = 0, quadro = 0;
+let face = null, faceP = null, sessao = 0, refez = false, stream = null, rodando = false, raf = null, ts = 0, quadro = 0;
 let feitoAte = 0, guiaAtual = '';
 let fotos = {}, segDesde = 0, narizAnt = null, ultM = null, ladoDesde = 0, cb = null, geo = null, ticks = [];
 
 const estagio = () => ORDEM.find(a => !fotos[a]) || 'fim';
+
+// ---------- detector aquecido antes da câmera ----------
+// Uma promessa só: quem chamar de novo (o quiz, depois abrir()) espera a mesma. Depois de criado, um quadro em branco
+// passa pelo detector para a 1ª leitura de verdade não pagar a compilação. Falhou (rede)? A próxima chamada tenta de novo.
+export function aquecer(){
+  if (face) return Promise.resolve(face);
+  return (faceP ??= criarFace('VIDEO').then(f => {
+    try { const cv = document.createElement('canvas'); cv.width = cv.height = 64; cv.getContext('2d').fillRect(0, 0, 64, 64); ts = Math.max(ts + 1, performance.now()); f.detectForVideo(cv, ts); } catch {}
+    face = f; window.__faceProntaEm = Math.round(performance.now()); return f;
+  }).catch(e => { faceP = null; throw e; }));
+}
+
+// ---------- histerese e troca estável da instrução ----------
+// passou(): o aviso ENTRA no limite de sempre e só SAI quando o valor volta para (limite − folga). Em cima do limite a
+// leitura treme de um quadro para o outro; sem a folga, o aviso ligava e desligava a cada tremida.
+let H = {};
+const passou = (k, v, lim, folga) => (H[k] = v > (H[k] ? lim - folga : lim));
+// estavel(): a instrução mostrada só muda quando a nova fica TROCA_MS seguidos (o “Segure”, TROCA_BOA_MS: é a resposta a
+// quem acertou a posição). Se a mostrada não aparece há VELHA_MS, troca pela atual (não fica presa numa ordem velha).
+const TROCA_MS = 500, TROCA_BOA_MS = 250, VELHA_MS = 1100;
+let mostrada = '', candidata = '', candDesde = 0, mostradaVista = 0;
+function estavel(chave, agora){
+  if (chave === mostrada){ candidata = ''; mostradaVista = agora; return true; }
+  if (!mostrada){ mostrada = chave; candidata = ''; mostradaVista = agora; return true; }
+  if (chave !== candidata){ candidata = chave; candDesde = agora; }
+  if (agora - candDesde >= (chave.startsWith('segure') ? TROCA_BOA_MS : TROCA_MS) || agora - mostradaVista >= VELHA_MS){ mostrada = chave; candidata = ''; mostradaVista = agora; return true; }
+  return false;
+}
 function dica(html, ok){ const d = $('scan-dica'); if (d.innerHTML !== html) d.innerHTML = html; d.classList.toggle('ok', !!ok); }
 
 // ---------- voz curta (só quando o passo muda; o botão Desligar voz desliga) ----------
@@ -145,17 +181,18 @@ function avaliar(v, faces){
   Object.assign(diag, { lum:Math.round(ultM.lum), nitidez:Math.round(ultM.nitidez), lado:+ultM.lado.toFixed(2) });
   const nz = lm[1], mexeu = narizAnt && Math.hypot(nz.x - narizAnt.x, nz.y - narizAnt.y) > .012; narizAnt = { x:nz.x, y:nz.y };
   const base = { lm, p, mexeu }, est = estagio();
-  if (larg < (est === 'frente' ? .58 : .42)) return { ...base, msg:'Chegue o celular mais perto' };
-  if (larg > 1.2) return { ...base, msg:'Afaste um pouco o celular' };
+  // 15/11: cada aviso entra no limite de sempre e sai com folga (passou()); nenhum destes limites ficou mais frouxo que antes
+  if (passou('perto', -larg, -(est === 'frente' ? .58 : .42), .03)) return { ...base, msg:'Chegue o celular mais perto' };
+  if (passou('longe', larg, 1.2, .04)) return { ...base, msg:'Afaste um pouco o celular' };
   if (est === 'frente'){
-    if (Math.abs(dx) > .28 || Math.abs(dy) > .26) return { ...base, msg:'Rosto no meio do oval' };
-    if (Math.abs(p.yaw - .5) > FRENTE_TOL) return { ...base, msg:'Olhe reto para a câmera' };
-    if (Math.abs(p.roll) > 15) return { ...base, msg:'Endireite a cabeça' };
-    if (p.pitch < .25 || p.pitch > .62) return { ...base, msg:'Celular na altura do rosto' };
-  } else if (Math.abs(dy) > .34) return { ...base, msg:'Rosto no meio do oval' };
-  if (ultM.lum < LUZ_MIN) return { ...base, msg:'Procure mais luz: de frente para uma janela ou lâmpada' };
-  if (ultM.lum > LUZ_MAX) return { ...base, msg:'Luz forte demais: saia um pouco dela' };
-  if (est === 'frente' && ultM.lado > .3) return { ...base, msg:'A luz está de lado: vire de frente para ela' };
+    if (passou('meio', Math.max(Math.abs(dx)/.28, Math.abs(dy)/.26), 1, .12)) return { ...base, msg:'Rosto no meio do oval' };
+    if (passou('reto', Math.abs(p.yaw - .5), FRENTE_TOL, .02)) return { ...base, msg:'Olhe reto para a câmera' };
+    if (passou('torto', Math.abs(p.roll), 15, 3)) return { ...base, msg:'Endireite a cabeça' };
+    if (passou('altura', Math.max(.25 - p.pitch, p.pitch - .62), 0, .03)) return { ...base, msg:'Celular na altura do rosto' };
+  } else if (passou('meioLado', Math.abs(dy), .34, .04)) return { ...base, msg:'Rosto no meio do oval' };
+  if (passou('escuro', -ultM.lum, -LUZ_MIN, 6)) return { ...base, msg:'Procure mais luz: de frente para uma janela ou lâmpada' };
+  if (passou('claro', ultM.lum, LUZ_MAX, 6)) return { ...base, msg:'Luz forte demais: saia um pouco dela' };
+  if (est === 'frente' && passou('luzLado', ultM.lado, .3, .04)) return { ...base, msg:'A luz está de lado: vire de frente para ela' };
   return { ...base, msg:null };
 }
 const nitido = est => ultM && ultM.nitidez >= (est === 'frente' ? NITIDEZ_MIN : NITIDEZ_MIN*.8);
@@ -169,7 +206,9 @@ function loop(){
   if (v.readyState >= 2 && v.videoWidth){
     if (v.clientWidth !== geo.W || v.clientHeight !== geo.H) medirPalco();   // barra do Safari abriu/fechou
     ts = Math.max(ts + 1, performance.now()); quadro++;
-    const faces = face.detectForVideo(v, ts).faceLandmarks || [];
+    let faces;
+    try { faces = face.detectForVideo(v, ts).faceLandmarks || []; }
+    catch (e) { console.error(e); return refazerDetector(); }   // detector aquecido que se perdeu (ex.: a página ficou em segundo plano): cria outro, uma vez
     const r = avaliar(v, faces), est = estagio(), agora = performance.now(), prog = {};
     desenharMalha(v, faces.length === 1 ? faces[0] : null, !r.msg);
     medidorLuz(r.lm ? ultM?.lum : null);
@@ -177,24 +216,25 @@ function loop(){
     if (est === 'frente'){
       if (!r.msg && !r.mexeu && nitido(est)){
         segDesde ||= agora; prog.frente = Math.min(1, (agora - segDesde)/SEGURA_FRENTE);
-        dica('Isso! Segure assim…', true); guia('segure', 'frente', prog.frente);
         if (prog.frente >= 1){ capturar(v, 'frente', r.p); return; }
-      } else { segDesde = 0; dica(r.msg || 'Segure parado'); guia('msg', 'frente', 0, r.msg || 'Segure parado'); }
+        if (estavel('segurefrente', agora)){ dica('Isso! Segure assim…', true); guia('segure', 'frente', prog.frente); }
+      } else { segDesde = 0; const m = r.msg || 'Segure parado'; if (estavel('msgfrente' + m, agora)){ dica(m); guia('msg', 'frente', 0, m); } }
     } else if (est === 'esquerda' || est === 'direita'){
       const dev = r.p ? (r.p.yaw - .5) * SINAL[est] : 0;   // > 0 = virando para o lado pedido
       prog[est] = Math.max(0, Math.min(1, (dev - .02)/(LADO_ALVO - .02)));
-      let gm = 'vire';
-      if (!r.p){ segDesde = 0; gm = 'msg'; dica(r.msg || 'Coloque o rosto dentro do oval'); }
-      else if (r.msg){ segDesde = 0; gm = 'msg'; dica(r.msg); }
-      else if (dev < -.05){ segDesde = 0; gm = 'outro'; dica(OUTRO[est]); falar(FALA[est]); }
-      else if (dev > LADO_MAX){ segDesde = 0; gm = 'demais'; dica('Não precisa virar tanto: volte um pouquinho'); }
-      else if (prog[est] < 1){ segDesde = 0; dica(`${PEDE[est]}<small>devagar, até o anel acender</small>`); }
-      else if (r.mexeu || !nitido(est) || Math.abs(r.p.roll) > 20){ segDesde = 0; gm = 'segure'; dica('Isso! Segure um instante', true); }
+      let gm = 'vire', d, dOk = false, fala = false;
+      if (!r.p){ segDesde = 0; gm = 'msg'; d = r.msg || 'Coloque o rosto dentro do oval'; }
+      else if (r.msg){ segDesde = 0; gm = 'msg'; d = r.msg; }
+      else if (passou('outro', -dev, .05, .02)){ segDesde = 0; gm = 'outro'; d = OUTRO[est]; fala = true; }
+      else if (passou('demais', dev, LADO_MAX, .03)){ segDesde = 0; gm = 'demais'; d = 'Não precisa virar tanto: volte um pouquinho'; }
+      else if (!(H.chegou = dev >= (H.chegou ? LADO_ALVO - .02 : LADO_ALVO))){ segDesde = 0; d = `${PEDE[est]}<small>devagar, até o anel acender</small>`; }   // chega no alvo de sempre; depois de chegar, só sai se voltar 0,02
+      else if (r.mexeu || !nitido(est) || Math.abs(r.p.roll) > 20){ segDesde = 0; gm = 'segure'; d = 'Isso! Segure um instante'; dOk = true; }
       else {
-        segDesde ||= agora; gm = 'segure'; dica('Isso! Segure…', true);
+        segDesde ||= agora; gm = 'segure'; d = 'Isso! Segure…'; dOk = true;
         if (agora - segDesde >= SEGURA_LADO){ capturar(v, est, r.p); return; }
       }
-      if (!mostrandoFeito) guia(gm, est, prog[est], gm === 'msg' ? (r.msg || 'Coloque o rosto dentro do oval') : null);
+      if (H.chegou && gm === 'segure') prog[est] = 1;   // o anel não apaga um pedaço enquanto a pessoa segura dentro da folga
+      if (!mostrandoFeito && estavel(gm + est + (gm === 'msg' ? d : ''), agora)){ dica(d, dOk); guia(gm, est, prog[est], gm === 'msg' ? d : null); if (fala) falar(FALA[est]); }
       if (agora - ladoDesde > 25000 && fotos.frente) $('scan-pular').hidden = false;   // não conseguiu os lados: segue com o que tem
     }
     pintarAnel(prog);
@@ -210,7 +250,7 @@ function capturar(v, angulo, p){
   const m = medir(cv, lm, cv.width, cv.height);
   fotos[angulo] = { angulo, src:cv, lm, g:geometria(lm, cv.width, cv.height), pose:p, lum:Math.round(m.lum), nitidez:Math.round(m.nitidez), origem:'camera' };
   try { navigator.vibrate?.(40); } catch {}
-  segDesde = 0; narizAnt = null; ladoDesde = performance.now();
+  segDesde = 0; narizAnt = null; ladoDesde = performance.now(); H = {}; mostrada = candidata = '';   // lado novo: limites e instrução começam do zero
   pintarAnel({});
   const prox = estagio();
   if (prox === 'fim'){ terminar(); return; }
@@ -224,21 +264,42 @@ function terminar(){
   const f = fotos; setTimeout(() => { parar(); cb?.onPronto?.(f); }, 650);
 }
 
+// o detector deu erro no meio (raro): mostra “Só um instante…”, cria outro e segue; se der de novo, avisa como erro de câmera
+function refazerDetector(){
+  const minha = sessao; rodando = false; cancelAnimationFrame(raf);
+  if (refez){ parar(); const t = 'Não consegui abrir a câmera'; dica(t); guia('msg', 'frente', 0, t); cb?.onErro?.(new Error('detector')); return; }
+  refez = true; face = null; faceP = null; dica('Só um instante…'); guia('msg', 'frente', 0, 'Só um instante…');
+  aquecer().then(() => { if (minha !== sessao) return; mostrada = candidata = ''; rodando = true; loop(); })
+    .catch(e => { if (minha !== sessao) return; console.error(e); parar(); const t = 'Não consegui abrir a câmera'; dica(t); guia('msg', 'frente', 0, t); cb?.onErro?.(e); });
+}
 export function parar(){
+  sessao++;   // quem estava esperando a câmera ou o detector desiste
   rodando = false; cancelAnimationFrame(raf);
   if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
   ['v-bg','v-fg'].forEach(id => { const v = $(id); v.srcObject = null; });
 }
 export function seguirComOQueTem(){ if (fotos.frente) terminar(); }
 export async function abrir(callbacks){
-  cb = callbacks; fotos = {}; segDesde = 0; narizAnt = null; ultM = null; quadro = 0; ladoDesde = performance.now(); feitoAte = 0;
+  cb = callbacks; fotos = {}; segDesde = 0; narizAnt = null; ultM = null; quadro = 0; ladoDesde = performance.now(); feitoAte = 0; H = {}; mostrada = candidata = ''; refez = false;
+  const minha = ++sessao;
   $('scan-pular').hidden = true; medirPalco(); guia('msg', 'frente', 0, 'Abrindo a câmera…'); pintarAnel({}); medidorLuz(null); dica('Abrindo a câmera…');
+  const pFace = aquecer(); pFace.catch(() => {});   // quase sempre já está pronto (aquecido no quiz); o erro, se houver, sai no await de baixo
   try {
-    face ??= await criarFace('VIDEO');
-    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:1280 }, height:{ ideal:960 } }, audio:false });
+    // 15/11: a câmera é pedida JÁ, sem esperar o detector; a imagem aparece e o detector termina por trás
+    const s = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:1280 }, height:{ ideal:960 } }, audio:false });
+    if (minha !== sessao){ s.getTracks().forEach(t => t.stop()); return; }   // fechou a câmera enquanto ela abria
+    stream = s;
     for (const id of ['v-bg','v-fg']){ const v = $(id); v.srcObject = stream; await v.play(); }
-    medirPalco(); dica('Olhe reto para a câmera'); guia('msg', 'frente', 0, 'Olhe reto para a câmera'); falar(FALA.frente, true); rodando = true; loop();
+    if (minha !== sessao) return;
+    medirPalco(); window.__cameraNaTelaEm = Math.round(performance.now());
+    if (!face){ dica('Só um instante…'); guia('msg', 'frente', 0, 'Só um instante…'); }
+    await pFace;
+    if (minha !== sessao) return;
+    dica('Olhe reto para a câmera'); guia('msg', 'frente', 0, 'Olhe reto para a câmera'); falar(FALA.frente, true);
+    mostrada = 'msgfrenteOlhe reto para a câmera'; mostradaVista = performance.now();   // a 1ª ordem também fica o tempo mínimo na tela
+    rodando = true; loop();
   } catch (e) {
+    if (minha !== sessao) return;
     console.error(e); parar();
     const t = e?.name === 'NotAllowedError' ? 'Libere a câmera nas configurações, ou escolha uma foto' : 'Não consegui abrir a câmera';
     dica(t); guia('msg', 'frente', 0, t);
