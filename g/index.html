@@ -9,6 +9,23 @@
     <title>Convite para um grupo | Livowa</title>
     <meta name="description" content="Alguém te chamou para fazer a semana junto no Livowa: uma meta em conjunto, sem ninguém ver o que você come nem o seu peso.">
     <meta name="robots" content="noindex,nofollow">
+    <!-- Prévia do link (cartão fixo aprovado em 15/11, T266): o app manda livowa.com/g/?c=<código>&de=<nome>,
+         que responde 200 nesta página. A imagem sai de g/cartao/gerar.py; conferência: bash g/cartao/conferir.sh -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Livowa">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:url" content="https://livowa.com/g/">
+    <meta property="og:title" content="Você foi chamado para um grupo no Livowa">
+    <meta property="og:description" content="Toque para entrar.">
+    <meta property="og:image" content="https://livowa.com/g/cartao/convite.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Livowa: você foi chamado para um grupo">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Você foi chamado para um grupo no Livowa">
+    <meta name="twitter:description" content="Toque para entrar.">
+    <meta name="twitter:image" content="https://livowa.com/g/cartao/convite.png">
     <!--
       livowa.com/g/<CÓDIGO> — convite para um grupo da Comunidade, fora do app (T57-B, 29/09).
       /g/<CÓDIGO> cai no 404.html, que redireciona para /g/?c=<CÓDIGO>&de=<nome>.
