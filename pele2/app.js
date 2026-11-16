@@ -67,9 +67,9 @@ const nome1 = () => (R.nome || '').trim().split(/\s+/)[0] || '';
 // ---------- telas ----------
 // ordem do NIKS (teardown v1), sem as telas que ele não tem. 02/11: a 1ª tela é a capa (promessa + botão) e o nome vem
 // depois das primeiras perguntas de toque (pesquisa-fim-do-teste.md, C); as telas antes do nome não usam o nome.
-const ORDEM = ['capa','sexo','seguranca','alergia','nome','incomoda','tipo','sol','agua','sono','rotina','objetivo','instrucao','scan','carregando','resultado','fechar','erro'];
+const ORDEM = ['capa','sexo','seguranca','alergia','nome','incomoda','tipo','sol','agua','sono','rotina','objetivo','instrucao','scan','carregando','resultado','erro'];   // 16/11: a tela 'fechar' saiu; o resultado é a tela final
 const QUIZ = ['sexo','seguranca','alergia','incomoda','tipo','sol','agua','sono','rotina','objetivo'];
-const VOLTA = { scan:'instrucao', erro:'instrucao', fechar:'resultado' };
+const VOLTA = { scan:'instrucao', erro:'instrucao' };
 let cur = 'nome';
 function show(s){
   if (cur === 'scan' && s !== 'scan') Scan.parar();
@@ -79,7 +79,7 @@ function show(s){
   document.body.classList.toggle('scan-on', s === 'scan');
   $('top').hidden = ['capa','scan','carregando','resultado'].includes(s);
   const cta = $('cta'), c2 = $('cta-2');
-  $('cta-bar').hidden = ['scan','carregando','fechar'].includes(s);   // tela final: cada cartão tem o próprio botão
+  $('cta-bar').hidden = ['scan','carregando','resultado'].includes(s);   // 16/11: no resultado (a tela final) o botão é o do cartão verde
   cta.hidden = false; c2.hidden = true; cta.classList.remove('off');
   cta.textContent = 'Continuar';
   if (s === 'capa') cta.textContent = 'Começar a análise';
@@ -90,8 +90,7 @@ function show(s){
   else pararQuadro();
   if ($('creditos-caixa').open) fecharCreditos();
   if (s === 'erro'){ cta.textContent = erroRede ? 'Tentar de novo' : 'Tirar de novo'; c2.hidden = false; c2.textContent = 'Escolher uma foto'; }
-  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';   // um botão só (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
-  if (s === 'fechar') prepararFechamento();
+  if (s === 'resultado') prepararFechamento();   // um botão só (02/11), no cartão verde (16/11)
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nome1() + ', ' : ''; });
   window.scrollTo(0, 0);
   requestAnimationFrame(medirBarra);
@@ -206,7 +205,6 @@ $('cta').addEventListener('click', () => {
   if (QUIZ.includes(cur)) return proxima();
   if (cur === 'instrucao') return abrirScan();
   if (cur === 'erro') return erroRede && fotos ? enviar(fotos) : abrirScan();
-  if (cur === 'resultado'){ track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
 });
 $('cta-2').addEventListener('click', () => {
   if (cur === 'erro') $('arquivo').click();
@@ -600,17 +598,14 @@ function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''
 const escolha = () => 'explicar';
 function prepararFechamento(){
   const nome = nomeBonito();
-  // 16/11 (Lucca: "nada de código" em nenhum funil): o código saiu da tela; segue na mensagem pronta e no banco
+  // 16/11: o título A/B da antiga tela final vai para o cartão verde do resultado (o código só dentro da mensagem)
   const tit1 = FIM === 'B' ? 'o Dr. Lucca vai olhar o seu resultado' : 'o Dr. Lucca vai explicar o seu resultado';
-  $('f-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
-  $('f-sub').textContent = '';   // 09/11: decisão do Lucca de 03/11 (tirar os dois textos do A/B: vídeo um por um e 24 h)
+  $('r-ponte-tit').textContent = nome ? `${nome}, ${tit1}` : tit1[0].toUpperCase() + tit1.slice(1);
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  $('wa-txt').textContent = 'Quero que o Dr. Lucca me explique';
-  $('cta-dm').hidden = false;
 }
 const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo() });
 const fimValor = (esc_ = escolha()) => `${esc_}|fim${FIM}`;   // valueText do cta_click final: 'explicar|fimA' ou 'explicar|fimB'
-$('cta-wa').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
+$('cta-wa').addEventListener('click', () => { track('cta_click', { stepId:'resultado', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
 $('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 
 // Direct: o Instagram não aceita texto pronto. Um toque só: copia DENTRO do toque (exigência do iOS), avisa e deixa o
@@ -626,14 +621,14 @@ let toastT = null;
 const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);   // navegador de dentro do app: ig.me abre como página e pede login
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  track('cta_click', { stepId:'fechar', valueText:fimValor('explicar'), props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps('explicar') } });
+  track('cta_click', { stepId:'resultado', valueText:fimValor('explicar'), props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps('explicar') } });
   if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem:txt, copiou, voz:true }); return; }   // animação X → Mensagem → colar
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }   // o link segue e abre o app
   e.preventDefault();
   $('aviso-msg').textContent = txt; $('aviso-link').href = $('cta-dm').href; $('aviso-dm').hidden = false;
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
-$('aviso-link').addEventListener('click', () => { track('cta_click', { stepId:'fechar', valueText:fimValor('explicar') + '|abrir', props:{ canal:'direct', ...fimProps('explicar') } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
+$('aviso-link').addEventListener('click', () => { track('cta_click', { stepId:'resultado', valueText:fimValor('explicar') + '|abrir', props:{ canal:'direct', ...fimProps('explicar') } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 // 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
 // volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
 // O lv continua indo nos eventos (props.lv, pelo funnel-analytics).

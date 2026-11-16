@@ -315,7 +315,9 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
   </section>
 
   <!-- resultado (02/11, molde da pele2): o número continua só na conversa (decisão de 28/10); a tela repete o que foi
-       medido e cita as respostas. Um botão só: o Dr. Lucca explica em vídeo (02/11: o link do lembrete de 4 semanas saiu). -->
+       medido e cita as respostas. Um botão só: o Dr. Lucca explica (02/11: o link do lembrete de 4 semanas saiu).
+       16/11 (Lucca: "falei sobre essa tela várias vezes"): esta é a TELA FINAL, como no braço (15/11). A tela 'fechar' saiu;
+       o botão de baixo abre o WhatsApp com a mensagem pronta (o código vai só dentro dela) e o Direct fica embaixo. -->
   <section class="screen final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Teste concluído</span>
     <h2 id="res-tit">Seu teste está <em>pronto</em></h2>
@@ -324,18 +326,6 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
     <p class="res-txt" id="res-txt2"></p>
   </section>
 
-  <!-- tela final (02/11, molde da pele2): UM passo só, em 3ª pessoa. -->
-  <section class="screen fim" data-s="fechar" data-p="100" hidden>
-    <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="Dr. Lucca Marques" width="64" height="64">
-      <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
-    <h2 id="f-tit">O Dr. Lucca vai explicar o seu resultado, sem custo</h2>
-    <p class="sub" id="f-sub"></p>
-    <div class="f-acao">
-      <a class="btn ico" id="f-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="f-wa-txt">Quero que o Dr. Lucca me explique</span></a>
-      <p class="f-nota" id="f-nota">Abre o WhatsApp com a mensagem pronta. É só enviar.</p>
-      <a class="link-alt" id="f-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
-    </div>
-      </section>
 
   <!-- ===================== PELE ===================== -->
   <section class="screen c" data-s="pele-inicio" data-p="20" hidden>
@@ -402,7 +392,7 @@ if (/[?&]pele=(1|teste)\b/.test(location.search)){ document.documentElement.clas
 
   <div class="cta" id="cta-bar"><div>
     <!-- fim da pele (?pele), 08/11: WhatsApp em primeiro (botão), Direct como link embaixo. WhatsApp leva a mensagem pronta; o Direct não aceita texto pronto, então ela vai copiada -->
-    <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg>Quero minha análise</a>
+    <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="cta-link-txt">Quero minha análise</span></a>
     <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><span>ou pelo Direct do Instagram</span></a>
     <button class="btn" id="cta" type="button">Fazer o teste</button>
     <button class="btn ghost" id="cta-2" type="button" hidden></button>
@@ -562,8 +552,8 @@ function comoMostrar(){
 
 // ---------- navegação ----------
 // 'fechar' (02/11) vai no fim da lista para não mudar o número das etapas da pele no painel do Funil
-const order = ['inicio','como','dados','camera','resultado','pele-inicio','pele-camera','pele-envio','pele-analise','pele-resultado','pele-erro','fechar'];
-const VOLTA = { 'pele-inicio':'resultado', 'pele-camera':'pele-inicio', 'pele-envio':'pele-camera', 'pele-analise':'pele-envio', 'pele-resultado':'resultado', 'pele-erro':'pele-inicio', fechar:'resultado' };
+const order = ['inicio','como','dados','camera','resultado','pele-inicio','pele-camera','pele-envio','pele-analise','pele-resultado','pele-erro'];   // 16/11: 'fechar' saiu (o resultado é a tela final)
+const VOLTA = { 'pele-inicio':'resultado', 'pele-camera':'pele-inicio', 'pele-envio':'pele-camera', 'pele-analise':'pele-envio', 'pele-resultado':'resultado', 'pele-erro':'pele-inicio' };
 let cur = 'inicio';
 function show(s){
   document.querySelectorAll('.screen').forEach(el => el.hidden = el.dataset.s !== s);
@@ -571,14 +561,14 @@ function show(s){
   $('top').hidden = s === 'inicio' || s === 'resultado' || (PELE_DIRETA && s === 'pele-inicio');   // 03/11: quem abriu direto na pele não tem tela antes (voltar caía num resultado vazio das pernas, "5 levantadas em 0,0 s")
   $('progress').style.width = (el.dataset.p || 0) + '%';
   const cta = $('cta'), c2 = $('cta-2'), link = $('cta-link'); c2.hidden = true; cta.hidden = false; link.hidden = true; $('cta-dm').hidden = true;
-  $('cta-bar').hidden = s === 'fechar';   // tela final: o botão mora na própria tela
+  $('cta-bar').hidden = false;
   if (s === 'inicio') cta.textContent = 'Fazer o teste';
   if (s === 'como') comoMostrar();
   if (s === 'dados'){ cta.textContent = 'Abrir a câmera'; requestAnimationFrame(() => wheels.forEach((w,i) => { if (!w._ok){ w._set(starts[i]); w._ok = true; } })); }
   if (s === 'camera'){ cta.hidden = true; c2.hidden = false; c2.textContent = 'Cancelar'; }
   // resultado: um botão só, o Dr. Lucca explica (02/11: o link "seguir sozinho + lembrete em 4 semanas" saiu)
-  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca me explique';
-  if (s === 'fechar') prepararFechamento();
+  // 16/11: o resultado é a tela final; o botão de baixo já abre o WhatsApp (igual ao braço)
+  if (s === 'resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; prepararFechamento(); }
   cta.disabled = false;
   cta.classList.remove('off');
   if (s === 'dados') atualizarDados();   // sexo e os 3 números: sem cada um, não segue
@@ -587,7 +577,7 @@ function show(s){
   if (s === 'pele-envio'){ cta.textContent = 'Analisar minha pele'; c2.hidden = false; c2.textContent = capturas.length > 1 ? 'Tirar de novo' : 'Tirar outra foto'; }
   if (s === 'pele-analise'){ cta.hidden = true; }
   if (s === 'pele-erro'){ cta.textContent = peleErroRede ? 'Tentar de novo' : FOTOS === 3 ? 'Tirar de novo' : 'Tirar outra foto'; c2.hidden = false; c2.textContent = 'Escolher uma foto da galeria'; }
-  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; }
+  if (s === 'pele-resultado'){ cta.hidden = true; link.hidden = false; $('cta-dm').hidden = false; $('cta-link-txt').textContent = 'Quero minha análise'; ctaPernas(); }
   window.scrollTo(0,0);
   medirBarra();
 }
@@ -607,7 +597,6 @@ $('cta').addEventListener('click', () => {
     dadosOk = true; falar(' ', true);
     Analytics.track('answer', { stepId:'dados', valueText:'confirmado', props:{ idade:dados.idade, peso:dados.peso, altura:dados.altura, como:Object.fromEntries(CHAVES.map(k => [k, confirmado[k] || 'padrao'])) } });
     show('camera'); abrirCamera(); }
-  else if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); show('fechar'); }
   else if (cur === 'pele-inicio'){ if (!$('pele-ok').checked) return apontarAceite(); falar(' ', true); show('pele-camera'); abrirCameraPele(); }
   else if (cur === 'pele-envio') enviarPele();
   else if (cur === 'pele-erro'){ if (peleErroRede && capturas.length) enviarPele(); else { show('pele-camera'); abrirCameraPele(); } }
@@ -885,24 +874,21 @@ const metros = cm => (cm / 100).toLocaleString('pt-BR', { minimumFractionDigits:
 function personalizar(){
   const i = dados.idade;
   $('res-txt1').innerHTML = `Para ${homemMulher()} de <b>${i}&nbsp;anos</b>, com <b>${dados.peso}&nbsp;kg</b> e <b>${metros(dados.altura)}</b>, esse tempo mostra a potência das pernas.`;
-  $('res-txt2').innerHTML = `O Dr. Lucca compara a sua potência com a de <b>${homensMulheres()} de ${i}&nbsp;anos</b> e explica a idade que as suas pernas mostram.`;
+  $('res-txt2').innerHTML = `O Dr. Lucca compara a sua potência com a de <b>${homensMulheres()} de ${i}&nbsp;anos</b> e explica, sem custo, a idade que as suas pernas mostram.`;
 }
 function mensagemFim(){
   return `Oi, Dr. Lucca! Fiz o teste das pernas, código ${meuCodigo()}. Quero que você me explique o meu resultado.`;
 }
 function prepararFechamento(){
-  // 16/11 (Lucca: "nada de código" em nenhum funil): o código saiu da tela; segue na mensagem pronta e no banco
-  $('f-tit').textContent = 'O Dr. Lucca vai explicar o seu resultado, sem custo';
-  $('f-sub').textContent = '';
-  $('f-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagemFim())}`;
-  $('f-wa-txt').textContent = 'Quero que o Dr. Lucca me explique';
-  $('f-dm').hidden = false;
+  // 16/11: sem tela final; o botão de baixo do resultado abre o WhatsApp com a mensagem pronta (o código só dentro dela)
+  $('cta-link-txt').textContent = 'Quero que o Dr. Lucca me explique';
+  $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagemFim())}`;
+  $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:'resultado', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } });
+  $('cta-dm').onclick = e => abrirDirect(e, mensagemFim(), fimProps());   // copia a mensagem com o código e abre o Direct
 }
 const fimProps = () => ({ escolha:escolha(), codigo:meuCodigo() });
-$('f-wa').addEventListener('click', () => Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps() } }));
 $('pele-erro-wa').addEventListener('click', () => Analytics.track('cta_click', { stepId:'pele-erro', valueText:'limite', props:{ canal:'whatsapp', codigo:meuCodigo() } }));
 $('pele-erro-dm').addEventListener('click', () => Analytics.track('cta_click', { stepId:'pele-erro', valueText:'limite', props:{ canal:'direct', codigo:meuCodigo() } }));
-$('f-dm').addEventListener('click', e => abrirDirect(e, mensagemFim(), fimProps()));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 function ctaPernas(){
   $('cta-link').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
   $('cta-link').onclick = () => Analytics.track('cta_click', { stepId:cur, valueText:'whatsapp', props:{ canal:'whatsapp' } });

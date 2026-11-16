@@ -48,9 +48,9 @@ const num = (x, d = 1) => x.toLocaleString('pt-BR', { minimumFractionDigits:d, m
 const sem = (k, x) => R[k].filter(v => v !== x);
 
 // ---------- telas ----------
-const ORDEM = ['capa','sexo','fase','idade','nome','medidas','acontece','tentou','ciclo','pele','tireoide','exames','remedios','vontade','sono','ronco','forca','objetivo','carregando','resultado','fechar'];
+const ORDEM = ['capa','sexo','fase','idade','nome','medidas','acontece','tentou','ciclo','pele','tireoide','exames','remedios','vontade','sono','ronco','forca','objetivo','carregando','resultado'];   // 16/11: a tela 'fechar' saiu; o resultado é a tela final
 const UM = ['sexo','fase','idade','acontece','ciclo','vontade','sono','ronco','forca','objetivo'];   // uma resposta (avança sozinho)
-const VOLTA = { fechar:'resultado' };
+const VOLTA = {};
 let cur = 'capa';
 // homem não vê fase, ciclo nem pelos; grávida não faz peso e altura; quem não menstrua pela fase não vê o ciclo
 const pula = s => (['fase','ciclo','pele'].includes(s) && R.sexo === 'm') || (s === 'medidas' && gravida()) ||
@@ -61,7 +61,7 @@ function show(s){
   Analytics.track('step_view', { stepId:s, stepIndex:ORDEM.indexOf(s) });
   $('top').hidden = ['capa','carregando','resultado'].includes(s);
   const cta = $('cta');
-  $('cta-bar').hidden = ['carregando','fechar'].includes(s);
+  $('cta-bar').hidden = ['carregando','resultado'].includes(s);   // 16/11: no resultado o botão é o do cartão verde
   cta.hidden = false; cta.classList.remove('off');
   cta.textContent = 'Continuar';
   if (s === 'capa') cta.textContent = 'Começar o teste';
@@ -69,8 +69,7 @@ function show(s){
   if (s === 'medidas') posicionar(['peso', 'altura']);
   if (VARIAS.includes(s)) cta.classList.toggle('off', !R[s].length);
   if (UM.includes(s)) cta.classList.toggle('off', R[s] == null);
-  if (s === 'resultado') cta.textContent = 'Quero que o Dr. Lucca olhe o meu caso';   // um botão só (02/11); sem "explique em vídeo" (03/11)
-  if (s === 'fechar') prepararFechamento();
+  if (s === 'resultado') prepararFechamento();   // um botão só (02/11), no cartão verde (16/11)
   document.querySelectorAll('.nm').forEach(el => { el.textContent = nome1() ? nomeBonito() + ', ' : ''; });
   document.querySelectorAll('[data-g]').forEach(el => { const [f, m] = el.dataset.g.split('|'); el.textContent = g(f, m); });
   $('txt-constancia').textContent = `Começo ${g('animada', 'animado')} e paro em poucas semanas`;
@@ -187,7 +186,6 @@ $('cta').addEventListener('click', () => {
   }
   if (VARIAS.includes(cur)){ Analytics.track('answer', { stepId:cur, valueText:R[cur].join('+') }); return proxima(); }
   if (UM.includes(cur)) return proxima();
-  if (cur === 'resultado'){ Analytics.track('cta_click', { stepId:'resultado', valueText:'explicar' }); return show('fechar'); }
 });
 
 // =====================================================================
@@ -397,7 +395,6 @@ function montarResultado(){
     <p class="escuro">${esc(escuro)} A boa notícia: isso se olha com calma, com exame e conversa, sem adivinhar.</p>
     <h3>O que este teste não consegue fazer</h3>
     <p>Um teste não pede exame, não examina você e não conhece a sua história. ${n ? `Para saber se ${n === 1 ? 'esse ponto pesa' : 'esses pontos pesam'} no seu caso` : 'Para saber o que pesa no seu caso'}${obj}, alguém precisa olhar as suas respostas com você.</p>
-    <div class="quer"><b>É isso que você quer resolver?</b><p>Se for, fale com o Dr. Lucca. Ele lê as suas respostas${n ? `, começando ${n === 1 ? 'pelo ponto' : 'pelos pontos'} acima,` : ''} e responde você.</p></div>
     <details class="duvidas"><summary>Antes de mandar</summary>
       <p><b>Já tentei de tudo. Vale a pena?</b>${tent.length ? ` Você já tentou ${esc(lista(tent.map(x => ROT.tentou[x])))}.` : ''} As perguntas de saúde vieram antes justamente para mostrar o que as dietas deixam de fora.</p>
       <p><b>Preciso ter exames em mãos?</b> Não. Se tiver exames do último ano, separe uma foto: ajuda na conversa.</p>
@@ -425,18 +422,15 @@ const sou = () => nomeBonito() ? `Sou ${g('a', 'o')} ${nomeBonito()}` : '';
 function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste do emagrecimento, código ${meuCodigo()}. Quero que você olhe o meu caso.`; }
 const escolha = () => 'explicar';
 function prepararFechamento(){
-  const nome = nomeBonito();
-  // 16/11 (Lucca: "nada de código" em nenhum funil): o código saiu da tela; segue na mensagem pronta e no banco
-  // 03/11 ~23h (Lucca): sem promessa de vídeo nem de prazo; o título é o passo, a frase é o problema dela
-  $('f-tit').textContent = nome ? `${nome}, fale com o Dr. Lucca sobre o seu caso` : 'Fale com o Dr. Lucca sobre o seu caso';
-  $('f-sub').textContent = ULT.n ? `${NUM_TXT[ULT.n] ? NUM_TXT[ULT.n][0].toUpperCase() + NUM_TXT[ULT.n].slice(1) : ULT.n} ${ULT.n === 1 ? 'ponto das suas respostas merece' : 'pontos das suas respostas merecem'} o olhar de um médico.`
-    : `O que mais pesa no seu caso, ${PERFIL[ULT.perfil] || 'o seu resultado'}, merece o olhar de um médico.`;
+  const nome = nomeBonito(), n = ULT.n;
+  // 16/11: a pergunta que fechava o resultado ("É isso que você quer resolver?") virou o título do cartão verde
+  $('r-ponte-tit').textContent = nome ? `${nome}, é isso que você quer resolver?` : 'É isso que você quer resolver?';
+  $('r-ponte-txt').textContent = n ? `${NUM_TXT[n] ? NUM_TXT[n][0].toUpperCase() + NUM_TXT[n].slice(1) : n} ${n === 1 ? 'ponto das suas respostas merece' : 'pontos das suas respostas merecem'} o olhar de um médico. O Dr. Lucca lê ${n === 1 ? 'esse ponto' : 'cada um'} e te explica o que pesa no seu caso.`
+    : `O que mais pesa no seu caso, ${PERFIL[ULT.perfil] || 'o seu resultado'}, merece o olhar de um médico. O Dr. Lucca lê as suas respostas e te explica.`;
   $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
-  $('wa-txt').textContent = 'Quero que o Dr. Lucca olhe o meu caso';
-  $('cta-dm').hidden = false;
 }
 const fimProps = e => ({ escolha:e, codigo:meuCodigo() });
-$('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
+$('cta-wa').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'resultado', valueText:'whatsapp', props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
 $('cta-dm').addEventListener('click', e => abrirDirect(e));   // com ou sem ?lv=: copia a mensagem com o código e abre o Direct
 
 // Direct: o Instagram não aceita texto pronto. Copia dentro do toque, avisa e deixa o link abrir o app (igual à pele2).
@@ -451,14 +445,14 @@ let toastT = null;
 const NO_INSTAGRAM = /Instagram/i.test(navigator.userAgent);
 function abrirDirect(e){
   const txt = mensagem(), copiou = copiar(txt);
-  Analytics.track('cta_click', { stepId:'fechar', valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps('explicar') } });
+  Analytics.track('cta_click', { stepId:'resultado', valueText:'direct', props:{ canal:'direct', copiou, noInstagram:NO_INSTAGRAM, ...fimProps('explicar') } });
   if (NO_INSTAGRAM){ e.preventDefault(); dicaDirect({ mensagem:txt, copiou, voz:false }); return; }
   if (copiou){ $('toast').hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { $('toast').hidden = true; }, 6000); return; }
   e.preventDefault();
   $('aviso-msg').textContent = txt; $('aviso-link').href = $('cta-dm').href; $('aviso-dm').hidden = false;
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
-$('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'fechar', valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
+$('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:'resultado', valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
 // 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
 // volta sozinho para o Direct; quem escolher o Direct manda a mensagem com o código (copiada), igual a quem não tem ?lv=.
 // O lv continua indo nos eventos (props.lv, pelo funnel-analytics).

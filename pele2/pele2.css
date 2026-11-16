@@ -310,3 +310,15 @@ details.completo .bloco{margin-bottom:12px}
 .idade-ap .liga{display:block;margin-top:2px;padding:10px 12px;border-radius:12px;background:var(--surface);color:var(--accent);font-weight:700;font-size:.93rem;text-decoration:none;border:1.5px solid var(--accent)}
 .idade-ap .liga::after{content:' →'}
 #f-sub:empty{display:none}
+
+/* 16/11 (Lucca): o resultado é a tela final; o fim é o cartão verde do Dr. Lucca, em destaque, com UM botão claro e grande
+   (mesmo molde do cartão da pele, 11/11: "esse CTA parece nota de rodapé", "chamada fraquíssima, letras miúdas"). */
+.ponte{background:var(--accent);color:var(--on-accent);border-radius:22px;padding:20px 18px;display:flex;flex-direction:column;gap:12px;margin-top:4px;box-shadow:0 10px 30px rgba(13,106,77,.28)}
+.ponte .medico-mini{display:flex;align-items:center;gap:10px}
+.ponte .medico-mini img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.85);flex:none}
+.ponte .medico-mini span{font-size:.84rem;color:rgba(255,255,255,.86)}
+.ponte h2{color:var(--on-accent);font-size:1.75rem;line-height:1.12}
+.ponte p{margin:0;font-size:1.25rem;line-height:1.35}
+.ponte .btn{background:var(--surface);color:var(--accent);min-height:64px;font-size:1.2rem;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.ponte .btn.ico svg{width:26px;height:26px}
+.ponte .link-alt{color:var(--on-accent);margin-top:-4px}
