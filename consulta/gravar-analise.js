@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1411a';
+const VERSAO = '1711f';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -309,6 +309,7 @@ function nota(){
   const b = G.o.blocos[G.bloco], c = b && b.cena; let t = '';
   if (c && c.tipo === 'desejo' && !(c.itens && c.itens.length)) t = c.aviso || 'O que importa: conteúdo em pesquisa. Este cartão não entra no vídeo.';
   else if (c && c.tipo === 'exemplo' && !c.img) t = c.erro ? 'A imagem do exemplo não carregou: pule esta parte.' : 'Carregando a imagem do exemplo…';
+  else if (c && c.tipo === 'mecanismo'){ const q = (FORMA_IMG[c.tema] || []).map(carregaForma), b = q[q.length - 1]; if (!b) t = 'Sem ilustração para este ponto: fale com a foto na tela.'; else if (b.erro) t = 'A ilustração não carregou: fale com a foto na tela.'; else if (!b.ok) t = 'Carregando a ilustração…'; }
   else if (c && c.tipo === 'foto'){
     const r = G.rosto;
     if (!c.lupas || !c.lupas.length) t = 'Sem lupa: a análise não marcou sinal visível. Use o dedo para marcar.';
@@ -666,120 +667,49 @@ function cenaExemplo(ctx, c, t){
   return true;
 }
 
-// 14/11 (pedido do Lucca: "mostrar brevemente uma explicação da pele sobre um ponto mais específico, como a formação das
-// manchas, das linhas de expressão, da face caída; em um segundo momento, o mecanismo dos consertos"): a pele em corte, de
-// traço fino. tema = manchas | linhas | firmeza; fase = forma (como aparece) | conserta (como se trabalha).
-//  - manchas: a luz chega na célula do pigmento, o pigmento sobe e junta num ponto; conserta: o protetor com cor barra a luz
-//    e parte do pigmento some (nunca tudo: sem promessa);
-//  - linhas: a rede de colágeno afina e a pele dobra; conserta: o protetor e fibras novas (a dobra fica como está);
-//  - firmeza: a rede afina e a gordura desce; conserta: a rede protegida para de afinar.
-// No pé: "Esquema. Varia de pessoa para pessoa." Fontes no estoque (pele-idade.mecanismo.f).
-const MEC = { x0:50, x1:670, sup:520, jun:612, base:870, sol:{ x:596, y:356 } };
-const PIG = '#c98a4b';
+// 17/11 (o Lucca, print do quadro "Como o contorno muda": "até hoje essa animação tá uma merda, pode usar o Codex"; 14/11: o
+// desenho de traço em canvas foi "lixo total"; memória feedback-asset-real-nao-desenho): COMO SE FORMA vira ILUSTRAÇÃO de
+// qualidade (3D de atlas, gerada pelo Codex, consulta/forma/), com 2 quadros por sinal: A (antes) → B (como se forma), que
+// se fundem em ~1,4 s com um zoom lento (~3 s). tema = linhas | manchas | firmeza | textura | olheira (index.html cenaPI).
+// No pé: "Ilustração. Varia de pessoa para pessoa." (nunca resultado de paciente). As fontes da fala estão no estoque
+// (pele-idade.mecanismo.f). Sem a imagem carregada, nada no canvas: o aviso é só DOM (nota) e a faixa do bloco entra.
+const FORMA_IMG = { linhas:['forma/linhas-a.webp', 'forma/linhas-b.webp'], manchas:['forma/manchas-a.webp', 'forma/manchas-b.webp'],
+  firmeza:['forma/firmeza-a.webp', 'forma/firmeza-b.webp'], textura:['forma/textura-a.webp', 'forma/textura-b.webp'], olheira:['forma/olheira-a.webp', 'forma/olheira-b.webp'] };
+const FORMA_CACHE = new Map();   // caminho → { img, ok, erro }: as ilustrações são do próprio site (mesma origem, o canvas não fica "sujo")
+function carregaForma(src){
+  let e = FORMA_CACHE.get(src); if (e) return e;
+  e = { img:new Image(), ok:false, erro:false }; FORMA_CACHE.set(src, e);
+  e.img.decoding = 'async';
+  e.img.onload = () => { e.ok = !!e.img.naturalWidth; if (G) nota(); };
+  e.img.onerror = () => { e.erro = true; if (G) nota(); };
+  e.img.src = src;
+  return e;
+}
+const formasDe = bs => (bs || []).map(b => b && b.cena).filter(c => c && c.tipo === 'mecanismo' && FORMA_IMG[c.tema]);
+const preparaFormas = bs => formasDe(bs).forEach(c => FORMA_IMG[c.tema].forEach(carregaForma));
+const FQ = { x:24, y:300, lado:672, r:24 };   // o quadro da ilustração: entre o título e a câmera (topo da câmera em y 1016)
 function cenaMecanismo(ctx, c, t){
-  const M = MEC, tema = c.tema, cons = c.fase === 'conserta', ent = sai(t / 400);
+  const qs = (FORMA_IMG[c.tema] || []).map(carregaForma), b = qs[qs.length - 1];
+  if (!b || !b.ok) return false;
+  const a = qs.length > 1 && qs[0].ok ? qs[0] : null, ent = sai(t / 400);
   escurece(ctx, .94 * sai(t / 250));
   ctx.globalAlpha = ent; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#fff'; ctx.font = `700 44px ${FONTE}`;
-  quebra(ctx, c.titulo || '', 620, 2).forEach((l, i) => ctx.fillText(l, M.x0, 222 + i * 52));
-  ctx.fillStyle = cons ? VERDE : AMARELO; ctx.fillRect(M.x0, 222 + 18, 64, 3);
-  // o quanto o dano andou (0 a 1), a dobra, a descida e o escudo
-  const q = tema === 'manchas' ? 0 : cons ? (tema === 'firmeza' ? .7 : 1) : sai((t - 1200) / 2400);
-  const dobra = tema === 'linhas' ? 40 * q : 0, cai = tema === 'firmeza' ? 30 * q : 0;
-  const esc = cons ? sai((t - 400) / 600) : 0;
-  const u = x => (x - M.x0) / (M.x1 - M.x0);
-  const des = x => dobra * Math.exp(-(((x - 360) / 26) ** 2)) + cai * (.5 - .5 * Math.cos(Math.PI * lim(u(x), 0, 1)));
-  const ySup = x => M.sup + des(x), yJun = x => M.jun + 12 * Math.sin((x - M.x0) / 34) + .5 * des(x);
-  // derme e epiderme
-  ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.beginPath(); ctx.moveTo(M.x0, yJun(M.x0));
-  for (let x = M.x0; x <= M.x1; x += 6) ctx.lineTo(x, yJun(x));
-  ctx.lineTo(M.x1, M.base); ctx.lineTo(M.x0, M.base); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = 'rgba(240,190,150,.24)'; ctx.beginPath(); ctx.moveTo(M.x0, ySup(M.x0));
-  for (let x = M.x0; x <= M.x1; x += 6) ctx.lineTo(x, ySup(x));
-  for (let x = M.x1; x >= M.x0; x -= 6) ctx.lineTo(x, yJun(x));
-  ctx.closePath(); ctx.fill();
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 1.5; ctx.beginPath();
-  for (let x = M.x0; x <= M.x1; x += 6) x === M.x0 ? ctx.moveTo(x, yJun(x)) : ctx.lineTo(x, yJun(x));
-  ctx.stroke();
-  ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.beginPath();
-  for (let x = M.x0; x <= M.x1; x += 4) x === M.x0 ? ctx.moveTo(x, ySup(x)) : ctx.lineTo(x, ySup(x));
-  ctx.stroke();
-  // gordura do rosto (firmeza): desce com o dano
-  if (tema === 'firmeza'){
-    const gy = M.base - 46 + 44 * q;
-    ctx.fillStyle = 'rgba(255,214,10,.16)'; ctx.strokeStyle = 'rgba(255,214,10,.75)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.ellipse(360, gy, 170, 34, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  }
-  // rede de colágeno: fios ondulados; com o dano, mais finos e interrompidos
-  const fio = (y0, k, cor, lw, ate) => { ctx.strokeStyle = cor; ctx.lineWidth = lw; ctx.beginPath();
-    for (let x = M.x0 + 14; x <= ate; x += 6){ const y = y0 + 9 * Math.sin((x - M.x0) / 19 + k * 1.3) + .3 * des(x); x === M.x0 + 14 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
-    ctx.stroke(); };
-  const nF = tema === 'firmeza' ? 5 : 7, aF = tema === 'manchas' ? .22 : .85 - .4 * q;
-  ctx.setLineDash(q > .02 ? [70 * (1 - q) + 18, 4 + 16 * q] : []);
-  for (let k = 0; k < nF; k++) fio(M.jun + 44 + k * 30, k, `rgba(90,184,255,${aF.toFixed(2)})`, 4.5 * (1 - .5 * q), M.x1 - 14);
-  ctx.setLineDash([]);
-  if (cons && tema === 'linhas'){   // fibras novas, verdes, entrando da esquerda para a direita
-    for (let k = 0; k < 3; k++){ const n = sai((t - 1400 - k * 500) / 1500); if (n > 0) fio(M.jun + 59 + k * 60, k + 4, VERDE, 4.5, M.x0 + 14 + (M.x1 - M.x0 - 28) * n); }
-  }
-  // sol e raios (param no escudo, se houver)
-  const rs = sai((t - 500) / 700);
-  ctx.globalAlpha = ent; icone(ctx, 'sol', M.sol.x, M.sol.y, 92, AMARELO);
-  const alvos = tema === 'manchas' ? [300, 360, 420] : [200, 280, 440];
-  const yEsc = x => M.sup - 44 - 46 * Math.sin(Math.PI * lim((x - 120) / 480, 0, 1));
-  if (rs > 0){
-    ctx.strokeStyle = 'rgba(255,214,10,.85)'; ctx.lineWidth = 3; ctx.setLineDash([10, 9]);
-    alvos.forEach(ax => {
-      const ay = ySup(ax), dx = ax - M.sol.x, dy = ay - M.sol.y, n = Math.hypot(dx, dy), x0 = M.sol.x + dx / n * 50, y0 = M.sol.y + dy / n * 50;
-      let k = rs;
-      if (esc > 0){ let lo = 0, hi = 1; for (let i = 0; i < 12; i++){ const m = (lo + hi) / 2, xx = x0 + (ax - x0) * m, yy = y0 + (ay - y0) * m; if (yy < yEsc(xx)) lo = m; else hi = m; } k = Math.min(rs, lo + (1 - lo) * (1 - esc)); }
-      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + (ax - x0) * k, y0 + (ay - y0) * k); ctx.stroke();
-      if (!cons && tema !== 'manchas' && rs >= 1){ ctx.globalAlpha = .35 * ent; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + dx / n * 120, ay + dy / n * 120); ctx.stroke(); ctx.globalAlpha = ent; }   // a luz entra até a rede
-    });
-    ctx.setLineDash([]);
-  }
-  if (esc > 0){   // o escudo: o protetor por cima da pele
-    ctx.strokeStyle = VERDE; ctx.lineWidth = 10; ctx.beginPath();
-    const ate = 120 + 480 * esc; for (let x = 120; x <= ate; x += 8) x === 120 ? ctx.moveTo(x, yEsc(x)) : ctx.lineTo(x, yEsc(x));
-    ctx.stroke();
-  }
-  // manchas: a célula do pigmento e o pigmento que sobe e junta
-  if (tema === 'manchas'){
-    [200, 360, 520].forEach(x => { const y = yJun(x) - 4; ctx.strokeStyle = PIG; ctx.lineWidth = 3.5;
-      [-2.2, -1.57, -.94].forEach(a => { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 28 * Math.cos(a), y + 28 * Math.sin(a)); ctx.stroke(); });
-      ctx.fillStyle = PIG; ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill(); });
-    const N = 24, fica = 9;
-    for (let k = 0; k < N; k++){
-      const tx = 360 + ((k * 37) % 92 - 46), ty = M.sup + 16 + (k * 53) % 44;
-      const p = cons ? 1 : sai((t - 1400 - k * 90) / 700); if (p <= 0) continue;
-      const some = cons && k >= fica ? 1 - sai((t - 1500 - (N - k) * 110) / 800) : 1; if (some <= 0) continue;
-      ctx.globalAlpha = ent * some; ctx.fillStyle = '#b0703a';
-      ctx.beginPath(); ctx.arc(360 + (tx - 360) * p, yJun(360) - 14 + (ty - yJun(360) + 14) * p, 5.5, 0, Math.PI * 2); ctx.fill();
-    }
-    const sp = cons ? 1 - .45 * sai((t - 1800) / 1900) : sai((t - 2600) / 1200);
-    if (sp > 0){ ctx.globalAlpha = ent * .92; ctx.fillStyle = 'rgba(150,90,45,.95)'; ctx.beginPath(); ctx.ellipse(360, M.sup + 1, 64 * sp, 9 * sp, 0, 0, Math.PI * 2); ctx.fill(); }
-  }
-  // rótulos (poucos, de traço fino)
-  const rot = (txt, x, y, ax, ay, a, cor) => { if (a <= 0) return; ctx.globalAlpha = ent * a;
-    ctx.font = `600 27px ${FONTE}`; const w = ctx.measureText(txt).width, acima = y < ay;   // a linha sai do fim do texto (rótulo de cima) ou do alto dele (rótulo de baixo): nunca por cima das letras
-    const lx = acima ? (ax >= x + w ? x + w + 8 : x + w / 2) : lim(ax, x + 8, x + w - 8), ly = acima ? (ax >= x + w ? y - 9 : y + 8) : y - 30;
-    ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(ax, ay); ctx.stroke();
-    ctx.fillStyle = cor || '#fff'; ctx.fillText(txt, x, y); };
-  const yR = M.base + 48;
-  if (tema === 'manchas'){
-    rot('célula do pigmento', M.x0, yR, 200, yJun(200) + 12, sai((t - 300) / 400));
-    if (!cons) rot('mancha', M.x0 + 4, M.sup - 34, 300, M.sup - 2, sai((t - 3000) / 500), AMARELO);
-    else { rot('protetor com cor', M.x0 + 4, M.sup - 118, 190, yEsc(190) - 6, esc, VERDE); rot('creme prescrito', 392, yR, 372, M.sup + 40, sai((t - 1700) / 500), VERDE); }
-  } else {
-    rot('rede de colágeno', M.x0, yR, 150, M.jun + 80, sai((t - 300) / 400), AZUL);
-    if (tema === 'linhas' && !cons) rot('linha', M.x0 + 4, M.sup - 34, 344, M.sup + 14, sai((t - 2600) / 500), AMARELO);
-    if (tema === 'firmeza') rot('gordura do rosto', 400, yR, 430, M.base - 20 + 44 * q, sai((t - 600) / 400), AMARELO);
-    if (cons){ rot(tema === 'linhas' ? 'protetor' : 'luz, cigarro e açúcar alto: barrados', M.x0 + 4, M.sup - 118, 190, yEsc(190) - 6, esc, VERDE);
-      if (tema === 'linhas') rot('colágeno novo', 400, yR, 430, M.jun + 119, sai((t - 1900) / 500), VERDE); }
-  }
+  ctx.fillStyle = '#fff'; ctx.font = `700 46px ${FONTE}`;
+  const tl = quebra(ctx, c.titulo || '', 640, 2); tl.forEach((l, i) => ctx.fillText(l, 40, 214 + i * 52));
+  ctx.fillStyle = AMARELO; ctx.fillRect(40, 214 + (tl.length - 1) * 52 + 20, 64, 3);
+  // o quadro: A → B (fusão de 1,2 s a 2,6 s), zoom de 1 a 1,08 em 6 s com um leve deslize
+  const { x, y, lado, r } = FQ, z = 1 + .08 * lim(t / 6000, 0, 1), dz = lado * z, ox = x - (dz - lado) / 2, oy = y - (dz - lado) * .35;
+  const fus = a ? sai((t - 1200) / 1400) : 1;
+  ctx.save(); caixa(ctx, x, y, lado, lado, r); ctx.clip();
+  ctx.fillStyle = '#0b100e'; ctx.fillRect(x, y, lado, lado);
+  const quadro = (q, al) => { if (al <= 0) return; ctx.globalAlpha = ent * al; try { ctx.drawImage(q.img, ox, oy, dz, dz); } catch (e) { /* ainda não pronta */ } };
+  if (a && fus < 1) quadro(a, 1);
+  quadro(b, fus);
+  ctx.restore();
+  ctx.globalAlpha = ent; ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.14)'; caixa(ctx, x, y, lado, lado, r); ctx.stroke();
   // pé: ao lado da câmera
-  ctx.globalAlpha = ent; ctx.fillStyle = APAGADO; ctx.font = `500 20px ${FONTE}`;
-  ctx.fillText('Esquema. Varia de pessoa para pessoa.', 24, CIRC.cy - CIRC.r + 40);
+  ctx.fillStyle = APAGADO; ctx.font = `500 22px ${FONTE}`;
+  ctx.fillText('Ilustração. Varia de pessoa para pessoa.', 24, CIRC.cy - CIRC.r + 44);
   ctx.globalAlpha = 1;
   return true;
 }
@@ -911,6 +841,7 @@ async function abrir(o){
   G.iv = setInterval(pinta, 1000 / FPS);
   const g0 = G;
   exemplosDe(G.o.blocos).forEach(carregaExemplo);   // 13/11: a imagem do exemplo (não segura a abertura)
+  preparaFormas(G.o.blocos);   // 17/11: as ilustrações do "Como se forma"
   await Promise.all([Promise.all(G.fotos.map(carregaFoto)).then(() => { if (G === g0) achaRosto(); }), abreCamera()]);
   if (G !== g0) return;
   const algumaFoto = G.fotos.some(f => f.img);
@@ -1237,8 +1168,8 @@ function diag(motivo, g){
 }
 
 // 13/11: o roteiro do Claude chegou com o gravador aberto e ainda sem gravar: troca os blocos e volta ao 1º
-function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; prompter(); return true; }
+function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); preparaFormas(bs); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; prompter(); return true; }
 // 13/11 19h45: o "Gravar análise" da lista abre o gravador na hora, com o Gravar segurado até o roteiro do Claude chegar (ou o prazo vencer)
 function liberar(){ if (!G || !G.aguarda) return; G.aguarda = false; if (G.estado === 'prep'){ estado('prep'); if (G.pronto) D.rec.focus(); } }
-return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo };
+return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
 })();

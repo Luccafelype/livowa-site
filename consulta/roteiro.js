@@ -149,8 +149,17 @@ function entradaEmag(d){
 }
 const NOME_SIN_PI = { linhas_testa:'Linhas da testa', olhos:'Canto dos olhos', sulco_nasolabial:'Vinco do nariz à boca', manchas:'Manchas nas bochechas', flacidez:'Firmeza do contorno',
   textura_poros:'Textura da pele', glabela:'Entre as sobrancelhas', olheira:'Sombra abaixo dos olhos', papada:'Linha da mandíbula' };   // 17/11: a textura entra como achado (fora da conta da idade)
+// 17/11: o sinal que o "Como se forma" explica (a mesma regra do estoque, sinalForma), para o Claude não escolher outro
+function formaDoLead(d){
+  if (!d || d.sem_analise || !/(\d+)\D+(\d+)/.test(String(d.faixa || ''))) return null;
+  const sin = Object.fromEntries((d.sinais || []).filter(s => NOME_SIN_PI[s.id] && s.visivel !== false && s.nivel != null).map(s => [s.id, Math.max(0, Math.min(3, Math.round(+s.nivel) || 0))]));
+  const rk = Array.isArray(d.mais_visivel) ? d.mais_visivel : [], pos = k => { const i = rk.indexOf(k); return i < 0 ? 99 : i; };
+  const dor = (DOR_PI_R[d.respostas?.espelho] || []).filter(id => sin[id] != null).sort((a, b) => sin[b] - sin[a])[0] || null;
+  return sinalForma(sin, dor, pos);
+}
 function entradaPeleIdade(d, c){
   const sin = (d.sinais || []).filter(s => NOME_SIN_PI[s.id] && s.visivel !== false && s.nivel != null && +s.nivel >= 1).sort((a, b) => b.nivel - a.nivel);
+  const sF = formaDoLead(d), mv = Array.isArray(d.mais_visivel) ? d.mais_visivel.filter(k => NOME_SIN_PI[k]).map(k => NOME_SIN_PI[k]) : [];
   return {
     sexo:SEXO[d.respostas?.sexo || d.sexo] || undefined,   // 12/11: concordância (cansada/cansado)
     desejo_de_10_anos:objetivoPI(d.respostas || {}, d.idade != null && !isNaN(+d.idade) ? +d.idade : null, c) || undefined, incomodo_no_espelho:c?.vars?.espelho || undefined,   // 17/11 (v7): o objetivo como ela diz, para a abertura e o fecho
@@ -163,6 +172,8 @@ function entradaPeleIdade(d, c){
     frases_de_vitalidade_na_pagina:d.frases ? String(d.frases).split('+') : undefined,
     // 17/11 (v7): da nota maior para a menor (a ordem da fala); a textura vem junto, mas não entra na idade
     sinais_da_foto_da_nota_maior_para_a_menor:d.faixa ? sin.map(s => ({ sinal:NOME_SIN_PI[s.id], grau:`${GRAU[+s.nivel]} (${+s.nivel} de 3)`, onde_circular:'foto de frente' })) : undefined,
+    o_que_mais_aparece_na_foto:d.faixa && mv.length ? mv : undefined,   // 17/11: a ordem da análise (d.mais_visivel), que desempata as notas
+    sinal_do_como_se_forma:sF ? NOME_SIN_PI[sF] : undefined,   // 17/11: o sinal que pesa no rosto dela (regra sinalForma)
     respostas:rotular(d.respostas, PI),
     foto_duvidosa_refazer:c ? !!c.refazer : undefined,
   };
@@ -191,7 +202,7 @@ let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o b
 async function carregaEstoque(){
   if (EST) return EST;
   const [est, imp] = await Promise.all([
-    fetch('roteiros-estoque.json?v=20261117v7', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('roteiros-estoque.json?v=20261117v8', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch('o-que-importa-idade.json?v=20261113', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null)]);
   EST = est; IMP = imp;   // 13/11: o bloco 5 ("o que conserva na idade") sai do mesmo arquivo do cartão do gravador
   if (EST) estoqueEditavel(EST);
@@ -439,9 +450,20 @@ const LIGA_ESPELHO = { cansada:['cansada', 'sono', 'olheira', 'olhos'], caindo:[
 const SONO_RUIM = ['curto', 'cansado', '6h'], MOV_BAIXO = ['quase_nada', 'ate2'];
 // 14/11 (v5, pedido do Lucca vendo o gravador): depois da foto, COMO SE FORMA o achado principal (a cena desenha a pele em
 // corte); antes do fecho, COMO SE TRABALHA e O CAMINHO em frentes (o que ela marcou + o que a foto mostrou; a alimentação
-// sempre), dito "de forma complexa para contrastar com acompanhamento simples"; o fecho é a pergunta nova dele. Olheira
-// não tem desenho: sem o bloco.
-const TEMA_SIN = { manchas:'manchas', linhas_testa:'linhas', olhos:'linhas', glabela:'linhas', sulco_nasolabial:'firmeza', flacidez:'firmeza', papada:'firmeza' };
+// sempre), dito "de forma complexa para contrastar com acompanhamento simples"; o fecho é a pergunta nova dele.
+// 17/11 (o Lucca: "tem pessoas que o contorno não seria um problema; nesses casos essa parte de como se forma teria que ser outra
+// animação, falando do problema específico"; o Samuel, 39, "rosto caindo", tudo leve: "o mais relevante seria a textura"): o
+// bloco explica o sinal que PESA no rosto dela (sinalForma); textura e olheira ganharam fala e ilustração (consulta/forma/).
+const TEMA_SIN = { manchas:'manchas', linhas_testa:'linhas', olhos:'linhas', glabela:'linhas', sulco_nasolabial:'firmeza', flacidez:'firmeza', papada:'firmeza',
+  textura_poros:'textura', olheira:'olheira' };
+// O sinal do "Como se forma": o da queixa, se ele tem a nota mais alta (empatado no topo, só se for moderado ou marcado, ou se
+// ninguém empata com ele); senão, o que mais aparece: a nota maior, e no empate a ordem d.mais_visivel da análise. Só nota ≥ 1.
+function sinalForma(sin, dor, pos){
+  const ids = Object.keys(sin).filter(id => sin[id] >= 1 && TEMA_SIN[id]); if (!ids.length) return null;
+  const top = Math.max(...ids.map(id => sin[id]));
+  if (dor && sin[dor] === top && TEMA_SIN[dor] && (top >= 2 || !ids.some(id => id !== dor && sin[id] === top))) return dor;
+  return ids.sort((a, b) => sin[b] - sin[a] || pos(a) - pos(b))[0];
+}
 const MAX_PI = 150;   // segundos a 2,5 palavras por segundo. 17/11 (v7): a v6 da Carla tem 367 palavras (~147 s); o gravador avisa e corta pelos Ajustes
 const nomeSinal = id => (IMP && IMP.rotulos && IMP.rotulos[id] && IMP.rotulos[id].faixa) || REG_PI[id] || id;   // o nome da lupa
 // 17/11 (v7, a copy v6 da Carla editada pelo Lucca na Central em 16/11; regras-ajuste-pele-idade.md v7): 9 blocos no jeito dele.
@@ -498,6 +520,9 @@ function rotPeleIdade(d, c, E){
   const porNota = ids => ids.sort((a, b) => sin[b] - sin[a] || pos(a) - pos(b));
   const ach = dor ? [dor, ...porNota(Object.keys(sin).filter(id => id !== dor && sin[id] >= 2)).slice(0, 1)]
     : porNota(Object.keys(sin).filter(id => sin[id] >= 1 && sin[id] >= Math.max(1, top - 1))).slice(0, 2);
+  // 17/11: o sinal que o "Como se forma" explica entra na foto (2º achado), para a fala não explicar o que ela não viu
+  const sF = comFoto && P.mecanismo ? sinalForma(sin, dor, pos) : null;
+  if (sF && !ach.includes(sF)) ach.splice(1, ach.length - 1, sF);
   const leve = !!dor && sin[dor] <= 1 && !!P.foto.leve[dor];
   if (leve) avisos.push(`O que marcou no espelho (${nomeSinal(dor).toLowerCase()}) está leve na análise: o roteiro diz isso como alívio, sem inventar achado.`);
   // 2 · a notícia boa (o hábito conservado com o porquê; sem ele, as regiões sem achado) e a estimativa pela FAIXA
@@ -526,9 +551,9 @@ function rotPeleIdade(d, c, E){
     return b;
   };
   out.push(b3(ach));
-  // 4 · como se forma: o achado principal que é linha, mancha ou contorno; a cena desenha a pele em corte
-  const tema = comFoto && P.mecanismo ? ach.map(a => TEMA_SIN[a]).find(Boolean) || null : null;
-  if (tema){ const b = bloco6('forma', null, [P.mecanismo.forma[tema]], V, { f:P.mecanismo.f }); if (b){ b.dados = { tema, fase:'forma', titulo:P.mecanismo.titulo.forma[tema] }; out.push(b); } }
+  // 4 · como se forma: o sinal que pesa no rosto dela (sinalForma); a cena é a ilustração dele (A → B)
+  const tema = sF ? TEMA_SIN[sF] : null;
+  if (tema && P.mecanismo.forma[tema]){ const b = bloco6('forma', null, [P.mecanismo.forma[tema]], V, { f:P.mecanismo.f }); if (b){ b.dados = { tema, sinal:sF, fase:'forma', titulo:P.mecanismo.titulo.forma[tema] }; out.push(b); } }
   // 5 · o exemplo: a imagem do kit que liga ao hábito dela (sol, cigarro) ou ao achado; a solução vem no bloco 6
   const habSol = ['todo_dia', 'fds'].includes(r.sol), habCig = ['hoje', 'as_vezes'].includes(r.cigarro);
   const temManchas = r.espelho === 'manchas' || ach.includes('manchas');
@@ -557,7 +582,7 @@ function rotPeleIdade(d, c, E){
   out.push(bloco6('destino', null, [P.fecho.caminho_pra], { ...V, objetivo:objetivo || P.fecho.objetivo_sem }, { f:P.fecho.f }));
   out.push(bloco6('interesse', null, [P.fecho.pergunta], V, { f:P.fecho.f, fixo:true }));
   // passou do alvo: a 2ª resposta ligada, as frentes dela, o 2º achado (regra 7); as pontes, o caminho e a pergunta nunca saem
-  cabe(out, MAX_PI, [['dentro', lig.length > 1 ? b6(1) : null], ['caminho', frentes.length ? b7([]) : null], ['foto', ach.length > 1 ? b3(ach.slice(0, 1)) : null]]);
+  cabe(out, MAX_PI, [['dentro', lig.length > 1 ? b6(1) : null], ['caminho', frentes.length ? b7([]) : null], ['foto', ach.length > 1 && ach[1] !== sF ? b3(ach.slice(0, 1)) : null]]);   // 17/11: o sinal do "Como se forma" fica na foto
   // o tempo de cada bloco, pelas palavras (2,5 por segundo): o [a-b s] do texto e a barra do gravador
   let t0 = 0;
   for (const b of out.filter(Boolean)){ const s = Math.max(3, Math.round(Math.max(...b.opcoes.map(palavrasE)) / 2.5)); b.tempo = `${t0}-${t0 + s} s`; t0 += s; }
@@ -1102,5 +1127,5 @@ css.textContent = `.rot{margin-top:14px;padding-top:12px;border-top:2px solid va
 .par-nota{margin:6px 0 0;font-size:.75rem;color:var(--m)}`;
 document.head.appendChild(css);
 
-return { escritoBase:(e, v) => escritoBase(testeDe(e), v), exemplos, assuntos, catalogo:id => (EXE || []).find(x => x.id === id) || null, carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST };
+return { escritoBase:(e, v) => escritoBase(testeDe(e), v), exemplos, assuntos, catalogo:id => (EXE || []).find(x => x.id === id) || null, carregar:carregaEstoque, montar, bloco, parecido, depois, zerar, testeDe, doEstoque, passosReact, resposta, respostaDe:c => RESP[c] || '', claude, usarEstoque, refazerComResposta, partesClaude, texto:i => B[i] ? textoEstoque(B[i], '') : '', _indice:() => INDICE, _estoque:() => EST, _sinalForma:sinalForma, _formaDoLead:formaDoLead };
 })();
