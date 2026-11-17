@@ -383,7 +383,7 @@ async function enviar(f){
   show('carregando'); progresso(0, ETAPAS[0]);
   const angulos = ['frente','esquerda','direita'].filter(a => f[a]);
   const imagens = angulos.map(a => { const cv = montarEnvio(f[a].src, f[a].g), d = cv.toDataURL('image/jpeg', angulos.length > 1 ? .85 : .9).split(',')[1]; cv.width = cv.height = 0; return d; });
-  const corpo = { imagens, modo:'rosto', ocultas:['olhos'], codigo:meuCodigo(), ...(angulos.length > 1 ? { angulos } : {}) };
+  const corpo = { imagens, modo:'rosto', ocultas:['olhos'], codigo:meuCodigo(), ...(angulos.length > 1 ? { angulos } : {}), ...(R.sexo === 'f' || R.sexo === 'm' ? { sexo:R.sexo } : {}) };   // 17/11: a idade do rosto é calculada pela tabela do sexo
   window.__ultimoEnvio = { n:imagens.length, angulos, kb:Math.round(imagens.reduce((s, x) => s + x.length, 0)*3/4/1024) };
   const t0 = performance.now(), MIN = 8000;   // mínimo de ~8 s: dá tempo de ler as etapas
   let pct = 0, fim = false;
@@ -533,7 +533,7 @@ function montarResultado(j, f){
     props:{ codigo:meuCodigo(), idade, sexo:R.sexo || null, faixa:daParaDizer ? `${fx.min} a ${fx.max} anos` : null, caso, respostas:respostasLimpa(),
             desejo:desejo() || null, espelho_regiao:dorId, confianca:j.confianca, qualidade:j.qualidade?.nota, foto:j.foto || null, origem:fr.origem,
             enviadas:window.__ultimoEnvio?.n || 1, angulos:window.__ultimoEnvio?.angulos || ['frente'],
-            frases:daParaDizer ? fs.map(x => x.id).join('+') : '',
+            frases:daParaDizer ? fs.map(x => x.id).join('+') : '', mais_visivel:Array.isArray(j.mais_visivel) ? j.mais_visivel : null,   // 17/11: o gravador desempata as lupas por esta ordem
             sinais:Object.entries(sinais).map(([id, s]) => ({ id, visivel:s.visivel, nivel:s.visivel ? s.nivel : null })) } });
   if (window.__peleResultado) window.__peleResultado(j);
 }
