@@ -517,8 +517,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </div>
 <script src="uso.js?v=20261113y"></script>
 <script src="kits.js?v=20261114v5"></script>
-<script src="roteiro.js?v=20261114v5"></script>
-<script src="gravar-analise.js?v=20261114b"></script>
+<script src="roteiro.js?v=20261117v7"></script>
+<script src="gravar-analise.js?v=20261117v7"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -730,8 +730,8 @@ const AJ_MSGS = [['audioTexto', 'Confirmação de recebimento'], ['audioFala', '
 const AJ_PARAMS = [['toque_dias', 'Toques depois da análise (dias)', [1, 3, 7], 1, 60], ['nutrir_dias', 'Nutrir: próximo toque em (dias)', 14, 1, 180],
   ['verde_min', 'Resposta verde até (min)', 5, 1, 240], ['ambar_min', 'Resposta âmbar até (min)', 60, 1, 1440], ['roteiro_espera_s', 'Espera pelo roteiro do Claude antes do estoque (s)', 30, 5, 120],
   // 13/11 (2º treino da Carla): o gravador. A chave do banco não aceita ponto: gravar_<nome> (o pedido falou gravar.<nome>)
-  ['gravar_ritmo_palavras_s', 'Gravador: ritmo da fala (palavras por segundo)', 2.5, 1, 5, 0.1], ['gravar_salto_fecho_s', 'Gravador: pula para a pergunta aos (s)', 115, 30, 170],
-  ['gravar_alvo_s', 'Gravador: alvo do vídeo (s)', 120, 30, 180], ['gravar_teto_s', 'Gravador: corta o vídeo aos (s)', 135, 45, 180]];   // 14/11 (v5): o roteiro ganhou como se forma, como se trabalha e o caminho
+  ['gravar_ritmo_palavras_s', 'Gravador: ritmo da fala (palavras por segundo)', 2.5, 1, 5, 0.1], ['gravar_salto_fecho_s', 'Gravador: pula para a pergunta aos (s)', 150, 30, 170],
+  ['gravar_alvo_s', 'Gravador: alvo do vídeo (s)', 150, 30, 180], ['gravar_teto_s', 'Gravador: corta o vídeo aos (s)', 170, 45, 180]];   // 14/11 (v5): o roteiro ganhou como se forma, como se trabalha e o caminho. 17/11 (v7): a v6 da Carla tem ~147 s
 const AJ_VARS = ['nome', 'lv', 'desejo', 'incomodo', 'idade', 'h1', 'h2', 'link', 'proximo_teste'];
 function padraoCfg(k){
   const tx = window.KITS?.texto?.(k); if (tx) return tx.padrao;   // 13/11: texto dos kits (braço, pernas, pele…)
@@ -1998,13 +1998,13 @@ function cenaPI(id, b, p, fala){
   if (id === 'cl-foto' || id === 'foto'){
     if (d.sem_analise) return null;
     const N = Object.fromEntries((d.sinais || []).filter(s => SIN_LUPA.includes(s.id) && s.visivel !== false && s.nivel != null).map(s => [s.id, Math.max(0, Math.min(3, Math.round(+s.nivel) || 0))]));
-    // 17/11 (Lucca: "ele quase não tem bigode chinês"): a nota manda. A queixa dela e o [APONTE] só passam à frente com a nota
-    // mais alta do rosto; abaixo dela, a queixa vira frase ("está leve") e o ponto que mais aparece abre. Ordem do que mais aparece
-    // vinda da análise (d.mais_visivel, quando a edge mandar) desempata.
-    const top = Math.max(0, ...Object.values(N)), rk = Array.isArray(d.mais_visivel) ? d.mais_visivel : [];
+    // 17/11 (Lucca: "o foco deveria ser melhorar o que tem agora de acordo com o que ele reclamou, e mostrar como alcançar o
+    // objetivo; tem pessoas que não reclamam de nada, mas todos têm objetivos"): a região da queixa abre SEMPRE, com a nota
+    // verdadeira (leve = dizer que está leve); sem queixa, abre o que mais aparece (d.mais_visivel desempata, quando a edge mandar).
+    const rk = Array.isArray(d.mais_visivel) ? d.mais_visivel : [];
     const dor0 = d.espelho_regiao && N[d.espelho_regiao] != null ? [d.espelho_regiao] : (DOR_PI[r.espelho] || []).filter(k => N[k] != null).sort((x, y) => N[y] - N[x]).slice(0, 1);
-    const dor = dor0.filter(k => N[k] >= 1 && N[k] >= top);
-    const ap = (p?.aponte || []).join(' · '), apIds = APONTE_PI.map(([k, re]) => [k, ap.search(re)]).filter(([k, x]) => x >= 0 && N[k] >= 1 && N[k] >= top).sort((x, y) => x[1] - y[1]).map(([k]) => k);
+    const dor = dor0;
+    const ap = (p?.aponte || []).join(' · '), apIds = APONTE_PI.map(([k, re]) => [k, ap.search(re)]).filter(([k, x]) => x >= 0 && N[k] >= 1).sort((x, y) => x[1] - y[1]).map(([k]) => k);
     const pos = k => { const i = rk.indexOf(k); return i < 0 ? 99 : i; };
     const resto = Object.keys(N).filter(k => N[k] >= 1).sort((x, y) => N[y] - N[x] || pos(x) - pos(y));
     const ids = [...new Set([...dor, ...apIds, ...resto])].slice(0, 3);
@@ -2012,10 +2012,13 @@ function cenaPI(id, b, p, fala){
     const pops = ids.map(k => [k, popularSinal(k, r)]).filter(x => x[1]).map(([k, pp]) => `${pp} (${nm(k)})`);
     const empate = ids.length > 1 && ids.every(k => N[k] === N[ids[0]]) && !rk.length;
     const fora = Object.keys(N).filter(k => !ids.includes(k) && N[k] >= 1);
-    const queixa = dor0[0] && !ids.slice(0, 1).includes(dor0[0]) && ESPELHO_CURTO[r.espelho]
-      ? `Ela marcou "${ESPELHO_CURTO[r.espelho].replace('cansada(o)', gen(d, 'cansada', 'cansado', 'cansada(o)'))}"; ${nm(dor0[0])} está ${GRAU2[N[dor0[0]] ?? 0]} (${visto(dor0[0])}): dá para dizer que isso ainda é pouco no rosto dela.` : null;
+    const qx = ESPELHO_CURTO[r.espelho] ? ESPELHO_CURTO[r.espelho].replace('cansada(o)', gen(d, 'cansada', 'cansado', 'cansada(o)')) : null;
+    const queixa = dor0[0] && qx ? (N[dor0[0]] <= 1
+      ? `Ela marcou "${qx}": ${nm(dor0[0])} está ${N[dor0[0]] ? 'leve' : 'sem achado'} (${visto(dor0[0])}). Fale isso como alívio e mostre como manter assim até o objetivo dela.`
+      : `Ela marcou "${qx}": ${nm(dor0[0])} está ${GRAU2[N[dor0[0]]]} (${visto(dor0[0])}). É por aqui que começa o caminho até o objetivo.`)
+      : r.espelho === 'nada' ? 'Ela não marcou incômodo: o fio é o objetivo dela; mostre o que mais aparece e como se liga a ele.' : null;
     const notas = [`O que a análise viu: ${ids.map((k, n) => `${n + 1}. ${nm(k)}: ${visto(k)}`).join(' · ')}${fora.length ? ` · também: ${fora.map(k => `${nm(k)} ${GRAU2[N[k]]}`).join(', ')}` : ''}.`,
-      ...(empate ? [`A análise deu a mesma nota (${GRAU2[N[ids[0]]]}) para os ${ids.length}: comece pelo que você vê mais na foto (toque no número).`] : []),
+      ...(empate ? [`A análise deu a mesma nota (${GRAU2[N[ids[0]]]}) para os ${ids.length}: depois da queixa dela, siga pelo que você vê mais na foto (toque no número).`] : []),
       ...(queixa ? [queixa] : []),
       ...(pops.length ? ['Como ela fala: ' + pops.join(' · ')] : []),
       ...ids.map(k => [k, rotuloDe(k)]).filter(([, v]) => v?.acompanha && v?.fonte).map(([k, v]) => `Se quiser, ${nm(k)}: ${v.acompanha}`)];
@@ -2031,8 +2034,9 @@ function cenaPI(id, b, p, fala){
   }
   // 14/11 (v5): como se forma e como se trabalha (a pele em corte) e o caminho em frentes; com o caminho, o fecho fica sem cartão
   if (/^(cl-)?(forma|conserto)$/.test(id)) return p?.dados?.tema ? { tipo:'mecanismo', tema:p.dados.tema, fase:p.dados.fase, titulo:p.dados.titulo } : null;
-  if (/^(cl-)?caminho$/.test(id)) return p?.dados?.passos?.length ? { tipo:'caminho', titulo:'O caminho', passos:p.dados.passos, fim:'Com acompanhamento, fica simples.' } : null;
-  if (id === 'destino' || ((id === 'cl-desejo' || id === 'interesse') && (b.ids || []).some(x => /^(cl-)?caminho$/.test(x)))) return null;
+  // 17/11 (v7, a copy v6 da Carla): o fim do cartão é o do caminho dele ("Não é só rosto: é a sua saúde inteira."); "Com acompanhamento, fica simples." saiu (parece venda)
+  if (/^(cl-)?caminho$/.test(id)) return p?.dados?.passos?.length ? { tipo:'caminho', titulo:'O caminho', passos:p.dados.passos, fim:p.dados.fim || 'Não é só rosto: é a sua saúde inteira.' } : null;
+  if (id === 'destino' || id === 'cl-destino' || ((id === 'cl-desejo' || id === 'interesse') && (b.ids || []).some(x => /^(cl-)?caminho$/.test(x)))) return null;
   // 13/11 (v3): o cartão "O que conserva" vai no bloco 5; roteiro sem ele (v2), no do desejo
   if (id === 'cl-importa' || id === 'importa') return { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo, r) };
   if (id === 'cl-desejo' || id === 'interesse' || id === 'ponte') return (b.ids || []).some(x => x === 'cl-importa' || x === 'importa') ? null : { tipo:'desejo', ...importaPara(idade, r.sexo || d.sexo, r) };

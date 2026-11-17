@@ -1,5 +1,5 @@
 {
- "versao": "estoque-v6 · 16/11/2026 (fecho pelo teste: A, que pergunta o que ela já tentou, na pele, pele-idade, braço, pernas e longevidade; B, que usa o que ela marcou e pede licença pra explicar, no emagrecimento; sai \"você se interessaria?\" e o \"sim ou não\") · antes: estoque-v5 · 14/11/2026 (pele-idade: abertura nova, como se forma, como se trabalha, o caminho em frentes e a pergunta nova do Lucca; em todos: ponte da abertura, \"atividade física\", protetor com cor) · antes: estoque-v4 · 13/11/2026 (o fio narrativo em todos os testes; fecho \"estaria disposta a investir nisso\"; assuntos para a conversa)",
+ "versao": "estoque-v7 · 17/11/2026 (copy v6 da Carla editada pelo Lucca: pele-idade em 9 blocos no jeito dele, com abertura pelo objetivo, notícia boa pelo hábito, \"Olha aqui… tá vendo?\" pela nota da análise, o exemplo antes do \"de fora e de dentro\" e o caminho dele; em todos, a ponte \"Vamos olhar…, pra você entender de onde vem e o que podemos fazer.\") · antes: estoque-v6 · 16/11/2026 (fecho pelo teste: A, que pergunta o que ela já tentou, na pele, pele-idade, braço, pernas e longevidade; B, que usa o que ela marcou e pede licença pra explicar, no emagrecimento; sai \"você se interessaria?\" e o \"sim ou não\") · antes: estoque-v5 · 14/11/2026 (pele-idade: abertura nova, como se forma, como se trabalha, o caminho em frentes e a pergunta nova do Lucca; em todos: ponte da abertura, \"atividade física\", protetor com cor) · antes: estoque-v4 · 13/11/2026 (o fio narrativo em todos os testes; fecho \"estaria disposta a investir nisso\"; assuntos para a conversa)",
  "sobre": "Blocos do roteiro do vídeo de análise, montado na hora pela Caixa (roteiro.js), sem API. Desde 13/11 (v4, d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md) o FIO em 6 blocos, um respondendo ao anterior: 1 incômodo dela + \"acho que sei por quê\"; 2 boa notícia, o número dela ao lado da idade e a ponte \"vem daqui:\"; 3 onde aparece; 4 \"E por que…?\" com as respostas dela ligadas; 5 o outro hábito e a imagem do kit (mesmo sexo, idade perto); 6 o que dá pra ver × o que só medindo e a pergunta do Lucca. Entre chaves, o que a Caixa preenche com o dado do lead; frase sem o dado sai do bloco. Toda frase é editável nos Ajustes (e_<teste>_<caminho>). Chaves com \"_\" na frente (as versões antigas) e \"f\" (a fonte) ficam fora dos Ajustes.",
  "comum": {
   "seguranca": {
@@ -81,7 +81,7 @@
    "nota": "Frases da narrativa v3 (6 blocos soltos, até 13/11 15h50), fora do uso desde o fio v4. Não aparecem nos Ajustes."
   },
   "fio": {
-   "f": "d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md; PROMPT-NARRATIVA v4 (regras-narrativa-geral.md): cada bloco responde ao anterior e termina com a ponte; frases curtas, \"pra\", \"dá pra\"; zero promessa; a pergunta do fecho é a do Lucca, palavra por palavra · v5 (14/11, pedido do Lucca vendo o gravador): a ponte da abertura deixa de ser \"acho que sei por quê\" (\"parece fraco\") e vira \"dá pra ver de onde isso vem. Vou te mostrar.\"; a pergunta do fecho é a nova dele (\"…que coubesse na sua rotina e valesse o investimento, você se interessaria?\"); \"se mexe\" vira \"atividade física\"; protetor \"com cor\" (o comum não barra a luz visível: Mahmoud 2010, PMID 20410914; Castanedo-Cazares 2014, PMID 24313385; Boukari 2015, PMID 25443629; conferidos no PubMed em 14/11) · v6 (16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): a pergunta de interesse saiu; cada teste tem o seu fecho, em <teste>.fecho)",
+   "f": "d-20261113-fio-narrativo-fecho-investimento; roteiro-fio-v4-carla.md; PROMPT-NARRATIVA v4 (regras-narrativa-geral.md): cada bloco responde ao anterior e termina com a ponte; frases curtas, \"pra\", \"dá pra\"; zero promessa; a pergunta do fecho é a do Lucca, palavra por palavra · v5 (14/11, pedido do Lucca vendo o gravador): a ponte da abertura deixa de ser \"acho que sei por quê\" (\"parece fraco\") e vira \"dá pra ver de onde isso vem. Vou te mostrar.\"; a pergunta do fecho é a nova dele (\"…que coubesse na sua rotina e valesse o investimento, você se interessaria?\"); \"se mexe\" vira \"atividade física\"; protetor \"com cor\" (o comum não barra a luz visível: Mahmoud 2010, PMID 20410914; Castanedo-Cazares 2014, PMID 24313385; Boukari 2015, PMID 25443629; conferidos no PubMed em 14/11) · v6 (16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): a pergunta de interesse saiu; cada teste tem o seu fecho, em <teste>.fecho) · v7 (17/11, a copy v6 da Carla editada pelo Lucca; PROMPT-NARRATIVA v5): a ponte da abertura vira \"Vamos olhar a sua foto (o seu teste, as suas respostas), pra você entender de onde vem e o que podemos fazer.\"; sai \"Analisei…, e dá pra ver de onde isso vem. Vou te mostrar.\" em todos os testes",
    "abertura": [
     "{nome}, aqui é o doutor Lucca Marques."
    ],
@@ -92,19 +92,19 @@
     "Você quis saber {rotulo}."
    ],
    "ponte_foto": [
-    "Analisei sua foto e suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
+    "Vamos olhar a sua foto, pra você entender de onde vem e o que podemos fazer."
    ],
    "ponte_respostas": [
-    "Analisei suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
+    "Vamos olhar as suas respostas, pra você entender de onde vem e o que podemos fazer."
    ],
    "ponte_teste": [
-    "Analisei seu teste, e dá pra ver de onde isso vem. Vou te mostrar."
+    "Vamos olhar o seu teste, pra você entender de onde vem e o que podemos fazer."
    ],
    "ponte_quis": [
     "Olhando seu teste, dá pra te dizer bastante coisa."
    ],
    "ponte_comecar": [
-    "Analisei suas respostas, e dá pra ver por onde começar. Vou te mostrar."
+    "Vamos olhar as suas respostas, pra você entender de onde vem e por onde começar."
    ],
    "boa": [
     "Primeiro, a boa notícia: {bem}."
@@ -517,7 +517,7 @@
    "Você quis olhar a sua pele com calma."
   ],
   "ponte_so_foto": [
-   "Analisei sua foto, e dá pra ver de onde isso vem. Vou te mostrar."
+   "Vamos olhar a sua foto, pra você entender de onde vem e o que podemos fazer."
   ],
   "ponte_sem_queixa": [
    "Olhando sua foto, dá pra te mostrar bastante coisa."
@@ -1009,7 +1009,7 @@
    ]
   },
   "ponte": {
-   "comeco": "Analisei suas respostas, e dá pra ver por onde começar. Vou te mostrar."
+   "comeco": "Vamos olhar as suas respostas, pra você entender de onde vem e por onde começar."
   },
   "boa": {
    "f": "PROMPT-NARRATIVA v4, quiz-emagrecimento: a boa notícia (o que está bem nas respostas)",
@@ -1198,25 +1198,42 @@
  "pele-idade": {
   "_sobre": "04/11/2026 · livowa.com/pele (funnelId pele-idade): a idade que o rosto aparenta ao lado da idade real, e a vitalidade pelas respostas. Não é análise de pele: nada de produto, rotina, procedimento ou programa (regras 4, 5 e 23). Frases com número só de livowa-empresa/tarefas/pele-idade-vitalidade/evidencia.md (conferidas no PubMed em 04/11); no máximo um número de estudo por vídeo, no mecanismo (regra 15).",
   "abertura": {
-   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 1 (o incômodo do espelho nas palavras dela + \"acho que sei por quê\")",
-   "contou": {
-    "cansada": "Você me contou que te incomoda a cara de {cansada}, mesmo quando você dorme.",
-    "caindo": "Você me contou que te incomoda o rosto caindo, na bochecha e no bigode chinês.",
-    "pescoco": "Você me contou que te incomodam o pescoço e a papada.",
-    "palpebra": "Você me contou que te incomoda a pálpebra pesando.",
-    "manchas": "Você me contou que te incomodam as manchas e as rugas.",
-    "velho": "Você me contou que acha que parece mais {velha} do que é.",
-    "nada": "Você me contou que quer saber a idade que o seu rosto mostra.",
-    "outro": "Você me contou: {espelho}."
+   "f": "v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): bloco 1, o objetivo dela (o desejo de 10 anos, dito como dela, nunca \"você vai\") e o incômodo do espelho em 2ª pessoa, com \"né?\", e a ponte \"Vamos olhar a sua foto, pra você entender de onde vem e o que podemos fazer.\" (sai \"Analisei sua foto e suas respostas, e dá pra ver de onde isso vem. Vou te mostrar.\"). Sem objetivo: só o incômodo. Objetivo \"aparentar ser mais jovem\" (jovem): a regra de 5 em 5 da Central (45 anos: chegar aos 55, 60 com rosto de 40), sem \"mais jovem\"",
+   "com_objetivo": "Você me contou que o objetivo é {objetivo}, né, e {incomodo}",
+   "sem_objetivo": "Você me contou que {incomodo}",
+   "so_objetivo": "Você me contou que o objetivo é {objetivo}, né?",
+   "resposta_objetivo": "Você me contou que o objetivo é {objetivo}, né? E me disse: \"{resposta}\".",
+   "quis": "Você quis saber a idade que o seu rosto mostra.",
+   "incomodo": {
+    "cansada": "o que te incomoda é a cara de {cansada}, né? Mesmo dormindo.",
+    "caindo": "o que te incomoda é o rosto caindo, na bochecha e no bigode chinês, né?",
+    "pescoco": "o que te incomoda é o pescoço e a papada, né?",
+    "palpebra": "o que te incomoda é a pálpebra pesando, né?",
+    "manchas": "o que te incomoda são as manchas e as rugas, né?",
+    "velho": "você acha que parece mais {velha} do que é, né?",
+    "outro": "o que te incomoda é {espelho}, né?"
+   },
+   "objetivo": {
+    "jovem": "chegar aos {b10}, {b15} com rosto de {bm5}",
+    "chegar10": "chegar aos {i10} com força e memória",
+    "disposicao": "ter a mesma disposição de hoje",
+    "reconhecer": "se reconhecer no espelho",
+    "parecer": "se reconhecer no espelho",
+    "independente": "não depender de ninguém",
+    "antes": "cuidar da saúde antes de aparecer problema",
+    "devagar": "cuidar da saúde com o passar dos anos",
+    "aos70": "chegar bem aos 70, com força e memória",
+    "entender": "entender o que o seu corpo já está mostrando",
+    "cuidar": "cuidar agora, antes que apareça"
    },
    "ponte": [
-    "Analisei sua foto e suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
+    "Vamos olhar a sua foto, pra você entender de onde vem e o que podemos fazer."
    ],
    "ponte_nada": [
-    "Olhando sua foto e suas respostas, dá pra te mostrar bastante coisa."
+    "Vamos olhar a sua foto juntos."
    ],
    "ponte_sem_foto": [
-    "Analisei suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
+    "Vamos olhar as suas respostas, pra você entender de onde vem e o que podemos fazer."
    ]
   },
   "rotulo": {
@@ -1229,59 +1246,85 @@
    "velho": "parece mais {velha}"
   },
   "idade": {
-   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 2 (a boa notícia, a idade do rosto pela FAIXA e a ponte \"esse pouco vem daqui\"); regra 25 (estimativa; mais de 5 anos acima: sem número)",
+   "f": "v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): bloco 2, \"Primeiro, a notícia boa:\" (nunca \"a boa notícia\") pelo hábito conservado que ela marcou, com o porquê (nunca fumou > sol > pressão e glicose normais > sono > atividade física); sem hábito bom, até 2 regiões sem achado. Depois a estimativa ao lado da idade, pela FAIXA, sem a ponte \"vem daqui\"; regra 25 (estimativa; mais de 5 anos acima: sem número)",
+   "boa_habito": [
+    "Primeiro, a notícia boa: {bem}"
+   ],
+   "boa_um": [
+    "Primeiro, a notícia boa: {bem} está bem."
+   ],
+   "boa_dois": [
+    "Primeiro, a notícia boa: {bem} estão bem."
+   ],
    "numero": [
-    "O rosto aparenta, numa estimativa, de {min} a {max}; você tem {idade}."
-   ],
-   "acima": [
-    "Um pouco acima, e esse pouco vem daqui:"
-   ],
-   "acima_fora": [
-    "O rosto mostra um pouco mais, e esse pouco vem daqui:"
-   ],
-   "igual": [
-    "Está na sua idade, e o que mais aparece vem daqui:"
-   ],
-   "abaixo": [
-    "O rosto mostra menos que a sua idade. O que mais aparece vem daqui:"
-   ],
-   "sem_numero_mais": [
-    "Pela foto, o rosto mostra mais que os seus {idade} anos, e vem daqui:"
+    "A estimativa da sua foto deu de {min} a {max}, e você tem {idade}."
    ],
    "fim": {
     "acima": "Um pouco acima.",
     "acima_fora": "O rosto mostra um pouco mais.",
     "igual": "Está na sua idade.",
     "abaixo": "O rosto mostra menos que a sua idade.",
-    "sem_numero_mais": "Pela foto, o rosto mostra um pouco mais que os seus {idade} anos."
+    "sem_numero_mais": "Pela foto, o rosto mostra mais que os seus {idade} anos."
    },
    "sem_numero": [
     "Pela foto, não deu pra estimar a idade do rosto com segurança, então não vou te dar número."
    ],
    "sem_foto": [
     "Desta vez a análise da foto não rodou, então não vou te dar número."
-   ],
-   "boa_um": [
-    "Primeiro, a boa notícia: {bem} está bem."
-   ],
-   "boa_dois": [
-    "Primeiro, a boa notícia: {bem} estão bem."
    ]
   },
   "foto": {
-   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 3 (fecha o \"daqui\": a região do incômodo, com nome neutro; pouco ali = alívio)",
-   "onde": {
-    "linhas_testa": "das linhas da testa",
-    "olhos": "do canto dos olhos",
-    "sulco_nasolabial": "do vinco do nariz à boca",
-    "manchas": "dessas manchinhas",
-    "flacidez": "do contorno do rosto",
-    "glabela": "da marca entre as sobrancelhas",
-    "olheira": "da sombra abaixo dos olhos",
-    "papada": "da linha da mandíbula"
+   "f": "v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): bloco 3, \"Olha aqui:\" + os achados com \"tá vendo?\" + \"Por que eu tô te mostrando? Porque um rosto parece mais velho por três coisas: textura, mancha e dobra.\" + \"A … que você percebe vem da …\". 17/11 (o Lucca: \"o foco deveria ser melhorar o que tem agora de acordo com o que ele reclamou, e mostrar como alcançar o objetivo dele\"): com queixa, a região dela abre sempre, com a nota verdadeira (leve = \"ainda está leve\", sem inventar achado), e depois 1 outro achado moderado ou marcado; sem queixa, o que mais aparece (nota maior primeiro), ligado ao objetivo. A textura entra como achado (na idade continua fora)",
+   "abre": "Olha aqui:",
+   "achado": {
+    "olhos": "o canto dos olhos, essas linhas, tá vendo?",
+    "linhas_testa": "a testa, essas linhas, tá vendo?",
+    "glabela": "essa marca entre as sobrancelhas, tá vendo?",
+    "manchas": "as manchinhas, tá vendo?",
+    "sulco_nasolabial": "o vinco do nariz à boca, tá vendo?",
+    "flacidez": "o contorno do rosto, a linha da mandíbula, tá vendo?",
+    "papada": "a linha da mandíbula, tá vendo?",
+    "olheira": "a sombra abaixo dos olhos, tá vendo?",
+    "textura_poros": "a textura da pele, esses poros, tá vendo?"
    },
-   "solta": [
-    "O que mais aparece na foto vem {regioes}."
+   "tambem": {
+    "olhos": "E as linhas do canto dos olhos.",
+    "linhas_testa": "E as linhas da testa.",
+    "glabela": "E a marca entre as sobrancelhas.",
+    "manchas": "E as manchinhas.",
+    "sulco_nasolabial": "E o vinco do nariz à boca.",
+    "flacidez": "E o contorno do rosto.",
+    "papada": "E a linha da mandíbula.",
+    "olheira": "E a sombra abaixo dos olhos.",
+    "textura_poros": "E a textura da pele."
+   },
+   "leve": {
+    "olhos": "o canto dos olhos, que você marcou, tá vendo? Ainda está leve.",
+    "linhas_testa": "as linhas da testa que você marcou, tá vendo? Ainda estão leves.",
+    "glabela": "a marca entre as sobrancelhas que você marcou, tá vendo? Ainda está leve.",
+    "manchas": "as manchas que você marcou, tá vendo? Ainda estão leves.",
+    "sulco_nasolabial": "o bigode chinês que você marcou, tá vendo? Ainda está leve.",
+    "flacidez": "o contorno que você marcou, tá vendo? Ainda muda pouco.",
+    "papada": "a linha da mandíbula que você marcou, tá vendo? Ainda muda pouco.",
+    "olheira": "a sombra abaixo dos olhos, que você marcou, tá vendo? Ainda está leve."
+   },
+   "porque": "Por que eu tô te mostrando? Porque um rosto parece mais velho por três coisas: textura, mancha e dobra.",
+   "vem": {
+    "cansada": "A cara de {cansada} que você percebe vem {coisas}.",
+    "caindo": "O rosto caindo que você percebe vem {coisas}.",
+    "pescoco": "O que você percebe no pescoço e na papada vem {coisas}.",
+    "palpebra": "A pálpebra pesando que você percebe vem {coisas}.",
+    "manchas": "As manchas e as rugas que você percebe vêm {coisas}.",
+    "velho": "A impressão de mais idade que você percebe vem {coisas}.",
+    "padrao": "O que mais aparece no seu rosto vem {coisas}."
+   },
+   "coisa": {
+    "dobra": "da dobra",
+    "mancha": "da mancha",
+    "textura": "da textura"
+   },
+   "sem_nada": [
+    "Na foto, nenhuma região chamou atenção."
    ],
    "bom": {
     "linhas_testa": "a testa",
@@ -1291,23 +1334,9 @@
     "flacidez": "o contorno",
     "glabela": "o meio da testa",
     "olheira": "a área abaixo dos olhos",
-    "papada": "a linha da mandíbula"
+    "papada": "a linha da mandíbula",
+    "textura_poros": "a textura da pele"
    },
-   "e_o_que": {
-    "cansada": "É o que dá a cara de {cansada}.",
-    "caindo": "É o que dá a sensação de rosto caindo.",
-    "pescoco": "É o que aparece no pescoço e na papada.",
-    "palpebra": "É o que dá a sensação de pálpebra pesando.",
-    "manchas": "É o que você vê no espelho.",
-    "velho": "É o que dá a impressão de mais idade.",
-    "padrao": "É o que mais aparece no rosto."
-   },
-   "alivio": [
-    "Onde você se preocupa, a foto mostrou pouco."
-   ],
-   "sem_nada": [
-    "Na foto, nenhuma região chamou atenção."
-   ],
    "sinal": {
     "linhas_testa": [
      "a testa aparece lisa",
@@ -1356,79 +1385,86 @@
      "a linha da mandíbula aparece levemente menos firme",
      "a linha da mandíbula aparece menos firme",
      "a linha da mandíbula aparece bem menos firme"
+    ],
+    "textura_poros": [
+     "a pele aparece lisa",
+     "aparecem poros discretos",
+     "aparecem poros e textura visíveis",
+     "a textura aparece bem marcada"
     ]
-   }
+   },
+   "objetivo": "É por aqui que começa o caminho pra {objetivo}."
   },
-  "porque": {
-   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 4 (o porquê com as respostas DELA ligadas: pressão ou glicose alta > sono > movimento > nunca mediu; mulher de 40 a 60, o hormônio da fase)",
-   "pergunta": {
-    "cansada": "E por que, mesmo dormindo?",
-    "ja": "E por que, mesmo {ja}?",
-    "padrao": "E por que isso aparece?"
+  "mecanismo": {
+   "f": "v5 (14/11, pedido do Lucca: \"mostrar brevemente uma explicação da pele sobre um ponto mais específico, como a formação das manchas, das linhas de expressão, da face caída; em um segundo momento, o mecanismo dos consertos\"). Como se forma: luz e pigmento (Mahmoud 2010, PMID 20410914); o sol aumenta as enzimas que quebram o colágeno (Fisher 1997, NEJM, PMID 9358139); a gordura do rosto fica em compartimentos que mudam com a idade (Rohrich e Pessa 2007, PMID 17519724). Como se trabalha: protetor com óxido de ferro na mancha (Castanedo-Cazares 2014, PMID 24313385); a tretinoína repõe parte da formação de colágeno na pele com dano de sol (Griffiths 1993, NEJM, PMID 8336752). Conferidos no PubMed em 14/11. \"Do açúcar alto\" (glicação do colágeno): mecanismo, sem ensaio conferido. Nenhum nome de remédio nem de estudo na fala; a tela mostra \"Varia de pessoa para pessoa.\" · v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): bloco 4, \"E como a linha se forma?\" no jeito dele (o texto da linha é o da Carla; mancha e contorno são os da Central, GUIA da pele). O \"como se trabalha\" separado saiu: o conserto está no caminho",
+   "forma": {
+    "linhas": "E como a linha se forma? Embaixo da pele tem uma rede de colágeno, olha aqui. Com o sol e os anos, ela afina. Afinou, não segura a pele de cima, e a pele dobra.",
+    "manchas": "E como a mancha se forma? A luz bate na célula que fabrica o pigmento, olha aqui. Ela fabrica a mais naquele ponto, o pigmento sobe, e a mancha aparece.",
+    "firmeza": "E como o contorno muda? A rede de colágeno afina e a gordura do rosto desce, olha aqui. Desceu, o vinco aprofunda e a mandíbula perde o desenho."
    },
-   "ja": {
-    "cigarro": "sem fumar",
-    "sol": "se protegendo do sol",
-    "movimento": "fazendo atividade física",
-    "sono": "dormindo bem"
-   },
-   "mecanismo": {
-    "cansada": "Porque dormir não é o mesmo que descansar.",
-    "padrao": "Porque o rosto mostra por fora muito do que pesa por dentro."
-   },
-   "liga": {
-    "metabolico": {
-     "pressao": "já ouviu que a pressão está alta",
-     "glicose": "já ouviu que a glicose está alta",
-     "ambas": "já ouviu que a pressão e a glicose estão altas",
-     "nunca": "nunca mediu a glicose"
-    },
-    "sono": {
-     "cansado": "acorda {cansada}",
-     "curto": "dorme 5 horas ou menos",
-     "6h": "dorme umas 6 horas"
-    },
-    "movimento": {
-     "quase_nada": "quase não faz atividade física",
-     "ate2": "faz até duas horas de atividade física por semana"
+   "titulo": {
+    "forma": {
+     "manchas": "Como a mancha se forma",
+     "linhas": "Como a linha se forma",
+     "firmeza": "Como o contorno muda"
     }
-   },
-   "a_favor": [
-    "A seu favor: {bem}."
-   ]
-  },
-  "habito": {
-   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 5 (o outro hábito que pesa no rosto, ligado ao achado; a imagem do kit; a solução quando a imagem mostra só o problema)",
-   "sol": {
-    "todo_dia": "E o sol de todo dia sem protetor pesa no rosto.",
-    "fds": "E o sol sem protetor, mesmo só no fim de semana, vai somando no rosto."
-   },
-   "sol_manchas": {
-    "todo_dia": "E as manchinhas vêm muito do sol de todo dia.",
-    "fds": "E as manchinhas vêm muito do sol, mesmo só no fim de semana."
-   },
-   "cigarro": {
-    "hoje": "E o cigarro também aparece no rosto, com os anos.",
-    "as_vezes": "E o cigarro, mesmo às vezes, também aparece no rosto."
    }
   },
-  "importa": {
-   "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): sem hábito nem imagem, o bloco 5 é o item de O QUE CONSERVA (cigarro e sono ruim marcados na frente)",
+  "exemplo": {
+   "f": "v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): bloco 5, o exemplo sobe para antes do \"de fora e de dentro\" (a solução vem no bloco seguinte); a imagem do kit que liga ao hábito dela (sol, cigarro) ou ao achado, mesmo sexo e idade perto; nas gêmeas, \"elas são gêmeas idênticas, 61 anos. A da direita…\"",
    "texto": [
-    "Aos {idade} anos, o que mais conserva a sua saúde e o rosto é {item}."
+    "Olha esse exemplo aqui pra você ter ideia: {ex_fala}."
    ],
-   "sem_idade": [
-    "O que mais conserva a sua saúde e o rosto é {item}."
+   "texto_idade": [
+    "Olha esse exemplo aqui, de gente da sua idade: {ex_fala}."
    ]
+  },
+  "dentro": {
+   "f": "v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): bloco 6, de fora e de dentro: a solução do exemplo (o sol vem de fora, o protetor pode segurar), o que corre no sangue (açúcar e inflamação), a glicose e 1 resposta dela ligada (pressão ou glicose alta > acorda cansada > dorme pouco > nunca mediu > pouca atividade física; com alta, mais 1). A ligação glicose × cansaço depois do almoço é do Lucca, não conferida em estudo. Mulher de 40 a 60: o hormônio da fase fica nos assuntos",
+   "abre": {
+    "sol": "Só que não é só o sol que faz isso. O sol vem de fora, e o protetor pode segurar.",
+    "cigarro": "Só que não é só o cigarro que faz isso. O cigarro vem de fora, e dá pra ficar longe dele.",
+    "sem": "O que vem de fora, como o sol, o protetor pode segurar."
+   },
+   "dentro": "O que vem de dentro, não: é o que corre no seu sangue, açúcar e inflamação.",
+   "glicose": "Um exemplo é a glicose. Açúcar alto gruda nessa rede de colágeno e endurece ela, e ainda deixa a pessoa cansada.",
+   "a_favor": "No seu caso, o de dentro está a seu favor: {bem}. Então o que mais pesa é o de fora.",
+   "liga": {
+    "glicose": "E você já ouviu que a sua glicose está alta, né? Isso vale olhar com exame, com calma.",
+    "pressao": "E você já ouviu que a sua pressão está alta, né? Isso também pesa por dentro, e vale olhar com exame, com calma.",
+    "ambas": "E você já ouviu que a sua pressão e a sua glicose estão altas, né? Isso vale olhar com exame, com calma.",
+    "cansado": "E esse aumento de glicose tem a ver com acordar {cansada}, ter um sono fora do normal depois do almoço.",
+    "curto": "E dormir 5 horas ou menos também pesa por dentro: é no sono que o corpo se recupera.",
+    "6h": "E dormir umas 6 horas também pesa por dentro: é no sono que o corpo se recupera.",
+    "nunca": "E a sua glicose, você nunca mediu: isso só medindo.",
+    "quase_nada": "E a atividade física ajuda a usar esse açúcar; você me contou que quase não faz.",
+    "ate2": "E a atividade física ajuda a usar esse açúcar; você faz até duas horas por semana."
+   }
+  },
+  "caminho": {
+   "f": "v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): bloco 7, o caminho dele (15/11, refeito por ele em 16/11): por fora, barrar a luz (o protetor com cor segura a luz visível: Mahmoud 2010, PMID 20410914; Castanedo-Cazares 2014, PMID 24313385; Boukari 2015, PMID 25443629, conferidos no PubMed em 14/11); por dentro, colágeno, inflamação, metabolismo e alimentação. Entram até 2 frentes dela (cigarro, pressão e glicose altas). Saiu \"Sozinha, é muita coisa pra acertar. Com acompanhamento, fica simples.\" (receio dele: parecer venda). No cartão do vídeo, o rótulo curto de cada frente",
+   "abre": "Como a gente trabalha isso? Por fora: barrar a luz. O protetor comum não segura a luz visível; o com cor segura.",
+   "dentro": "Por dentro: estimular o seu colágeno, baixar a inflamação do corpo e ajustar o metabolismo e a alimentação, de um jeito que você consiga manter.",
+   "dentro_frentes": "Por dentro: estimular o seu colágeno, baixar a inflamação do corpo, {frentes} e ajustar o metabolismo e a alimentação, de um jeito que você consiga manter.",
+   "fim": "E isso não é só rosto: é a sua saúde inteira.",
+   "itens": {
+    "cigarro": "sair do cigarro",
+    "metabolico": "cuidar da pressão e da glicose"
+   },
+   "cartao": {
+    "fora": "Por fora: protetor com cor",
+    "colageno": "Estimular o colágeno",
+    "inflamacao": "Baixar a inflamação",
+    "cigarro": "Sair do cigarro",
+    "metabolico": "Pressão e glicose: cuidar",
+    "metabolismo": "Metabolismo e alimentação"
+   },
+   "cartao_fim": "Não é só rosto: é a sua saúde inteira."
   },
   "fecho": {
-   "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A, o da Carla: o caminho pro desejo de 10 anos dela e a pergunta do que ela já tentou; \"parecer a idade que sente\" vira \"se reconhecer no espelho\". Saem \"Espero que a análise tenha te ajudado.\" e a pergunta de interesse",
-   "desejo": {
-    "parecer": "se reconhecer no espelho",
-    "devagar": "cuidar da saúde com o passar dos anos"
-   },
-   "desejo_sem": "cuidar da sua saúde e do seu rosto",
-   "caminho_pra": "Esse é o caminho pra você {desejo}.",
+   "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A, o da Carla: o caminho pro desejo de 10 anos dela e a pergunta do que ela já tentou; \"parecer a idade que sente\" vira \"se reconhecer no espelho\". Saem \"Espero que a análise tenha te ajudado.\" e a pergunta de interesse · v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): \"Esse é o caminho pra\" + o mesmo objetivo da abertura; sem objetivo, \"cuidar da sua saúde e do seu rosto\"",
+   "objetivo_sem": "cuidar da sua saúde e do seu rosto",
+   "caminho_pra": "Esse é o caminho pra {objetivo}.",
    "pergunta": "Agora me conta, {nome}: você já tentou cuidar disso antes? Do rosto e da saúde junto, ou de um pedaço só? Me responde aqui."
   },
   "escrito": {
@@ -1438,8 +1474,16 @@
    "ambas": "A pressão e a glicose altas valem olhar com exame, com calma."
   },
   "bem": {
-   "f": "regras 6 e 7 (primeiro o que está bem; elogio só verdadeiro); respostas de pele/app.js",
+   "f": "regras 6 e 7 (primeiro o que está bem; elogio só verdadeiro); respostas de pele/app.js · v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): na notícia boa, o hábito vem com o porquê (\"você nunca fumou, e o cigarro acaba com o rosto, então nunca ter fumado é bom.\"); \"curto\" é a lista do \"a seu favor\" do bloco 6",
    "itens": {
+    "cigarro": "você nunca fumou, e o cigarro acaba com o rosto, então nunca ter fumado é bom.",
+    "sol": "você se protege do sol, e o sol é o que mais marca o rosto, então isso é bom.",
+    "metabolico": "a sua pressão e a sua glicose estavam normais, e o açúcar alto marca a pele, então isso é bom.",
+    "sono": "você dorme bem, e é no sono que o corpo se recupera, então isso é bom.",
+    "movimento_2a5": "você faz atividade física, e isso cuida do corpo por dentro, então isso é bom.",
+    "movimento_mais5": "você faz atividade física, e isso cuida do corpo por dentro, então isso é bom."
+   },
+   "curto": {
     "cigarro": "você nunca fumou",
     "sol": "o seu rosto quase não pega sol sem protetor",
     "metabolico": "a pressão e a glicose estavam normais",
@@ -1707,63 +1751,291 @@
    },
    "nota": "Frases da v3 (6 blocos do PROMPT-PELE-IDADE v3), fora do uso desde o fio v4 de 13/11. Não aparecem nos Ajustes."
   },
-  "mecanismo": {
-   "f": "v5 (14/11, pedido do Lucca: \"mostrar brevemente uma explicação da pele sobre um ponto mais específico, como a formação das manchas, das linhas de expressão, da face caída; em um segundo momento, o mecanismo dos consertos\"). Como se forma: luz e pigmento (Mahmoud 2010, PMID 20410914); o sol aumenta as enzimas que quebram o colágeno (Fisher 1997, NEJM, PMID 9358139); a gordura do rosto fica em compartimentos que mudam com a idade (Rohrich e Pessa 2007, PMID 17519724). Como se trabalha: protetor com óxido de ferro na mancha (Castanedo-Cazares 2014, PMID 24313385); a tretinoína repõe parte da formação de colágeno na pele com dano de sol (Griffiths 1993, NEJM, PMID 8336752). Conferidos no PubMed em 14/11. \"Do açúcar alto\" (glicação do colágeno): mecanismo, sem ensaio conferido. Nenhum nome de remédio nem de estudo na fala; a tela mostra \"Varia de pessoa para pessoa.\"",
-   "forma": {
-    "manchas": "Mancha se forma assim: a luz chega na célula do pigmento, e ela fabrica a mais naquele ponto.",
-    "linhas": "Linha se forma assim: embaixo da pele tem uma rede de colágeno. Com o sol e os anos ela afina, e a pele dobra.",
-    "firmeza": "O contorno muda assim: a rede de colágeno afina, e a gordura do rosto desce."
+  "_v6_1611": {
+   "abertura": {
+    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 1 (o incômodo do espelho nas palavras dela + \"acho que sei por quê\")",
+    "contou": {
+     "cansada": "Você me contou que te incomoda a cara de {cansada}, mesmo quando você dorme.",
+     "caindo": "Você me contou que te incomoda o rosto caindo, na bochecha e no bigode chinês.",
+     "pescoco": "Você me contou que te incomodam o pescoço e a papada.",
+     "palpebra": "Você me contou que te incomoda a pálpebra pesando.",
+     "manchas": "Você me contou que te incomodam as manchas e as rugas.",
+     "velho": "Você me contou que acha que parece mais {velha} do que é.",
+     "nada": "Você me contou que quer saber a idade que o seu rosto mostra.",
+     "outro": "Você me contou: {espelho}."
+    },
+    "ponte": [
+     "Analisei sua foto e suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
+    ],
+    "ponte_nada": [
+     "Olhando sua foto e suas respostas, dá pra te mostrar bastante coisa."
+    ],
+    "ponte_sem_foto": [
+     "Analisei suas respostas, e dá pra ver de onde isso vem. Vou te mostrar."
+    ]
    },
-   "conserta": {
-    "manchas": "Como se trabalha isso? Barrando a luz, a célula para de receber o sinal, e um creme prescrito age no pigmento.",
-    "linhas": "Como se trabalha isso? Protegendo da luz, a rede afina mais devagar, e um creme prescrito estimula colágeno novo.",
-    "firmeza": "Como se trabalha isso? Protegendo a rede que você tem, da luz, do cigarro e do açúcar alto."
+   "idade": {
+    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 2 (a boa notícia, a idade do rosto pela FAIXA e a ponte \"esse pouco vem daqui\"); regra 25 (estimativa; mais de 5 anos acima: sem número)",
+    "numero": [
+     "O rosto aparenta, numa estimativa, de {min} a {max}; você tem {idade}."
+    ],
+    "acima": [
+     "Um pouco acima, e esse pouco vem daqui:"
+    ],
+    "acima_fora": [
+     "O rosto mostra um pouco mais, e esse pouco vem daqui:"
+    ],
+    "igual": [
+     "Está na sua idade, e o que mais aparece vem daqui:"
+    ],
+    "abaixo": [
+     "O rosto mostra menos que a sua idade. O que mais aparece vem daqui:"
+    ],
+    "sem_numero_mais": [
+     "Pela foto, o rosto mostra mais que os seus {idade} anos, e vem daqui:"
+    ],
+    "fim": {
+     "acima": "Um pouco acima.",
+     "acima_fora": "O rosto mostra um pouco mais.",
+     "igual": "Está na sua idade.",
+     "abaixo": "O rosto mostra menos que a sua idade.",
+     "sem_numero_mais": "Pela foto, o rosto mostra um pouco mais que os seus {idade} anos."
+    },
+    "sem_numero": [
+     "Pela foto, não deu pra estimar a idade do rosto com segurança, então não vou te dar número."
+    ],
+    "sem_foto": [
+     "Desta vez a análise da foto não rodou, então não vou te dar número."
+    ],
+    "boa_um": [
+     "Primeiro, a boa notícia: {bem} está bem."
+    ],
+    "boa_dois": [
+     "Primeiro, a boa notícia: {bem} estão bem."
+    ]
    },
-   "titulo": {
+   "foto": {
+    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 3 (fecha o \"daqui\": a região do incômodo, com nome neutro; pouco ali = alívio)",
+    "onde": {
+     "linhas_testa": "das linhas da testa",
+     "olhos": "do canto dos olhos",
+     "sulco_nasolabial": "do vinco do nariz à boca",
+     "manchas": "dessas manchinhas",
+     "flacidez": "do contorno do rosto",
+     "glabela": "da marca entre as sobrancelhas",
+     "olheira": "da sombra abaixo dos olhos",
+     "papada": "da linha da mandíbula"
+    },
+    "solta": [
+     "O que mais aparece na foto vem {regioes}."
+    ],
+    "bom": {
+     "linhas_testa": "a testa",
+     "olhos": "o canto dos olhos",
+     "sulco_nasolabial": "o vinco do nariz à boca",
+     "manchas": "o tom da pele",
+     "flacidez": "o contorno",
+     "glabela": "o meio da testa",
+     "olheira": "a área abaixo dos olhos",
+     "papada": "a linha da mandíbula"
+    },
+    "e_o_que": {
+     "cansada": "É o que dá a cara de {cansada}.",
+     "caindo": "É o que dá a sensação de rosto caindo.",
+     "pescoco": "É o que aparece no pescoço e na papada.",
+     "palpebra": "É o que dá a sensação de pálpebra pesando.",
+     "manchas": "É o que você vê no espelho.",
+     "velho": "É o que dá a impressão de mais idade.",
+     "padrao": "É o que mais aparece no rosto."
+    },
+    "alivio": [
+     "Onde você se preocupa, a foto mostrou pouco."
+    ],
+    "sem_nada": [
+     "Na foto, nenhuma região chamou atenção."
+    ],
+    "sinal": {
+     "linhas_testa": [
+      "a testa aparece lisa",
+      "aparecem linhas leves na testa",
+      "aparecem linhas visíveis na testa",
+      "aparecem linhas bem marcadas na testa"
+     ],
+     "olhos": [
+      "o canto dos olhos aparece liso",
+      "aparecem linhas leves no canto dos olhos",
+      "aparecem linhas visíveis no canto dos olhos",
+      "aparecem linhas bem marcadas no canto dos olhos"
+     ],
+     "sulco_nasolabial": [
+      "o vinco do nariz à boca quase não aparece",
+      "o vinco do nariz à boca aparece leve",
+      "o vinco do nariz à boca aparece visível",
+      "o vinco do nariz à boca aparece bem marcado"
+     ],
+     "manchas": [
+      "o tom da pele aparece uniforme",
+      "aparecem poucas manchas, discretas",
+      "aparecem algumas manchas visíveis",
+      "aparecem manchas bem visíveis"
+     ],
+     "flacidez": [
+      "o contorno do rosto aparece firme",
+      "o contorno do rosto aparece levemente menos firme",
+      "o contorno do rosto aparece menos firme",
+      "o contorno do rosto aparece bem menos firme"
+     ],
+     "glabela": [
+      "o espaço entre as sobrancelhas aparece liso",
+      "aparece uma marca leve entre as sobrancelhas",
+      "aparece uma marca visível entre as sobrancelhas",
+      "a marca entre as sobrancelhas aparece bem visível"
+     ],
+     "olheira": [
+      "a área abaixo dos olhos aparece lisa",
+      "aparece uma sombra leve abaixo dos olhos",
+      "aparece uma sombra visível abaixo dos olhos",
+      "aparece uma sombra bem visível abaixo dos olhos"
+     ],
+     "papada": [
+      "a linha da mandíbula aparece firme",
+      "a linha da mandíbula aparece levemente menos firme",
+      "a linha da mandíbula aparece menos firme",
+      "a linha da mandíbula aparece bem menos firme"
+     ]
+    }
+   },
+   "porque": {
+    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 4 (o porquê com as respostas DELA ligadas: pressão ou glicose alta > sono > movimento > nunca mediu; mulher de 40 a 60, o hormônio da fase)",
+    "pergunta": {
+     "cansada": "E por que, mesmo dormindo?",
+     "ja": "E por que, mesmo {ja}?",
+     "padrao": "E por que isso aparece?"
+    },
+    "ja": {
+     "cigarro": "sem fumar",
+     "sol": "se protegendo do sol",
+     "movimento": "fazendo atividade física",
+     "sono": "dormindo bem"
+    },
+    "mecanismo": {
+     "cansada": "Porque dormir não é o mesmo que descansar.",
+     "padrao": "Porque o rosto mostra por fora muito do que pesa por dentro."
+    },
+    "liga": {
+     "metabolico": {
+      "pressao": "já ouviu que a pressão está alta",
+      "glicose": "já ouviu que a glicose está alta",
+      "ambas": "já ouviu que a pressão e a glicose estão altas",
+      "nunca": "nunca mediu a glicose"
+     },
+     "sono": {
+      "cansado": "acorda {cansada}",
+      "curto": "dorme 5 horas ou menos",
+      "6h": "dorme umas 6 horas"
+     },
+     "movimento": {
+      "quase_nada": "quase não faz atividade física",
+      "ate2": "faz até duas horas de atividade física por semana"
+     }
+    },
+    "a_favor": [
+     "A seu favor: {bem}."
+    ]
+   },
+   "habito": {
+    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): bloco 5 (o outro hábito que pesa no rosto, ligado ao achado; a imagem do kit; a solução quando a imagem mostra só o problema)",
+    "sol": {
+     "todo_dia": "E o sol de todo dia sem protetor pesa no rosto.",
+     "fds": "E o sol sem protetor, mesmo só no fim de semana, vai somando no rosto."
+    },
+    "sol_manchas": {
+     "todo_dia": "E as manchinhas vêm muito do sol de todo dia.",
+     "fds": "E as manchinhas vêm muito do sol, mesmo só no fim de semana."
+    },
+    "cigarro": {
+     "hoje": "E o cigarro também aparece no rosto, com os anos.",
+     "as_vezes": "E o cigarro, mesmo às vezes, também aparece no rosto."
+    }
+   },
+   "importa": {
+    "f": "regras-ajuste-pele-idade.md v4 (PROMPT-PELE-IDADE, o fio): sem hábito nem imagem, o bloco 5 é o item de O QUE CONSERVA (cigarro e sono ruim marcados na frente)",
+    "texto": [
+     "Aos {idade} anos, o que mais conserva a sua saúde e o rosto é {item}."
+    ],
+    "sem_idade": [
+     "O que mais conserva a sua saúde e o rosto é {item}."
+    ]
+   },
+   "mecanismo": {
+    "f": "v5 (14/11, pedido do Lucca: \"mostrar brevemente uma explicação da pele sobre um ponto mais específico, como a formação das manchas, das linhas de expressão, da face caída; em um segundo momento, o mecanismo dos consertos\"). Como se forma: luz e pigmento (Mahmoud 2010, PMID 20410914); o sol aumenta as enzimas que quebram o colágeno (Fisher 1997, NEJM, PMID 9358139); a gordura do rosto fica em compartimentos que mudam com a idade (Rohrich e Pessa 2007, PMID 17519724). Como se trabalha: protetor com óxido de ferro na mancha (Castanedo-Cazares 2014, PMID 24313385); a tretinoína repõe parte da formação de colágeno na pele com dano de sol (Griffiths 1993, NEJM, PMID 8336752). Conferidos no PubMed em 14/11. \"Do açúcar alto\" (glicação do colágeno): mecanismo, sem ensaio conferido. Nenhum nome de remédio nem de estudo na fala; a tela mostra \"Varia de pessoa para pessoa.\"",
     "forma": {
-     "manchas": "Como a mancha se forma",
-     "linhas": "Como a linha se forma",
-     "firmeza": "Como o contorno muda"
+     "manchas": "Mancha se forma assim: a luz chega na célula do pigmento, e ela fabrica a mais naquele ponto.",
+     "linhas": "Linha se forma assim: embaixo da pele tem uma rede de colágeno. Com o sol e os anos ela afina, e a pele dobra.",
+     "firmeza": "O contorno muda assim: a rede de colágeno afina, e a gordura do rosto desce."
     },
     "conserta": {
-     "manchas": "Como se trabalha a mancha",
-     "linhas": "Como se trabalha a linha",
-     "firmeza": "Como se trabalha o contorno"
+     "manchas": "Como se trabalha isso? Barrando a luz, a célula para de receber o sinal, e um creme prescrito age no pigmento.",
+     "linhas": "Como se trabalha isso? Protegendo da luz, a rede afina mais devagar, e um creme prescrito estimula colágeno novo.",
+     "firmeza": "Como se trabalha isso? Protegendo a rede que você tem, da luz, do cigarro e do açúcar alto."
+    },
+    "titulo": {
+     "forma": {
+      "manchas": "Como a mancha se forma",
+      "linhas": "Como a linha se forma",
+      "firmeza": "Como o contorno muda"
+     },
+     "conserta": {
+      "manchas": "Como se trabalha a mancha",
+      "linhas": "Como se trabalha a linha",
+      "firmeza": "Como se trabalha o contorno"
+     }
     }
-   }
-  },
-  "caminho": {
-   "f": "v5 (14/11, pedido do Lucca: \"um resumão do passo a passo do que teria que fazer, de forma complexa para contrastar com acompanhamento simples\"). Cada frente sai do que ELA marcou ou do que a foto mostrou; a alimentação entra sempre. Sem nome de remédio, sem dose, sem promessa. No cartão do vídeo, o rótulo curto de cada frente.",
-   "abre": "No seu caso, o caminho teria várias frentes:",
-   "itens": {
-    "manchas": "protetor com cor, creme prescrito pras manchas",
-    "colageno": "creme prescrito à noite",
-    "protetor": "protetor todo dia",
-    "protetor_cor": "protetor com cor",
-    "creme_ambos": "creme prescrito à noite",
-    "sono": "investigar esse sono",
-    "sono_curto": "arrumar o sono",
-    "metabolico": "cuidar da pressão e da glicose",
-    "medir": "medir pressão e glicose",
-    "cigarro": "sair do cigarro",
-    "forca": "treino de força",
-    "alimentacao": "uma alimentação que caiba no seu dia"
    },
-   "cartao": {
-    "manchas": "Protetor com cor + creme prescrito",
-    "colageno": "Creme prescrito à noite",
-    "protetor": "Protetor todo dia",
-    "protetor_cor": "Protetor com cor, todo dia",
-    "creme_ambos": "Creme prescrito à noite",
-    "sono": "Sono: investigar",
-    "sono_curto": "Sono: arrumar",
-    "metabolico": "Pressão e glicose: cuidar",
-    "medir": "Pressão e glicose: medir",
-    "cigarro": "Sair do cigarro",
-    "forca": "Treino de força",
-    "alimentacao": "Alimentação que cabe no dia"
+   "caminho": {
+    "f": "v5 (14/11, pedido do Lucca: \"um resumão do passo a passo do que teria que fazer, de forma complexa para contrastar com acompanhamento simples\"). Cada frente sai do que ELA marcou ou do que a foto mostrou; a alimentação entra sempre. Sem nome de remédio, sem dose, sem promessa. No cartão do vídeo, o rótulo curto de cada frente.",
+    "abre": "No seu caso, o caminho teria várias frentes:",
+    "itens": {
+     "manchas": "protetor com cor, creme prescrito pras manchas",
+     "colageno": "creme prescrito à noite",
+     "protetor": "protetor todo dia",
+     "protetor_cor": "protetor com cor",
+     "creme_ambos": "creme prescrito à noite",
+     "sono": "investigar esse sono",
+     "sono_curto": "arrumar o sono",
+     "metabolico": "cuidar da pressão e da glicose",
+     "medir": "medir pressão e glicose",
+     "cigarro": "sair do cigarro",
+     "forca": "treino de força",
+     "alimentacao": "uma alimentação que caiba no seu dia"
+    },
+    "cartao": {
+     "manchas": "Protetor com cor + creme prescrito",
+     "colageno": "Creme prescrito à noite",
+     "protetor": "Protetor todo dia",
+     "protetor_cor": "Protetor com cor, todo dia",
+     "creme_ambos": "Creme prescrito à noite",
+     "sono": "Sono: investigar",
+     "sono_curto": "Sono: arrumar",
+     "metabolico": "Pressão e glicose: cuidar",
+     "medir": "Pressão e glicose: medir",
+     "cigarro": "Sair do cigarro",
+     "forca": "Treino de força",
+     "alimentacao": "Alimentação que cabe no dia"
+    },
+    "fim": "{sozinha}, é muita coisa pra acertar. Com acompanhamento, fica simples."
    },
-   "fim": "{sozinha}, é muita coisa pra acertar. Com acompanhamento, fica simples."
+   "fecho": {
+    "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A, o da Carla: o caminho pro desejo de 10 anos dela e a pergunta do que ela já tentou; \"parecer a idade que sente\" vira \"se reconhecer no espelho\". Saem \"Espero que a análise tenha te ajudado.\" e a pergunta de interesse",
+    "desejo": {
+     "parecer": "se reconhecer no espelho",
+     "devagar": "cuidar da saúde com o passar dos anos"
+    },
+    "desejo_sem": "cuidar da sua saúde e do seu rosto",
+    "caminho_pra": "Esse é o caminho pra você {desejo}.",
+    "pergunta": "Agora me conta, {nome}: você já tentou cuidar disso antes? Do rosto e da saúde junto, ou de um pedaço só? Me responde aqui."
+   },
+   "nota": "Frases da pele-idade v5 e v6 (14/11 a 16/11: \"Analisei sua foto e suas respostas…\", \"E por que, mesmo dormindo?\", como se trabalha, o caminho em frentes e \"Sozinha, é muita coisa…\"), fora do uso desde a v7 de 17/11. Não aparecem nos Ajustes."
   }
  }
 }

@@ -31,7 +31,7 @@ const VERSAO = '1411a';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
-const PADRAO = { ritmo:2.5, salto:115, alvo:120, teto:135 };   // 14/11 (v5: como se forma, como se trabalha e o caminho entram no roteiro)
+const PADRAO = { ritmo:2.5, salto:150, alvo:150, teto:170 };   // 14/11 (v5: como se forma, como se trabalha e o caminho entram no roteiro). 17/11 (v7): a v6 da Carla tem 367 palavras (~147 s); aos 115 s o salto cortava o caminho
 function params(o){
   const p = { ...PADRAO }, q = (o && o.params) || {};
   for (const k of Object.keys(PADRAO)){ const v = Number(q[k]); if (Number.isFinite(v) && v > 0) p[k] = v; }
@@ -784,7 +784,8 @@ function cenaMecanismo(ctx, c, t){
   return true;
 }
 // 14/11 (o Lucca sobre o cartão "O que importa aos 45": "a imagem tá uma merda, esse card com esses pontos"): o caminho em
-// frentes, uma embaixo da outra numa linha só, cada uma com o seu número; no fim, o contraste "Com acompanhamento, fica simples."
+// frentes, uma embaixo da outra numa linha só, cada uma com o seu número; no fim, a frase do fim (c.fim). 17/11 (v7): "Não é só rosto: é
+// a sua saúde inteira." no lugar de "Com acompanhamento, fica simples." (parece venda)
 function cenaCaminho(ctx, c, t){
   const ps = (c.passos || []).slice(0, 5); if (!ps.length) return false;
   escurece(ctx, .94 * sai(t / 250));
