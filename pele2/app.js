@@ -332,7 +332,7 @@ function mapa(temAcne){
     oleosidade:{ sinais:['textura_poros'], mede:false },
     rugas:{ sinais:['linhas_testa','olhos','sulco_nasolabial'], mede:true },
     poros:{ sinais:['textura_poros'], mede:true },
-    olheiras:{ sinais:['olhos'], mede:true },
+    olheiras:{ sinais:['olheira'], mede:true },   // 17/11: a edge mede a olheira à parte (olhos = só pés de galinha)
     ressecamento:{ sinais:[], mede:false },
     textura:{ sinais:temAcne ? ['textura_poros', 'cicatriz_acne'] : ['textura_poros'], mede:true },
     outro:{ sinais:[], mede:false },
