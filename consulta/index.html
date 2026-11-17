@@ -1943,7 +1943,12 @@ const HAB_CURTO = {   // rótulo curto do vídeo: nome do hábito + a resposta d
 const DOR_PI = { cansada:['olhos', 'olheira'], caindo:['sulco_nasolabial', 'flacidez'], pescoco:['flacidez', 'papada'], palpebra:['olhos'], manchas:['manchas', 'linhas_testa', 'glabela', 'olhos'] };
 const APONTE_PI = [['linhas_testa', /testa/i], ['glabela', /sobrancelha|glabela/i], ['olhos', /olho|p[aá]lpebra|galinha/i], ['olheira', /olheira|abaixo d[oe]s? olhos?/i], ['sulco_nasolabial', /nariz|boca|bigode|sulco/i],
   ['manchas', /mancha|bochecha/i], ['flacidez', /contorno|mand[ií]bula|queixo|flacid/i], ['papada', /papada|pesco[cç]o/i]];
-const SIN_LUPA = ['linhas_testa', 'glabela', 'olhos', 'olheira', 'sulco_nasolabial', 'manchas', 'flacidez', 'papada'];   // textura e poros ficam fora da idade do rosto
+const SIN_LUPA = ['linhas_testa', 'glabela', 'olhos', 'olheira', 'sulco_nasolabial', 'manchas', 'textura_poros', 'flacidez', 'papada'];   // 17/11 (Lucca: "o que mais pesa seria textura"): textura entra na lupa; continua fora da conta da idade
+// 17/11: o que a análise viu em cada nota (os mesmos textos da edge analisar-pele, PADRAO), para ele falar do rosto DELA
+const VISTO_PI = { linhas_testa:['testa lisa', 'linhas leves', 'linhas visíveis', 'linhas bem marcadas'], olhos:['canto liso', 'linhas leves no canto', 'linhas visíveis no canto', 'linhas bem marcadas no canto'],
+  sulco_nasolabial:['quase não tem', 'quase não aparece', 'visível', 'bem marcado'], manchas:['tom uniforme', 'poucas e discretas', 'algumas visíveis', 'bem visíveis'],
+  textura_poros:['lisa', 'poros discretos', 'poros e textura visíveis', 'textura bem marcada'], flacidez:['contorno firme', 'um pouco menos firme', 'menos firme', 'bem menos firme'] };
+const ESPELHO_CURTO = { cansada:'cara de cansada(o)', caindo:'o rosto caindo', pescoco:'o pescoço e a papada', palpebra:'a pálpebra pesando', manchas:'manchas e rugas' };
 // "O que importa aos {idade}" e os rótulos dos sinais: consulta/o-que-importa-idade.json (cópia de
 // tarefas/venda-pele-conversa/o-que-importa-idade.json, explicado em o-que-importa-idade.md). Lido a cada abrir do gravador;
 // sem ele, o cartão fica só como aviso na tela e os sinais usam os nomes da Caixa (SINPI). Regras do chefe (12/11):
@@ -1993,13 +1998,27 @@ function cenaPI(id, b, p, fala){
   if (id === 'cl-foto' || id === 'foto'){
     if (d.sem_analise) return null;
     const N = Object.fromEntries((d.sinais || []).filter(s => SIN_LUPA.includes(s.id) && s.visivel !== false && s.nivel != null).map(s => [s.id, Math.max(0, Math.min(3, Math.round(+s.nivel) || 0))]));
-    const dor = d.espelho_regiao && N[d.espelho_regiao] != null ? [d.espelho_regiao] : (DOR_PI[r.espelho] || []).filter(k => N[k] != null).sort((x, y) => N[y] - N[x]).slice(0, 1);
-    const ap = (p?.aponte || []).join(' · '), apIds = APONTE_PI.map(([k, re]) => [k, ap.search(re)]).filter(([k, x]) => x >= 0 && N[k] >= 1).sort((x, y) => x[1] - y[1]).map(([k]) => k);
-    const resto = Object.keys(N).filter(k => N[k] >= 1).sort((x, y) => N[y] - N[x]);
+    // 17/11 (Lucca: "ele quase não tem bigode chinês"): a nota manda. A queixa dela e o [APONTE] só passam à frente com a nota
+    // mais alta do rosto; abaixo dela, a queixa vira frase ("está leve") e o ponto que mais aparece abre. Ordem do que mais aparece
+    // vinda da análise (d.mais_visivel, quando a edge mandar) desempata.
+    const top = Math.max(0, ...Object.values(N)), rk = Array.isArray(d.mais_visivel) ? d.mais_visivel : [];
+    const dor0 = d.espelho_regiao && N[d.espelho_regiao] != null ? [d.espelho_regiao] : (DOR_PI[r.espelho] || []).filter(k => N[k] != null).sort((x, y) => N[y] - N[x]).slice(0, 1);
+    const dor = dor0.filter(k => N[k] >= 1 && N[k] >= top);
+    const ap = (p?.aponte || []).join(' · '), apIds = APONTE_PI.map(([k, re]) => [k, ap.search(re)]).filter(([k, x]) => x >= 0 && N[k] >= 1 && N[k] >= top).sort((x, y) => x[1] - y[1]).map(([k]) => k);
+    const pos = k => { const i = rk.indexOf(k); return i < 0 ? 99 : i; };
+    const resto = Object.keys(N).filter(k => N[k] >= 1).sort((x, y) => N[y] - N[x] || pos(x) - pos(y));
     const ids = [...new Set([...dor, ...apIds, ...resto])].slice(0, 3);
-    const pops = ids.map(k => [k, popularSinal(k, r)]).filter(x => x[1]).map(([k, pp]) => `${pp} (${rotuloSinal(k).toLowerCase()})`);
-    const notas = [...(pops.length ? ['Como ela fala: ' + pops.join(' · ')] : []),
-      ...ids.map(k => [k, rotuloDe(k)]).filter(([, v]) => v?.acompanha && v?.fonte).map(([k, v]) => `Se quiser, ${rotuloSinal(k).toLowerCase()}: ${v.acompanha}`)];
+    const nm = k => rotuloSinal(k).toLowerCase(), visto = k => (VISTO_PI[k] || [])[N[k]] || GRAU2[N[k]];
+    const pops = ids.map(k => [k, popularSinal(k, r)]).filter(x => x[1]).map(([k, pp]) => `${pp} (${nm(k)})`);
+    const empate = ids.length > 1 && ids.every(k => N[k] === N[ids[0]]) && !rk.length;
+    const fora = Object.keys(N).filter(k => !ids.includes(k) && N[k] >= 1);
+    const queixa = dor0[0] && !ids.slice(0, 1).includes(dor0[0]) && ESPELHO_CURTO[r.espelho]
+      ? `Ela marcou "${ESPELHO_CURTO[r.espelho].replace('cansada(o)', gen(d, 'cansada', 'cansado', 'cansada(o)'))}"; ${nm(dor0[0])} está ${GRAU2[N[dor0[0]] ?? 0]} (${visto(dor0[0])}): dá para dizer que isso ainda é pouco no rosto dela.` : null;
+    const notas = [`O que a análise viu: ${ids.map((k, n) => `${n + 1}. ${nm(k)}: ${visto(k)}`).join(' · ')}${fora.length ? ` · também: ${fora.map(k => `${nm(k)} ${GRAU2[N[k]]}`).join(', ')}` : ''}.`,
+      ...(empate ? [`A análise deu a mesma nota (${GRAU2[N[ids[0]]]}) para os ${ids.length}: comece pelo que você vê mais na foto (toque no número).`] : []),
+      ...(queixa ? [queixa] : []),
+      ...(pops.length ? ['Como ela fala: ' + pops.join(' · ')] : []),
+      ...ids.map(k => [k, rotuloDe(k)]).filter(([, v]) => v?.acompanha && v?.fonte).map(([k, v]) => `Se quiser, ${nm(k)}: ${v.acompanha}`)];
     return { tipo:'foto', lupas:ids.map(k => ({ id:k, parte_de:rotuloDe(k)?.parte_de || null, nome:rotuloSinal(k), nivel:N[k] })), notas };
   }
   if (id === 'cl-dentro' || id === 'dentro' || id === 'cl-habito' || id === 'habito' || id === 'bem' || /^habito-\w+$/.test(id)){

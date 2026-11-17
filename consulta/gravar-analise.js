@@ -393,6 +393,7 @@ function pontosSinais(g, media){
     olheira:[{ x:P[145].x, y:P[145].y + .12 * i }, { x:P[374].x, y:P[374].y + .12 * i }],
     sulco_nasolabial:[m(129, 61, 206), m(358, 291, 426)],
     manchas:[{ x:P[50].x - .06 * i, y:P[50].y + .06 * i }, { x:P[280].x + .06 * i, y:P[280].y + .06 * i }],
+    textura_poros:[{ x:P[205].x + .04 * i, y:P[205].y - .10 * i }, { x:P[425].x - .04 * i, y:P[425].y - .10 * i }],   // 17/11: bochecha perto do nariz (poros)
     flacidez:[m(172, 150, 136), m(397, 379, 365)] } };
 }
 const escala = (f, z) => f.bw / f.img.naturalWidth * z.s;
