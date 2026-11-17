@@ -517,8 +517,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </div>
 <script src="uso.js?v=20261113y"></script>
 <script src="kits.js?v=20261114v5"></script>
-<script src="roteiro.js?v=20261117v7"></script>
-<script src="gravar-analise.js?v=20261117v7"></script>
+<script src="roteiro.js?v=20261117v8"></script>
+<script src="gravar-analise.js?v=20261117v8"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -1437,7 +1437,7 @@ const ROTPI = {
   metabolico:['Pressão ou glicose alta', { nao_medi:'não, e mediu no último ano', nunca:'nunca mediu ou não lembra', pressao:'sim, a pressão', glicose:'sim, a glicose', ambas:'sim, as duas' }],
   movimento:['Movimento por semana', { quase_nada:'quase nada', ate2:'até 2 horas', '2a5':'de 2 a 5 horas', mais5:'mais de 5 horas' }],
   sono:['Sono', { bem:'7 h ou mais e acorda bem', '6h':'umas 6 h', curto:'5 h ou menos', cansado:'dorme, mas acorda cansada(o)' }],
-  futuro:['Daqui a 10 anos, quer', { disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que sente', chegar10:'chegar aos (idade + 10) com força e memória', antes:'cuidar da saúde antes de aparecer problema', reconhecer:'se reconhecer no espelho', independente:'não depender de ninguém', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o corpo já está mostrando', cuidar:'cuidar agora, antes que apareça', devagar:'envelhecer mais devagar' }],   // 11/11: devagar (faixa abaixo de 35)
+  futuro:['Daqui a 10 anos, quer', { jovem:'aparentar ser mais jovem', disposicao:'ter a mesma disposição de hoje', parecer:'parecer a idade que sente', chegar10:'chegar aos (idade + 10) com força e memória', antes:'cuidar da saúde antes de aparecer problema', reconhecer:'se reconhecer no espelho', independente:'não depender de ninguém', aos70:'chegar bem aos 70, com força e memória', entender:'entender o que o corpo já está mostrando', cuidar:'cuidar agora, antes que apareça', devagar:'envelhecer mais devagar' }],   // 11/11: devagar (faixa abaixo de 35)
 };
 const ALERTAPI = { cigarro:['hoje', 'as_vezes'], metabolico:['pressao', 'glicose', 'ambas'] };
 const SINPI = { linhas_testa:'Testa', olhos:'Canto dos olhos', sulco_nasolabial:'Do nariz à boca', manchas:'Bochechas', flacidez:'Contorno' };   // 12/11: "Do nariz à boca" = o neutro do arquivo da pesquisa (nunca "bigode chinês" no vídeo)
@@ -1990,6 +1990,10 @@ function popularSinal(id, r){
   if (id === 'papada') return r.espelho === 'pescoco' ? pop : null;
   return pop;
 }
+// 17/11: o sinal que o "Como se forma" explica, pela pergunta da fala, e o título do quadro
+const TEMA_FALA = [['textura', /como a textura|textura se forma|\bporos?\b/i], ['olheira', /olheira/i], ['manchas', /como a mancha|mancha se forma/i],
+  ['firmeza', /contorno|gordura do rosto/i], ['linhas', /como a linha|linha se forma|rede de colágeno/i]];
+const TIT_FORMA = { linhas:'Como a linha se forma', manchas:'Como a mancha se forma', firmeza:'Como o contorno muda', textura:'Como a textura se forma', olheira:'Como a olheira se forma' };
 // a cena de cada bloco: idade (números e régua), foto (lupas), dentro (ícones dos hábitos citados), desejo (cartão)
 function cenaPI(id, b, p, fala){
   const d = b.d, r = d.respostas || {}, c = b.c || {}, mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = Number(d.idade ?? r.idade);
@@ -2033,7 +2037,13 @@ function cenaPI(id, b, p, fala){
     return habitos.length ? { tipo:'dentro', habitos } : null;
   }
   // 14/11 (v5): como se forma e como se trabalha (a pele em corte) e o caminho em frentes; com o caminho, o fecho fica sem cartão
-  if (/^(cl-)?(forma|conserto)$/.test(id)) return p?.dados?.tema ? { tipo:'mecanismo', tema:p.dados.tema, fase:p.dados.fase, titulo:p.dados.titulo } : null;
+  // 17/11: a cena é a ILUSTRAÇÃO do sinal (gravar-analise.js FORMA_IMG); o tema vem da fala ("E como a textura se forma?"), que
+  // vale também para o roteiro do Claude, e senão do estoque (dados.tema). "Como se trabalha" (v5) ficou sem cena.
+  if (/^(cl-)?conserto$/.test(id)) return null;
+  if (/^(cl-)?forma$/.test(id)){
+    const txt = String(fala ?? p?.fala ?? ''), tema = TEMA_FALA.find(([, re]) => re.test(txt))?.[0] || p?.dados?.tema || null;
+    return tema && TIT_FORMA[tema] ? { tipo:'mecanismo', tema, fase:'forma', titulo:(p?.dados?.tema === tema && p.dados.titulo) || TIT_FORMA[tema] } : null;
+  }
   // 17/11 (v7, a copy v6 da Carla): o fim do cartão é o do caminho dele ("Não é só rosto: é a sua saúde inteira."); "Com acompanhamento, fica simples." saiu (parece venda)
   if (/^(cl-)?caminho$/.test(id)) return p?.dados?.passos?.length ? { tipo:'caminho', titulo:'O caminho', passos:p.dados.passos, fim:p.dados.fim || 'Não é só rosto: é a sua saúde inteira.' } : null;
   if (id === 'destino' || id === 'cl-destino' || ((id === 'cl-desejo' || id === 'interesse') && (b.ids || []).some(x => /^(cl-)?caminho$/.test(x)))) return null;
