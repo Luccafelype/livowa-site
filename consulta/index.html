@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f2f4f1">
 <script>try { var t = localStorage.getItem('livowa_crm_tema'); if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t; } catch (e) { /* sem armazenamento: segue o sistema */ }</script>
 <title>CRM</title>
-<link rel="stylesheet" href="gravar-analise.css?v=20261118y">
+<link rel="stylesheet" href="gravar-analise.css?v=20261119a">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    13/11: o nome passou a ser CRM (pedido do Lucca); a aba dos leads é "Leads".
@@ -518,7 +518,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <script src="uso.js?v=20261113y"></script>
 <script src="kits.js?v=20261114v5"></script>
 <script src="roteiro.js?v=20261118x"></script>
-<script src="gravar-analise.js?v=20261118y"></script>
+<script src="gravar-analise.js?v=20261119a"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -2050,7 +2050,7 @@ function cenaPI(id, b, p, fala){
       tom:tem[k] ? 'pesa' : (BEM_PI[k] || []).includes(r[k]) ? 'bem' : 'neutro' }));
     // 18/11 (pedido do Lucca: a pele interativa): no "De fora e de dentro" da pele-idade, a cena é a pele em corte com os
     // controles dele (gravar-analise.js PELE_*); os hábitos citados viram "Você marcou:" no pé, e a resposta dela aparece no botão
-    if (id === 'cl-dentro' || id === 'dentro') return { tipo:'dentro', habitos, pele:{ modo:'dentro', ela:elaPele(r, d) } };
+    if (id === 'cl-dentro' || id === 'dentro') return { tipo:'dentro', habitos, pele:{ modo:'dentro', ela:elaPele(r, d), sexo:r.sexo || d.sexo || null } };
     return habitos.length ? { tipo:'dentro', habitos } : null;
   }
   // 14/11 (v5): como se forma e como se trabalha (a pele em corte) e o caminho em frentes; com o caminho, o fecho fica sem cartão
@@ -2059,7 +2059,7 @@ function cenaPI(id, b, p, fala){
   if (/^(cl-)?conserto$/.test(id)) return null;
   if (/^(cl-)?forma$/.test(id)){
     const txt = String(fala ?? p?.fala ?? ''), tema = TEMA_FALA.find(([, re]) => re.test(txt))?.[0] || p?.dados?.tema || null;
-    return tema && TIT_FORMA[tema] ? { tipo:'mecanismo', tema, fase:'forma', titulo:(p?.dados?.tema === tema && p.dados.titulo) || TIT_FORMA[tema] } : null;
+    return tema && TIT_FORMA[tema] ? { tipo:'mecanismo', tema, fase:'forma', sexo:r.sexo || d.sexo || null, titulo:(p?.dados?.tema === tema && p.dados.titulo) || TIT_FORMA[tema] } : null;   // 18/11: o sexo escolhe a foto "no espelho"
   }
   // 17/11 (v7, a copy v6 da Carla): o fim do cartão é o do caminho dele ("Não é só rosto: é a sua saúde inteira."); "Com acompanhamento, fica simples." saiu (parece venda)
   // 18/11: o item da inflamação abre na pele com os seis de dentro ("o que vem de dentro"; o Lucca abre com P, um dos seis ou o toque)
@@ -2067,7 +2067,7 @@ function cenaPI(id, b, p, fala){
     if (!p?.dados?.passos?.length) return null;
     // com 2 frentes dela (cigarro e pressão/glicose) o item da inflamação sai do cartão (roteiro.js b7): abre no "Metabolismo e alimentação"
     const ps = p.dados.passos.slice(0, 5), k = ['inflamacao', 'metabolismo'].find(x => ps.some(q => q.k === x)), ki = ps.findIndex(q => q.k === k);
-    return { tipo:'caminho', titulo:'O caminho', passos:p.dados.passos, fim:p.dados.fim || 'Não é só rosto: é a sua saúde inteira.', pele:{ modo:'caminho', k:k || null, passo:ki >= 0 ? ki + 1 : null, ela:elaPele(r, d) } };
+    return { tipo:'caminho', titulo:'O caminho', passos:p.dados.passos, fim:p.dados.fim || 'Não é só rosto: é a sua saúde inteira.', pele:{ modo:'caminho', sexo:r.sexo || d.sexo || null, k:k || null, passo:ki >= 0 ? ki + 1 : null, ela:elaPele(r, d) } };
   }
   // 18/11 (o Lucca, no Samuel: "cadê o objetivo completo marcado?"): no "Pra onde leva", a pergunta do teste com a opção que ela
   // marcou (✓), no visual do /pele/; só a escolhida (as outras dependem da faixa de idade e poluíam o quadro)

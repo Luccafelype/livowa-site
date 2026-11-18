@@ -142,3 +142,5 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
 .ga-pm-b[aria-pressed="true"] small{color:rgba(0,0,0,.7)}
 .ga-pm-b.zera{flex:1;min-height:38px;border-color:#ffd60a;background:rgba(255,214,10,.14);font-weight:800;text-align:center;align-items:center}
 @media (max-width:699px){.ga-pm-b small{display:none}.ga-pm-b{font-size:.8rem}}
+/* 18/11 noite: a tecla de cada fator bem à vista (também no toque) */
+.ga-pele .ga-pele-b kbd{display:inline-block;font-size:.86rem;min-width:1.3em;text-align:center;padding:1px 6px;border-width:1.5px;font-weight:800}

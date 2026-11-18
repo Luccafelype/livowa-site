@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1811y';
+const VERSAO = '1911a';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -343,7 +343,7 @@ function nota(){
   const b = G.o.blocos[G.bloco], c = b && b.cena; let t = '';
   if (c && c.tipo === 'desejo' && !(c.itens && c.itens.length)) t = c.aviso || 'O que importa: conteúdo em pesquisa. Este cartão não entra no vídeo.';
   else if (c && c.tipo === 'exemplo' && !c.img) t = c.erro ? 'A imagem do exemplo não carregou: pule esta parte.' : 'Carregando a imagem do exemplo…';
-  else if (c && c.tipo === 'mecanismo'){ const q = (FORMA_IMG[c.tema] || []).map(carregaForma), b = q[0]; if (!b) t = 'Sem ilustração para este ponto: fale com a foto na tela.'; else if (b.erro) t = 'A ilustração não carregou: fale com a foto na tela.'; else if (!b.ok) t = 'Carregando a ilustração…'; }
+  else if (c && c.tipo === 'mecanismo'){ const b = FORMA[c.tema] ? carregaForma('forma/' + FORMA[c.tema].q[0] + '.webp') : null; if (!b) t = 'Sem ilustração para este ponto: fale com a foto na tela.'; else if (b.erro) t = 'A ilustração não carregou: fale com a foto na tela.'; else if (!b.ok) t = 'Carregando a ilustração…'; }
   else if (c && c.pele && !(c.pele.modo === 'caminho' && !(G.pele && G.pele.aberto))){ const b = carregaForma(PELE_SRC('base')); if (b.erro) t = 'A pele não carregou: fale com a tela de antes.'; else if (!b.ok) t = 'Carregando a pele…'; }
   else if (c && c.tipo === 'foto'){
     const r = G.rosto;
@@ -352,6 +352,7 @@ function nota(){
     else if (r.estado === 'sem') t = 'Sem lupa: não achei o rosto na foto de frente. Use o dedo para marcar.';
     else if (G.foto !== r.k) t = 'As lupas aparecem na foto de frente.';
   }
+  if (!t && G.saltoAdiado && G.estado === 'rec' && G.bloco < G.o.blocos.length - 1) t = 'Passou do tempo: quando terminar aqui, vá para a pergunta (Próximo ou espaço).';
   D.nota.textContent = t; D.nota.hidden = !t || G.estado === 'rev' || G.estado === 'fim';
   cabeTexto();   // o aviso divide o painel com a fala
 }
@@ -718,7 +719,7 @@ function cenaExemplo(ctx, c, t){
 // pulam para a etapa, e o toque na ilustração passa para a seguinte (aí o tempo da fala deixa de mandar naquele bloco).
 // No pé: "Ilustração. Varia de pessoa para pessoa." Sem a imagem carregada, nada no canvas: o aviso é só DOM (nota).
 const FORMA = {
-  linhas:{ q:['linhas-m1', 'linhas-m2', 'linhas-m3', 'linhas-m4'], f:['linhas-f1', 'linhas-f2', 'linhas-f3'], et:[
+  linhas:{ q:['linhas-m1', 'linhas-m2', 'linhas-m3', 'linhas-m4'], f:['linhas-f1', 'linhas-f2', 'linhas-f3'], fs:{ m:['linhas-f1-m', 'linhas-f2-m', 'linhas-f3-m'] }, et:[
     { q:0, pulsa:1, f:0, chave:/m[úu]sculo|mexe/i, leg:'O músculo puxa: a pele dobra e volta', rot:'músculo contrai', a:[.5, .93], p:[.06, .68] },
     { q:0, de:1, f:0, chave:/devolve/i, leg:'Pele nova: o colágeno devolve', rot:'colágeno firme', a:[.55, .5], p:[.5, .7] },   // a dobra se desfaz (m2 → m1)
     { q:2, f:1, chave:/afina/i, leg:'Sol e anos: a rede afina', rot:'rede afinou', a:[.55, .5], p:[.5, .7] },
@@ -727,7 +728,7 @@ const FORMA = {
     { q:0, f:0, chave:/c[ée]lula|pigmento/i, leg:'A célula que fabrica o pigmento', rot:'célula do pigmento', a:[.5, .46], p:[.06, .72] },
     { q:1, f:1, chave:/a mais|luz/i, leg:'A luz faz fabricar a mais', rot:'pigmento a mais', a:[.5, .46], p:[.5, .72] },
     { q:2, f:2, chave:/sobe|aparece/i, leg:'O pigmento sobe: a mancha', rot:'a mancha', a:[.5, .3], p:[.55, .06] }] },
-  firmeza:{ q:['firmeza-e1', 'firmeza-e2', 'firmeza-e3'], f:['firmeza-f1', 'firmeza-f2', 'firmeza-f3'], et:[
+  firmeza:{ q:['firmeza-e1', 'firmeza-e2', 'firmeza-e3'], f:['firmeza-f1', 'firmeza-f2', 'firmeza-f3'], fs:{ f:['firmeza-f1-f', 'firmeza-f2-f', 'firmeza-f3-f'] }, et:[
     { q:0, f:0, chave:/col[áa]geno|contorno/i, leg:'Osso e gordura sustentam o rosto', rot:'gordura em bolsões', a:[.55, .4], p:[.04, .06] },
     { q:1, f:1, chave:/desce/i, leg:'A gordura desce e murcha', rot:'desceu', a:[.55, .55], p:[.04, .06] },
     { q:2, f:2, chave:/vinco|mand[íi]bula/i, leg:'Vinco fundo, mandíbula sem desenho', rot:'vinco', a:[.4, .6], p:[.04, .7] }] },
@@ -735,7 +736,7 @@ const FORMA = {
     { q:0, f:0, chave:/poro/i, leg:'O poro: a saída do óleo', rot:'glândula de óleo', a:[.54, .6], p:[.6, .72] },
     { q:1, f:1, chave:/mais [óo]leo|maior/i, leg:'Mais óleo, poro maior', rot:'poro', a:[.47, .27], p:[.55, .06] },
     { q:2, f:2, chave:/sol|[áa]spera/i, leg:'Sol de anos: superfície áspera', rot:'superfície áspera', a:[.3, .27], p:[.04, .06] }] },
-  olheira:{ q:['olheira-e1', 'olheira-e2', 'olheira-e3'], f:['olheira-f1', 'olheira-f2', 'olheira-f3'], et:[
+  olheira:{ q:['olheira-e1', 'olheira-e2', 'olheira-e3'], f:['olheira-f1', 'olheira-f2', 'olheira-f3'], fs:{ m:['olheira-f1-m', 'olheira-f2-m', 'olheira-f3-m'] }, et:[
     { q:0, f:0, chave:/fina/i, leg:'Embaixo do olho, a pele é fina', rot:'pele fina', a:[.3, .31], p:[.04, .06] },
     { q:1, f:1, chave:/pigmento/i, leg:'Pigmento a mais por baixo', rot:'pigmento', a:[.35, .33], p:[.4, .06] },
     { q:2, f:2, chave:/vasinhos|escura/i, leg:'Os vasinhos aparecem: escurece', rot:'vasinhos', a:[.3, .43], p:[.4, .72] }] },
@@ -752,7 +753,10 @@ function carregaForma(src){
   return e;
 }
 const formasDe = bs => (bs || []).map(b => b && b.cena).filter(c => c && c.tipo === 'mecanismo' && FORMA_IMG[c.tema]);
-const preparaFormas = bs => formasDe(bs).forEach(c => FORMA_IMG[c.tema].forEach(carregaForma));
+// 18/11 noite (o Lucca: o "no espelho" da linha era olho de mulher para o Samuel): a foto é do mesmo sexo do lead (fs[sexo]); sem a
+// foto daquele sexo carregada, o "no espelho" não aparece (nunca a do outro sexo)
+const fotosForma = c => { const F = FORMA[c.tema]; return (F.fs && F.fs[c.sexo]) || F.f; };
+const preparaFormas = bs => formasDe(bs).forEach(c => [...FORMA[c.tema].q, ...fotosForma(c)].forEach(n => carregaForma('forma/' + n + '.webp')));
 const FQ = { x:24, y:252, w:672, h:448, r:22, ex:24, ey:756, ew:396, eh:264 };   // o esquema (3:2) e "no espelho" embaixo, à esquerda da câmera
 // a hora (ms desde o começo do bloco) de cada etapa: a palavra-chave na fala a 2,5 palavras/s, no mínimo 2,2 s entre etapas
 function horasForma(F, fala, ritmo){
@@ -781,7 +785,7 @@ function formaPula(k){   // tecla 1–4 (k = etapa) ou toque (k = null: a seguin
   const c = (G.o.blocos[G.bloco] || {}).cena; if (!c || c.tipo !== 'mecanismo' || !FORMA[c.tema]) return false;
   const n = FORMA[c.tema].et.length, at = formaEtapa(c, performance.now() - (G.blocoT || 0)).k;
   const alvo = k == null ? Math.min(n - 1, at + 1) : lim(k, 0, n - 1);
-  G.formaMan = { bloco:G.bloco, k:alvo, t:performance.now(), de:at }; G.formaUsos = (G.formaUsos || 0) + 1;
+  G.formaMan = { bloco:G.bloco, k:alvo, t:performance.now(), de:at }; G.formaUsos = (G.formaUsos || 0) + 1; G.formaUlt = performance.now();
   return true;
 }
 function cenaMecanismo(ctx, c, t){
@@ -815,7 +819,7 @@ function cenaMecanismo(ctx, c, t){
   const nw = ctx.measureText(num).width + 14; ctx.fillStyle = '#fff'; ctx.font = `650 30px ${FONTE}`;
   ctx.fillText(quebra(ctx, E.leg, w - nw, 1)[0] || '', x + nw, yl);
   // "no espelho": a foto do mesmo ponto, embaixo à esquerda, acompanhando a etapa
-  const fa = im(F.f[E.f]), fb = ant ? im(F.f[ant.f]) : null;
+  const FF = fotosForma(c), fa = im(FF[E.f]), fb = ant ? im(FF[ant.f]) : null;
   if (fa.ok){
     const { ex, ey, ew, eh } = FQ;
     ctx.save(); caixa(ctx, ex, ey, ew, eh, 16); ctx.clip();
@@ -885,9 +889,18 @@ const PELE_ENTRA = { sol:{ img:'e-sol', fica:'sol' }, prot:{ img:'e-protetor', f
   acu:{ img:'e-acucar', fica:'vaso' }, ind:{ img:'e-industrializados', fica:'vaso' },
   est:{ txt:'estresse' }, sono:{ txt:'noite mal dormida' }, horm:{ txt:'menopausa' }, peso:{ txt:'perda de peso rápida' } };
 const PELE_ENTRA_Q = { sol:['sol-forte'], prot:['protetor'], cor:['protetor-cor'], cig:['cigarro-forte'] };   // a pele espera a entrada
+// 18/11 noite (gravação do Lucca com o Samuel, 39, homem: "menopausa não faz sentido nenhum, você é homem"; "cadê o açúcar?"):
+// o painel tem ORDEM FIXA, a da fala (sol, protetor, com cor, cigarro, açúcar, industrializados, sono, estresse, peso) com a tecla
+// à vista; hormônios só para mulher (ou sem o sexo); "Voltar ao normal" (R) primeiro.
 const PELE_TECLAS = {
-  dentro:[['sol', '1'], ['prot', '2'], ['cor', '3'], ['cig', '4'], ['acu', '5'], ['ind', '6'], ['sono', '7'], ['est', '8'], ['horm', '9'], ['peso', '0'], ['mor', 'M'], ['zerar', 'R']],
-  caminho:[['abrir', 'P'], ['acu', '1'], ['ind', '2'], ['sono', '3'], ['est', '4'], ['horm', '5'], ['peso', '6'], ['zerar', 'R']] };
+  dentro:[['sol', '1'], ['prot', '2'], ['cor', '3'], ['cig', '4'], ['acu', '5'], ['ind', '6'], ['sono', '7'], ['est', '8'], ['peso', '9'], ['horm', '0'], ['zerar', 'R']],
+  caminho:[['abrir', 'P'], ['acu', '1'], ['ind', '2'], ['sono', '3'], ['est', '4'], ['peso', '5'], ['horm', '6'], ['zerar', 'R']] };
+const teclasPele = c => (PELE_TECLAS[c.pele.modo] || []).filter(([id]) => !(id === 'horm' && c.pele.sexo === 'm'));
+// 18/11 noite, REGRA DO LUCCA: UM FATOR POR VEZ ("empilhar fatores ruins… seriam muitas combinações; cada fator ruim é a pele boa
+// e aquele fator isolado"). Os ruins são exclusivos: tocar noutro troca (base → o novo), tocar no mesmo volta à pele boa, e ligar
+// um ruim desliga o sol e os protetores (e vice-versa). O único que soma é o fluxo do sol: sol → + protetor transparente (o UV para,
+// a luz visível passa e AINDA DÁ MANCHA) → + protetor com cor (opaco: não dá mancha). Sem "a mancha fica"; sem a tecla M.
+const PELE_MAUS = ['cig', 'acu', 'ind', 'sono', 'est', 'horm', 'peso'], PELE_SOLF = ['sol', 'prot', 'cor'];
 const PELE_ROT = { dentro:[['Fora', ['sol', 'prot', 'cor', 'cig']], ['Dentro', ['acu', 'ind', 'sono', 'est', 'horm', 'peso']]], caminho:[['', ['acu', 'ind', 'sono', 'est', 'horm', 'peso']]] };
 const pelesDe = bs => (bs || []).map(b => b && b.cena).filter(c => c && c.pele);
 // baixa os quadros ao abrir o gravador e já calcula as diferenças (1 por volta de 40 ms), antes de ele gravar: a leitura de
@@ -1014,7 +1027,7 @@ const PELE_POS = { filme:.262, sup:.268, mancha:[.487, .344], solManchas:[[.39, 
 // pele morena: o UV (dourado) para no filme; a luz visível (lilás) passa pelo protetor comum até a mancha (que cresce); com cor, para no filme
 const MANCHA = { x:.487, y:.344, l:.3 }, FILME_Y = .262;
 function luzVisivel(ctx, P, agora, x0, y0, al){
-  const passa = (P.w['morena-protetor'] || 0) + (P.w['morena-forte'] || 0), para = (P.w['morena-cor'] || 0) + (P.w['morena-forte-cor'] || 0), k = Math.min(1, passa + para); if (k < .02) return;
+  const passa = (P.w['morena-protetor'] || 0) + (P.w['morena-forte'] || 0), para = P.on.sol && P.on.cor ? (P.w['protetor-cor'] || 0) : 0, k = Math.min(1, passa + para); if (k < .02) return;
   const w = PX.w, h = PX.h, pul = .75 + .25 * Math.sin(agora / 260), ate = FILME_Y + (MANCHA.y + .01 - FILME_Y) * (passa / Math.max(.001, passa + para));
   ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); ctx.globalCompositeOperation = 'lighter';
   for (let j = 0; j < 4; j++){
@@ -1026,9 +1039,9 @@ function luzVisivel(ctx, P, agora, x0, y0, al){
   ctx.restore();
   ctx.globalAlpha = al * k;
   tagPele(ctx, 'UV: para no filme', x0 + 124, y0 + 14, AMARELO);
-  tagPele(ctx, passa >= para ? 'luz visível: passa' : 'luz visível: para no filme com cor', x0 + w - (passa >= para ? 196 : 352), y0 + 14, '#d9ccff');
-  if (passa > .5) rotuloPele(ctx, 'mancha cresce', x0, y0, [MANCHA.x + .02, MANCHA.y + .005], [.62, .44], AMARELO, al * Math.min(1, passa));
-  else if (para > .5) rotuloPele(ctx, 'mancha para de escurecer', x0, y0, [MANCHA.x + .02, MANCHA.y + .005], [.5, .44], VERDE, al * Math.min(1, para));
+  tagPele(ctx, passa >= para ? 'luz visível: passa' : 'luz visível: para no filme', x0 + w - (passa >= para ? 196 : 270), y0 + 14, '#d9ccff');
+  if (passa > .5) rotuloPele(ctx, 'ainda dá mancha', x0, y0, [MANCHA.x + .02, MANCHA.y + .005], [.62, .44], AMARELO, al * Math.min(1, passa));
+  else if (para > .5) rotuloPele(ctx, 'não dá mancha', x0, y0, [MANCHA.x + .02, MANCHA.y + .005], [.56, .44], VERDE, al * Math.min(1, para));
   ctx.globalAlpha = 1;
 }
 function tagPele(ctx, txt, tx, ty, cor){
@@ -1195,7 +1208,7 @@ function raiosSol(ctx, P, agora, x0, y0, al){
 function abreMenuPele(){
   const c = peleCena(); if (!c || !D) return;
   const m = c.pele.modo, ela = c.pele.ela || {}, P = G.pele || {};
-  const ts = [...PELE_TECLAS[m].filter(([id]) => id === 'zerar'), ...PELE_TECLAS[m].filter(([id]) => id !== 'zerar' && id !== 'abrir')];
+  const tt = teclasPele(c), ts = [...tt.filter(([id]) => id === 'zerar'), ...tt.filter(([id]) => id !== 'zerar' && id !== 'abrir')];
   D.peleMenu.innerHTML = '<div class="ga-pm-topo"><button type="button" class="ga-pm-b zera" data-p="zerar">Voltar ao normal</button><button type="button" class="ga-pm-x" aria-label="Fechar">✕</button></div><div class="ga-pm-bs">' +
     ts.filter(([id]) => id !== 'zerar').map(([id]) => { const f = PELE_F[id] || {}, nome = id === 'zerar' ? 'Voltar ao normal' : (f.painel || f.nome), on = !!(P.on && P.on[id]);
       return `<button type="button" class="ga-pm-b${id === 'zerar' ? ' zera' : ''}" data-p="${id}" aria-pressed="${on}">${esc(nome)}${ela[id] ? `<small>${esc(ela[id])}</small>` : ''}</button>`; }).join('') + '</div>';
@@ -1207,14 +1220,12 @@ function peleNovo(){ return { on:{}, w:{}, a:{}, g:0, gA:0, m:0, mA:0, mc:0, mcA
 // 18/11 tarde (o Lucca: "parece que eu não consigo voltar ao normal"): desligar volta ao normal em ~1,5 s. O único resíduo é o do
 // sol enquanto o protetor estiver ligado depois dele ("o que já foi feito fica"); tirando o protetor (ou com R), volta tudo.
 function peleAlvos(P){
-  const o = P.on, a = P.a, filme = !!(o.prot || o.cor);
-  a.protetor = !o.mor && o.prot ? 1 : 0; a['protetor-cor'] = !o.mor && o.cor ? 1 : 0;
-  // pele morena: a mancha aparece (m 0 → 1) e, com o protetor comum, CRESCE (1 → 2); com cor, para onde está e clareia um pouco
-  P.mA = !o.mor ? 0 : o.prot ? 2 : Math.max(1, P.m); P.mcA = o.mor && o.cor ? 1 : 0;
-  if (o.sol && !filme) a['sol-forte'] = 1;
-  else if (filme && P.dano) a['sol-forte'] = .85;           // o protetor segura o sol novo; o que já foi feito fica
-  else if (o.sol) a['sol-forte'] = o.cor ? 0 : .1;          // protetor antes do sol: quase nada passa
-  else a['sol-forte'] = 0;
+  const o = P.on, a = P.a;
+  // o fluxo do sol: sozinho, o dano; com o protetor transparente, o filme e a mancha da luz visível (quadros morena-*, a mancha
+  // nasce e cresce); com o protetor com cor (opaco), o filme com cor e a pele limpa
+  a.protetor = o.prot && !o.sol ? 1 : 0; a['protetor-cor'] = o.cor ? 1 : 0;
+  P.mA = o.sol && o.prot ? 2 : 0; P.mcA = 0;
+  a['sol-forte'] = o.sol && !o.prot && !o.cor ? 1 : 0;
   a['cigarro-forte'] = o.cig ? 1 : 0;
   a['peso-forte'] = o.peso ? 1 : 0;
   a['menopausa-forte'] = o.horm ? 1 : 0;
@@ -1249,47 +1260,53 @@ function legendaPele(ctx, txt, w){
 function textosPele(){
   const out = new Set();
   Object.values(PELE_F).forEach(f => { if (f.on) out.add(f.on); if (f.off) out.add(f.off); });
-  for (const sol of [0, 1]) for (const prot of [0, 1]) for (const cor of [0, 1]) for (const mor of [0, 1]) for (const dano of [0, 1]) for (const liga of [0, 1])
-    for (const id of ['sol', 'prot', 'cor', 'mor']){ const P = { on:{ sol:!!sol, prot:!!prot, cor:!!cor, mor:!!mor } }; out.add(peleFrase(P, id, !!liga, !!dano)[0]); }
+  for (const sol of [0, 1]) for (const prot of [0, 1]) for (const cor of [0, 1]) for (const liga of [0, 1])
+    for (const id of PELE_SOLF){ const P = { on:{ sol:!!sol, prot:!!prot && !cor, cor:!!cor } }; out.add(peleFrase(P, id, !!liga)[0]); }
   return [...out].filter(Boolean);
 }
-// a frase do toque e a cor dela: verde = protege ou alivia, amarelo = estraga
-function peleFrase(P, id, liga, dano){
-  const o = P.on, filme = o.prot || o.cor;
-  if (id === 'sol') return liga ? (filme ? (dano ? ['O protetor segura o sol novo no filme. A mancha e o colágeno quebrado ficam.', false] : ['Com protetor desde antes, o UV para no filme: a pele quase não tem dano.', true])
-      : ['A luz quebra o colágeno de cima: a superfície fica áspera (é a textura) e a mancha nasce embaixo.', false])
-    : [filme && dano ? 'Sem sol novo. Com o protetor ligado, o que já foi feito fica.' : '', true];
-  if (id === 'prot' || id === 'cor' || id === 'mor'){
-    if (!liga && id !== 'mor') return o.sol ? ['Sem protetor, o sol volta a quebrar a pele.', false] : ['', true];
-    if (!liga) return ['', true];
-    if (o.mor) return o.cor ? ['O protetor com cor segura a luz visível: a mancha para de escurecer e clareia um pouco, sem sumir.', true] : ['O protetor comum segura o UV, mas a luz visível passa: em pele morena, a mancha cresce e escurece.', false];
-    if (dano) return ['O protetor segura o sol novo, mas não apaga o que já foi feito: a mancha e o colágeno quebrado ficam.', false];
-    return [o.cor ? 'O protetor com cor segura o UV e também a luz visível, que escurece mancha em pele morena.' : 'O protetor segura o UV no filme, em cima da pele.', true];
+// a frase do toque e a cor dela: verde = protege ou alivia, amarelo = estraga (P.on já com o toque aplicado)
+const PELE_TXT = {
+  sol:'A luz quebra o colágeno de cima: a superfície fica áspera (é a textura) e a mancha nasce embaixo.',
+  transp:'O protetor transparente segura o UV, mas não é opaco: a luz visível passa e ainda dá mancha.',
+  opaco:'O protetor com cor é opaco: segura também a luz visível e não deixa a mancha se formar.',
+  soProt:'O protetor transparente segura o UV no filme, em cima da pele.',
+  soCor:'O protetor com cor é opaco: segura o UV e também a luz visível no filme.',
+  semProt:'Sem protetor, o sol volta a quebrar a pele.' };
+function peleFrase(P, id, liga){
+  const o = P.on;
+  if (PELE_SOLF.includes(id)){
+    if (o.sol && o.prot) return [PELE_TXT.transp, false];
+    if (o.sol && o.cor) return [PELE_TXT.opaco, true];
+    if (o.sol) return id === 'sol' ? [PELE_TXT.sol, false] : [PELE_TXT.semProt, false];
+    if (!liga || id === 'sol') return ['', true];
+    return [o.cor ? PELE_TXT.soCor : PELE_TXT.soProt, true];
   }
   const f = PELE_F[id]; return f && liga ? [f.on || '', false] : ['', true];   // desligou: volta ao normal, sem frase
 }
 const peleCena = () => { const c = G && (G.o.blocos[G.bloco] || {}).cena; return c && c.pele ? c : null; };
 function peleAcao(id){
   if (!G || !['prep', 'conta', 'rec'].includes(G.estado)) return;
-  const c = peleCena(); if (!c || !PELE_TECLAS[c.pele.modo].some(([k]) => k === id)) return;
+  const c = peleCena(); if (!c || !teclasPele(c).some(([k]) => k === id)) return;
+  G.peleUlt = performance.now();   // ele está mexendo na pele (o salto automático espera)
   const P = G.pele || (G.pele = peleNovo()), agora = performance.now();
   if (id === 'zerar'){ P.on = {}; P.dano = false; P.msg = null; P.gA = 0; P.mA = 0; P.mcA = 0; P.pulso = null; P.ef = null; P.entra = null; P.desde = {}; fechaMenuPele(); Object.keys(P.w).forEach(n => { P.a[n] = 0; }); }   // tudo volta à base (sem resíduo)
   else if (id === 'abrir'){ P.aberto = !P.aberto; P.abT = agora; }
   else {
     if (c.pele.modo === 'caminho' && !P.aberto){ P.aberto = true; P.abT = agora; }
-    const liga = !P.on[id], dano = P.dano; P.on[id] = liga;
+    const liga = !P.on[id]; P.on[id] = liga;
+    if (liga && PELE_MAUS.includes(id)) [...PELE_MAUS, ...PELE_SOLF].forEach(k => { if (k !== id) P.on[k] = false; });   // um fator ruim por vez, sozinho
+    if (liga && PELE_SOLF.includes(id)) PELE_MAUS.forEach(k => { P.on[k] = false; });
     if (liga && id === 'prot') P.on.cor = false;
     if (liga && id === 'cor') P.on.prot = false;
-    if (id === 'mor' && liga && !P.on.prot && !P.on.cor) P.on.prot = true;   // a mancha da pele morena aparece sob o protetor comum
-    if ((id === 'prot' || id === 'cor') && !liga && !P.on.prot && !P.on.cor) P.on.mor = false;
+    if (P.ef && !P.on[P.ef.id]) P.ef = null;
     peleAlvos(P);
     // 18/11 tarde: cada fator ENTRA com a sua ilustração (ou a palavra) em ~1 s; só depois o pulso no vaso e a pele mudando
     P.desde = P.desde || {};
     if (liga && PELE_ENTRA[id]){ P.entra = { id, t0:agora }; (PELE_ENTRA_Q[id] || []).forEach(n => { P.desde[n] = agora + PELE_ENTRADA_MS; }); }
     if (liga && PELE_SANGUE_Q[id]){ P.pulso = { t0:agora + PELE_ENTRADA_MS, cor:PELE_F[id].sangue }; PELE_SANGUE_Q[id].forEach(n => { P.desde[n] = agora + PELE_ENTRADA_MS + PELE_ESPERA; }); }
-    if (liga && ['sol', 'cig', 'acu', 'ind', 'sono', 'est', 'horm', 'peso'].includes(id)) P.ef = { id, t0:agora + PELE_ENTRADA_MS };   // a animação própria e os rótulos dele (depois da entrada)
-    else if (['prot', 'cor', 'mor'].includes(id)) P.ef = null;   // o protetor tem os rótulos dele (o filme, a mancha que fica)
-    const [txt, bem] = peleFrase(P, id, liga, dano);
+    if (liga && (PELE_MAUS.includes(id) || (id === 'sol' && !P.on.prot && !P.on.cor))) P.ef = { id, t0:agora + PELE_ENTRADA_MS };   // a animação própria e os rótulos dele (depois da entrada)
+    else if (PELE_SOLF.includes(id)) P.ef = null;   // com o protetor, os rótulos são os da luz (UV e luz visível)
+    const [txt, bem] = peleFrase(P, id, liga);
     P.msg = txt ? { txt, bem, t:agora, id, liga } : null;
   }
   P.usos++; G.peleUsos = (G.peleUsos || 0) + 1;
@@ -1301,7 +1318,7 @@ function botoesPele(){
   if (D.pele.dataset.k !== k){
     D.pele.dataset.k = k;
     const ela = (c && c.pele.ela) || {}, grupo = { sol:'Fora', acu:'Dentro' };
-    const ts = PELE_TECLAS[m] ? [...PELE_TECLAS[m].filter(([id]) => id === 'zerar'), ...PELE_TECLAS[m].filter(([id]) => id !== 'zerar')] : [];   // "Voltar ao normal" primeiro, em destaque
+    const tt = c ? teclasPele(c) : [], ts = [...tt.filter(([id]) => id === 'zerar'), ...tt.filter(([id]) => id !== 'zerar')];   // "Voltar ao normal" primeiro, em destaque
     D.pele.innerHTML = !m ? '' : ts.map(([id, t]) => {
       const f = PELE_F[id] || {}, nome = id === 'zerar' ? 'Voltar ao normal' : id === 'abrir' ? 'Abrir: o que vem de dentro' : (f.painel || f.nome);
       return (m === 'dentro' && grupo[id] ? (id === 'acu' ? '<i class="ga-pele-q"></i>' : '') + `<span class="ga-pele-g">${grupo[id]}</span>` : '') +
@@ -1349,9 +1366,8 @@ function desenhaPele(ctx, c, L){
   const vt = pulsoVasos(ctx, P, agora, x, y, al);
   efeitoPele(ctx, P, agora, x, y, al);
   luzVisivel(ctx, P, agora, x, y, al);
-  if (!P.on.mor && (P.w.protetor > .5 || P.w['protetor-cor'] > .5) && !(P.ef && P.on[P.ef.id] && P.ef.id !== 'sol')){   // o filme e, com dano, a mancha que ficou
+  if (!P.on.sol && (P.w.protetor > .5 || P.w['protetor-cor'] > .5) && !(P.ef && P.on[P.ef.id])){   // protetor sem sol: só o filme
     ctx.globalAlpha = al; tagPele(ctx, 'UV: para no filme', x + 124, y + 14, AMARELO);
-    if (P.dano && (P.w['sol-forte'] || 0) > .5) rotuloPele(ctx, 'a mancha fica', x, y, PELE_POS.solManchas[1], [.62, .45], LARANJA, al);
   }
   if (vt > 0){   // "pelo sangue": rótulo no gordura de baixo, com a linha fina até a artéria
     const ax = x + .16 * w, ay = y + .705 * h, tx = x + 18, ty = y + h - 58;
@@ -1700,7 +1716,7 @@ function comeca(){
   rec.onstop = () => terminou(g);
   try { rec.start(); } catch (e) { return falha('Não deu para gravar: ' + (e.message || e.name)); }   // sem timeslice (iOS)
   G.t0 = performance.now(); G.camUlt = G.camUlt || G.t0; G.blocoT = G.t0;   // a cena do 1º bloco entra no vídeo desde o começo
-  G.msBlocos = G.o.blocos.map(() => 0); G.blocoAtivo = G.bloco; G.blocoIni = G.t0; G.saltou = false;
+  G.msBlocos = G.o.blocos.map(() => 0); G.blocoAtivo = G.bloco; G.blocoIni = G.t0; G.saltou = false; G.saltoAdiado = false;
   estado('rec');
   info('');
   G.relogio = setInterval(() => {
@@ -1709,7 +1725,13 @@ function comeca(){
     D.recT.textContent = mmss(ms) + ' / ' + mmss(G.p.alvo * 1000);
     D.rec.classList.toggle('fim-perto', ms >= G.p.alvo * 1000);
     const n = G.o.blocos.length;   // o único salto automático: a pergunta de interesse nunca fica de fora
-    if (!G.saltou && ms >= G.p.salto * 1000 && G.bloco < n - 1){ G.saltou = true; G.bloco = n - 1; prompter(); }
+    // 18/11 noite (gravação do Samuel: aos 2:40 o salto levou para a pergunta no meio do açúcar; "cadê o açúcar?… uma bugada"):
+    // se ele mexeu na pele ou no "como se forma" nos últimos 20 s, não pula: avisa só no painel (o corte do teto segue valendo)
+    if (!G.saltou && ms >= G.p.salto * 1000 && G.bloco < n - 1){
+      const mexendo = Math.max(G.peleUlt || 0, G.formaUlt || 0) > performance.now() - 20000;
+      if (mexendo){ if (!G.saltoAdiado){ G.saltoAdiado = true; nota(); } }
+      else if (!G.saltoAdiado){ G.saltou = true; G.bloco = n - 1; prompter(); }
+    }
     marcaTempo();
     if (ms >= G.p.teto * 1000) para();
   }, 250);
@@ -1904,7 +1926,7 @@ function liga(){
     if (ev.key === ' ' && vale && !ev.target.closest?.('input, textarea')){ ev.preventDefault(); if (document.activeElement?.closest?.('.ga')) document.activeElement.blur(); if (!ev.repeat) D.prox.click(); return; }   // 13/11: espaço avança (sem acionar o botão em foco)
     { const cm = vale && !ev.target.closest?.('input, textarea') && (G.o.blocos[G.bloco] || {}).cena; if (cm && cm.tipo === 'mecanismo' && FORMA[cm.tema] && /^[1-9]$/.test(ev.key) && +ev.key <= FORMA[cm.tema].et.length){ ev.preventDefault(); formaPula(+ev.key - 1); return; } }   // 18/11: 1–4 = etapa do "como se forma"
     const pc = vale && !ev.target.closest?.('input, textarea') && !ev.metaKey && !ev.ctrlKey && !ev.altKey && peleCena();   // 18/11: as teclas da pele (1–9, 0, M, R; no caminho P e 1–6)
-    if (pc){ const tk = PELE_TECLAS[pc.pele.modo].find(([, t]) => t === ev.key.toUpperCase()); if (tk){ ev.preventDefault(); if (!ev.repeat) peleAcao(tk[0]); return; } }
+    if (pc){ const tk = teclasPele(pc).find(([, t]) => t === ev.key.toUpperCase()); if (tk){ ev.preventDefault(); if (!ev.repeat) peleAcao(tk[0]); return; } }
     if (/^[1-9]$/.test(ev.key) && vale && !ev.target.closest?.('input, textarea')){ const b = D.foco.querySelectorAll('button')[+ev.key - 1]; if (b && !D.foco.hidden){ ev.preventDefault(); focar(b.dataset.id); } return; }   // 14/11: 1, 2, 3 = foco
     if (ev.key === 'ArrowRight'){ ev.preventDefault(); D.prox.click(); }
     else if (ev.key === 'ArrowLeft'){ ev.preventDefault(); D.ant.click(); }
