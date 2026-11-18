@@ -163,6 +163,8 @@ function entradaPeleIdade(d, c){
   return {
     sexo:SEXO[d.respostas?.sexo || d.sexo] || undefined,   // 12/11: concordância (cansada/cansado)
     desejo_de_10_anos:objetivoPI(d.respostas || {}, d.idade != null && !isNaN(+d.idade) ? +d.idade : null, c) || undefined, incomodo_no_espelho:c?.vars?.espelho || undefined,   // 17/11 (v7): o objetivo como ela diz, para a abertura e o fecho
+    // 18/11: a frase do "Pra onde leva", pronta (o objetivo com o horizonte de 10 anos), para o Claude copiar palavra por palavra
+    fecho_pra_onde_leva:destinoPI(d.respostas || {}, d.idade != null && !isNaN(+d.idade) ? +d.idade : null, objetivoPI(d.respostas || {}, d.idade != null && !isNaN(+d.idade) ? +d.idade : null, c)) || undefined,
     regiao_do_incomodo_que_a_pagina_mostrou:d.espelho_regiao ? NOME_SIN_PI[d.espelho_regiao] || d.espelho_regiao : undefined,
     idade_informada:d.idade ?? undefined,
     idade_que_o_rosto_aparenta:d.faixa || 'a página não mostrou número',
@@ -202,7 +204,7 @@ let EST = null;   // o estoque; null = não carregou (aí o bloco mostra só o b
 async function carregaEstoque(){
   if (EST) return EST;
   const [est, imp] = await Promise.all([
-    fetch('roteiros-estoque.json?v=20261117v8', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('roteiros-estoque.json?v=20261118a', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null),
     fetch('o-que-importa-idade.json?v=20261113', { cache:'no-cache' }).then(r => r.ok ? r.json() : null).catch(() => null)]);
   EST = est; IMP = imp;   // 13/11: o bloco 5 ("o que conserva na idade") sai do mesmo arquivo do cartão do gravador
   if (EST) estoqueEditavel(EST);
@@ -486,6 +488,19 @@ function objetivoPI(r, iN, c){
   const b = iN != null ? Math.round(iN / 5) * 5 : null, S = x => x == null ? null : String(x);
   return preenche(t, { i10:S(iN != null ? iN + 10 : null), b10:S(b != null ? b + 10 : null), b15:S(b != null ? b + 15 : null), bm5:S(b != null ? b - 5 : null) });
 }
+// 18/11 (o Lucca, no bloco "Pra onde leva" do Samuel: "cadê o objetivo completo marcado?"): o fecho carrega o objetivo como ela
+// marcou, com o horizonte da pergunta ("Daqui a 10 anos, o que mais quer?"). O padrão põe "daqui a 10 anos" no meio; o que é
+// cuidar AGORA (antes, cuidar, entender) vai com "pensando nos próximos 10 anos"; 'devagar' fecha "daqui até os {i10}"; 'aos70'
+// (v1) já traz o próprio horizonte. 'jovem' segue a regra de 5 em 5 (nunca "mais jovem" na fala). Editável no estoque (fecho.caminho_10).
+const CAMINHO_10 = { padrao:'Esse é o caminho pra você, daqui a 10 anos, {objetivo}.', jovem:'Esse é o caminho pra você, daqui a 10, 15 anos, {objetivo}.',
+  antes:'Esse é o caminho pra você {objetivo}, pensando nos próximos 10 anos.', cuidar:'Esse é o caminho pra você {objetivo}, pensando nos próximos 10 anos.',
+  entender:'Esse é o caminho pra você {objetivo}, pensando nos próximos 10 anos.', devagar:'Esse é o caminho pra você {objetivo}, daqui até os {i10}.',
+  devagar_sem_idade:'Esse é o caminho pra você {objetivo}, pensando nos próximos 10 anos.', aos70:'Esse é o caminho pra você {objetivo}.' };
+function destinoPI(r, iN, objetivo){
+  if (!objetivo) return null;
+  const M = { ...CAMINHO_10, ...(EST?.['pele-idade']?.fecho?.caminho_10 || {}) }, k = r?.futuro, V = { objetivo, i10:iN != null ? String(iN + 10) : null };
+  return [M[k], k && M[k + '_sem_idade'], M.padrao].filter(Boolean).map(t => preenche(t, V)).find(Boolean) || null;
+}
 // "Gêmeas idênticas de 61 anos; a da direita…" → "elas são gêmeas idênticas, 61 anos. A da direita…" (o jeito da Carla)
 const falaGemeas = f => /^g[êe]meas\b/i.test(f || '') ? 'elas são ' + f.replace(/^G/, 'g').replace(/ de (\d+) anos/, ', $1 anos').replace(/[;:] (a|o) d/, (m, a) => `. ${a.toUpperCase()} d`) : f;
 function rotPeleIdade(d, c, E){
@@ -579,7 +594,9 @@ function rotPeleIdade(d, c, E){
     return b; };
   out.push(b7(frentes));
   // 8 e 9 · o fecho A (16/11): o caminho pro mesmo objetivo da abertura, e a pergunta do que ela já tentou (2 telas: no iPhone não cabia junto)
-  out.push(bloco6('destino', null, [P.fecho.caminho_pra], { ...V, objetivo:objetivo || P.fecho.objetivo_sem }, { f:P.fecho.f }));
+  // 18/11: com objetivo, a frase com o horizonte de 10 anos (destinoPI); sem objetivo, "Esse é o caminho pra cuidar da sua saúde e do seu rosto."
+  const destino = destinoPI(r, iN, objetivo);
+  out.push(bloco6('destino', null, [destino || P.fecho.caminho_pra], { ...V, objetivo:objetivo || P.fecho.objetivo_sem }, { f:P.fecho.f }));
   out.push(bloco6('interesse', null, [P.fecho.pergunta], V, { f:P.fecho.f, fixo:true }));
   // passou do alvo: a 2ª resposta ligada, as frentes dela, o 2º achado (regra 7); as pontes, o caminho e a pergunta nunca saem
   cabe(out, MAX_PI, [['dentro', lig.length > 1 ? b6(1) : null], ['caminho', frentes.length ? b7([]) : null], ['foto', ach.length > 1 && ach[1] !== sF ? b3(ach.slice(0, 1)) : null]]);   // 17/11: o sinal do "Como se forma" fica na foto

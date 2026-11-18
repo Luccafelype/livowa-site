@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1711f';
+const VERSAO = '1811a';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -297,6 +297,7 @@ function montagem(ctx, agora){
     else if (c.tipo === 'exemplo') fez = cenaExemplo(ctx, c, t);
     else if (c.tipo === 'mecanismo') fez = cenaMecanismo(ctx, c, t);
     else if (c.tipo === 'caminho') fez = cenaCaminho(ctx, c, t);
+    else if (c.tipo === 'objetivo') fez = cenaObjetivo(ctx, c, t);
   } finally {
     ctx.restore();
     ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -745,6 +746,47 @@ function cenaCaminho(ctx, c, t){
     ctx.fillStyle = '#fff'; ctx.textBaseline = 'top'; ls.forEach((l, i) => ctx.fillText(l, 42, yb + 15 + i * 40)); ctx.textBaseline = 'alphabetic';
   }
   ctx.globalAlpha = 1;
+  return true;
+}
+
+// 18/11 (o Lucca, no Samuel: "cadê o objetivo completo marcado?"): "Pra onde leva" mostra a pergunta do teste com a opção que ela
+// marcou, no visual do /pele/ (fundo claro, opção marcada com a borda verde e o fundo verde-claro, pele/pele.css .opt[aria-pressed])
+// e o ✓ desenhado; só a escolhida. Entra em 0,3 s; a opção aos 0,35 s; o ✓ aos 0,7 s.
+const PELE_UI = { bg:'#f3f5f2', fg:'#141c17', muted:'#5d6b63', accent:'#0d6a4d', accent2:'#dcefe6' };
+function cenaObjetivo(ctx, c, t){
+  if (!c.opcao) return false;
+  escurece(ctx, .9 * sai(t / 250));
+  const x0 = 40, w = W - 80, pad = 36, ent = sai(t / 300);
+  ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+  ctx.font = `700 46px ${FONTE}`; const ql = quebra(ctx, c.pergunta || '', w - 2 * pad, 3);
+  ctx.font = `650 38px ${FONTE}`; const ol = quebra(ctx, c.opcao, w - 2 * pad - 2 * 28 - 70, 3);
+  const hRot = c.rot ? 50 : 0, hQ = ql.length * 56, hO = ol.length * 48 + 2 * 30;
+  const h = pad + hRot + hQ + 36 + hO + pad, y0 = Math.max(TOPO + 20, Math.round((TOPO + 20 + 990 - h) / 2)) + (1 - ent) * 24;
+  ctx.globalAlpha = ent;
+  ctx.fillStyle = PELE_UI.bg; caixa(ctx, x0, y0, w, h, 28); ctx.fill();
+  let y = y0 + pad;
+  if (c.rot){ ctx.fillStyle = PELE_UI.muted; ctx.font = `600 26px ${FONTE}`; ctx.fillText(c.rot, x0 + pad, y); y += hRot; }
+  ctx.fillStyle = PELE_UI.fg; ctx.font = `700 46px ${FONTE}`; ql.forEach((l, i) => ctx.fillText(l, x0 + pad, y + i * 56)); y += hQ + 36;
+  const g = sai((t - 350) / 300);
+  if (g > 0){
+    const ox = x0 + pad, ow = w - 2 * pad;
+    ctx.globalAlpha = ent * g;
+    ctx.fillStyle = PELE_UI.accent2; caixa(ctx, ox, y, ow, hO, 18); ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = PELE_UI.accent; ctx.stroke();
+    ctx.fillStyle = PELE_UI.fg; ctx.font = `650 38px ${FONTE}`; ol.forEach((l, i) => ctx.fillText(l, ox + 28, y + 30 + i * 48 + 2));
+    // o ✓: círculo verde e o traço branco, desenhado da esquerda para a direita
+    const cx = ox + ow - 28 - 26, cy = y + hO / 2, k = sai((t - 700) / 350);
+    if (k > 0){
+      ctx.globalAlpha = ent * g * Math.min(1, k * 2);
+      ctx.fillStyle = PELE_UI.accent; ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2); ctx.fill();
+      const a = [cx - 12, cy + 1], m = [cx - 3, cy + 10], b = [cx + 13, cy - 9], d1 = Math.hypot(m[0] - a[0], m[1] - a[1]), d2 = Math.hypot(b[0] - m[0], b[1] - m[1]), L = (d1 + d2) * k;
+      ctx.lineWidth = 5.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#fff'; ctx.beginPath(); ctx.moveTo(a[0], a[1]);
+      if (L <= d1) ctx.lineTo(a[0] + (m[0] - a[0]) * L / d1, a[1] + (m[1] - a[1]) * L / d1);
+      else { ctx.lineTo(m[0], m[1]); const q = (L - d1) / d2; ctx.lineTo(m[0] + (b[0] - m[0]) * q, m[1] + (b[1] - m[1]) * q); }
+      ctx.stroke(); ctx.lineCap = 'butt'; ctx.lineJoin = 'miter';
+    }
+  }
+  ctx.globalAlpha = 1; ctx.textBaseline = 'alphabetic';
   return true;
 }
 

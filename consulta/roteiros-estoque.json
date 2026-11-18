@@ -1469,6 +1469,17 @@
    "f": "16/11 (d-20261116-fecho-pelo-teste, aprovado pelo Lucca: \"pode ir para o gravador\"; textos da Central, escada-isca.html, GUIA e NOVA): fecho A, o da Carla: o caminho pro desejo de 10 anos dela e a pergunta do que ela já tentou; \"parecer a idade que sente\" vira \"se reconhecer no espelho\". Saem \"Espero que a análise tenha te ajudado.\" e a pergunta de interesse · v7 (17/11, a copy v6 da Carla editada pelo Lucca na Central em 16/11; as edições dele valem como aprovação; regras-ajuste-pele-idade.md v7): \"Esse é o caminho pra\" + o mesmo objetivo da abertura; sem objetivo, \"cuidar da sua saúde e do seu rosto\"",
    "objetivo_sem": "cuidar da sua saúde e do seu rosto",
    "caminho_pra": "Esse é o caminho pra {objetivo}.",
+   "_sobre_caminho_10": "18/11 (o Lucca, no bloco Pra onde leva do Samuel: \"cadê o objetivo completo marcado?\"): com objetivo, o fecho leva o horizonte da pergunta do teste (Daqui a 10 anos, o que mais quer?). padrao vale para disposicao, reconhecer, parecer, chegar10, independente; o que é cuidar agora vai com pensando nos próximos 10 anos; devagar fecha daqui até os {i10} (idade + 10); aos70 (v1) já traz o próprio horizonte. caminho_pra fica para quando não há objetivo.",
+   "caminho_10": {
+    "padrao": "Esse é o caminho pra você, daqui a 10 anos, {objetivo}.",
+    "jovem": "Esse é o caminho pra você, daqui a 10, 15 anos, {objetivo}.",
+    "antes": "Esse é o caminho pra você {objetivo}, pensando nos próximos 10 anos.",
+    "cuidar": "Esse é o caminho pra você {objetivo}, pensando nos próximos 10 anos.",
+    "entender": "Esse é o caminho pra você {objetivo}, pensando nos próximos 10 anos.",
+    "devagar": "Esse é o caminho pra você {objetivo}, daqui até os {i10}.",
+    "devagar_sem_idade": "Esse é o caminho pra você {objetivo}, pensando nos próximos 10 anos.",
+    "aos70": "Esse é o caminho pra você {objetivo}."
+   },
    "pergunta": "Agora me conta, {nome}: você já tentou cuidar disso antes? Do rosto e da saúde junto, ou de um pedaço só? Me responde aqui."
   },
   "escrito": {
