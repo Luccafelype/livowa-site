@@ -486,7 +486,10 @@ $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', {
 
 // ---------- início ----------
 document.querySelectorAll('.opts[data-q]').forEach(ligarOpcoes);
-window.lvPonte?.pintar(document.querySelector('[data-s="capa"] .sub'), 'emag');
+// a capa ficou sem o texto pequeno (Lucca, 17/11): a ponte entra logo abaixo do título, num marcador vazio
+(function(){ const capa = document.querySelector('[data-s="capa"]'); if (!capa) return;
+  let alvo = capa.querySelector('.sub'); if (!alvo){ alvo = document.createElement('span'); alvo.hidden = true; capa.appendChild(alvo); }
+  window.lvPonte?.pintar(alvo, 'emag'); })();
 show('capa');
 // ganchos do teste automático (headless)
 window.__emag = { R, estado:() => ({ cur, codigo, perfil:R.acontece }), show };
