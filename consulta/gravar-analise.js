@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1811u';
+const VERSAO = '1811x';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -342,7 +342,7 @@ function nota(){
   const b = G.o.blocos[G.bloco], c = b && b.cena; let t = '';
   if (c && c.tipo === 'desejo' && !(c.itens && c.itens.length)) t = c.aviso || 'O que importa: conteúdo em pesquisa. Este cartão não entra no vídeo.';
   else if (c && c.tipo === 'exemplo' && !c.img) t = c.erro ? 'A imagem do exemplo não carregou: pule esta parte.' : 'Carregando a imagem do exemplo…';
-  else if (c && c.tipo === 'mecanismo'){ const q = (FORMA_IMG[c.tema] || []).map(carregaForma), b = q[q.length - 1]; if (!b) t = 'Sem ilustração para este ponto: fale com a foto na tela.'; else if (b.erro) t = 'A ilustração não carregou: fale com a foto na tela.'; else if (!b.ok) t = 'Carregando a ilustração…'; }
+  else if (c && c.tipo === 'mecanismo'){ const q = (FORMA_IMG[c.tema] || []).map(carregaForma), b = q[0]; if (!b) t = 'Sem ilustração para este ponto: fale com a foto na tela.'; else if (b.erro) t = 'A ilustração não carregou: fale com a foto na tela.'; else if (!b.ok) t = 'Carregando a ilustração…'; }
   else if (c && c.pele && !(c.pele.modo === 'caminho' && !(G.pele && G.pele.aberto))){ const b = carregaForma(PELE_SRC('base')); if (b.erro) t = 'A pele não carregou: fale com a tela de antes.'; else if (!b.ok) t = 'Carregando a pele…'; }
   else if (c && c.tipo === 'foto'){
     const r = G.rosto;
@@ -708,8 +708,38 @@ function cenaExemplo(ctx, c, t){
 // se fundem em ~1,4 s com um zoom lento (~3 s). tema = linhas | manchas | firmeza | textura | olheira (index.html cenaPI).
 // No pé: "Ilustração. Varia de pessoa para pessoa." (nunca resultado de paciente). As fontes da fala estão no estoque
 // (pele-idade.mecanismo.f). Sem a imagem carregada, nada no canvas: o aviso é só DOM (nota) e a faixa do bloco entra.
-const FORMA_IMG = { linhas:['forma/linhas-a.webp', 'forma/linhas-b.webp'], manchas:['forma/manchas-a.webp', 'forma/manchas-b.webp'],
-  firmeza:['forma/firmeza-a.webp', 'forma/firmeza-b.webp'], textura:['forma/textura-a.webp', 'forma/textura-b.webp'], olheira:['forma/olheira-a.webp', 'forma/olheira-b.webp'] };
+// 18/11 (o Lucca: "animação ruim, instantânea, não dá para entender"; "é o sol que causa os vincos? não seria a contração
+// muscular repetitiva?"): COMO SE FORMA EM ETAPAS, com o esquema realista aprovado (v4: atlas pintado, consulta/forma/<tema>-eN)
+// e, no canto de baixo, o mesmo ponto "no espelho" (v3, <tema>-fN). Cada etapa entra na palavra dela da fala (posição da palavra
+// ÷ 2,5 palavras/s; no mínimo 2,2 s por etapa), com fusão de 0,8 s, o número da etapa, a legenda curta e um rótulo com seta no
+// lugar exato. Na LINHA, primeiro o músculo contrai e solta 3 vezes (a pele dobra e volta), depois o colágeno devolve, depois a
+// rede afina, e por fim a dobra fica com o rosto parado (quadros linhas-m1..m4, Codex 18/11). Ele também controla: teclas 1–4
+// pulam para a etapa, e o toque na ilustração passa para a seguinte (aí o tempo da fala deixa de mandar naquele bloco).
+// No pé: "Ilustração. Varia de pessoa para pessoa." Sem a imagem carregada, nada no canvas: o aviso é só DOM (nota).
+const FORMA = {
+  linhas:{ q:['linhas-m1', 'linhas-m2', 'linhas-m3', 'linhas-m4'], f:['linhas-f1', 'linhas-f2', 'linhas-f3'], et:[
+    { q:0, pulsa:1, f:0, chave:/m[úu]sculo|mexe/i, leg:'O músculo puxa: a pele dobra e volta', rot:'músculo contrai', a:[.5, .93], p:[.06, .68] },
+    { q:0, de:1, f:0, chave:/devolve/i, leg:'Pele nova: o colágeno devolve', rot:'colágeno firme', a:[.55, .5], p:[.5, .7] },   // a dobra se desfaz (m2 → m1)
+    { q:2, f:1, chave:/afina/i, leg:'Sol e anos: a rede afina', rot:'rede afinou', a:[.55, .5], p:[.5, .7] },
+    { q:3, f:2, chave:/parad|marcad|fica/i, leg:'A dobra fica, com o rosto parado', rot:'a dobra ficou', a:[.5, .37], p:[.58, .06] }] },
+  manchas:{ q:['manchas-e1', 'manchas-e2', 'manchas-e3'], f:['manchas-f1', 'manchas-f2', 'manchas-f3'], et:[
+    { q:0, f:0, chave:/c[ée]lula|pigmento/i, leg:'A célula que fabrica o pigmento', rot:'célula do pigmento', a:[.5, .46], p:[.06, .72] },
+    { q:1, f:1, chave:/a mais|luz/i, leg:'A luz faz fabricar a mais', rot:'pigmento a mais', a:[.5, .46], p:[.5, .72] },
+    { q:2, f:2, chave:/sobe|aparece/i, leg:'O pigmento sobe: a mancha', rot:'a mancha', a:[.5, .3], p:[.55, .06] }] },
+  firmeza:{ q:['firmeza-e1', 'firmeza-e2', 'firmeza-e3'], f:['firmeza-f1', 'firmeza-f2', 'firmeza-f3'], et:[
+    { q:0, f:0, chave:/col[áa]geno|contorno/i, leg:'Osso e gordura sustentam o rosto', rot:'gordura em bolsões', a:[.55, .4], p:[.04, .06] },
+    { q:1, f:1, chave:/desce/i, leg:'A gordura desce e murcha', rot:'desceu', a:[.55, .55], p:[.04, .06] },
+    { q:2, f:2, chave:/vinco|mand[íi]bula/i, leg:'Vinco fundo, mandíbula sem desenho', rot:'vinco', a:[.4, .6], p:[.04, .7] }] },
+  textura:{ q:['textura-e1', 'textura-e2', 'textura-e3'], f:['textura-f1', 'textura-f2', 'textura-f3'], et:[
+    { q:0, f:0, chave:/poro/i, leg:'O poro: a saída do óleo', rot:'glândula de óleo', a:[.54, .6], p:[.6, .72] },
+    { q:1, f:1, chave:/mais [óo]leo|maior/i, leg:'Mais óleo, poro maior', rot:'poro', a:[.47, .27], p:[.55, .06] },
+    { q:2, f:2, chave:/sol|[áa]spera/i, leg:'Sol de anos: superfície áspera', rot:'superfície áspera', a:[.3, .27], p:[.04, .06] }] },
+  olheira:{ q:['olheira-e1', 'olheira-e2', 'olheira-e3'], f:['olheira-f1', 'olheira-f2', 'olheira-f3'], et:[
+    { q:0, f:0, chave:/fina/i, leg:'Embaixo do olho, a pele é fina', rot:'pele fina', a:[.3, .31], p:[.04, .06] },
+    { q:1, f:1, chave:/pigmento/i, leg:'Pigmento a mais por baixo', rot:'pigmento', a:[.35, .33], p:[.4, .06] },
+    { q:2, f:2, chave:/vasinhos|escura/i, leg:'Os vasinhos aparecem: escurece', rot:'vasinhos', a:[.3, .43], p:[.4, .72] }] },
+};
+const FORMA_IMG = Object.fromEntries(Object.entries(FORMA).map(([k, v]) => [k, [...v.q, ...v.f].map(n => 'forma/' + n + '.webp')]));
 const FORMA_CACHE = new Map();   // caminho → { img, ok, erro }: as ilustrações são do próprio site (mesma origem, o canvas não fica "sujo")
 function carregaForma(src){
   let e = FORMA_CACHE.get(src); if (e) return e;
@@ -722,30 +752,84 @@ function carregaForma(src){
 }
 const formasDe = bs => (bs || []).map(b => b && b.cena).filter(c => c && c.tipo === 'mecanismo' && FORMA_IMG[c.tema]);
 const preparaFormas = bs => formasDe(bs).forEach(c => FORMA_IMG[c.tema].forEach(carregaForma));
-const FQ = { x:24, y:300, lado:672, r:24 };   // o quadro da ilustração: entre o título e a câmera (topo da câmera em y 1016)
+const FQ = { x:24, y:252, w:672, h:448, r:22, ex:24, ey:756, ew:396, eh:264 };   // o esquema (3:2) e "no espelho" embaixo, à esquerda da câmera
+// a hora (ms desde o começo do bloco) de cada etapa: a palavra-chave na fala a 2,5 palavras/s, no mínimo 2,2 s entre etapas
+function horasForma(F, fala, ritmo){
+  const ps = String(fala || '').replace(/\[[^\]]*\]/g, ' ').split(/\s+/).filter(Boolean), r = ritmo || PADRAO.ritmo, hs = [];
+  let ini = 0;
+  F.et.forEach((e, k) => {
+    let i = -1; for (let j = ini; j < ps.length; j++) if (e.chave.test(ps.slice(j, j + 2).join(' '))){ i = j; break; }
+    let h = i >= 0 ? Math.max(0, i / r * 1000 - 300) : (k ? null : 0);
+    if (i >= 0) ini = i + 1;
+    hs.push(h);
+  });
+  const tot = Math.max(ps.length / r * 1000, 2200 * F.et.length);
+  hs.forEach((h, k) => { if (h == null) hs[k] = k ? hs[k - 1] + 2200 : 0; });
+  hs[0] = Math.min(hs[0], 4000);   // a 1ª etapa entra logo (o título já está na tela)
+  for (let k = 1; k < hs.length; k++) hs[k] = Math.max(hs[k], hs[k - 1] + 2200);
+  return hs.map(h => Math.min(h, tot));
+}
+function formaEtapa(c, t){
+  const F = FORMA[c.tema], M = G.formaMan;
+  if (M && M.bloco === G.bloco) return { k:M.k, te:performance.now() - M.t, hs:null };
+  const hs = c._hs || (c._hs = horasForma(F, (G.o.blocos[G.bloco] || {}).fala, G.p && G.p.ritmo));
+  let k = 0; for (let i = 0; i < hs.length; i++) if (t >= hs[i]) k = i;
+  return { k, te:t - hs[k], hs };
+}
+function formaPula(k){   // tecla 1–4 (k = etapa) ou toque (k = null: a seguinte)
+  const c = (G.o.blocos[G.bloco] || {}).cena; if (!c || c.tipo !== 'mecanismo' || !FORMA[c.tema]) return false;
+  const n = FORMA[c.tema].et.length, at = formaEtapa(c, performance.now() - (G.blocoT || 0)).k;
+  const alvo = k == null ? Math.min(n - 1, at + 1) : lim(k, 0, n - 1);
+  G.formaMan = { bloco:G.bloco, k:alvo, t:performance.now(), de:at }; G.formaUsos = (G.formaUsos || 0) + 1;
+  return true;
+}
 function cenaMecanismo(ctx, c, t){
-  const qs = (FORMA_IMG[c.tema] || []).map(carregaForma), b = qs[qs.length - 1];
-  if (!b || !b.ok) return false;
-  const a = qs.length > 1 && qs[0].ok ? qs[0] : null, ent = sai(t / 400);
+  const F = FORMA[c.tema]; if (!F) return false;
+  const im = n => carregaForma('forma/' + n + '.webp'), q0 = im(F.q[0]);
+  if (!q0.ok) return false;
+  const ent = sai(t / 400), { k, te } = formaEtapa(c, t), E = F.et[k], M = G.formaMan && G.formaMan.bloco === G.bloco ? G.formaMan : null;
+  const ant = k > 0 ? F.et[k - 1] : null, deQ = E.de != null ? E.de : M ? F.et[M.de].q : ant ? ant.q : E.q, fus = sai(te / (E.de != null ? 1400 : 800));
   escurece(ctx, .94 * sai(t / 250));
   ctx.globalAlpha = ent; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#fff'; ctx.font = `700 46px ${FONTE}`;
-  const tl = quebra(ctx, c.titulo || '', 640, 2); tl.forEach((l, i) => ctx.fillText(l, 40, 214 + i * 52));
-  ctx.fillStyle = AMARELO; ctx.fillRect(40, 214 + (tl.length - 1) * 52 + 20, 64, 3);
-  // o quadro: A → B (fusão de 1,2 s a 2,6 s), zoom de 1 a 1,08 em 6 s com um leve deslize
-  const { x, y, lado, r } = FQ, z = 1 + .08 * lim(t / 6000, 0, 1), dz = lado * z, ox = x - (dz - lado) / 2, oy = y - (dz - lado) * .35;
-  const fus = a ? sai((t - 1200) / 1400) : 1;
-  ctx.save(); caixa(ctx, x, y, lado, lado, r); ctx.clip();
-  ctx.fillStyle = '#0b100e'; ctx.fillRect(x, y, lado, lado);
-  const quadro = (q, al) => { if (al <= 0) return; ctx.globalAlpha = ent * al; try { ctx.drawImage(q.img, ox, oy, dz, dz); } catch (e) { /* ainda não pronta */ } };
-  if (a && fus < 1) quadro(a, 1);
-  quadro(b, fus);
+  ctx.fillStyle = '#fff'; ctx.font = `700 44px ${FONTE}`; ctx.fillText(quebra(ctx, c.titulo || '', 640, 1)[0] || '', 40, 212);
+  ctx.fillStyle = AMARELO; ctx.fillRect(40, 230, 64, 3);
+  // o esquema: fusão da etapa anterior para a atual; no músculo, contrai e solta 3 vezes (a pele dobra e volta)
+  const { x, y, w, h, r } = FQ;
+  ctx.save(); caixa(ctx, x, y, w, h, r); ctx.clip();
+  ctx.fillStyle = '#0b100e'; ctx.fillRect(x, y, w, h);
+  const quadro = (qi, al) => { const e = im(F.q[qi]); if (al <= 0 || !e.ok) return; ctx.globalAlpha = ent * al; try { ctx.drawImage(e.img, x, y, w, h); } catch (er) { /* ok */ } };
+  if (E.pulsa){
+    quadro(E.q, 1);
+    const p = (1 - Math.cos(2 * Math.PI * (te / 1000) / 1.3)) / 2;   // contrai e solta enquanto ele fala do músculo
+    quadro(1, p);
+  } else { if (fus < 1) quadro(deQ, 1); quadro(E.q, fus); }
   ctx.restore();
-  ctx.globalAlpha = ent; ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.14)'; caixa(ctx, x, y, lado, lado, r); ctx.stroke();
+  ctx.globalAlpha = ent; ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.14)'; caixa(ctx, x, y, w, h, r); ctx.stroke();
+  // o rótulo com seta no ponto que muda (entra 0,4 s depois da etapa)
+  rotuloPele(ctx, E.rot, x, y, E.a, E.p, AMARELO, ent * sai((te - 400) / 400));
+  // a legenda da etapa: o número e a frase curta
+  const yl = y + h + 42;
+  ctx.globalAlpha = ent * sai(te / 300); ctx.font = `700 30px ${FONTE}`; ctx.fillStyle = AMARELO; ctx.textAlign = 'left';
+  const num = `${k + 1}/${F.et.length}`; ctx.fillText(num, x, yl);
+  const nw = ctx.measureText(num).width + 14; ctx.fillStyle = '#fff'; ctx.font = `650 30px ${FONTE}`;
+  ctx.fillText(quebra(ctx, E.leg, w - nw, 1)[0] || '', x + nw, yl);
+  // "no espelho": a foto do mesmo ponto, embaixo à esquerda, acompanhando a etapa
+  const fa = im(F.f[E.f]), fb = ant ? im(F.f[ant.f]) : null;
+  if (fa.ok){
+    const { ex, ey, ew, eh } = FQ;
+    ctx.save(); caixa(ctx, ex, ey, ew, eh, 16); ctx.clip();
+    const pf = (e, al) => { if (!e || !e.ok || al <= 0) return; ctx.globalAlpha = ent * al; const iw = e.img.naturalWidth, ih = e.img.naturalHeight, s = Math.max(ew / iw, eh / ih); try { ctx.drawImage(e.img, ex + (ew - iw * s) / 2, ey + (eh - ih * s) / 2, iw * s, ih * s); } catch (er) { /* ok */ } };
+    if (fb && fb !== fa && fus < 1) pf(fb, 1);
+    pf(fa, fb && fb !== fa ? fus : 1);
+    ctx.restore();
+    ctx.globalAlpha = ent; ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.2)'; caixa(ctx, ex, ey, ew, eh, 16); ctx.stroke();
+    tagPele(ctx, 'no espelho', ex + 10, ey + 10, '#fff');
+  }
   // pé: ao lado da câmera
-  ctx.fillStyle = APAGADO; ctx.font = `500 22px ${FONTE}`;
+  ctx.globalAlpha = ent; ctx.fillStyle = APAGADO; ctx.font = `500 22px ${FONTE}`; ctx.textAlign = 'left';
   ctx.fillText('Ilustração. Varia de pessoa para pessoa.', 24, CIRC.cy - CIRC.r + 44);
   ctx.globalAlpha = 1;
+  G.formaVis = { tema:c.tema, k, n:F.et.length };   // para conferir (teste)
   return true;
 }
 // ---------- 18/11: a PELE INTERATIVA ----------
@@ -1356,7 +1440,7 @@ function prompter(){
   D.pDep.textContent = G.bloco < n - 1 ? String(bs[G.bloco + 1].fala || '').replace(/\[[^\]]*\]/g, ' ').replace(/\{nome\}/g, '').replace(/\s+/g, ' ').replace(/^[\s,]+/, '').trim() : '';
   cabeTexto();
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
-  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; G.peleChips = []; confereVersao(false); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; G.peleChips = []; G.formaMan = null; confereVersao(false); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
   marcaTempo();
   botoesFoco(); botoesPele();
   nota();
@@ -1689,6 +1773,7 @@ function soltou(ev){
   if (tp && ev.type === 'pointerup' && !G.gesto && performance.now() - tp.t < 300 && Math.hypot(fim.x - tp.x, fim.y - tp.y) < 24){   // 14/11: toque curto no ponto = foco
     const alvo = (G.lupasPos || []).map(q => ({ q, d:Math.hypot(q.x - fim.x, q.y - fim.y) })).filter(o => o.d < o.q.r * 1.3).sort((a, b) => a.d - b.d)[0];
     if (alvo) focar(alvo.q.id);
+    { const cm = (G.o.blocos[G.bloco] || {}).cena; if (cm && cm.tipo === 'mecanismo' && FORMA[cm.tema] && fim.y >= FQ.y && fim.y <= FQ.y + FQ.h) formaPula(null); }   // 18/11: toque no esquema = a etapa seguinte
     const ch = (G.peleChips || []).find(q => fim.x >= q.x - 6 && fim.x <= q.x + q.w + 6 && fim.y >= q.y - 6 && fim.y <= q.y + q.h + 6);   // 18/11: toque no rótulo da pele
     if (ch) peleAcao(ch.id);
     else if (!alvo){ const c = peleCena(); if (c && c.pele.modo === 'caminho' && !(G.pele && G.pele.aberto)){ const p = (c.passos || []).findIndex(x => x.k === c.pele.k), y = 350 + p * Math.min(124, (880 - 350) / Math.max(1, (c.passos.length - 1) || 1)); if (p >= 0 && Math.abs(fim.y - y) < 50) peleAcao('abrir'); } }   // toque no item da inflamação (ou, sem ele, no do metabolismo) abre
@@ -1736,6 +1821,7 @@ function liga(){
     if (!G) return;
     const vale = ['prep', 'rec'].includes(G.estado);
     if (ev.key === ' ' && vale && !ev.target.closest?.('input, textarea')){ ev.preventDefault(); if (document.activeElement?.closest?.('.ga')) document.activeElement.blur(); if (!ev.repeat) D.prox.click(); return; }   // 13/11: espaço avança (sem acionar o botão em foco)
+    { const cm = vale && !ev.target.closest?.('input, textarea') && (G.o.blocos[G.bloco] || {}).cena; if (cm && cm.tipo === 'mecanismo' && FORMA[cm.tema] && /^[1-9]$/.test(ev.key) && +ev.key <= FORMA[cm.tema].et.length){ ev.preventDefault(); formaPula(+ev.key - 1); return; } }   // 18/11: 1–4 = etapa do "como se forma"
     const pc = vale && !ev.target.closest?.('input, textarea') && !ev.metaKey && !ev.ctrlKey && !ev.altKey && peleCena();   // 18/11: as teclas da pele (1–9, 0, M, R; no caminho P e 1–6)
     if (pc){ const tk = PELE_TECLAS[pc.pele.modo].find(([, t]) => t === ev.key.toUpperCase()); if (tk){ ev.preventDefault(); if (!ev.repeat) peleAcao(tk[0]); return; } }
     if (/^[1-9]$/.test(ev.key) && vale && !ev.target.closest?.('input, textarea')){ const b = D.foco.querySelectorAll('button')[+ev.key - 1]; if (b && !D.foco.hidden){ ev.preventDefault(); focar(b.dataset.id); } return; }   // 14/11: 1, 2, 3 = foco
@@ -1767,5 +1853,5 @@ function diag(motivo, g){
 function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); preparaFormas(bs); preparaPele(bs); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; D.pele.dataset.k = ''; prompter(); return true; }
 // 13/11 19h45: o "Gravar análise" da lista abre o gravador na hora, com o Gravar segurado até o roteiro do Claude chegar (ou o prazo vencer)
 function liberar(){ if (!G || !G.aguarda) return; G.aguarda = false; if (G.estado === 'prep'){ estado('prep'); if (G.pronto) D.rec.focus(); } }
-return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _pele:() => ({ vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _versao:() => ({ carregada:V_CARREGADA, nova:vNova, url:V_URL }), _confereVersao:confereVersao, _peleLegendas:() => { const c = document.createElement('canvas').getContext('2d'); return textosPele().map(t => { const L = legendaPele(c, t, PX.w); return { t, n:L.ls.length, px:L.px, corta:L.ls.some(l => /…$/.test(l)) }; }); }, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
+return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _pele:() => ({ vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _forma:() => (G && G.formaVis) || null, _formaHoras:(tema, fala) => horasForma(FORMA[tema], fala, 2.5), _versao:() => ({ carregada:V_CARREGADA, nova:vNova, url:V_URL }), _confereVersao:confereVersao, _peleLegendas:() => { const c = document.createElement('canvas').getContext('2d'); return textosPele().map(t => { const L = legendaPele(c, t, PX.w); return { t, n:L.ls.length, px:L.px, corta:L.ls.some(l => /…$/.test(l)) }; }); }, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
 })();
