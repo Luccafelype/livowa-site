@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1811x';
+const VERSAO = '1811y';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -120,6 +120,7 @@ function monta(){
     <div class="ga-p-rola"><p class="ga-p-txt"></p><div class="ga-p-opc" hidden></div></div>
     <div class="ga-foco" role="group" aria-label="Foco no vídeo" hidden></div>
     <div class="ga-pele" role="group" aria-label="Pele no vídeo" hidden></div>
+    <div class="ga-pele-menu" role="dialog" aria-label="Pele no vídeo" hidden></div>
     <div class="ga-nota" hidden></div>
     <p class="ga-p-dep" aria-hidden="true"></p>
   </div>
@@ -158,7 +159,7 @@ function monta(){
   </div>`;
   document.body.append(el);
   const q = s => el.querySelector(s);
-  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'), foco:q('.ga-foco'), pele:q('.ga-pele'),
+  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'), foco:q('.ga-foco'), pele:q('.ga-pele'), peleMenu:q('.ga-pele-menu'),
     conta:q('.ga-conta'), aviso:q('.ga-aviso'), nota:q('.ga-nota'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
     fechar:q('.ga-fechar'), ant:q('.ga-ant'), rec:q('.ga-rec-b'), recT:q('.ga-rec-t'), prox:q('.ga-prox'), grav:q('.ga-grav'), rev:q('.ga-rev'), fim:q('.ga-fim'),
     refazer:q('.ga-refazer'), enviar:q('.ga-enviar'), baixar:q('.ga-baixar'), marcar:q('.ga-marcar'), denovo:q('.ga-denovo'), info:q('.ga-info'), tentar:q('.ga-tentar') };
@@ -878,6 +879,12 @@ const PELE_F = {
 };
 // o que cada fator de dentro move, e a espera do pulso no vaso antes de a pele mudar
 const PELE_SANGUE_Q = { acu:['g'], ind:['g'], sono:['sono-forte'], est:['estresse-forte', 'sono-forte'], horm:['menopausa-forte'], peso:['peso-forte'] }, PELE_PULSO_MS = 900, PELE_ESPERA = 500;   // o pulso no vaso é só a entrada (0,5 s, cor própria); depois cada um mostra o que estraga
+// as entradas (18/11 tarde): ilustração pintada (Codex, consulta/pele/e-<id>.webp, fundo transparente) ou a palavra, por ~1 s
+const PELE_ENTRADA_MS = 1000;
+const PELE_ENTRA = { sol:{ img:'e-sol', fica:'sol' }, prot:{ img:'e-protetor', fica:'canto' }, cor:{ img:'e-protetor-cor', fica:'canto' }, cig:{ img:'e-cigarro', fica:'canto' },
+  acu:{ img:'e-acucar', fica:'vaso' }, ind:{ img:'e-industrializados', fica:'vaso' },
+  est:{ txt:'estresse' }, sono:{ txt:'noite mal dormida' }, horm:{ txt:'menopausa' }, peso:{ txt:'perda de peso rápida' } };
+const PELE_ENTRA_Q = { sol:['sol-forte'], prot:['protetor'], cor:['protetor-cor'], cig:['cigarro-forte'] };   // a pele espera a entrada
 const PELE_TECLAS = {
   dentro:[['sol', '1'], ['prot', '2'], ['cor', '3'], ['cig', '4'], ['acu', '5'], ['ind', '6'], ['sono', '7'], ['est', '8'], ['horm', '9'], ['peso', '0'], ['mor', 'M'], ['zerar', 'R']],
   caminho:[['abrir', 'P'], ['acu', '1'], ['ind', '2'], ['sono', '3'], ['est', '4'], ['horm', '5'], ['peso', '6'], ['zerar', 'R']] };
@@ -888,6 +895,7 @@ const pelesDe = bs => (bs || []).map(b => b && b.cena).filter(c => c && c.pele);
 function preparaPele(bs){
   if (!pelesDe(bs).length) return;
   PELE_Q.forEach(n => carregaForma(PELE_SRC(n)));
+  Object.values(PELE_ENTRA).forEach(e => { if (e.img) carregaForma(PELE_SRC(e.img)); });   // as ilustrações das entradas
   clearInterval(PX.aq);
   PX.aq = setInterval(() => {
     if (!pxBase()){ if (carregaForma(PELE_SRC('base')).erro) clearInterval(PX.aq); return; }
@@ -986,7 +994,7 @@ function vasos(){
 // o pulso (só a entrada): a frente da cor do fator corre pelos vasos em 0,5 s e o brilho some até 0,9 s
 function pulsoVasos(ctx, P, agora, x0, y0, al){
   const p = P.pulso; if (!p || !PX.vI) return 0;
-  const t = (agora - p.t0) / 1000; if (t * 1000 > PELE_PULSO_MS){ P.pulso = null; return 0; }
+  const t = (agora - p.t0) / 1000; if (t < 0) return 0; if (t * 1000 > PELE_PULSO_MS){ P.pulso = null; return 0; }
   const fr = t / .5, rasto = 1 - lim((t - .5) / .4, 0, 1), d = PX.vimg.data, [cr, cg, cb] = p.cor;
   d.fill(0);
   for (let k = 0; k < PX.vI.length; k++){
@@ -1017,7 +1025,7 @@ function luzVisivel(ctx, P, agora, x0, y0, al){
   }
   ctx.restore();
   ctx.globalAlpha = al * k;
-  tagPele(ctx, 'UV: para no filme', x0 + 14, y0 + 14, AMARELO);
+  tagPele(ctx, 'UV: para no filme', x0 + 124, y0 + 14, AMARELO);
   tagPele(ctx, passa >= para ? 'luz visível: passa' : 'luz visível: para no filme com cor', x0 + w - (passa >= para ? 196 : 352), y0 + 14, '#d9ccff');
   if (passa > .5) rotuloPele(ctx, 'mancha cresce', x0, y0, [MANCHA.x + .02, MANCHA.y + .005], [.62, .44], AMARELO, al * Math.min(1, passa));
   else if (para > .5) rotuloPele(ctx, 'mancha para de escurecer', x0, y0, [MANCHA.x + .02, MANCHA.y + .005], [.5, .44], VERDE, al * Math.min(1, para));
@@ -1046,6 +1054,7 @@ function rotuloPele(ctx, txt, x0, y0, a, p, cor, al){
 function efeitoPele(ctx, P, agora, x0, y0, al){
   const e = P.ef, w = PX.w, h = PX.h; if (!e || !P.on[e.id]) return;
   const t = (agora - e.t0) / 1000, X = f => x0 + f * w, Y = f => y0 + f * h, R = (txt, a, p, cor, ap) => rotuloPele(ctx, txt, x0, y0, a, p, cor || LARANJA, al * sai(ap));
+  if (t < 0) return;   // a entrada (a ilustração ou a palavra) vem antes
   ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip();
   if (e.id === 'acu' || e.id === 'ind'){   // grãos âmbar saem do vaso, grudam nas fibras e formam pontes
     const ps = e.ps || (e.ps = graosPele(e.id === 'ind' ? 16 : 34));
@@ -1132,36 +1141,99 @@ function rachasPele(){
   for (let i = 0; i < 12; i++) e.push({ x:.06 + i * .08 + Math.random() * .03, r:(Math.random() - .5) * 1.2 });
   return { r, e };
 }
+// a entrada do fator (18/11 tarde): a ilustração cresce no meio da pele (0,35 s), fica (até 1 s) e vai para o lugar dela: o sol para o
+// canto de cima à esquerda (fica enquanto o sol estiver ligado), o açúcar e os industrializados "derretem" para dentro do vaso, o
+// cigarro e o protetor para o canto de cima à direita (ficam enquanto ligados). Estresse, sono, hormônios e peso: a palavra, grande.
+function entradaPele(ctx, P, agora, x0, y0, al){
+  const w = PX.w, h = PX.h;
+  // os que ficam no canto enquanto ligados (sol, protetor, cigarro), depois da entrada
+  const cantos = [['sol', 'e-sol', x0 + 8, y0 + 6, 104], ['cig', 'e-cigarro', x0 + w - 112, y0 + 6, 104], ['prot', 'e-protetor', x0 + w - 112, y0 + 110, 100], ['cor', 'e-protetor-cor', x0 + w - 112, y0 + 110, 100]];
+  for (const [id, n, cx, cy, lado] of cantos){
+    if (!P.on[id] || (P.entra && P.entra.id === id && agora - P.entra.t0 < 1500)) continue;
+    const e = carregaForma(PELE_SRC(n)); if (!e.ok) continue;
+    ctx.globalAlpha = al * .95; try { ctx.drawImage(e.img, cx, cy, lado, lado); } catch (er) { /* ok */ }
+  }
+  const E = P.entra; if (!E) { ctx.globalAlpha = 1; return; }
+  const t = (agora - E.t0) / 1000, cfg = PELE_ENTRA[E.id]; if (!cfg || t > 1.6){ if (t > 1.6) P.entra = null; ctx.globalAlpha = 1; return; }
+  if (cfg.txt){   // a palavra, grande e calma, no meio da pele
+    const a = sai(t / .3) * (1 - lim((t - .95) / .35, 0, 1)); if (a <= 0) { ctx.globalAlpha = 1; return; }
+    ctx.save(); ctx.globalAlpha = al * a; ctx.font = `600 50px ${FONTE}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const tw = ctx.measureText(cfg.txt).width + 64, cx = x0 + w / 2, cy = y0 + h / 2 + (1 - sai(t / .3)) * 10;
+    ctx.fillStyle = 'rgba(10,14,12,.72)'; caixa(ctx, cx - tw / 2, cy - 46, tw, 92, 46); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillText(cfg.txt, cx, cy + 2); ctx.restore(); ctx.globalAlpha = 1;
+    return;
+  }
+  const e = carregaForma(PELE_SRC(cfg.img)); if (!e.ok){ ctx.globalAlpha = 1; return; }
+  const L0 = 250, cx0 = x0 + w / 2, cy0 = y0 + h / 2, ent = sai(t / .35);
+  let cx = cx0, cy = cy0, lado = L0 * (.6 + .4 * ent), a = ent;
+  const k = sai((t - 1) / .5);   // de 1 s a 1,5 s vai para o lugar dele
+  if (k > 0){
+    let tx, ty, tl;
+    if (cfg.fica === 'vaso'){ tx = x0 + PELE_POS.vaso[0] * w; ty = y0 + PELE_POS.vaso[1] * h; tl = 24; a = 1 - k * .95; }
+    else if (cfg.fica === 'sol'){ tx = x0 + 8 + 52; ty = y0 + 6 + 52; tl = 104; }
+    else { tx = x0 + w - 112 + 52; ty = y0 + (E.id === 'cig' ? 6 : 110) + 52; tl = E.id === 'cig' ? 104 : 100; }
+    cx = cx0 + (tx - cx0) * k; cy = cy0 + (ty - cy0) * k; lado = L0 + (tl - L0) * k;
+  }
+  ctx.globalAlpha = al * a; try { ctx.drawImage(e.img, cx - lado / 2, cy - lado / 2, lado, lado); } catch (er) { /* ok */ }
+  ctx.globalAlpha = 1;
+}
+// os raios do sol: do sol no canto até a pele, enquanto o sol está ligado (com protetor, param no filme)
+function raiosSol(ctx, P, agora, x0, y0, al){
+  if (!P.on.sol) return;
+  const t0 = P.ef && P.ef.id === 'sol' ? P.ef.t0 : 0, k = t0 ? sai((agora - t0) / 900) : 1; if (k <= 0) return;
+  const w = PX.w, h = PX.h, filme = P.on.prot || P.on.cor, sx = x0 + 60, sy = y0 + 58, pul = .8 + .2 * Math.sin(agora / 320);
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); ctx.globalCompositeOperation = 'lighter';
+  for (let j = 0; j < 5; j++){
+    const ex = x0 + w * (.22 + j * .15), ey = y0 + h * (filme ? FILME_Y : .36 + (j % 2) * .04), mx = sx + (ex - sx) * k, my = sy + (ey - sy) * k;
+    const g = ctx.createLinearGradient(sx, sy, mx, my); g.addColorStop(0, 'rgba(255,214,90,0)'); g.addColorStop(.3, 'rgba(255,206,80,.55)'); g.addColorStop(1, 'rgba(255,225,120,.95)');
+    ctx.globalAlpha = al * .5 * pul; ctx.strokeStyle = g; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(mx, my); ctx.stroke();
+  }
+  ctx.restore();
+}
+// o menu da pele (18/11 tarde): no iPhone os botões do painel somem quando a fala não cabe; tocar na pele abre este menu por cima do
+// painel dele (DOM, fora do vídeo). Um toque liga ou desliga e fecha o menu.
+function abreMenuPele(){
+  const c = peleCena(); if (!c || !D) return;
+  const m = c.pele.modo, ela = c.pele.ela || {}, P = G.pele || {};
+  const ts = [...PELE_TECLAS[m].filter(([id]) => id === 'zerar'), ...PELE_TECLAS[m].filter(([id]) => id !== 'zerar' && id !== 'abrir')];
+  D.peleMenu.innerHTML = '<div class="ga-pm-topo"><button type="button" class="ga-pm-b zera" data-p="zerar">Voltar ao normal</button><button type="button" class="ga-pm-x" aria-label="Fechar">✕</button></div><div class="ga-pm-bs">' +
+    ts.filter(([id]) => id !== 'zerar').map(([id]) => { const f = PELE_F[id] || {}, nome = id === 'zerar' ? 'Voltar ao normal' : (f.painel || f.nome), on = !!(P.on && P.on[id]);
+      return `<button type="button" class="ga-pm-b${id === 'zerar' ? ' zera' : ''}" data-p="${id}" aria-pressed="${on}">${esc(nome)}${ela[id] ? `<small>${esc(ela[id])}</small>` : ''}</button>`; }).join('') + '</div>';
+  D.peleMenu.hidden = false; G.peleMenuAberto = true;
+}
+function fechaMenuPele(){ if (D && D.peleMenu){ D.peleMenu.hidden = true; } if (G) G.peleMenuAberto = false; }
 // estado (um por bloco: recomeça na base quando o bloco começa)
 function peleNovo(){ return { on:{}, w:{}, a:{}, g:0, gA:0, m:0, mA:0, mc:0, mcA:0, dano:false, msg:null, ult:performance.now(), aberto:false, abT:-1e9, usos:0 }; }
+// 18/11 tarde (o Lucca: "parece que eu não consigo voltar ao normal"): desligar volta ao normal em ~1,5 s. O único resíduo é o do
+// sol enquanto o protetor estiver ligado depois dele ("o que já foi feito fica"); tirando o protetor (ou com R), volta tudo.
 function peleAlvos(P){
-  const o = P.on, a = P.a, w = P.w, filme = !!(o.prot || o.cor);
+  const o = P.on, a = P.a, filme = !!(o.prot || o.cor);
   a.protetor = !o.mor && o.prot ? 1 : 0; a['protetor-cor'] = !o.mor && o.cor ? 1 : 0;
   // pele morena: a mancha aparece (m 0 → 1) e, com o protetor comum, CRESCE (1 → 2); com cor, para onde está e clareia um pouco
   P.mA = !o.mor ? 0 : o.prot ? 2 : Math.max(1, P.m); P.mcA = o.mor && o.cor ? 1 : 0;
-  // o sol: o dano FICA. O protetor depois do dano só segura o sol novo (o dano cai um pouco, a 85%); antes do dano, quase nada passa
-  const sw = w['sol-forte'] || 0;
   if (o.sol && !filme) a['sol-forte'] = 1;
-  else if (P.dano) a['sol-forte'] = filme ? Math.min(sw, .85) || .85 : sw;
-  else a['sol-forte'] = o.sol ? (o.cor ? 0 : .1) : Math.min(sw, filme ? .1 : sw);
-  a['cigarro-forte'] = o.cig ? 1 : Math.min(.3, w['cigarro-forte'] || 0);
-  a['peso-forte'] = o.peso ? 1 : Math.min(.3, w['peso-forte'] || 0);
-  a['menopausa-forte'] = o.horm ? 1 : (w['menopausa-forte'] || 0);
+  else if (filme && P.dano) a['sol-forte'] = .85;           // o protetor segura o sol novo; o que já foi feito fica
+  else if (o.sol) a['sol-forte'] = o.cor ? 0 : .1;          // protetor antes do sol: quase nada passa
+  else a['sol-forte'] = 0;
+  a['cigarro-forte'] = o.cig ? 1 : 0;
+  a['peso-forte'] = o.peso ? 1 : 0;
+  a['menopausa-forte'] = o.horm ? 1 : 0;
   a['sono-forte'] = Math.max(o.sono ? 1 : 0, o.est ? .5 : 0);
-  a['estresse-forte'] = o.est ? 1 : Math.min(.5, w['estresse-forte'] || 0);
-  P.gA = o.acu ? 2 : o.ind ? Math.max(.5, P.g) : P.g;
+  a['estresse-forte'] = o.est ? 1 : 0;
+  P.gA = o.acu ? 2 : o.ind ? .5 : 0;
 }
 function peleAnda(P, agora){
   const dt = Math.min(120, Math.max(0, agora - P.ult)); P.ult = agora;
   const esp = n => agora < ((P.desde && P.desde[n]) || 0);   // de dentro: a pele só muda depois que o pulso correu no vaso
-  for (const n of Object.keys(P.a)){ const v = P.w[n] || 0, a = P.a[n], s = dt / (PELE_VEL[n] || 1500); if (v < a && esp(n)) continue; P.w[n] = v < a ? Math.min(a, v + s) : Math.max(a, v - s); }
-  if (!(P.g < P.gA && esp('g'))) P.g = P.g < P.gA ? Math.min(P.gA, P.g + dt / PELE_ACU_MS) : Math.max(P.gA, P.g - dt / PELE_ACU_MS);
+  for (const n of Object.keys(P.a)){ const v = P.w[n] || 0, a = P.a[n]; if (v < a && esp(n)) continue; P.w[n] = v < a ? Math.min(a, v + dt / (PELE_VEL[n] || 1500)) : Math.max(a, v - dt / 1500); }   // volta em 1,5 s
+  if (!(P.g < P.gA && esp('g'))) P.g = P.g < P.gA ? Math.min(P.gA, P.g + dt / PELE_ACU_MS) : Math.max(P.gA, P.g - dt / 750);
   const vm = P.m < 1 ? 1200 : 2600;   // a mancha da pele morena: aparece em 1,2 s, cresce em 2,6 s
   P.m = P.m < P.mA ? Math.min(P.mA, P.m + dt / vm) : Math.max(P.mA, P.m - dt / 1200);
   P.mc = P.mc < P.mcA ? Math.min(P.mcA, P.mc + dt / 1400) : Math.max(P.mcA, P.mc - dt / 1400);
   const m1 = P.m <= 1 ? P.m : 2 - P.m, m2 = Math.max(0, P.m - 1);
   P.w['morena-protetor'] = (1 - P.mc) * m1; P.w['morena-forte'] = (1 - P.mc) * m2; P.w['morena-cor'] = P.mc * m1; P.w['morena-forte-cor'] = P.mc * m2;
   if ((P.w['sol-forte'] || 0) >= .5 && (P.a['sol-forte'] || 0) >= .5) P.dano = true;   // só subindo (o R zera e ele desce sem marcar de novo)
+  if (P.dano && !(P.a['sol-forte'] > 0) && (P.w['sol-forte'] || 0) < .01) P.dano = false;   // voltou ao normal
   const cs = Object.keys(P.w).filter(n => P.w[n] > .003).map(n => ({ n, w:P.w[n] }));
   if (P.g > .003){ if (P.g <= 1) cs.push({ n:'acucar', w:P.g }); else { if (P.g < 2) cs.push({ n:'acucar', w:2 - P.g }); cs.push({ n:'acucar-forte', w:P.g - 1 }); } }
   return cs;
@@ -1186,22 +1258,22 @@ function peleFrase(P, id, liga, dano){
   const o = P.on, filme = o.prot || o.cor;
   if (id === 'sol') return liga ? (filme ? (dano ? ['O protetor segura o sol novo no filme. A mancha e o colágeno quebrado ficam.', false] : ['Com protetor desde antes, o UV para no filme: a pele quase não tem dano.', true])
       : ['A luz quebra o colágeno de cima: a superfície fica áspera (é a textura) e a mancha nasce embaixo.', false])
-    : [dano ? 'Sem sol, o dano para de crescer. O que já foi feito fica.' : 'Sol desligado.', true];
+    : [filme && dano ? 'Sem sol novo. Com o protetor ligado, o que já foi feito fica.' : '', true];
   if (id === 'prot' || id === 'cor' || id === 'mor'){
-    if (!liga && id !== 'mor') return o.sol ? ['Sem protetor, o sol volta a quebrar a pele.', false] : ['Sem protetor.', true];
-    if (!liga) return ['De volta à pele do começo.', true];
+    if (!liga && id !== 'mor') return o.sol ? ['Sem protetor, o sol volta a quebrar a pele.', false] : ['', true];
+    if (!liga) return ['', true];
     if (o.mor) return o.cor ? ['O protetor com cor segura a luz visível: a mancha para de escurecer e clareia um pouco, sem sumir.', true] : ['O protetor comum segura o UV, mas a luz visível passa: em pele morena, a mancha cresce e escurece.', false];
     if (dano) return ['O protetor segura o sol novo, mas não apaga o que já foi feito: a mancha e o colágeno quebrado ficam.', false];
     return [o.cor ? 'O protetor com cor segura o UV e também a luz visível, que escurece mancha em pele morena.' : 'O protetor segura o UV no filme, em cima da pele.', true];
   }
-  const f = PELE_F[id]; return f ? [(liga ? f.on : f.off) || '', !liga] : ['', true];
+  const f = PELE_F[id]; return f && liga ? [f.on || '', false] : ['', true];   // desligou: volta ao normal, sem frase
 }
 const peleCena = () => { const c = G && (G.o.blocos[G.bloco] || {}).cena; return c && c.pele ? c : null; };
 function peleAcao(id){
   if (!G || !['prep', 'conta', 'rec'].includes(G.estado)) return;
   const c = peleCena(); if (!c || !PELE_TECLAS[c.pele.modo].some(([k]) => k === id)) return;
   const P = G.pele || (G.pele = peleNovo()), agora = performance.now();
-  if (id === 'zerar'){ P.on = {}; P.dano = false; P.msg = null; P.gA = 0; P.mA = 0; P.mcA = 0; P.pulso = null; P.ef = null; P.desde = {}; Object.keys(P.w).forEach(n => { P.a[n] = 0; }); }   // tudo volta à base (sem resíduo)
+  if (id === 'zerar'){ P.on = {}; P.dano = false; P.msg = null; P.gA = 0; P.mA = 0; P.mcA = 0; P.pulso = null; P.ef = null; P.entra = null; P.desde = {}; fechaMenuPele(); Object.keys(P.w).forEach(n => { P.a[n] = 0; }); }   // tudo volta à base (sem resíduo)
   else if (id === 'abrir'){ P.aberto = !P.aberto; P.abT = agora; }
   else {
     if (c.pele.modo === 'caminho' && !P.aberto){ P.aberto = true; P.abT = agora; }
@@ -1211,11 +1283,14 @@ function peleAcao(id){
     if (id === 'mor' && liga && !P.on.prot && !P.on.cor) P.on.prot = true;   // a mancha da pele morena aparece sob o protetor comum
     if ((id === 'prot' || id === 'cor') && !liga && !P.on.prot && !P.on.cor) P.on.mor = false;
     peleAlvos(P);
-    if (liga && PELE_SANGUE_Q[id]){ P.pulso = { t0:agora, cor:PELE_F[id].sangue }; P.desde = P.desde || {}; PELE_SANGUE_Q[id].forEach(n => { P.desde[n] = agora + PELE_ESPERA; }); }
-    if (liga && ['sol', 'cig', 'acu', 'ind', 'sono', 'est', 'horm', 'peso'].includes(id)) P.ef = { id, t0:agora };   // a animação própria e os rótulos dele
+    // 18/11 tarde: cada fator ENTRA com a sua ilustração (ou a palavra) em ~1 s; só depois o pulso no vaso e a pele mudando
+    P.desde = P.desde || {};
+    if (liga && PELE_ENTRA[id]){ P.entra = { id, t0:agora }; (PELE_ENTRA_Q[id] || []).forEach(n => { P.desde[n] = agora + PELE_ENTRADA_MS; }); }
+    if (liga && PELE_SANGUE_Q[id]){ P.pulso = { t0:agora + PELE_ENTRADA_MS, cor:PELE_F[id].sangue }; PELE_SANGUE_Q[id].forEach(n => { P.desde[n] = agora + PELE_ENTRADA_MS + PELE_ESPERA; }); }
+    if (liga && ['sol', 'cig', 'acu', 'ind', 'sono', 'est', 'horm', 'peso'].includes(id)) P.ef = { id, t0:agora + PELE_ENTRADA_MS };   // a animação própria e os rótulos dele (depois da entrada)
     else if (['prot', 'cor', 'mor'].includes(id)) P.ef = null;   // o protetor tem os rótulos dele (o filme, a mancha que fica)
     const [txt, bem] = peleFrase(P, id, liga, dano);
-    P.msg = { txt, bem, t:agora, id, liga };
+    P.msg = txt ? { txt, bem, t:agora, id, liga } : null;
   }
   P.usos++; G.peleUsos = (G.peleUsos || 0) + 1;
   botoesPele();
@@ -1226,8 +1301,9 @@ function botoesPele(){
   if (D.pele.dataset.k !== k){
     D.pele.dataset.k = k;
     const ela = (c && c.pele.ela) || {}, grupo = { sol:'Fora', acu:'Dentro' };
-    D.pele.innerHTML = !m ? '' : PELE_TECLAS[m].map(([id, t]) => {
-      const f = PELE_F[id] || {}, nome = id === 'zerar' ? 'Zerar' : id === 'abrir' ? 'Abrir: o que vem de dentro' : (f.painel || f.nome);
+    const ts = PELE_TECLAS[m] ? [...PELE_TECLAS[m].filter(([id]) => id === 'zerar'), ...PELE_TECLAS[m].filter(([id]) => id !== 'zerar')] : [];   // "Voltar ao normal" primeiro, em destaque
+    D.pele.innerHTML = !m ? '' : ts.map(([id, t]) => {
+      const f = PELE_F[id] || {}, nome = id === 'zerar' ? 'Voltar ao normal' : id === 'abrir' ? 'Abrir: o que vem de dentro' : (f.painel || f.nome);
       return (m === 'dentro' && grupo[id] ? (id === 'acu' ? '<i class="ga-pele-q"></i>' : '') + `<span class="ga-pele-g">${grupo[id]}</span>` : '') +
         `<button type="button" class="ga-foco-b ga-pele-b${id === 'zerar' ? ' zera' : ''}" data-p="${id}" aria-pressed="false"><kbd>${t}</kbd><b>${esc(nome)}</b>${ela[id] ? `<small>${esc(ela[id])}</small>` : ''}</button>`;
     }).join('');
@@ -1269,11 +1345,12 @@ function desenhaPele(ctx, c, L){
   ctx.globalAlpha = al; ctx.save(); caixa(ctx, x, y, w, h, r); ctx.clip();
   try { ctx.drawImage(PX.cv, x, y, w, h); } catch (e) { /* ok */ }
   ctx.restore();
+  raiosSol(ctx, P, agora, x, y, al);
   const vt = pulsoVasos(ctx, P, agora, x, y, al);
   efeitoPele(ctx, P, agora, x, y, al);
   luzVisivel(ctx, P, agora, x, y, al);
   if (!P.on.mor && (P.w.protetor > .5 || P.w['protetor-cor'] > .5) && !(P.ef && P.on[P.ef.id] && P.ef.id !== 'sol')){   // o filme e, com dano, a mancha que ficou
-    ctx.globalAlpha = al; tagPele(ctx, 'UV: para no filme', x + 14, y + 14, AMARELO);
+    ctx.globalAlpha = al; tagPele(ctx, 'UV: para no filme', x + 124, y + 14, AMARELO);
     if (P.dano && (P.w['sol-forte'] || 0) > .5) rotuloPele(ctx, 'a mancha fica', x, y, PELE_POS.solManchas[1], [.62, .45], LARANJA, al);
   }
   if (vt > 0){   // "pelo sangue": rótulo no gordura de baixo, com a linha fina até a artéria
@@ -1284,6 +1361,7 @@ function desenhaPele(ctx, c, L){
     ctx.fillStyle = 'rgba(8,10,9,.82)'; caixa(ctx, tx, ty, tw, 38, 12); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.fillText('chega pelo sangue', tx + 11, ty + 20); ctx.textBaseline = 'alphabetic';
   }
+  entradaPele(ctx, P, agora, x, y, al);
   ctx.globalAlpha = al; ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.14)'; caixa(ctx, x, y, w, h, r); ctx.stroke();
   // a frase do último toque (o tempo de cada um vai nela)
   let yy = y + h + 40;
@@ -1293,9 +1371,10 @@ function desenhaPele(ctx, c, L){
     const L2 = legendaPele(ctx, P.msg.txt, w);   // 18/11: a frase cabe inteira (26 px em 2 linhas; senão 23 px)
     L2.ls.forEach((l, i) => ctx.fillText(l, x, yy - 4 + i * L2.lh));
   }
-  yy = y + h + 124;
-  const ch = chipsPele(ctx, L.grupos, P, x, yy, w, al);
-  G.peleChips = ch.caixas;
+  // 18/11 tarde (o Lucca: "não quero que apareça para a pessoa o que aparece para mim"): as fileiras de botões saíram do vídeo; o
+  // controle é só dele (painel, teclas e o toque na pele, que abre o menu por cima do painel, fora do vídeo)
+  G.peleChips = []; G.peleImg = { x, y, w, h };
+  const ch = { fim:y + h + 120 };
   // pé: o que ela marcou (as respostas que a fala cita) e o aviso, ao lado da câmera
   const xP = 24, larg = CIRC.cx - CIRC.r - 16 - xP; let yP = Math.max(ch.fim + 36, CIRC.cy - CIRC.r + 30);
   ctx.globalAlpha = al; ctx.textAlign = 'left';
@@ -1324,7 +1403,7 @@ function cenaCaminho(ctx, c, t){
   const P = c.pele && G.pele, agora = performance.now();
   const k = P ? (P.aberto ? sai((agora - P.abT) / 350) : 1 - sai((agora - P.abT) / 350)) : 0;
   if (k >= 1 && cenaPeleCaminho(ctx, c, 1)) return true;
-  G.peleChips = [];
+  G.peleChips = []; G.peleImg = null;
   const fez = cenaCaminhoLista(ctx, c, t);
   if (k > 0) cenaPeleCaminho(ctx, c, k);
   return fez;
@@ -1440,7 +1519,7 @@ function prompter(){
   D.pDep.textContent = G.bloco < n - 1 ? String(bs[G.bloco + 1].fala || '').replace(/\[[^\]]*\]/g, ' ').replace(/\{nome\}/g, '').replace(/\s+/g, ' ').replace(/^[\s,]+/, '').trim() : '';
   cabeTexto();
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
-  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; G.peleChips = []; G.formaMan = null; confereVersao(false); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; G.peleChips = []; G.peleImg = null; G.formaMan = null; fechaMenuPele(); confereVersao(false); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
   marcaTempo();
   botoesFoco(); botoesPele();
   nota();
@@ -1477,6 +1556,7 @@ function info(t){ D.info.textContent = t || ''; }
 function estado(e){
   G.estado = e;
   D.el.dataset.estado = e;
+  if (e === 'rev' || e === 'fim') fechaMenuPele();
   if (e === 'prep' && vNova) setTimeout(recarregaSePode, 0);   // 18/11: a versão nova que chegou gravando entra quando volta ao preparo
   const rev = e === 'rev' || e === 'fim';
   D.grav.hidden = rev; D.rev.hidden = e !== 'rev'; D.fim.hidden = e !== 'fim';
@@ -1774,8 +1854,8 @@ function soltou(ev){
     const alvo = (G.lupasPos || []).map(q => ({ q, d:Math.hypot(q.x - fim.x, q.y - fim.y) })).filter(o => o.d < o.q.r * 1.3).sort((a, b) => a.d - b.d)[0];
     if (alvo) focar(alvo.q.id);
     { const cm = (G.o.blocos[G.bloco] || {}).cena; if (cm && cm.tipo === 'mecanismo' && FORMA[cm.tema] && fim.y >= FQ.y && fim.y <= FQ.y + FQ.h) formaPula(null); }   // 18/11: toque no esquema = a etapa seguinte
-    const ch = (G.peleChips || []).find(q => fim.x >= q.x - 6 && fim.x <= q.x + q.w + 6 && fim.y >= q.y - 6 && fim.y <= q.y + q.h + 6);   // 18/11: toque no rótulo da pele
-    if (ch) peleAcao(ch.id);
+    const pi = G.peleImg, pc0 = peleCena(), naPele = pc0 && pi && (pc0.pele.modo !== 'caminho' || (G.pele && G.pele.aberto)) && fim.x >= pi.x && fim.x <= pi.x + pi.w && fim.y >= pi.y && fim.y <= pi.y + pi.h;
+    if (naPele) abreMenuPele();   // 18/11 tarde: toque na pele abre o menu (fora do vídeo)
     else if (!alvo){ const c = peleCena(); if (c && c.pele.modo === 'caminho' && !(G.pele && G.pele.aberto)){ const p = (c.passos || []).findIndex(x => x.k === c.pele.k), y = 350 + p * Math.min(124, (880 - 350) / Math.max(1, (c.passos.length - 1) || 1)); if (p >= 0 && Math.abs(fim.y - y) < 50) peleAcao('abrir'); } }   // toque no item da inflamação (ou, sem ele, no do metabolismo) abre
   }
   if (G.ptrs.size < 2) G.gesto = null;
@@ -1797,6 +1877,7 @@ function liga(){
   D.ant.onclick = () => { if (G && G.bloco > 0){ G.bloco--; prompter(); } };
   D.foco.onclick = ev => { const b = ev.target.closest('button[data-id]'); if (b) focar(b.dataset.id); };
   D.pele.onclick = ev => { const b = ev.target.closest('button[data-p]'); if (b){ b.blur(); peleAcao(b.dataset.p); } };
+  D.peleMenu.onclick = ev => { const b = ev.target.closest('button[data-p]'); if (b) peleAcao(b.dataset.p); if (b || ev.target.closest('.ga-pm-x')) fechaMenuPele(); };
   D.fotos.onclick = ev => { const b = ev.target.closest('button[data-f]'); if (!b || !G) return; G.foto = +b.dataset.f; G.anel = null; D.fotos.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); nota(); };
   D.zoom.onclick = () => { const f = G && G.fotos[G.foto]; if (f && f.base) f.z = { ...f.base }; };
   D.cami.onclick = () => { if (!G || !G.cam) return; G.mostraCam = !G.mostraCam; D.cami.setAttribute('aria-pressed', String(G.mostraCam)); D.cam.style.visibility = G.mostraCam ? '' : 'hidden'; };
@@ -1853,5 +1934,5 @@ function diag(motivo, g){
 function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); preparaFormas(bs); preparaPele(bs); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; D.pele.dataset.k = ''; prompter(); return true; }
 // 13/11 19h45: o "Gravar análise" da lista abre o gravador na hora, com o Gravar segurado até o roteiro do Claude chegar (ou o prazo vencer)
 function liberar(){ if (!G || !G.aguarda) return; G.aguarda = false; if (G.estado === 'prep'){ estado('prep'); if (G.pronto) D.rec.focus(); } }
-return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _pele:() => ({ vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _forma:() => (G && G.formaVis) || null, _formaHoras:(tema, fala) => horasForma(FORMA[tema], fala, 2.5), _versao:() => ({ carregada:V_CARREGADA, nova:vNova, url:V_URL }), _confereVersao:confereVersao, _peleLegendas:() => { const c = document.createElement('canvas').getContext('2d'); return textosPele().map(t => { const L = legendaPele(c, t, PX.w); return { t, n:L.ls.length, px:L.px, corta:L.ls.some(l => /…$/.test(l)) }; }); }, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
+return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _peleMenu:() => ({ aberto:!!(D && D.peleMenu && !D.peleMenu.hidden), ids:D ? [...D.peleMenu.querySelectorAll('button[data-p]')].map(b => b.dataset.p) : [] }), _pele:() => ({ entra:G && G.pele && G.pele.entra ? G.pele.entra.id : null, vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _forma:() => (G && G.formaVis) || null, _formaHoras:(tema, fala) => horasForma(FORMA[tema], fala, 2.5), _versao:() => ({ carregada:V_CARREGADA, nova:vNova, url:V_URL }), _confereVersao:confereVersao, _peleLegendas:() => { const c = document.createElement('canvas').getContext('2d'); return textosPele().map(t => { const L = legendaPele(c, t, PX.w); return { t, n:L.ls.length, px:L.px, corta:L.ls.some(l => /…$/.test(l)) }; }); }, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
 })();

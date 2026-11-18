@@ -127,3 +127,18 @@ body.ga-aberto{overflow:hidden;overscroll-behavior:none}
 .ga-pele-q{flex-basis:100%;height:0}   /* "Dentro" começa numa linha nova */
 @media (max-width:699px){.ga-pele{flex-wrap:nowrap;overflow-x:auto;margin-top:5px;scrollbar-width:none}.ga-pele::-webkit-scrollbar{display:none}
   .ga-pele .ga-pele-b{flex:none;white-space:nowrap;font-size:.78rem}.ga-pele .ga-pele-b small{display:none}.ga-pele-g{flex:none}.ga-pele-q{display:none}}
+/* 18/11 tarde: "Voltar ao normal" em destaque, e o menu da pele (toque na pele, por cima do painel; fora do vídeo) */
+.ga-pele .ga-pele-b.zera{border-color:#ffd60a;background:rgba(255,214,10,.14);font-weight:800}
+.ga-pele .ga-pele-b.zera kbd{color:#ffd60a;border-color:rgba(255,214,10,.6)}
+.ga-prompt{position:relative}
+.ga-pele-menu{position:absolute;inset:6px;z-index:6;display:flex;flex-direction:column;gap:6px;padding:8px 10px;background:#141a17;border:1.5px solid rgba(143,224,189,.45);border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.6);overflow-y:auto}
+.ga-pele-menu[hidden]{display:none}
+.ga-pm-topo{display:flex;align-items:center;gap:8px;font:700 .95rem/1.2 system-ui,-apple-system,sans-serif;color:#cfe9dd}
+.ga-pm-x{min-width:40px;min-height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;font-size:1rem}
+.ga-pm-bs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}   /* 3 colunas: os 12 cabem sem rolar no iPhone */
+.ga-pm-b{min-height:38px;padding:4px 8px;border-radius:12px;border:1.5px solid rgba(143,224,189,.5);background:transparent;color:#fff;font:650 .82rem/1.15 system-ui,-apple-system,sans-serif;text-align:left;display:flex;flex-direction:column;justify-content:center;-webkit-tap-highlight-color:transparent}
+.ga-pm-b small{font-weight:500;font-size:.72rem;color:#b7c7c0}
+.ga-pm-b[aria-pressed="true"]{background:#8fe0bd;border-color:#8fe0bd;color:#000}
+.ga-pm-b[aria-pressed="true"] small{color:rgba(0,0,0,.7)}
+.ga-pm-b.zera{flex:1;min-height:38px;border-color:#ffd60a;background:rgba(255,214,10,.14);font-weight:800;text-align:center;align-items:center}
+@media (max-width:699px){.ga-pm-b small{display:none}.ga-pm-b{font-size:.8rem}}
