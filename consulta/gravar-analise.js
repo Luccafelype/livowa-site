@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1811p';
+const VERSAO = '1811t';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -737,11 +737,16 @@ function cenaMecanismo(ctx, c, t){
 // desenhados sob a pele. O que entra no vídeo: a pele, os rótulos ligados/desligados, a frase curta do último toque (sem
 // promessa) e "Ilustração. Varia de pessoa para pessoa.".
 const PELE_SRC = n => 'pele/' + n + '.webp';
-const PELE_Q = ['base', 'sol', 'sol-volta', 'protetor', 'protetor-cor', 'morena-protetor', 'morena-cor', 'cigarro', 'sono', 'estresse', 'acucar', 'acucar-anos', 'menopausa', 'peso'];
-const PELE_GRUPO = { sol:'sol', 'sol-volta':'sol', protetor:'filme', 'protetor-cor':'filme', 'morena-protetor':'filme', 'morena-cor':'filme', cigarro:'cig', sono:'sono', estresse:'est', acucar:'acu', 'acucar-anos':'acu', menopausa:'horm', peso:'peso' };
+// 18/11 tarde (o Lucca, no ar: "o sol tá muito fraquinho, o protetor normal está tirando as manchas escuras, as mudanças precisam
+// ser mais intensas, e os problemas de dentro sempre têm a mesma animação"): vale MAIS VISÍVEL, MESMO EXAGERANDO (o peso real ele
+// explica na fala). Quadros fortes do Codex (-forte), o dano do sol FICA (o protetor só segura o sol novo), a mancha da pele morena
+// CRESCE sob o protetor comum, e cada fator de dentro tem a sua animação e o seu rótulo no lugar exato.
+const PELE_Q = ['base', 'sol-forte', 'protetor', 'protetor-cor', 'morena-protetor', 'morena-forte', 'morena-cor', 'morena-forte-cor', 'cigarro-forte', 'sono-forte', 'estresse-forte', 'acucar', 'acucar-forte', 'menopausa-forte', 'peso-forte'];
+const PELE_GRUPO = { 'sol-forte':'sol', protetor:'filme', 'protetor-cor':'filme', 'morena-protetor':'filme', 'morena-forte':'filme', 'morena-cor':'filme', 'morena-forte-cor':'filme', 'cigarro-forte':'cig', 'sono-forte':'sono', 'estresse-forte':'est', acucar:'acu', 'acucar-forte':'acu', 'menopausa-forte':'horm', 'peso-forte':'peso' };
 const PELE_FX = { filme:[['ar', 'epi'], 2], sol:[['ar', 'epi', 'dc'], 1], cig:[['ar', 'epi', 'dc', 'df'], .9], peso:[['epi', 'dc', 'df', 'gor'], .7], horm:[['dc', 'df', 'gor'], .6], acu:[['dc', 'df'], .5], sono:[['epi', 'dc', 'df'], .4], est:[['epi', 'dc'], .3] };
 const PELE_FAIXA = { ar:[-1, .264], epi:[.264, .342], dc:[.342, .508], df:[.508, .742], gor:[.742, 2] }, PELE_PENA = .025;   // em fração da altura (medido nos quadros)
-const PELE_VEL = { sol:2000, 'sol-volta':2200, protetor:1200, 'protetor-cor':1200, 'morena-protetor':1200, 'morena-cor':1600, cigarro:2000, sono:1000, estresse:2000, menopausa:2000, peso:2000 };   // ms de 0 a 1
+const PELE_VEL = { 'sol-forte':2000, protetor:1200, 'protetor-cor':1200, 'cigarro-forte':2000, 'sono-forte':900, 'estresse-forte':1800, 'menopausa-forte':2000, 'peso-forte':2000 };   // ms de 0 a 1
+const PELE_GANHO = { 'cigarro-forte':.72 };   // quanto do quadro (1 = o quadro); os -forte já vêm exagerados; o do cigarro inteiro apagava a derme num bloco cinza-oliva
 const PELE_ACU_MS = 1500;   // açúcar: 1,5 s por etapa
 // os fatores: nome no rótulo, se estraga (laranja) ou protege (verde), e a frase de ligar/desligar (o tempo vai na frase)
 // 18/11 (o Lucca: "animações interativas que posso explicar a causa de texturas, porque o protetor não protege de manchas, o
@@ -758,7 +763,7 @@ const PELE_F = {
   peso:{ nome:'Peso', painel:'Peso (metabolismo)', mal:true, sangue:[255, 214, 90], on:'Perda grande e rápida: a gordura de baixo murcha e a pele de cima ondula.', off:'Parar segura. O que se cuida é o ritmo da perda e o músculo.' },
 };
 // o que cada fator de dentro move, e a espera do pulso no vaso antes de a pele mudar
-const PELE_SANGUE_Q = { acu:['g'], ind:['g'], sono:['sono'], est:['estresse', 'sono'], horm:['menopausa'], peso:['peso'] }, PELE_PULSO_MS = 1800, PELE_ESPERA = 700;
+const PELE_SANGUE_Q = { acu:['g'], ind:['g'], sono:['sono-forte'], est:['estresse-forte', 'sono-forte'], horm:['menopausa-forte'], peso:['peso-forte'] }, PELE_PULSO_MS = 900, PELE_ESPERA = 500;   // o pulso no vaso é só a entrada (0,5 s, cor própria); depois cada um mostra o que estraga
 const PELE_TECLAS = {
   dentro:[['sol', '1'], ['prot', '2'], ['cor', '3'], ['cig', '4'], ['acu', '5'], ['ind', '6'], ['sono', '7'], ['est', '8'], ['horm', '9'], ['peso', '0'], ['mor', 'M'], ['zerar', 'R']],
   caminho:[['abrir', 'P'], ['acu', '1'], ['ind', '2'], ['sono', '3'], ['est', '4'], ['horm', '5'], ['peso', '6'], ['zerar', 'R']] };
@@ -831,11 +836,11 @@ function pxPinta(cs){
   PX.chave = chave;
   const { cs:ks, e3, venc } = pxCoefs(cs), w = PX.w, h = PX.h, o = PX.out.data, b = PX.base;
   PX.ult = { e3, venc:venc || null, n:ks.length };   // para conferir (teste)
-  const L = ks.map(c => ({ d:pxDif(c.n), k:c.k })).filter(c => c.d);
+  const L = ks.map(c => ({ d:pxDif(c.n), k:c.k, g:PELE_GANHO[c.n] || 1 })).filter(c => c.d);
   const at = new Array(8);
   for (let y = 0; y < h; y++){
     let n = 0;
-    for (const c of L){ const k = typeof c.k === 'number' ? c.k : c.k[y]; if (k > .002){ at[n++] = c.d; at[n++] = 2 * k; } }
+    for (const c of L){ const k = typeof c.k === 'number' ? c.k : c.k[y]; if (k > .002){ at[n++] = c.d; at[n++] = 2 * k * c.g; } }
     let i = y * w * 4, j = y * w * 3; const fim = i + w * 4;
     if (!n){ o.set(b.subarray(i, fim), i); continue; }
     if (n === 2){ const d = at[0], k = at[1]; for (; i < fim; i += 4, j += 3){ o[i] = b[i] + k * d[j]; o[i + 1] = b[i + 1] + k * d[j + 1]; o[i + 2] = b[i + 2] + k * d[j + 2]; } continue; }
@@ -856,19 +861,19 @@ function vasos(){
   // um pouco de brilho em volta (caixa 5×5) e só o que é vaso de verdade
   const t = new Float32Array(w * h), k = 2;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++){ let s = 0; for (let d = -k; d <= k; d++){ const xx = x + d; if (xx >= 0 && xx < w) s += m[y * w + xx]; } t[y * w + x] = s / (2 * k + 1); }
-  const idx = [], val = [], hora = [];
+  const idx = [], val = [], hora = [], veia = [];
   for (let y = k; y < h - k; y++) for (let x = 0; x < w; x++){ let s = 0; for (let d = -k; d <= k; d++) s += t[(y + d) * w + x]; s /= (2 * k + 1); const v = Math.max(s * 1.6, m[y * w + x]);
-    if (v > .22){ idx.push(y * w + x); val.push(Math.min(1, v)); hora.push(lim(.55 * x / w + .45 * (.78 - y / h) / .44, 0, 1)); } }
-  PX.vI = Int32Array.from(idx); PX.vV = Float32Array.from(val); PX.vH = Float32Array.from(hora);
+    if (v > .22){ const i4 = (y * w + x) * 4; idx.push(y * w + x); val.push(Math.min(1, v)); hora.push(lim(.55 * x / w + .45 * (.78 - y / h) / .44, 0, 1)); veia.push(b[i4 + 2] > b[i4 + 1] + 5 ? 1 : 0); } }
+  PX.vI = Int32Array.from(idx); PX.vV = Float32Array.from(val); PX.vH = Float32Array.from(hora); PX.vA = Uint8Array.from(veia);
   PX.vcv = document.createElement('canvas'); PX.vcv.width = w; PX.vcv.height = h;
   PX.vctx = PX.vcv.getContext('2d', { willReadFrequently:true });   // na CPU, como o da pele (o mp4 não troca a descrição)
   PX.vimg = PX.vctx.createImageData(w, h);
 }
-// o pulso: a frente clara corre pelos vasos em ~1 s e deixa um brilho que some até 1,8 s
+// o pulso (só a entrada): a frente da cor do fator corre pelos vasos em 0,5 s e o brilho some até 0,9 s
 function pulsoVasos(ctx, P, agora, x0, y0, al){
   const p = P.pulso; if (!p || !PX.vI) return 0;
   const t = (agora - p.t0) / 1000; if (t * 1000 > PELE_PULSO_MS){ P.pulso = null; return 0; }
-  const fr = t / 1.0, rasto = 1 - lim((t - 1.0) / .8, 0, 1), d = PX.vimg.data, [cr, cg, cb] = p.cor;
+  const fr = t / .5, rasto = 1 - lim((t - .5) / .4, 0, 1), d = PX.vimg.data, [cr, cg, cb] = p.cor;
   d.fill(0);
   for (let k = 0; k < PX.vI.length; k++){
     const a = PX.vH[k], fr2 = (a - fr) / .07, frente = Math.exp(-fr2 * fr2), passou = a < fr ? .45 * rasto : 0;
@@ -879,44 +884,157 @@ function pulsoVasos(ctx, P, agora, x0, y0, al){
   ctx.save(); ctx.globalAlpha = al; ctx.globalCompositeOperation = 'lighter';
   try { ctx.drawImage(PX.vcv, x0, y0); ctx.globalAlpha = al * .6; ctx.drawImage(PX.vcv, x0, y0); } catch (e) { /* ok */ }
   ctx.restore();
-  return Math.max(0, Math.min(1, t / .25)) * (1 - lim((t - 1.4) / .4, 0, 1));   // o quanto mostrar o rótulo "pelo sangue"
+  return Math.max(0, Math.min(1, t / .15)) * (1 - lim((t - .7) / .2, 0, 1));   // o quanto mostrar o rótulo "chega pelo sangue"
 }
-// pele morena: o UV (dourado) para no filme; a luz visível (lilás) passa pelo protetor comum até a mancha; com cor, para no filme
-const MANCHA = { x:.487, y:.344, l:.15 }, FILME_Y = .262;
+// onde cada coisa está no quadro (fração da largura e da altura; medido nos quadros -forte em 18/11)
+const PELE_POS = { filme:.262, sup:.268, mancha:[.487, .344], solManchas:[[.39, .345], [.62, .345]], colagenoCima:[.7, .41], derme:[.6, .53],
+  gorduraTopo:.765, gorduraTopoMeno:.585, gordura:[.5, .88], veia:[.27, .66], vaso:[.16, .705], epi:[.4, .295] };
+// pele morena: o UV (dourado) para no filme; a luz visível (lilás) passa pelo protetor comum até a mancha (que cresce); com cor, para no filme
+const MANCHA = { x:.487, y:.344, l:.3 }, FILME_Y = .262;
 function luzVisivel(ctx, P, agora, x0, y0, al){
-  const wM = P.w['morena-protetor'] || 0, wC = P.w['morena-cor'] || 0, k = Math.max(wM, wC); if (k < .02) return;
-  const w = PX.w, h = PX.h, pul = .75 + .25 * Math.sin(agora / 260), ate = FILME_Y + (MANCHA.y + .01 - FILME_Y) * (wM / Math.max(.001, wM + wC));
+  const passa = (P.w['morena-protetor'] || 0) + (P.w['morena-forte'] || 0), para = (P.w['morena-cor'] || 0) + (P.w['morena-forte-cor'] || 0), k = Math.min(1, passa + para); if (k < .02) return;
+  const w = PX.w, h = PX.h, pul = .75 + .25 * Math.sin(agora / 260), ate = FILME_Y + (MANCHA.y + .01 - FILME_Y) * (passa / Math.max(.001, passa + para));
   ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); ctx.globalCompositeOperation = 'lighter';
-  for (let j = 0; j < 3; j++){
-    const xs = x0 + w * (MANCHA.x - .2 + j * .07), xe = x0 + w * (MANCHA.x - MANCHA.l / 2 + j * MANCHA.l / 2), ye = y0 + h * ate, ys = y0 - 10, lg = 9;
-    const g = ctx.createLinearGradient(xs, ys, xe, ye); g.addColorStop(0, 'rgba(205,190,255,0)'); g.addColorStop(.35, 'rgba(205,190,255,.55)'); g.addColorStop(1, 'rgba(225,215,255,.95)');
-    ctx.globalAlpha = al * k * pul * .55; ctx.strokeStyle = g; ctx.lineWidth = lg; ctx.lineCap = 'round';
+  for (let j = 0; j < 4; j++){
+    const xs = x0 + w * (MANCHA.x - .22 + j * .065), xe = x0 + w * (MANCHA.x - MANCHA.l / 2 + j * MANCHA.l / 3), ye = y0 + h * ate, ys = y0 - 10;
+    const g = ctx.createLinearGradient(xs, ys, xe, ye); g.addColorStop(0, 'rgba(205,190,255,0)'); g.addColorStop(.35, 'rgba(205,190,255,.6)'); g.addColorStop(1, 'rgba(225,215,255,1)');
+    ctx.globalAlpha = al * k * pul * .6; ctx.strokeStyle = g; ctx.lineWidth = 11; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(xs, ys); ctx.lineTo(xe, ye); ctx.stroke();
   }
   ctx.restore();
-  // os rótulos: UV para no filme; a luz visível passa (comum) ou para (com cor)
-  const tag = (txt, tx, ty, cor) => { ctx.font = `700 21px ${FONTE}`; const tw = ctx.measureText(txt).width + 20; ctx.fillStyle = 'rgba(8,10,9,.78)'; caixa(ctx, tx, ty, tw, 32, 10); ctx.fill();
-    ctx.fillStyle = cor; ctx.textBaseline = 'middle'; ctx.fillText(txt, tx + 10, ty + 17); ctx.textBaseline = 'alphabetic'; };
   ctx.globalAlpha = al * k;
-  tag('UV: para no filme', x0 + 14, y0 + 14, AMARELO);
-  tag(wM >= wC ? 'luz visível: passa' : 'luz visível: para no filme com cor', x0 + w - (wM >= wC ? 196 : 352), y0 + 14, '#d9ccff');
+  tagPele(ctx, 'UV: para no filme', x0 + 14, y0 + 14, AMARELO);
+  tagPele(ctx, passa >= para ? 'luz visível: passa' : 'luz visível: para no filme com cor', x0 + w - (passa >= para ? 196 : 352), y0 + 14, '#d9ccff');
+  if (passa > .5) rotuloPele(ctx, 'mancha cresce', x0, y0, [MANCHA.x + .02, MANCHA.y + .005], [.62, .44], AMARELO, al * Math.min(1, passa));
+  else if (para > .5) rotuloPele(ctx, 'mancha para de escurecer', x0, y0, [MANCHA.x + .02, MANCHA.y + .005], [.5, .44], VERDE, al * Math.min(1, para));
   ctx.globalAlpha = 1;
 }
+function tagPele(ctx, txt, tx, ty, cor){
+  ctx.font = `700 21px ${FONTE}`; const tw = ctx.measureText(txt).width + 20; ctx.fillStyle = 'rgba(8,10,9,.8)'; caixa(ctx, tx, ty, tw, 32, 10); ctx.fill();
+  ctx.fillStyle = cor; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillText(txt, tx + 10, ty + 17); ctx.textBaseline = 'alphabetic';
+}
+// rótulo com seta: a = o ponto (fração do quadro), p = o canto da etiqueta (fração); a etiqueta não sai do quadro
+function rotuloPele(ctx, txt, x0, y0, a, p, cor, al){
+  if (al <= .01) return;
+  const w = PX.w, h = PX.h, ax = x0 + a[0] * w, ay = y0 + a[1] * h;
+  ctx.font = `700 24px ${FONTE}`; const tw = ctx.measureText(txt).width + 24, th = 40;
+  const tx = lim(x0 + p[0] * w, x0 + 8, x0 + w - tw - 8), ty = lim(y0 + p[1] * h, y0 + 8, y0 + h - th - 8);
+  const lx = lim(ax, tx, tx + tw), ly = ay < ty ? ty : ay > ty + th ? ty + th : ty + th / 2, ang = Math.atan2(ay - ly, ax - lx), d = Math.hypot(ax - lx, ay - ly);
+  ctx.save(); ctx.globalAlpha = al;
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+  if (d > 6){ ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(ax - 6 * Math.cos(ang), ay - 6 * Math.sin(ang)); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax - 13 * Math.cos(ang - .45), ay - 13 * Math.sin(ang - .45)); ctx.lineTo(ax - 13 * Math.cos(ang + .45), ay - 13 * Math.sin(ang + .45)); ctx.closePath(); ctx.fill(); }
+  ctx.fillStyle = 'rgba(8,10,9,.84)'; caixa(ctx, tx, ty, tw, th, 12); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = cor; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillText(txt, tx + 12, ty + th / 2 + 1); ctx.textBaseline = 'alphabetic';
+  ctx.restore();
+}
+// a animação própria de cada fator (depois do pulso no vaso) e os rótulos no lugar exato; P.ef = { id, t0, ps } do último ligado
+function efeitoPele(ctx, P, agora, x0, y0, al){
+  const e = P.ef, w = PX.w, h = PX.h; if (!e || !P.on[e.id]) return;
+  const t = (agora - e.t0) / 1000, X = f => x0 + f * w, Y = f => y0 + f * h, R = (txt, a, p, cor, ap) => rotuloPele(ctx, txt, x0, y0, a, p, cor || LARANJA, al * sai(ap));
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip();
+  if (e.id === 'acu' || e.id === 'ind'){   // grãos âmbar saem do vaso, grudam nas fibras e formam pontes
+    const ps = e.ps || (e.ps = graosPele(e.id === 'ind' ? 16 : 34));
+    const chegou = [];
+    ps.forEach((q, i) => {
+      const k = sai((t - .45 - i * .025) / 1.1); if (k <= 0) return;
+      const x = X(q.x0 + (q.x1 - q.x0) * k), y = Y(q.y0 + (q.y1 - q.y0) * k) - Math.sin(Math.PI * k) * 14;
+      ctx.globalAlpha = al * (k < 1 ? 1 : .9); ctx.fillStyle = '#ffb02e'; ctx.strokeStyle = '#7a3e0c'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(x, y, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      if (k >= 1) chegou.push([x, y]);
+    });
+    const pt = sai((t - 1.9) / .8);
+    if (pt > 0){ ctx.globalAlpha = al * pt * .9; ctx.strokeStyle = '#6b3510'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+      chegou.forEach((a, i) => { let m = null, dm = 75; chegou.forEach((b, j) => { const d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (j !== i && d < dm){ dm = d; m = b; } }); if (m){ ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(m[0], m[1]); ctx.stroke(); } }); }   // a ponte: cada grão ao vizinho mais perto
+    ctx.restore();
+    if (e.id === 'acu') R('o açúcar gruda no colágeno', PELE_POS.derme, [.5, .80], LARANJA, (t - 1.2) / .4);
+    else R('sobe a glicose → mesmo caminho do açúcar', PELE_POS.derme, [.2, .80], LARANJA, (t - 1.2) / .4);
+    return;
+  }
+  if (e.id === 'sono'){   // as veias escurecem e incham; a pele toda apaga
+    const k = sai((t - .45) / .9), pul = .8 + .2 * Math.sin(agora / 300), d = PX.vimg && PX.vimg.data;
+    if (k > 0 && PX.vI && d){
+      d.fill(0);
+      for (let i = 0; i < PX.vI.length; i++){ if (!PX.vA[i]) continue; const j = PX.vI[i] * 4; d[j] = 46; d[j + 1] = 24; d[j + 2] = 92; d[j + 3] = Math.round(255 * PX.vV[i] * k * pul * .8); }
+      PX.vctx.putImageData(PX.vimg, 0, 0); ctx.globalAlpha = al; ctx.drawImage(PX.vcv, x0, y0); ctx.drawImage(PX.vcv, x0 + 1, y0); ctx.drawImage(PX.vcv, x0, y0 + 1);   // mais grossas
+    }
+    ctx.restore();
+    R('circulação pior: pele apagada', PELE_POS.veia, [.08, .82], AZUL, (t - .8) / .4);
+    return;
+  }
+  if (e.id === 'est'){   // a camada de cima racha e solta escamas
+    const ps = e.ps || (e.ps = rachasPele());
+    const k = sai((t - .45) / 1.2);
+    ctx.globalAlpha = al; ctx.strokeStyle = '#5a2a14'; ctx.lineWidth = 2.6; ctx.lineJoin = 'round';
+    ps.r.forEach(r => { const n = Math.max(1, Math.round(r.length * k)); ctx.beginPath(); r.slice(0, n).forEach(([fx, fy], i) => i ? ctx.lineTo(X(fx), Y(fy)) : ctx.moveTo(X(fx), Y(fy))); ctx.stroke(); });
+    ps.e.forEach((q, i) => { const s2 = sai((t - .9 - i * .06) / 1.4); if (s2 <= 0) return;
+      ctx.save(); ctx.translate(X(q.x), Y(PELE_POS.sup) - 4 - 18 * s2); ctx.rotate(q.r * s2); ctx.globalAlpha = al * (1 - .3 * s2);
+      ctx.fillStyle = '#f3dcc4'; ctx.strokeStyle = '#8a5a3a'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(0, 0, 11, 4.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore(); });
+    ctx.restore();
+    R('barreira de cima afina e racha', PELE_POS.epi, [.42, .46], LARANJA, (t - .9) / .4);
+    return;
+  }
+  if (e.id === 'horm'){   // a régua da espessura: da superfície ao topo da gordura, que sobe
+    const wm = P.w['menopausa-forte'] || 0, yb = PELE_POS.gorduraTopo + (PELE_POS.gorduraTopoMeno - PELE_POS.gorduraTopo) * Math.min(1, wm);
+    const xr = X(.93), ya = Y(PELE_POS.sup + .01), yz = Y(yb);
+    ctx.globalAlpha = al; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(xr, ya); ctx.lineTo(xr, yz); ctx.stroke();
+    [[ya, 1], [yz, -1]].forEach(([yy, sgn]) => { ctx.beginPath(); ctx.moveTo(xr - 14, yy); ctx.lineTo(xr + 14, yy); ctx.stroke(); ctx.beginPath(); ctx.moveTo(xr, yy); ctx.lineTo(xr - 8, yy + sgn * 12); ctx.moveTo(xr, yy); ctx.lineTo(xr + 8, yy + sgn * 12); ctx.stroke(); });
+    ctx.globalAlpha = al * .5; ctx.setLineDash([8, 7]); ctx.strokeStyle = '#ffd60a'; ctx.beginPath(); ctx.moveTo(xr - 40, Y(PELE_POS.gorduraTopo)); ctx.lineTo(xr + 20, Y(PELE_POS.gorduraTopo)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    R('derme afina', [.92, (PELE_POS.sup + yb) / 2], [.6, .44], '#ff8cc8', (t - .6) / .4);
+    return;
+  }
+  if (e.id === 'peso'){   // a gordura de baixo murcha: setas para baixo e o contorno que desce
+    const k = sai((t - .45) / 1.4);
+    ctx.globalAlpha = al * .9; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    for (let j = 0; j < 5; j++){ const xx = X(.14 + j * .18), y1 = Y(.78) + 26 * k; ctx.beginPath(); ctx.moveTo(xx, Y(.76)); ctx.lineTo(xx, y1); ctx.moveTo(xx - 9, y1 - 10); ctx.lineTo(xx, y1); ctx.lineTo(xx + 9, y1 - 10); ctx.stroke(); }
+    ctx.restore();
+    R('a gordura de baixo murcha', PELE_POS.gordura, [.26, .58], LARANJA, (t - .8) / .4);
+    return;
+  }
+  ctx.restore();
+  if (e.id === 'sol'){   // os três danos, um a um: mancha, colágeno quebrado, textura
+    R('mancha', PELE_POS.solManchas[0], [.08, .45], LARANJA, (t - .9) / .4);
+    R('colágeno quebra', PELE_POS.colagenoCima, [.6, .56], LARANJA, (t - 1.4) / .4);
+    R('superfície áspera = textura', [.25, PELE_POS.sup], [.38, .07], LARANJA, (t - 1.9) / .4);
+  } else if (e.id === 'cig') R('vasinhos estreitam', PELE_POS.vaso, [.3, .82], LARANJA, (t - .9) / .4);
+}
+// os grãos do açúcar: saem de pontos do vaso e vão a pontos da derme
+function graosPele(n){
+  const ps = [], vs = PX.vI || [], w = PX.w, h = PX.h;
+  for (let i = 0; i < n; i++){
+    let x0 = Math.random(), y0 = .7;
+    for (let k = 0; k < 20 && vs.length; k++){ const v = vs[Math.floor(Math.random() * vs.length)], vy = Math.floor(v / w) / h; if (vy > .5 && vy < .76){ x0 = (v % w) / w; y0 = vy; break; } }
+    ps.push({ x0, y0, x1:lim(x0 + (Math.random() - .5) * .3, .04, .96), y1:.4 + Math.random() * .26 });
+  }
+  return ps;
+}
+// as rachaduras da camada de cima (linhas quebradas da superfície para baixo) e as escamas que soltam
+function rachasPele(){
+  const r = [], e = [];
+  for (let i = 0; i < 11; i++){ const x = .05 + i * .088 + (Math.random() - .5) * .03; const l = [[x, PELE_POS.sup]]; let xx = x, yy = PELE_POS.sup;
+    for (let k = 0; k < 5; k++){ xx += (Math.random() - .5) * .025; yy += .012 + Math.random() * .006; l.push([xx, yy]); } r.push(l); }
+  for (let i = 0; i < 12; i++) e.push({ x:.06 + i * .08 + Math.random() * .03, r:(Math.random() - .5) * 1.2 });
+  return { r, e };
+}
 // estado (um por bloco: recomeça na base quando o bloco começa)
-function peleNovo(){ return { on:{}, w:{}, a:{}, g:0, gA:0, dano:false, msg:null, ult:performance.now(), aberto:false, abT:-1e9, usos:0 }; }
+function peleNovo(){ return { on:{}, w:{}, a:{}, g:0, gA:0, m:0, mA:0, mc:0, mcA:0, dano:false, msg:null, ult:performance.now(), aberto:false, abT:-1e9, usos:0 }; }
 function peleAlvos(P){
   const o = P.on, a = P.a, w = P.w, filme = !!(o.prot || o.cor);
   a.protetor = !o.mor && o.prot ? 1 : 0; a['protetor-cor'] = !o.mor && o.cor ? 1 : 0;
-  a['morena-protetor'] = o.mor && o.prot ? 1 : 0; a['morena-cor'] = o.mor && o.cor ? 1 : 0;
-  if (o.sol && !filme){ a.sol = 1; a['sol-volta'] = 0; }
-  else if (filme && P.dano){ a.sol = 0; a['sol-volta'] = 1; }   // com protetor depois do dano: volta em parte
-  else if (o.sol){ a.sol = o.cor ? 0 : .1; a['sol-volta'] = 0; }  // o protetor por cima do sol
-  else { a.sol = 0; a['sol-volta'] = 0; }
-  a.cigarro = o.cig ? 1 : Math.min(.3, w.cigarro || 0);
-  a.peso = o.peso ? 1 : Math.min(.3, w.peso || 0);
-  a.menopausa = o.horm ? 1 : (w.menopausa || 0);
-  a.sono = Math.max(o.sono ? 1 : 0, o.est ? .5 : 0);
-  a.estresse = o.est ? 1 : Math.min(.5, w.estresse || 0);
+  // pele morena: a mancha aparece (m 0 → 1) e, com o protetor comum, CRESCE (1 → 2); com cor, para onde está e clareia um pouco
+  P.mA = !o.mor ? 0 : o.prot ? 2 : Math.max(1, P.m); P.mcA = o.mor && o.cor ? 1 : 0;
+  // o sol: o dano FICA. O protetor depois do dano só segura o sol novo (o dano cai um pouco, a 85%); antes do dano, quase nada passa
+  const sw = w['sol-forte'] || 0;
+  if (o.sol && !filme) a['sol-forte'] = 1;
+  else if (P.dano) a['sol-forte'] = filme ? Math.min(sw, .85) || .85 : sw;
+  else a['sol-forte'] = o.sol ? (o.cor ? 0 : .1) : Math.min(sw, filme ? .1 : sw);
+  a['cigarro-forte'] = o.cig ? 1 : Math.min(.3, w['cigarro-forte'] || 0);
+  a['peso-forte'] = o.peso ? 1 : Math.min(.3, w['peso-forte'] || 0);
+  a['menopausa-forte'] = o.horm ? 1 : (w['menopausa-forte'] || 0);
+  a['sono-forte'] = Math.max(o.sono ? 1 : 0, o.est ? .5 : 0);
+  a['estresse-forte'] = o.est ? 1 : Math.min(.5, w['estresse-forte'] || 0);
   P.gA = o.acu ? 2 : o.ind ? Math.max(.5, P.g) : P.g;
 }
 function peleAnda(P, agora){
@@ -924,22 +1042,27 @@ function peleAnda(P, agora){
   const esp = n => agora < ((P.desde && P.desde[n]) || 0);   // de dentro: a pele só muda depois que o pulso correu no vaso
   for (const n of Object.keys(P.a)){ const v = P.w[n] || 0, a = P.a[n], s = dt / (PELE_VEL[n] || 1500); if (v < a && esp(n)) continue; P.w[n] = v < a ? Math.min(a, v + s) : Math.max(a, v - s); }
   if (!(P.g < P.gA && esp('g'))) P.g = P.g < P.gA ? Math.min(P.gA, P.g + dt / PELE_ACU_MS) : Math.max(P.gA, P.g - dt / PELE_ACU_MS);
-  if ((P.w.sol || 0) >= .5) P.dano = true;
-  if (P.dano && !P.on.sol && !P.on.prot && !P.on.cor && (P.w.sol || 0) < .01 && (P.w['sol-volta'] || 0) < .01) P.dano = false;
+  const vm = P.m < 1 ? 1200 : 2600;   // a mancha da pele morena: aparece em 1,2 s, cresce em 2,6 s
+  P.m = P.m < P.mA ? Math.min(P.mA, P.m + dt / vm) : Math.max(P.mA, P.m - dt / 1200);
+  P.mc = P.mc < P.mcA ? Math.min(P.mcA, P.mc + dt / 1400) : Math.max(P.mcA, P.mc - dt / 1400);
+  const m1 = P.m <= 1 ? P.m : 2 - P.m, m2 = Math.max(0, P.m - 1);
+  P.w['morena-protetor'] = (1 - P.mc) * m1; P.w['morena-forte'] = (1 - P.mc) * m2; P.w['morena-cor'] = P.mc * m1; P.w['morena-forte-cor'] = P.mc * m2;
+  if ((P.w['sol-forte'] || 0) >= .5 && (P.a['sol-forte'] || 0) >= .5) P.dano = true;   // só subindo (o R zera e ele desce sem marcar de novo)
   const cs = Object.keys(P.w).filter(n => P.w[n] > .003).map(n => ({ n, w:P.w[n] }));
-  if (P.g > .003){ if (P.g <= 1) cs.push({ n:'acucar', w:P.g }); else { if (P.g < 2) cs.push({ n:'acucar', w:2 - P.g }); cs.push({ n:'acucar-anos', w:P.g - 1 }); } }
+  if (P.g > .003){ if (P.g <= 1) cs.push({ n:'acucar', w:P.g }); else { if (P.g < 2) cs.push({ n:'acucar', w:2 - P.g }); cs.push({ n:'acucar-forte', w:P.g - 1 }); } }
   return cs;
 }
 // a frase do toque e a cor dela: verde = protege ou alivia, amarelo = estraga
 function peleFrase(P, id, liga, dano){
   const o = P.on, filme = o.prot || o.cor;
-  if (id === 'sol') return liga ? (filme ? ['Com protetor, o UV para no filme, antes de chegar ao colágeno.', true] : ['A luz quebra o colágeno de cima: a superfície fica áspera (é a textura) e a mancha nasce embaixo.', false])
-    : [filme && dano ? 'Sol desligado. O que melhorou com o protetor fica.' : 'Sol desligado: de volta ao ponto de partida.', true];
+  if (id === 'sol') return liga ? (filme ? (dano ? ['O protetor segura o sol novo no filme. A mancha e o colágeno quebrado ficam.', false] : ['Com protetor desde antes, o UV para no filme: a pele quase não tem dano.', true])
+      : ['A luz quebra o colágeno de cima: a superfície fica áspera (é a textura) e a mancha nasce embaixo.', false])
+    : [dano ? 'Sem sol, o dano para de crescer. O que já foi feito fica.' : 'Sol desligado.', true];
   if (id === 'prot' || id === 'cor' || id === 'mor'){
-    if (!liga && id !== 'mor') return o.sol ? ['Sem protetor, o sol volta a pesar.', false] : ['Sem protetor.', true];
+    if (!liga && id !== 'mor') return o.sol ? ['Sem protetor, o sol volta a quebrar a pele.', false] : ['Sem protetor.', true];
     if (!liga) return ['De volta à pele do começo.', true];
-    if (o.mor) return o.cor ? ['O protetor com cor segura também a luz visível: a mancha para de escurecer.', true] : ['O protetor comum segura o UV, mas a luz visível passa e escurece a mancha em pele morena.', false];
-    if (o.sol && dano) return ['Protetor todo dia: a pele pode melhorar em parte. Não volta ao ponto de partida.', true];
+    if (o.mor) return o.cor ? ['O protetor com cor segura também a luz visível: a mancha para de escurecer e pode clarear um pouco. Não some.', true] : ['O protetor comum segura o UV, mas a luz visível passa: em pele morena, a mancha cresce e escurece.', false];
+    if (dano) return ['O protetor segura o sol novo, mas não apaga o que já foi feito: a mancha e o colágeno quebrado ficam.', false];
     return [o.cor ? 'O protetor com cor segura o UV e também a luz visível, que escurece mancha em pele morena.' : 'O protetor segura o UV no filme, em cima da pele.', true];
   }
   const f = PELE_F[id]; return f ? [(liga ? f.on : f.off) || '', !liga] : ['', true];
@@ -949,7 +1072,7 @@ function peleAcao(id){
   if (!G || !['prep', 'conta', 'rec'].includes(G.estado)) return;
   const c = peleCena(); if (!c || !PELE_TECLAS[c.pele.modo].some(([k]) => k === id)) return;
   const P = G.pele || (G.pele = peleNovo()), agora = performance.now();
-  if (id === 'zerar'){ P.on = {}; P.dano = false; P.msg = null; P.gA = 0; P.pulso = null; P.desde = {}; Object.keys(P.w).forEach(n => { P.a[n] = 0; }); }   // tudo volta à base (sem resíduo)
+  if (id === 'zerar'){ P.on = {}; P.dano = false; P.msg = null; P.gA = 0; P.mA = 0; P.mcA = 0; P.pulso = null; P.ef = null; P.desde = {}; Object.keys(P.w).forEach(n => { P.a[n] = 0; }); }   // tudo volta à base (sem resíduo)
   else if (id === 'abrir'){ P.aberto = !P.aberto; P.abT = agora; }
   else {
     if (c.pele.modo === 'caminho' && !P.aberto){ P.aberto = true; P.abT = agora; }
@@ -960,6 +1083,8 @@ function peleAcao(id){
     if ((id === 'prot' || id === 'cor') && !liga && !P.on.prot && !P.on.cor) P.on.mor = false;
     peleAlvos(P);
     if (liga && PELE_SANGUE_Q[id]){ P.pulso = { t0:agora, cor:PELE_F[id].sangue }; P.desde = P.desde || {}; PELE_SANGUE_Q[id].forEach(n => { P.desde[n] = agora + PELE_ESPERA; }); }
+    if (liga && ['sol', 'cig', 'acu', 'ind', 'sono', 'est', 'horm', 'peso'].includes(id)) P.ef = { id, t0:agora };   // a animação própria e os rótulos dele
+    else if (['prot', 'cor', 'mor'].includes(id)) P.ef = null;   // o protetor tem os rótulos dele (o filme, a mancha que fica)
     const [txt, bem] = peleFrase(P, id, liga, dano);
     P.msg = { txt, bem, t:agora, id, liga };
   }
@@ -1016,7 +1141,12 @@ function desenhaPele(ctx, c, L){
   try { ctx.drawImage(PX.cv, x, y, w, h); } catch (e) { /* ok */ }
   ctx.restore();
   const vt = pulsoVasos(ctx, P, agora, x, y, al);
+  efeitoPele(ctx, P, agora, x, y, al);
   luzVisivel(ctx, P, agora, x, y, al);
+  if (!P.on.mor && (P.w.protetor > .5 || P.w['protetor-cor'] > .5) && !(P.ef && P.on[P.ef.id] && P.ef.id !== 'sol')){   // o filme e, com dano, a mancha que ficou
+    ctx.globalAlpha = al; tagPele(ctx, 'UV: para no filme', x + 14, y + 14, AMARELO);
+    if (P.dano && (P.w['sol-forte'] || 0) > .5) rotuloPele(ctx, 'a mancha fica', x, y, PELE_POS.solManchas[1], [.62, .45], LARANJA, al);
+  }
   if (vt > 0){   // "pelo sangue": rótulo no gordura de baixo, com a linha fina até a artéria
     const ax = x + .16 * w, ay = y + .705 * h, tx = x + 18, ty = y + h - 58;
     ctx.globalAlpha = al * vt; ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(tx + 60, ty); ctx.lineTo(ax, ay); ctx.stroke();
