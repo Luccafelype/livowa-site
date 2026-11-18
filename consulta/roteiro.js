@@ -466,7 +466,7 @@ function sinalForma(sin, dor, pos){
   if (dor && sin[dor] === top && TEMA_SIN[dor] && (top >= 2 || !ids.some(id => id !== dor && sin[id] === top))) return dor;
   return ids.sort((a, b) => sin[b] - sin[a] || pos(a) - pos(b))[0];
 }
-const MAX_PI = 150;   // segundos a 2,5 palavras por segundo. 17/11 (v7): a v6 da Carla tem 367 palavras (~147 s); o gravador avisa e corta pelos Ajustes
+const MAX_PI = 160;   // 18/11 (decisão da coordenação: a fala nova do 'dentro' tem +12 palavras; com 150 s a Carla perdia "E as manchinhas"). Segundos a 2,5 palavras por segundo. 17/11 (v7): a v6 da Carla tem 367 palavras (~147 s); o gravador avisa e corta pelos Ajustes
 const nomeSinal = id => (IMP && IMP.rotulos && IMP.rotulos[id] && IMP.rotulos[id].faixa) || REG_PI[id] || id;   // o nome da lupa
 // 17/11 (v7, a copy v6 da Carla editada pelo Lucca na Central em 16/11; regras-ajuste-pele-idade.md v7): 9 blocos no jeito dele.
 //  1 o objetivo dela (dito como dela) + o incômodo, com "né?", e "Vamos olhar a sua foto, pra você entender de onde vem e o que
@@ -818,7 +818,7 @@ function htmlEstoque(i){
     return `<div class="rot-l${bl.fixo ? ' fixo' : ''}"><span class="rot-t">${esc(bl.tempo)}</span><span class="rot-f">${txt}${bl.circular ? ` <mark class="rot-c">circular: ${esc(bl.circular)}</mark>` : ''}${bl.fixo ? ' <small class="rot-fix">frase fixa</small>' : ''}</span>${n > 1 ? `<button type="button" class="rot-trocar" data-rot="${i}" data-k="${k}" aria-label="Trocar variação (${j + 1} de ${n})">Trocar <small>${j + 1}/${n}</small></button>` : '<span></span>'}</div>`;
   }).join('');
   // 13/11 (v4): pele, pele2, pele nova e emagrecimento 170 a 210 palavras; braço, pernas e longevidade 120 a 160
-  const teto = CURTOS.has(b.teste) ? 160 : b.teste === 'pele-idade' ? 370 : 215;   // 17/11 (v7): a v6 da Carla tem 367; a ponte nova tem 2 palavras a mais
+  const teto = CURTOS.has(b.teste) ? 160 : b.teste === 'pele-idade' ? 395 : 215;   // 18/11: teto de 160 s. 17/11 (v7): a v6 da Carla tem 367; a ponte nova tem 2 palavras a mais
   const p = palavras(b), alvo = R.blocos.some(bl => /^refazer/.test(bl.id)) ? '' : p < 70 ? ' (curto)' : p > teto ? ` (passa de ${teto})` : '';
   const ul = (t, a) => a.length ? `<div class="rot-av"><b>${t}</b><ul>${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
   return `<div class="rot-txt">${linhas}</div><p class="rot-info">${p} palavras faladas${alvo} · montado do estoque, sem custo</p>
@@ -1011,7 +1011,7 @@ function idPelaFala(fala, j, n){
   if (/\bse forma\b|muda assim|como o contorno muda/i.test(fala)) return ['Como se forma', 'cl-forma'];
   if (/^Como se trabalha/i.test(fala)) return ['Como se trabalha', 'cl-conserto'];   // v5
   if (/como a gente trabalha isso|caminho teria/i.test(fala)) return ['O caminho', 'cl-caminho'];
-  if (/^Só que não é só\b|^O que vem de fora\b|corre no seu sangue/i.test(fala)) return ['De fora e de dentro', 'cl-dentro'];
+  if (/^Só que não é só\b|^O que vem de fora\b|^E o que vem de dentro\b|corre no seu sangue/i.test(fala)) return ['De fora e de dentro', 'cl-dentro'];
   if (/^Olha esse exemplo\b/i.test(fala)) return ['Exemplo', 'cl-exemplo'];
   if (/o que mais conserva/i.test(fala)) return ['O que conserva', 'cl-importa'];   // v3
   if (/^(E )?por que\b|^Do que você me contou/i.test(fala)) return ['O porquê', 'cl-dentro'];

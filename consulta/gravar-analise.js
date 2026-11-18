@@ -27,11 +27,11 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1811a';
+const VERSAO = '1811p';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
-const PADRAO = { ritmo:2.5, salto:150, alvo:150, teto:170 };   // 14/11 (v5: como se forma, como se trabalha e o caminho entram no roteiro). 17/11 (v7): a v6 da Carla tem 367 palavras (~147 s); aos 115 s o salto cortava o caminho
+const PADRAO = { ritmo:2.5, salto:160, alvo:160, teto:180 };   // 18/11: o roteiro da pele-idade vai até 160 s (a fala nova do 'dentro')   // 14/11 (v5: como se forma, como se trabalha e o caminho entram no roteiro). 17/11 (v7): a v6 da Carla tem 367 palavras (~147 s); aos 115 s o salto cortava o caminho
 function params(o){
   const p = { ...PADRAO }, q = (o && o.params) || {};
   for (const k of Object.keys(PADRAO)){ const v = Number(q[k]); if (Number.isFinite(v) && v > 0) p[k] = v; }
@@ -89,6 +89,7 @@ function monta(){
     <b class="ga-p-tit"></b>
     <div class="ga-p-rola"><p class="ga-p-txt"></p><div class="ga-p-opc" hidden></div></div>
     <div class="ga-foco" role="group" aria-label="Foco no vídeo" hidden></div>
+    <div class="ga-pele" role="group" aria-label="Pele no vídeo" hidden></div>
     <div class="ga-nota" hidden></div>
     <p class="ga-p-dep" aria-hidden="true"></p>
   </div>
@@ -127,7 +128,7 @@ function monta(){
   </div>`;
   document.body.append(el);
   const q = s => el.querySelector(s);
-  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'), foco:q('.ga-foco'),
+  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'), foco:q('.ga-foco'), pele:q('.ga-pele'),
     conta:q('.ga-conta'), aviso:q('.ga-aviso'), nota:q('.ga-nota'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
     fechar:q('.ga-fechar'), ant:q('.ga-ant'), rec:q('.ga-rec-b'), recT:q('.ga-rec-t'), prox:q('.ga-prox'), grav:q('.ga-grav'), rev:q('.ga-rev'), fim:q('.ga-fim'),
     refazer:q('.ga-refazer'), enviar:q('.ga-enviar'), baixar:q('.ga-baixar'), marcar:q('.ga-marcar'), denovo:q('.ga-denovo'), info:q('.ga-info'), tentar:q('.ga-tentar') };
@@ -152,11 +153,12 @@ function encaixa(){
 function cabeTexto(){
   if (!G || !D || D.prompt.hidden) return;
   let fs = fsPrompt; const r = D.pRola;
-  D.foco.classList.remove('aperto');
+  D.foco.classList.remove('aperto'); D.pele.classList.remove('aperto');
   D.prompt.style.setProperty('--fs', fs + 'px');
   const sobra = () => D.pTxt.getBoundingClientRect().height > r.clientHeight + .5;   // 14/11: medida com fração (78,4 px num painel de 77 passava por "coube")
   while (fs > 14 && sobra()){ fs--; D.prompt.style.setProperty('--fs', fs + 'px'); }   // só a fala decide; as notas ficam com o que sobrar (rolam)
-  if (sobra() && !D.foco.hidden) D.foco.classList.add('aperto');   // 14/11: a fala não coube nem com 14 px: os botões de foco saem (no celular, o toque no ponto do rosto faz o mesmo)
+  if (sobra() && !D.foco.hidden) D.foco.classList.add('aperto');
+  if (sobra() && !D.pele.hidden) D.pele.classList.add('aperto');   // 18/11: idem com os botões da pele (o toque nos rótulos sob a pele faz o mesmo)   // 14/11: a fala não coube nem com 14 px: os botões de foco saem (no celular, o toque no ponto do rosto faz o mesmo)
   r.scrollTop = 0;
 }
 
@@ -311,6 +313,7 @@ function nota(){
   if (c && c.tipo === 'desejo' && !(c.itens && c.itens.length)) t = c.aviso || 'O que importa: conteúdo em pesquisa. Este cartão não entra no vídeo.';
   else if (c && c.tipo === 'exemplo' && !c.img) t = c.erro ? 'A imagem do exemplo não carregou: pule esta parte.' : 'Carregando a imagem do exemplo…';
   else if (c && c.tipo === 'mecanismo'){ const q = (FORMA_IMG[c.tema] || []).map(carregaForma), b = q[q.length - 1]; if (!b) t = 'Sem ilustração para este ponto: fale com a foto na tela.'; else if (b.erro) t = 'A ilustração não carregou: fale com a foto na tela.'; else if (!b.ok) t = 'Carregando a ilustração…'; }
+  else if (c && c.pele && !(c.pele.modo === 'caminho' && !(G.pele && G.pele.aberto))){ const b = carregaForma(PELE_SRC('base')); if (b.erro) t = 'A pele não carregou: fale com a tela de antes.'; else if (!b.ok) t = 'Carregando a pele…'; }
   else if (c && c.tipo === 'foto'){
     const r = G.rosto;
     if (!c.lupas || !c.lupas.length) t = 'Sem lupa: a análise não marcou sinal visível. Use o dedo para marcar.';
@@ -554,6 +557,7 @@ function lua(ctx){   // lua crescente de traço: arco longo do círculo de fora 
   ctx.beginPath(); arco(A, ang(A, p1), ang(A, p2), B, true); arco(B, ang(B, p2), ang(B, p1), A, false); ctx.closePath(); ctx.stroke();
 }
 function cenaDentro(ctx, c, t){
+  if (c.pele && cenaPeleDentro(ctx, c, t)) return true;   // 18/11: a pele interativa; sem ela carregada, os ícones de antes
   const hs = (c.habitos || []).slice(0, 3); if (!hs.length) return false;
   escurece(ctx, .82 * sai(t / 250));
   const alto = 190, y0 = Math.round((TOPO + 40 + 880 - hs.length * alto) / 2);
@@ -714,10 +718,375 @@ function cenaMecanismo(ctx, c, t){
   ctx.globalAlpha = 1;
   return true;
 }
+// ---------- 18/11: a PELE INTERATIVA ----------
+// Pedido do Lucca (18/11): em "De fora e de dentro" e "O caminho", "uma pele realista tomando sol de fora, e eu ter a opção de
+// colocar um protetor que bloqueia o sol, ou tirá-lo, e isso poderia regenerar a pele (mini animações, e eu conseguindo
+// mudá-las…, cada componente pode ajudar a pele, ou destruí-la de formas específicas)"; no caminho, "inflamação poderia ser
+// açúcar, industrializados, sono, metabolismo, hormônios, estresse". Desenho aprovado (livowa-empresa/tarefas/
+// gravador-pontos-e-copy-1711/pele-interativa/desenho.md): o mesmo corte da bochecha em 14 quadros (Codex, consulta/pele/),
+// e a pele mostrada = base + Σ peso × (quadro − base), calculada por pixel (672×448) só quando os pesos mudam.
+//  - máx. 2 GRUPOS somados; com 3 ou mais, em cada faixa (ar, epiderme, derme de cima, derme funda, gordura) manda só o de
+//    efeito maior (o teste com 3 somados borrou); a passagem da soma para as faixas acompanha o peso do 3º (sem salto);
+//  - o tamanho segue o peso em anos de rosto (cada quadro já foi desenhado no tamanho dele) e o tempo vira a velocidade:
+//    sono em 1 s (uma noite), açúcar em 2 etapas (acucar → acucar-anos, 3 s), o resto em ~2 s;
+//  - ao desligar, o resíduo do "volta?": sol sem protetor volta à base; com dano e protetor → sol-volta (volta em parte);
+//    cigarro e peso ficam em até 30%; açúcar e hormônios param onde estão; estresse fica em 50% e a parte do sono some;
+//  - o protetor é um interruptor por cima do sol (sem dano: o sol cai a 10%; com cor, a 0); "pele morena" (M) mostra a
+//    mancha que a luz visível escurece sob o protetor comum e que clareia um pouco com o protetor com cor.
+// Os controles são dele: botões no painel (fora do vídeo), teclas (1–9, 0, M, R; no caminho P e 1–6) e toque nos rótulos
+// desenhados sob a pele. O que entra no vídeo: a pele, os rótulos ligados/desligados, a frase curta do último toque (sem
+// promessa) e "Ilustração. Varia de pessoa para pessoa.".
+const PELE_SRC = n => 'pele/' + n + '.webp';
+const PELE_Q = ['base', 'sol', 'sol-volta', 'protetor', 'protetor-cor', 'morena-protetor', 'morena-cor', 'cigarro', 'sono', 'estresse', 'acucar', 'acucar-anos', 'menopausa', 'peso'];
+const PELE_GRUPO = { sol:'sol', 'sol-volta':'sol', protetor:'filme', 'protetor-cor':'filme', 'morena-protetor':'filme', 'morena-cor':'filme', cigarro:'cig', sono:'sono', estresse:'est', acucar:'acu', 'acucar-anos':'acu', menopausa:'horm', peso:'peso' };
+const PELE_FX = { filme:[['ar', 'epi'], 2], sol:[['ar', 'epi', 'dc'], 1], cig:[['ar', 'epi', 'dc', 'df'], .9], peso:[['epi', 'dc', 'df', 'gor'], .7], horm:[['dc', 'df', 'gor'], .6], acu:[['dc', 'df'], .5], sono:[['epi', 'dc', 'df'], .4], est:[['epi', 'dc'], .3] };
+const PELE_FAIXA = { ar:[-1, .264], epi:[.264, .342], dc:[.342, .508], df:[.508, .742], gor:[.742, 2] }, PELE_PENA = .025;   // em fração da altura (medido nos quadros)
+const PELE_VEL = { sol:2000, 'sol-volta':2200, protetor:1200, 'protetor-cor':1200, 'morena-protetor':1200, 'morena-cor':1600, cigarro:2000, sono:1000, estresse:2000, menopausa:2000, peso:2000 };   // ms de 0 a 1
+const PELE_ACU_MS = 1500;   // açúcar: 1,5 s por etapa
+// os fatores: nome no rótulo, se estraga (laranja) ou protege (verde), e a frase de ligar/desligar (o tempo vai na frase)
+// 18/11 (o Lucca: "animações interativas que posso explicar a causa de texturas, porque o protetor não protege de manchas, o
+// que vem do sangue que prejudica a pele"): a frase de cada toque diz o MECANISMO (1 a 3 linhas, sem promessa), e os de dentro
+// chegam pelos vasos (o pulso que corre na artéria e na veia antes de a pele mudar)
+const PELE_F = {
+  sol:{ nome:'Sol', mal:true }, prot:{ nome:'Protetor' }, cor:{ nome:'Protetor com cor', curto:'Com cor' }, mor:{ nome:'Pele morena', painel:'Pele morena (mancha)' },
+  cig:{ nome:'Cigarro', mal:true, on:'A fumaça estreita os vasinhos e solta a enzima que quebra o colágeno: a pele fica opaca e mais fina, em anos.', off:'Parar segura o avanço. Se o que foi perdido volta, não se sabe.' },
+  acu:{ nome:'Açúcar', mal:true, sangue:[255, 186, 60], on:'O açúcar alto chega pelo sangue e gruda no colágeno: ele endurece e amarela, devagar, em anos.', off:'Baixar a glicose segura o avanço. O que endureceu fica.' },
+  ind:{ nome:'Industrializados', mal:true, sangue:[255, 186, 60], on:'Comida ultraprocessada sobe a glicose: o mesmo caminho do açúcar, mais fraco.', off:'Baixar a glicose segura o avanço. O que endureceu fica.' },
+  sono:{ nome:'Sono', mal:true, sangue:[140, 185, 255], on:'Noite curta: o sangue circula pior, a pele fica pálida e apagada no dia seguinte. Volta quando você dorme.', off:'Dormir bem devolve.' },
+  est:{ nome:'Estresse', mal:true, sangue:[205, 140, 255], on:'O estresse mexe no sono e no cortisol, que chegam pela circulação: a barreira de cima afina.', off:'O sono volta. O resto, não se sabe.' },
+  horm:{ nome:'Hormônios', mal:true, sangue:[255, 140, 205], on:'Na menopausa cai o estrogênio do sangue: a derme afina 1 a 2% ao ano.', off:'O que afinou fica.' },
+  peso:{ nome:'Peso', painel:'Peso (metabolismo)', mal:true, sangue:[255, 214, 90], on:'Perda grande e rápida: a gordura de baixo murcha e a pele de cima ondula.', off:'Parar segura. O que se cuida é o ritmo da perda e o músculo.' },
+};
+// o que cada fator de dentro move, e a espera do pulso no vaso antes de a pele mudar
+const PELE_SANGUE_Q = { acu:['g'], ind:['g'], sono:['sono'], est:['estresse', 'sono'], horm:['menopausa'], peso:['peso'] }, PELE_PULSO_MS = 1800, PELE_ESPERA = 700;
+const PELE_TECLAS = {
+  dentro:[['sol', '1'], ['prot', '2'], ['cor', '3'], ['cig', '4'], ['acu', '5'], ['ind', '6'], ['sono', '7'], ['est', '8'], ['horm', '9'], ['peso', '0'], ['mor', 'M'], ['zerar', 'R']],
+  caminho:[['abrir', 'P'], ['acu', '1'], ['ind', '2'], ['sono', '3'], ['est', '4'], ['horm', '5'], ['peso', '6'], ['zerar', 'R']] };
+const PELE_ROT = { dentro:[['Fora', ['sol', 'prot', 'cor', 'cig']], ['Dentro', ['acu', 'ind', 'sono', 'est', 'horm', 'peso']]], caminho:[['', ['acu', 'ind', 'sono', 'est', 'horm', 'peso']]] };
+const pelesDe = bs => (bs || []).map(b => b && b.cena).filter(c => c && c.pele);
+// baixa os quadros ao abrir o gravador e já calcula as diferenças (1 por volta de 40 ms), antes de ele gravar: a leitura de
+// pixels (getImageData) durante a gravação fez o Chrome trocar a descrição do vídeo mp4 no meio do arquivo (teste da Caixa, 18/11)
+function preparaPele(bs){
+  if (!pelesDe(bs).length) return;
+  PELE_Q.forEach(n => carregaForma(PELE_SRC(n)));
+  clearInterval(PX.aq);
+  PX.aq = setInterval(() => {
+    if (!pxBase()){ if (carregaForma(PELE_SRC('base')).erro) clearInterval(PX.aq); return; }
+    const falta = PELE_Q.filter(n => n !== 'base' && !PX.d[n] && !carregaForma(PELE_SRC(n)).erro);
+    if (!falta.length){ clearInterval(PX.aq); return; }
+    const pronto = falta.find(n => carregaForma(PELE_SRC(n)).ok); if (pronto) pxDif(pronto);
+  }, 40);
+}
+// o motor: a base e as diferenças (Int8, metade do valor) no tamanho em que a pele é desenhada
+const PX = { w:672, h:448, base:null, d:{}, tmp:null, tctx:null, cv:null, cctx:null, out:null };
+function pxBase(){
+  if (PX.base) return true;
+  const b = carregaForma(PELE_SRC('base')); if (!b.ok) return false;
+  PX.tmp = document.createElement('canvas'); PX.tmp.width = PX.w; PX.tmp.height = PX.h; PX.tctx = PX.tmp.getContext('2d', { willReadFrequently:true });
+  PX.cv = document.createElement('canvas'); PX.cv.width = PX.w; PX.cv.height = PX.h;
+  // o canvas da pele fica na CPU (willReadFrequently): desenhar uma fonte da GPU num quadro que o Chrome já passou para a CPU
+  // o devolvia à GPU no meio da gravação, e o mp4 (avc1) trocava a descrição do vídeo (erro no teste da Caixa, 18/11)
+  PX.cctx = PX.cv.getContext('2d', { willReadFrequently:true });
+  PX.tctx.drawImage(b.img, 0, 0, PX.w, PX.h);
+  const dados = PX.tctx.getImageData(0, 0, PX.w, PX.h);
+  PX.base = new Uint8ClampedArray(dados.data); PX.out = dados;
+  vasos();
+  PX.cctx.putImageData(PX.out, 0, 0); PX.chave = '';
+  return true;
+}
+function pxDif(n){
+  if (PX.d[n]) return PX.d[n];
+  if (!PX.base) return null;
+  const e = carregaForma(PELE_SRC(n)); if (!e.ok) return null;
+  PX.tctx.drawImage(e.img, 0, 0, PX.w, PX.h);
+  const q = PX.tctx.getImageData(0, 0, PX.w, PX.h).data, b = PX.base, d = new Int8Array(PX.w * PX.h * 3);
+  for (let i = 0, j = 0; i < q.length; i += 4, j += 3){ d[j] = (q[i] - b[i]) >> 1; d[j + 1] = (q[i + 1] - b[i + 1]) >> 1; d[j + 2] = (q[i + 2] - b[i + 2]) >> 1; }
+  return (PX.d[n] = d);
+}
+// pesos por linha (as faixas com pena): soma até 2 grupos; do 3º em diante, o de efeito maior manda em cada faixa
+function pxCoefs(cs){
+  const W = {}; cs.forEach(c => { const g = PELE_GRUPO[c.n]; W[g] = Math.min(1, (W[g] || 0) + c.w); });
+  const ws = Object.values(W).sort((a, b) => b - a), e3 = ws[2] || 0;
+  if (e3 < .004) return { e3:0, cs:cs.map(c => ({ ...c, k:c.w })) };
+  const venc = {};
+  for (const f of Object.keys(PELE_FAIXA)){
+    let m = null, s = 0;
+    for (const g of Object.keys(W)){ const fx = PELE_FX[g]; if (!fx || !fx[0].includes(f) || W[g] < .004) continue; const v = W[g] * fx[1]; if (v > s){ s = v; m = g; } }
+    venc[f] = m;
+  }
+  return { e3, venc, cs:cs.map(c => {
+    const k = new Float32Array(PX.h), g = PELE_GRUPO[c.n];
+    for (let y = 0; y < PX.h; y++){
+      const fy = (y + .5) / PX.h; let mb = 0;
+      for (const f of Object.keys(PELE_FAIXA)){ if (venc[f] !== g) continue; const [a, b] = PELE_FAIXA[f];
+        mb += lim((fy - (a - PELE_PENA)) / (2 * PELE_PENA), 0, 1) * lim(((b + PELE_PENA) - fy) / (2 * PELE_PENA), 0, 1); }
+      k[y] = c.w * ((1 - e3) + e3 * mb);
+    }
+    return { ...c, k };
+  }) };
+}
+function pxPinta(cs){
+  const chave = cs.map(c => c.n + ':' + c.w.toFixed(3)).join('|');
+  if (chave === PX.chave) return;
+  PX.chave = chave;
+  const { cs:ks, e3, venc } = pxCoefs(cs), w = PX.w, h = PX.h, o = PX.out.data, b = PX.base;
+  PX.ult = { e3, venc:venc || null, n:ks.length };   // para conferir (teste)
+  const L = ks.map(c => ({ d:pxDif(c.n), k:c.k })).filter(c => c.d);
+  const at = new Array(8);
+  for (let y = 0; y < h; y++){
+    let n = 0;
+    for (const c of L){ const k = typeof c.k === 'number' ? c.k : c.k[y]; if (k > .002){ at[n++] = c.d; at[n++] = 2 * k; } }
+    let i = y * w * 4, j = y * w * 3; const fim = i + w * 4;
+    if (!n){ o.set(b.subarray(i, fim), i); continue; }
+    if (n === 2){ const d = at[0], k = at[1]; for (; i < fim; i += 4, j += 3){ o[i] = b[i] + k * d[j]; o[i + 1] = b[i + 1] + k * d[j + 1]; o[i + 2] = b[i + 2] + k * d[j + 2]; } continue; }
+    if (n === 4){ const d = at[0], k = at[1], e = at[2], q = at[3]; for (; i < fim; i += 4, j += 3){ o[i] = b[i] + k * d[j] + q * e[j]; o[i + 1] = b[i + 1] + k * d[j + 1] + q * e[j + 1]; o[i + 2] = b[i + 2] + k * d[j + 2] + q * e[j + 2]; } continue; }
+    for (; i < fim; i += 4, j += 3){ let r = b[i], g = b[i + 1], bl = b[i + 2]; for (let m = 0; m < n; m += 2){ const d = at[m], k = at[m + 1]; r += k * d[j]; g += k * d[j + 1]; bl += k * d[j + 2]; } o[i] = r; o[i + 1] = g; o[i + 2] = bl; }
+  }
+  PX.cctx.putImageData(PX.out, 0, 0);
+}
+// os vasos da base (artéria vermelha, veia azul-violeta da derme), achados pela cor uma vez: o pulso do que vem do sangue corre
+// neles, de baixo e da esquerda para cima e para a direita (a = a hora em que o pulso chega em cada ponto, de 0 a 1)
+function vasos(){
+  const w = PX.w, h = PX.h, b = PX.base, m = new Float32Array(w * h);
+  for (let y = Math.round(.345 * h); y < Math.round(.8 * h); y++) for (let x = 0; x < w; x++){
+    const i = (y * w + x) * 4, r = b[i], g = b[i + 1], bl = b[i + 2];
+    const art = lim((r - g - 95) / 50, 0, 1) * lim((150 - g) / 40, 0, 1), vei = lim((bl - g + 5) / 30, 0, 1) * lim((200 - r) / 60, 0, 1);
+    m[y * w + x] = Math.max(art, vei);
+  }
+  // um pouco de brilho em volta (caixa 5×5) e só o que é vaso de verdade
+  const t = new Float32Array(w * h), k = 2;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++){ let s = 0; for (let d = -k; d <= k; d++){ const xx = x + d; if (xx >= 0 && xx < w) s += m[y * w + xx]; } t[y * w + x] = s / (2 * k + 1); }
+  const idx = [], val = [], hora = [];
+  for (let y = k; y < h - k; y++) for (let x = 0; x < w; x++){ let s = 0; for (let d = -k; d <= k; d++) s += t[(y + d) * w + x]; s /= (2 * k + 1); const v = Math.max(s * 1.6, m[y * w + x]);
+    if (v > .22){ idx.push(y * w + x); val.push(Math.min(1, v)); hora.push(lim(.55 * x / w + .45 * (.78 - y / h) / .44, 0, 1)); } }
+  PX.vI = Int32Array.from(idx); PX.vV = Float32Array.from(val); PX.vH = Float32Array.from(hora);
+  PX.vcv = document.createElement('canvas'); PX.vcv.width = w; PX.vcv.height = h;
+  PX.vctx = PX.vcv.getContext('2d', { willReadFrequently:true });   // na CPU, como o da pele (o mp4 não troca a descrição)
+  PX.vimg = PX.vctx.createImageData(w, h);
+}
+// o pulso: a frente clara corre pelos vasos em ~1 s e deixa um brilho que some até 1,8 s
+function pulsoVasos(ctx, P, agora, x0, y0, al){
+  const p = P.pulso; if (!p || !PX.vI) return 0;
+  const t = (agora - p.t0) / 1000; if (t * 1000 > PELE_PULSO_MS){ P.pulso = null; return 0; }
+  const fr = t / 1.0, rasto = 1 - lim((t - 1.0) / .8, 0, 1), d = PX.vimg.data, [cr, cg, cb] = p.cor;
+  d.fill(0);
+  for (let k = 0; k < PX.vI.length; k++){
+    const a = PX.vH[k], fr2 = (a - fr) / .07, frente = Math.exp(-fr2 * fr2), passou = a < fr ? .45 * rasto : 0;
+    const v = PX.vV[k] * Math.min(1, frente + passou); if (v < .02) continue;
+    const i = PX.vI[k] * 4; d[i] = cr; d[i + 1] = cg; d[i + 2] = cb; d[i + 3] = Math.round(255 * v);
+  }
+  PX.vctx.putImageData(PX.vimg, 0, 0);
+  ctx.save(); ctx.globalAlpha = al; ctx.globalCompositeOperation = 'lighter';
+  try { ctx.drawImage(PX.vcv, x0, y0); ctx.globalAlpha = al * .6; ctx.drawImage(PX.vcv, x0, y0); } catch (e) { /* ok */ }
+  ctx.restore();
+  return Math.max(0, Math.min(1, t / .25)) * (1 - lim((t - 1.4) / .4, 0, 1));   // o quanto mostrar o rótulo "pelo sangue"
+}
+// pele morena: o UV (dourado) para no filme; a luz visível (lilás) passa pelo protetor comum até a mancha; com cor, para no filme
+const MANCHA = { x:.487, y:.344, l:.15 }, FILME_Y = .262;
+function luzVisivel(ctx, P, agora, x0, y0, al){
+  const wM = P.w['morena-protetor'] || 0, wC = P.w['morena-cor'] || 0, k = Math.max(wM, wC); if (k < .02) return;
+  const w = PX.w, h = PX.h, pul = .75 + .25 * Math.sin(agora / 260), ate = FILME_Y + (MANCHA.y + .01 - FILME_Y) * (wM / Math.max(.001, wM + wC));
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); ctx.globalCompositeOperation = 'lighter';
+  for (let j = 0; j < 3; j++){
+    const xs = x0 + w * (MANCHA.x - .2 + j * .07), xe = x0 + w * (MANCHA.x - MANCHA.l / 2 + j * MANCHA.l / 2), ye = y0 + h * ate, ys = y0 - 10, lg = 9;
+    const g = ctx.createLinearGradient(xs, ys, xe, ye); g.addColorStop(0, 'rgba(205,190,255,0)'); g.addColorStop(.35, 'rgba(205,190,255,.55)'); g.addColorStop(1, 'rgba(225,215,255,.95)');
+    ctx.globalAlpha = al * k * pul * .55; ctx.strokeStyle = g; ctx.lineWidth = lg; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(xs, ys); ctx.lineTo(xe, ye); ctx.stroke();
+  }
+  ctx.restore();
+  // os rótulos: UV para no filme; a luz visível passa (comum) ou para (com cor)
+  const tag = (txt, tx, ty, cor) => { ctx.font = `700 21px ${FONTE}`; const tw = ctx.measureText(txt).width + 20; ctx.fillStyle = 'rgba(8,10,9,.78)'; caixa(ctx, tx, ty, tw, 32, 10); ctx.fill();
+    ctx.fillStyle = cor; ctx.textBaseline = 'middle'; ctx.fillText(txt, tx + 10, ty + 17); ctx.textBaseline = 'alphabetic'; };
+  ctx.globalAlpha = al * k;
+  tag('UV: para no filme', x0 + 14, y0 + 14, AMARELO);
+  tag(wM >= wC ? 'luz visível: passa' : 'luz visível: para no filme com cor', x0 + w - (wM >= wC ? 196 : 352), y0 + 14, '#d9ccff');
+  ctx.globalAlpha = 1;
+}
+// estado (um por bloco: recomeça na base quando o bloco começa)
+function peleNovo(){ return { on:{}, w:{}, a:{}, g:0, gA:0, dano:false, msg:null, ult:performance.now(), aberto:false, abT:-1e9, usos:0 }; }
+function peleAlvos(P){
+  const o = P.on, a = P.a, w = P.w, filme = !!(o.prot || o.cor);
+  a.protetor = !o.mor && o.prot ? 1 : 0; a['protetor-cor'] = !o.mor && o.cor ? 1 : 0;
+  a['morena-protetor'] = o.mor && o.prot ? 1 : 0; a['morena-cor'] = o.mor && o.cor ? 1 : 0;
+  if (o.sol && !filme){ a.sol = 1; a['sol-volta'] = 0; }
+  else if (filme && P.dano){ a.sol = 0; a['sol-volta'] = 1; }   // com protetor depois do dano: volta em parte
+  else if (o.sol){ a.sol = o.cor ? 0 : .1; a['sol-volta'] = 0; }  // o protetor por cima do sol
+  else { a.sol = 0; a['sol-volta'] = 0; }
+  a.cigarro = o.cig ? 1 : Math.min(.3, w.cigarro || 0);
+  a.peso = o.peso ? 1 : Math.min(.3, w.peso || 0);
+  a.menopausa = o.horm ? 1 : (w.menopausa || 0);
+  a.sono = Math.max(o.sono ? 1 : 0, o.est ? .5 : 0);
+  a.estresse = o.est ? 1 : Math.min(.5, w.estresse || 0);
+  P.gA = o.acu ? 2 : o.ind ? Math.max(.5, P.g) : P.g;
+}
+function peleAnda(P, agora){
+  const dt = Math.min(120, Math.max(0, agora - P.ult)); P.ult = agora;
+  const esp = n => agora < ((P.desde && P.desde[n]) || 0);   // de dentro: a pele só muda depois que o pulso correu no vaso
+  for (const n of Object.keys(P.a)){ const v = P.w[n] || 0, a = P.a[n], s = dt / (PELE_VEL[n] || 1500); if (v < a && esp(n)) continue; P.w[n] = v < a ? Math.min(a, v + s) : Math.max(a, v - s); }
+  if (!(P.g < P.gA && esp('g'))) P.g = P.g < P.gA ? Math.min(P.gA, P.g + dt / PELE_ACU_MS) : Math.max(P.gA, P.g - dt / PELE_ACU_MS);
+  if ((P.w.sol || 0) >= .5) P.dano = true;
+  if (P.dano && !P.on.sol && !P.on.prot && !P.on.cor && (P.w.sol || 0) < .01 && (P.w['sol-volta'] || 0) < .01) P.dano = false;
+  const cs = Object.keys(P.w).filter(n => P.w[n] > .003).map(n => ({ n, w:P.w[n] }));
+  if (P.g > .003){ if (P.g <= 1) cs.push({ n:'acucar', w:P.g }); else { if (P.g < 2) cs.push({ n:'acucar', w:2 - P.g }); cs.push({ n:'acucar-anos', w:P.g - 1 }); } }
+  return cs;
+}
+// a frase do toque e a cor dela: verde = protege ou alivia, amarelo = estraga
+function peleFrase(P, id, liga, dano){
+  const o = P.on, filme = o.prot || o.cor;
+  if (id === 'sol') return liga ? (filme ? ['Com protetor, o UV para no filme, antes de chegar ao colágeno.', true] : ['A luz quebra o colágeno de cima: a superfície fica áspera (é a textura) e a mancha nasce embaixo.', false])
+    : [filme && dano ? 'Sol desligado. O que melhorou com o protetor fica.' : 'Sol desligado: de volta ao ponto de partida.', true];
+  if (id === 'prot' || id === 'cor' || id === 'mor'){
+    if (!liga && id !== 'mor') return o.sol ? ['Sem protetor, o sol volta a pesar.', false] : ['Sem protetor.', true];
+    if (!liga) return ['De volta à pele do começo.', true];
+    if (o.mor) return o.cor ? ['O protetor com cor segura também a luz visível: a mancha para de escurecer.', true] : ['O protetor comum segura o UV, mas a luz visível passa e escurece a mancha em pele morena.', false];
+    if (o.sol && dano) return ['Protetor todo dia: a pele pode melhorar em parte. Não volta ao ponto de partida.', true];
+    return [o.cor ? 'O protetor com cor segura o UV e também a luz visível, que escurece mancha em pele morena.' : 'O protetor segura o UV no filme, em cima da pele.', true];
+  }
+  const f = PELE_F[id]; return f ? [(liga ? f.on : f.off) || '', !liga] : ['', true];
+}
+const peleCena = () => { const c = G && (G.o.blocos[G.bloco] || {}).cena; return c && c.pele ? c : null; };
+function peleAcao(id){
+  if (!G || !['prep', 'conta', 'rec'].includes(G.estado)) return;
+  const c = peleCena(); if (!c || !PELE_TECLAS[c.pele.modo].some(([k]) => k === id)) return;
+  const P = G.pele || (G.pele = peleNovo()), agora = performance.now();
+  if (id === 'zerar'){ P.on = {}; P.dano = false; P.msg = null; P.gA = 0; P.pulso = null; P.desde = {}; Object.keys(P.w).forEach(n => { P.a[n] = 0; }); }   // tudo volta à base (sem resíduo)
+  else if (id === 'abrir'){ P.aberto = !P.aberto; P.abT = agora; }
+  else {
+    if (c.pele.modo === 'caminho' && !P.aberto){ P.aberto = true; P.abT = agora; }
+    const liga = !P.on[id], dano = P.dano; P.on[id] = liga;
+    if (liga && id === 'prot') P.on.cor = false;
+    if (liga && id === 'cor') P.on.prot = false;
+    if (id === 'mor' && liga && !P.on.prot && !P.on.cor) P.on.prot = true;   // a mancha da pele morena aparece sob o protetor comum
+    if ((id === 'prot' || id === 'cor') && !liga && !P.on.prot && !P.on.cor) P.on.mor = false;
+    peleAlvos(P);
+    if (liga && PELE_SANGUE_Q[id]){ P.pulso = { t0:agora, cor:PELE_F[id].sangue }; P.desde = P.desde || {}; PELE_SANGUE_Q[id].forEach(n => { P.desde[n] = agora + PELE_ESPERA; }); }
+    const [txt, bem] = peleFrase(P, id, liga, dano);
+    P.msg = { txt, bem, t:agora, id, liga };
+  }
+  P.usos++; G.peleUsos = (G.peleUsos || 0) + 1;
+  botoesPele();
+}
+function botoesPele(){
+  if (!D || !G) return;
+  const c = peleCena(), m = c ? c.pele.modo : '', k = G.bloco + '|' + m;
+  if (D.pele.dataset.k !== k){
+    D.pele.dataset.k = k;
+    const ela = (c && c.pele.ela) || {}, grupo = { sol:'Fora', acu:'Dentro' };
+    D.pele.innerHTML = !m ? '' : PELE_TECLAS[m].map(([id, t]) => {
+      const f = PELE_F[id] || {}, nome = id === 'zerar' ? 'Zerar' : id === 'abrir' ? 'Abrir: o que vem de dentro' : (f.painel || f.nome);
+      return (m === 'dentro' && grupo[id] ? (id === 'acu' ? '<i class="ga-pele-q"></i>' : '') + `<span class="ga-pele-g">${grupo[id]}</span>` : '') +
+        `<button type="button" class="ga-foco-b ga-pele-b${id === 'zerar' ? ' zera' : ''}" data-p="${id}" aria-pressed="false"><kbd>${t}</kbd><b>${esc(nome)}</b>${ela[id] ? `<small>${esc(ela[id])}</small>` : ''}</button>`;
+    }).join('');
+  }
+  D.pele.hidden = !m || G.estado === 'rev' || G.estado === 'fim';
+  const P = G.pele;
+  D.pele.querySelectorAll('button[data-p]').forEach(b => { const id = b.dataset.p; if (id !== 'zerar') b.setAttribute('aria-pressed', String(!!(P && (id === 'abrir' ? P.aberto : P.on[id])))); });
+}
+// os rótulos sob a pele (entram no vídeo e servem de botão no toque): ligado = cheio (laranja estraga, verde protege)
+function chipsPele(ctx, grupos, P, x0, y0, larg, al){
+  const caixas = [], hC = 46, passo = 58, pad = 17, gap = 10;
+  let x = x0, y = y0;
+  ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  for (const [rot, ids] of grupos){
+    if (rot){ ctx.font = `600 22px ${FONTE}`; const wr = ctx.measureText(rot).width; if (x > x0){ x = x0; y += passo; }   // cada grupo começa numa linha
+      ctx.globalAlpha = al; ctx.fillStyle = APAGADO; ctx.fillText(rot, x, y + hC / 2 + 1); x += wr + 12; }
+    for (const id of ids){
+      const f = PELE_F[id], on = !!(P && P.on[id]), txt = f.curto && larg < 700 && id === 'cor' ? f.curto : f.nome;
+      ctx.font = `650 24px ${FONTE}`; const w = Math.ceil(ctx.measureText(txt).width) + 2 * pad;
+      if (x > x0 && x + w > x0 + larg){ x = x0; y += passo; }
+      const cor = f.mal ? LARANJA : VERDE;
+      ctx.globalAlpha = al; caixa(ctx, x, y, w, hC, hC / 2);
+      if (on){ ctx.fillStyle = cor; ctx.fill(); } else { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.32)'; ctx.stroke(); }
+      ctx.fillStyle = on ? '#0b100e' : 'rgba(255,255,255,.82)'; ctx.fillText(txt, x + pad, y + hC / 2 + 1);
+      caixas.push({ id, x, y, w, h:hC });
+      x += w + gap;
+    }
+  }
+  ctx.textBaseline = 'alphabetic';
+  return { caixas, fim:y + hC };
+}
+// a pele no quadro: L = { y (topo da imagem), grupos, al }. Sem a base carregada: false (a cena de antes entra)
+function desenhaPele(ctx, c, L){
+  if (!pxBase()) return false;
+  const P = G.pele || (G.pele = peleNovo()), agora = performance.now(), al = L.al ?? 1;
+  if (G.estado !== 'rec'){ const falta = PELE_Q.find(n => n !== 'base' && !PX.d[n] && carregaForma(PELE_SRC(n)).ok); if (falta) pxDif(falta); }   // reserva do aquecimento (nunca gravando)
+  pxPinta(peleAnda(P, agora));
+  const x = 24, y = L.y, w = PX.w, h = PX.h, r = 22;
+  ctx.globalAlpha = al; ctx.save(); caixa(ctx, x, y, w, h, r); ctx.clip();
+  try { ctx.drawImage(PX.cv, x, y, w, h); } catch (e) { /* ok */ }
+  ctx.restore();
+  const vt = pulsoVasos(ctx, P, agora, x, y, al);
+  luzVisivel(ctx, P, agora, x, y, al);
+  if (vt > 0){   // "pelo sangue": rótulo no gordura de baixo, com a linha fina até a artéria
+    const ax = x + .16 * w, ay = y + .705 * h, tx = x + 18, ty = y + h - 58;
+    ctx.globalAlpha = al * vt; ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(tx + 60, ty); ctx.lineTo(ax, ay); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ax, ay, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.font = `700 23px ${FONTE}`; const tw = ctx.measureText('chega pelo sangue').width + 22;
+    ctx.fillStyle = 'rgba(8,10,9,.82)'; caixa(ctx, tx, ty, tw, 38, 12); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.fillText('chega pelo sangue', tx + 11, ty + 20); ctx.textBaseline = 'alphabetic';
+  }
+  ctx.globalAlpha = al; ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.14)'; caixa(ctx, x, y, w, h, r); ctx.stroke();
+  // a frase do último toque (o tempo de cada um vai nela)
+  let yy = y + h + 40;
+  if (P.msg && P.msg.txt){
+    const e = sai((agora - P.msg.t) / 300);
+    ctx.globalAlpha = al * e; ctx.font = `600 26px ${FONTE}`; ctx.fillStyle = P.msg.bem ? VERDE : AMARELO; ctx.textAlign = 'left';
+    quebra(ctx, P.msg.txt, w, 3).forEach((l, i) => ctx.fillText(l, x, yy - 4 + i * 31));
+  }
+  yy = y + h + 124;
+  const ch = chipsPele(ctx, L.grupos, P, x, yy, w, al);
+  G.peleChips = ch.caixas;
+  // pé: o que ela marcou (as respostas que a fala cita) e o aviso, ao lado da câmera
+  const xP = 24, larg = CIRC.cx - CIRC.r - 16 - xP; let yP = Math.max(ch.fim + 36, CIRC.cy - CIRC.r + 30);
+  ctx.globalAlpha = al; ctx.textAlign = 'left';
+  const hs = (c.habitos || []).slice(0, 3).map(hb => `${hb.nome}: ${hb.valor}`);
+  if (hs.length && L.marcou){ ctx.font = `600 23px ${FONTE}`; ctx.fillStyle = AZUL; quebra(ctx, 'Você marcou: ' + hs.join(' · '), larg, 3).forEach(l => { ctx.fillText(l, xP, yP); yP += 29; }); yP += 6; }
+  ctx.fillStyle = APAGADO; ctx.font = `500 20px ${FONTE}`; ctx.fillText('Ilustração. Varia de pessoa para pessoa.', xP, Math.min(H - 20, yP));
+  ctx.globalAlpha = 1;
+  return true;
+}
+function cenaPeleDentro(ctx, c, t){
+  if (!pxBase()) return false;
+  const ent = sai(t / 400);
+  escurece(ctx, .94 * sai(t / 250));
+  ctx.globalAlpha = ent; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#fff'; ctx.font = `700 46px ${FONTE}`; ctx.fillText('De fora e de dentro', 40, 212);
+  ctx.fillStyle = AMARELO; ctx.fillRect(40, 230, 64, 3);
+  return desenhaPele(ctx, c, { y:252, grupos:PELE_ROT.dentro, al:ent, marcou:true });
+}
+
 // 14/11 (o Lucca sobre o cartão "O que importa aos 45": "a imagem tá uma merda, esse card com esses pontos"): o caminho em
 // frentes, uma embaixo da outra numa linha só, cada uma com o seu número; no fim, a frase do fim (c.fim). 17/11 (v7): "Não é só rosto: é
 // a sua saúde inteira." no lugar de "Com acompanhamento, fica simples." (parece venda)
+// 18/11: com a pele, o item da inflamação abre nos seis de dentro ("o que vem de dentro"): P, um dos seis ou o toque abre;
+// a lista e a pele se fundem em 0,35 s
 function cenaCaminho(ctx, c, t){
+  const P = c.pele && G.pele, agora = performance.now();
+  const k = P ? (P.aberto ? sai((agora - P.abT) / 350) : 1 - sai((agora - P.abT) / 350)) : 0;
+  if (k >= 1 && cenaPeleCaminho(ctx, c, 1)) return true;
+  G.peleChips = [];
+  const fez = cenaCaminhoLista(ctx, c, t);
+  if (k > 0) cenaPeleCaminho(ctx, c, k);
+  return fez;
+}
+function cenaPeleCaminho(ctx, c, al){
+  if (!pxBase()) return false;
+  escurece(ctx, .97 * al);
+  ctx.globalAlpha = al; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#fff'; ctx.font = `700 52px ${FONTE}`; ctx.fillText(c.titulo || 'O caminho', 50, 232);
+  ctx.fillStyle = AMARELO; ctx.fillRect(50, 250, 64, 3);
+  const xn = 74, yn = 296, n = c.pele.passo;   // o número do item no cartão (sem o item, só o rótulo)
+  if (n){
+    ctx.fillStyle = '#0b100e'; ctx.beginPath(); ctx.arc(xn, yn, 24, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = AMARELO; ctx.beginPath(); ctx.arc(xn, yn, 24, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = AMARELO; ctx.font = `700 26px ${MONO}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(n), xn, yn + 1);
+  }
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = `650 36px ${FONTE}`; ctx.fillText('O que vem de dentro', n ? 114 : 50, yn + 1);
+  ctx.textBaseline = 'alphabetic';
+  return desenhaPele(ctx, c, { y:336, grupos:PELE_ROT.caminho, al, marcou:false });
+}
+function cenaCaminhoLista(ctx, c, t){
   const ps = (c.passos || []).slice(0, 5); if (!ps.length) return false;
   escurece(ctx, .94 * sai(t / 250));
   const x0 = 50, xn = 96, y0 = 350, passo = Math.min(124, (880 - y0) / Math.max(1, ps.length - 1 || 1)), ent = sai(t / 350);
@@ -811,9 +1180,9 @@ function prompter(){
   D.pDep.textContent = G.bloco < n - 1 ? String(bs[G.bloco + 1].fala || '').replace(/\[[^\]]*\]/g, ' ').replace(/\{nome\}/g, '').replace(/\s+/g, ' ').replace(/^[\s,]+/, '').trim() : '';
   cabeTexto();
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
-  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; G.peleChips = []; if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
   marcaTempo();
-  botoesFoco();
+  botoesFoco(); botoesPele();
   nota();
 }
 // 13/11 (d-20261113-narrativa-analise-todas-iscas): o rótulo do bloco 1 (o incômodo ou objetivo nas palavras dela) em destaque
@@ -860,7 +1229,7 @@ function estado(e){
   D.rec.disabled = e === 'prep' && (!G.pronto || !!G.aguarda);
   D.fotos.querySelectorAll('button').forEach(b => { b.disabled = rev; });
   D.zoom.disabled = rev; D.cami.disabled = rev || !G.cam;
-  botoesFoco();
+  botoesFoco(); botoesPele();
   nota();
 }
 
@@ -884,6 +1253,7 @@ async function abrir(o){
   const g0 = G;
   exemplosDe(G.o.blocos).forEach(carregaExemplo);   // 13/11: a imagem do exemplo (não segura a abertura)
   preparaFormas(G.o.blocos);   // 17/11: as ilustrações do "Como se forma"
+  preparaPele(G.o.blocos);     // 18/11: os quadros da pele interativa
   await Promise.all([Promise.all(G.fotos.map(carregaFoto)).then(() => { if (G === g0) achaRosto(); }), abreCamera()]);
   if (G !== g0) return;
   const algumaFoto = G.fotos.some(f => f.img);
@@ -1141,6 +1511,9 @@ function soltou(ev){
   if (tp && ev.type === 'pointerup' && !G.gesto && performance.now() - tp.t < 300 && Math.hypot(fim.x - tp.x, fim.y - tp.y) < 24){   // 14/11: toque curto no ponto = foco
     const alvo = (G.lupasPos || []).map(q => ({ q, d:Math.hypot(q.x - fim.x, q.y - fim.y) })).filter(o => o.d < o.q.r * 1.3).sort((a, b) => a.d - b.d)[0];
     if (alvo) focar(alvo.q.id);
+    const ch = (G.peleChips || []).find(q => fim.x >= q.x - 6 && fim.x <= q.x + q.w + 6 && fim.y >= q.y - 6 && fim.y <= q.y + q.h + 6);   // 18/11: toque no rótulo da pele
+    if (ch) peleAcao(ch.id);
+    else if (!alvo){ const c = peleCena(); if (c && c.pele.modo === 'caminho' && !(G.pele && G.pele.aberto)){ const p = (c.passos || []).findIndex(x => x.k === c.pele.k), y = 350 + p * Math.min(124, (880 - 350) / Math.max(1, (c.passos.length - 1) || 1)); if (p >= 0 && Math.abs(fim.y - y) < 50) peleAcao('abrir'); } }   // toque no item da inflamação (ou, sem ele, no do metabolismo) abre
   }
   if (G.ptrs.size < 2) G.gesto = null;
   if (G.ptrs.size === 1 && G.fotos[G.foto]){ /* sobrou um dedo depois da pinça: não vira anel */ }
@@ -1160,6 +1533,7 @@ function liga(){
   D.pTxt.addEventListener('click', tocaTexto); D.pDep.addEventListener('click', tocaTexto);
   D.ant.onclick = () => { if (G && G.bloco > 0){ G.bloco--; prompter(); } };
   D.foco.onclick = ev => { const b = ev.target.closest('button[data-id]'); if (b) focar(b.dataset.id); };
+  D.pele.onclick = ev => { const b = ev.target.closest('button[data-p]'); if (b){ b.blur(); peleAcao(b.dataset.p); } };
   D.fotos.onclick = ev => { const b = ev.target.closest('button[data-f]'); if (!b || !G) return; G.foto = +b.dataset.f; G.anel = null; D.fotos.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); nota(); };
   D.zoom.onclick = () => { const f = G && G.fotos[G.foto]; if (f && f.base) f.z = { ...f.base }; };
   D.cami.onclick = () => { if (!G || !G.cam) return; G.mostraCam = !G.mostraCam; D.cami.setAttribute('aria-pressed', String(G.mostraCam)); D.cam.style.visibility = G.mostraCam ? '' : 'hidden'; };
@@ -1184,6 +1558,8 @@ function liga(){
     if (!G) return;
     const vale = ['prep', 'rec'].includes(G.estado);
     if (ev.key === ' ' && vale && !ev.target.closest?.('input, textarea')){ ev.preventDefault(); if (document.activeElement?.closest?.('.ga')) document.activeElement.blur(); if (!ev.repeat) D.prox.click(); return; }   // 13/11: espaço avança (sem acionar o botão em foco)
+    const pc = vale && !ev.target.closest?.('input, textarea') && !ev.metaKey && !ev.ctrlKey && !ev.altKey && peleCena();   // 18/11: as teclas da pele (1–9, 0, M, R; no caminho P e 1–6)
+    if (pc){ const tk = PELE_TECLAS[pc.pele.modo].find(([, t]) => t === ev.key.toUpperCase()); if (tk){ ev.preventDefault(); if (!ev.repeat) peleAcao(tk[0]); return; } }
     if (/^[1-9]$/.test(ev.key) && vale && !ev.target.closest?.('input, textarea')){ const b = D.foco.querySelectorAll('button')[+ev.key - 1]; if (b && !D.foco.hidden){ ev.preventDefault(); focar(b.dataset.id); } return; }   // 14/11: 1, 2, 3 = foco
     if (ev.key === 'ArrowRight'){ ev.preventDefault(); D.prox.click(); }
     else if (ev.key === 'ArrowLeft'){ ev.preventDefault(); D.ant.click(); }
@@ -1210,8 +1586,8 @@ function diag(motivo, g){
 }
 
 // 13/11: o roteiro do Claude chegou com o gravador aberto e ainda sem gravar: troca os blocos e volta ao 1º
-function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); preparaFormas(bs); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; prompter(); return true; }
+function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); preparaFormas(bs); preparaPele(bs); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; D.pele.dataset.k = ''; prompter(); return true; }
 // 13/11 19h45: o "Gravar análise" da lista abre o gravador na hora, com o Gravar segurado até o roteiro do Claude chegar (ou o prazo vencer)
 function liberar(){ if (!G || !G.aguarda) return; G.aguarda = false; if (G.estado === 'prep'){ estado('prep'); if (G.pronto) D.rec.focus(); } }
-return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
+return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _pele:() => ({ vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
 })();

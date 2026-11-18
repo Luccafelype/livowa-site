@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#f2f4f1">
 <script>try { var t = localStorage.getItem('livowa_crm_tema'); if (t === 'claro' || t === 'escuro') document.documentElement.dataset.tema = t; } catch (e) { /* sem armazenamento: segue o sistema */ }</script>
 <title>CRM</title>
-<link rel="stylesheet" href="gravar-analise.css?v=20261114a">
+<link rel="stylesheet" href="gravar-analise.css?v=20261118p">
 <style>
 /* Página privada do Dr. Lucca: a chave vem no fragmento (#k=...), nunca no servidor do site. Sem dados embutidos.
    13/11: o nome passou a ser CRM (pedido do Lucca); a aba dos leads é "Leads".
@@ -517,8 +517,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </div>
 <script src="uso.js?v=20261113y"></script>
 <script src="kits.js?v=20261114v5"></script>
-<script src="roteiro.js?v=20261118a"></script>
-<script src="gravar-analise.js?v=20261118a"></script>
+<script src="roteiro.js?v=20261118p"></script>
+<script src="gravar-analise.js?v=20261118p"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -730,8 +730,8 @@ const AJ_MSGS = [['audioTexto', 'Confirmação de recebimento'], ['audioFala', '
 const AJ_PARAMS = [['toque_dias', 'Toques depois da análise (dias)', [1, 3, 7], 1, 60], ['nutrir_dias', 'Nutrir: próximo toque em (dias)', 14, 1, 180],
   ['verde_min', 'Resposta verde até (min)', 5, 1, 240], ['ambar_min', 'Resposta âmbar até (min)', 60, 1, 1440], ['roteiro_espera_s', 'Espera pelo roteiro do Claude antes do estoque (s)', 30, 5, 120],
   // 13/11 (2º treino da Carla): o gravador. A chave do banco não aceita ponto: gravar_<nome> (o pedido falou gravar.<nome>)
-  ['gravar_ritmo_palavras_s', 'Gravador: ritmo da fala (palavras por segundo)', 2.5, 1, 5, 0.1], ['gravar_salto_fecho_s', 'Gravador: pula para a pergunta aos (s)', 150, 30, 170],
-  ['gravar_alvo_s', 'Gravador: alvo do vídeo (s)', 150, 30, 180], ['gravar_teto_s', 'Gravador: corta o vídeo aos (s)', 170, 45, 180]];   // 14/11 (v5): o roteiro ganhou como se forma, como se trabalha e o caminho. 17/11 (v7): a v6 da Carla tem ~147 s
+  ['gravar_ritmo_palavras_s', 'Gravador: ritmo da fala (palavras por segundo)', 2.5, 1, 5, 0.1], ['gravar_salto_fecho_s', 'Gravador: pula para a pergunta aos (s)', 160, 30, 170],
+  ['gravar_alvo_s', 'Gravador: alvo do vídeo (s)', 160, 30, 180], ['gravar_teto_s', 'Gravador: corta o vídeo aos (s)', 180, 45, 180]];   // 18/11: 160 s (a fala nova do 'dentro')   // 14/11 (v5): o roteiro ganhou como se forma, como se trabalha e o caminho. 17/11 (v7): a v6 da Carla tem ~147 s
 const AJ_VARS = ['nome', 'lv', 'desejo', 'incomodo', 'idade', 'h1', 'h2', 'link', 'proximo_teste'];
 function padraoCfg(k){
   const tx = window.KITS?.texto?.(k); if (tx) return tx.padrao;   // 13/11: texto dos kits (braço, pernas, pele…)
@@ -1998,6 +1998,16 @@ const FUT_TELA = { disposicao:'Ter a mesma disposição de hoje', reconhecer:'Me
   independente:'Não depender de ninguém', jovem:'Aparentar ser mais jovem', antes:'Cuidar da saúde antes de aparecer problema', devagar:'Envelhecer mais devagar',
   parecer:'Parecer a idade que eu sinto', aos70:'Chegar bem aos 70, com força e memória', entender:'Entender o que o meu corpo já está mostrando', cuidar:'Cuidar agora, antes que apareça' };
 const TIT_FORMA = { linhas:'Como a linha se forma', manchas:'Como a mancha se forma', firmeza:'Como o contorno muda', textura:'Como a textura se forma', olheira:'Como a olheira se forma' };
+// 18/11: a resposta dela ao lado de cada botão da pele (só no painel dele; nunca no vídeo)
+function elaPele(r, d){
+  const o = {}, v = (k, x) => HAB_CURTO[k]?.[1]?.[x];
+  if (v('sol', r.sol)) o.sol = v('sol', r.sol);
+  if (v('cigarro', r.cigarro)) o.cig = v('cigarro', r.cigarro);
+  if (v('sono', r.sono)) o.sono = String(v('sono', r.sono)).replace(/cansada\(o\)/, gen(d, 'cansada', 'cansado', 'cansada(o)'));
+  if (['glicose', 'ambas'].includes(r.metabolico)) o.acu = 'glicose alta'; else if (r.metabolico === 'nunca') o.acu = 'nunca mediu';
+  const i = Number(d.idade ?? r.idade); if ((r.sexo || d.sexo) === 'f' && i >= 42) o.horm = i + ' anos';
+  return o;
+}
 // a cena de cada bloco: idade (números e régua), foto (lupas), dentro (ícones dos hábitos citados), desejo (cartão)
 function cenaPI(id, b, p, fala){
   const d = b.d, r = d.respostas || {}, c = b.c || {}, mF = String(d.faixa || '').match(/(\d+)\D+(\d+)/), idade = Number(d.idade ?? r.idade);
@@ -2038,6 +2048,9 @@ function cenaPI(id, b, p, fala){
     const habitos = ks.filter(k => HAB_CURTO[k] && r[k] != null).slice(0, 3).map(k => ({ id:k, nome:HAB_CURTO[k][0](r),
       valor:String(HAB_CURTO[k][1][r[k]] ?? valPI(k, r[k], d)).replace(/cansada\(o\)/, gen(d, 'cansada', 'cansado', 'cansada(o)')),
       tom:tem[k] ? 'pesa' : (BEM_PI[k] || []).includes(r[k]) ? 'bem' : 'neutro' }));
+    // 18/11 (pedido do Lucca: a pele interativa): no "De fora e de dentro" da pele-idade, a cena é a pele em corte com os
+    // controles dele (gravar-analise.js PELE_*); os hábitos citados viram "Você marcou:" no pé, e a resposta dela aparece no botão
+    if (id === 'cl-dentro' || id === 'dentro') return { tipo:'dentro', habitos, pele:{ modo:'dentro', ela:elaPele(r, d) } };
     return habitos.length ? { tipo:'dentro', habitos } : null;
   }
   // 14/11 (v5): como se forma e como se trabalha (a pele em corte) e o caminho em frentes; com o caminho, o fecho fica sem cartão
@@ -2049,7 +2062,13 @@ function cenaPI(id, b, p, fala){
     return tema && TIT_FORMA[tema] ? { tipo:'mecanismo', tema, fase:'forma', titulo:(p?.dados?.tema === tema && p.dados.titulo) || TIT_FORMA[tema] } : null;
   }
   // 17/11 (v7, a copy v6 da Carla): o fim do cartão é o do caminho dele ("Não é só rosto: é a sua saúde inteira."); "Com acompanhamento, fica simples." saiu (parece venda)
-  if (/^(cl-)?caminho$/.test(id)) return p?.dados?.passos?.length ? { tipo:'caminho', titulo:'O caminho', passos:p.dados.passos, fim:p.dados.fim || 'Não é só rosto: é a sua saúde inteira.' } : null;
+  // 18/11: o item da inflamação abre na pele com os seis de dentro ("o que vem de dentro"; o Lucca abre com P, um dos seis ou o toque)
+  if (/^(cl-)?caminho$/.test(id)){
+    if (!p?.dados?.passos?.length) return null;
+    // com 2 frentes dela (cigarro e pressão/glicose) o item da inflamação sai do cartão (roteiro.js b7): abre no "Metabolismo e alimentação"
+    const ps = p.dados.passos.slice(0, 5), k = ['inflamacao', 'metabolismo'].find(x => ps.some(q => q.k === x)), ki = ps.findIndex(q => q.k === k);
+    return { tipo:'caminho', titulo:'O caminho', passos:p.dados.passos, fim:p.dados.fim || 'Não é só rosto: é a sua saúde inteira.', pele:{ modo:'caminho', k:k || null, passo:ki >= 0 ? ki + 1 : null, ela:elaPele(r, d) } };
+  }
   // 18/11 (o Lucca, no Samuel: "cadê o objetivo completo marcado?"): no "Pra onde leva", a pergunta do teste com a opção que ela
   // marcou (✓), no visual do /pele/; só a escolhida (as outras dependem da faixa de idade e poluíam o quadro)
   if (id === 'destino' || id === 'cl-destino'){
