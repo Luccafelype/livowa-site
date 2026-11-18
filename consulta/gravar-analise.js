@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1811t';
+const VERSAO = '1811u';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -65,6 +65,36 @@ const R_LUPA = [72, 118], LUPA_X = 1.7;   // raio da lupa no quadro (px) e o aum
 const COR_TOM = { pesa:AMARELO, bem:VERDE, neutro:AZUL };
 const sai = x => { const t = Math.max(0, Math.min(1, x)); return 1 - (1 - t) * (1 - t) * (1 - t); };   // ease-out
 const ROSTO_URL = (() => { try { return new URL('../pele/rosto.js?v=2', (document.currentScript && document.currentScript.src) || location.href).href; } catch (e) { return '/pele/rosto.js?v=2'; } })();
+// 18/11 (o Lucca testou 2 vezes com a aba aberta de antes da publicação e viu a versão velha): o gravador confere a versão
+// publicada (consulta/versao.json, sem cache) ao abrir e a cada troca de bloco (no máximo 1 vez por minuto). A versão carregada é
+// o ?v= deste arquivo no index.html, e o versao.json tem o MESMO valor (scripts/versao-gravador.py troca os dois juntos). Diferente:
+// "Versão nova, atualizando…" e a página recarrega com ?v= novo na URL (o index.html tem cache de 600 s), nunca gravando nem com
+// vídeo gravado na tela. Se depois de recarregar ainda vier a velha, não recarrega de novo: avisa para fechar e abrir a aba.
+const V_SRC = (() => { try { return document.currentScript && document.currentScript.src || ''; } catch (e) { return ''; } })();
+const V_CARREGADA = (() => { try { return new URL(V_SRC).searchParams.get('v') || ''; } catch (e) { return ''; } })();
+const V_URL = (() => { try { return new URL('versao.json', V_SRC || location.href).href; } catch (e) { return 'versao.json'; } })();
+let vUlt = 0, vNova = null;
+async function confereVersao(forcar){
+  if (!V_CARREGADA || !G) return null;
+  const agora = Date.now(); if (!forcar && agora - vUlt < 60000) return null;
+  vUlt = agora;
+  let v = null;
+  try { const r = await fetch(V_URL + '?t=' + agora, { cache:'no-store' }); if (r.ok) v = String((await r.json()).v || ''); } catch (e) { return null; }
+  if (!v || v === V_CARREGADA){ vNova = null; return v; }
+  vNova = v;
+  recarregaSePode();
+  return v;
+}
+function recarregaSePode(){
+  if (!vNova || !G || !['prep'].includes(G.estado)) return false;   // nunca gravando, contando nem com vídeo gravado
+  let tentou = null; try { tentou = sessionStorage.getItem('livowa_ga_recarga'); } catch (e) { /* sem armazenamento */ }
+  if (tentou === vNova){ aviso('Há uma versão nova do gravador, mas este navegador ainda mostra a antiga: feche a aba e abra de novo.'); return false; }
+  try { sessionStorage.setItem('livowa_ga_recarga', vNova); } catch (e) { /* ok */ }
+  aviso('Versão nova, atualizando…');
+  const u = new URL(location.href); u.searchParams.set('v', vNova);
+  setTimeout(() => { try { location.replace(u.href); } catch (e) { location.reload(); } }, 700);
+  return true;
+}
 let fsPrompt = 22; try { const v = +localStorage.getItem(FS_K); if (v >= 16 && v <= 36) fsPrompt = v; } catch (e) { /* sem armazenamento */ }
 
 let G = null;      // o gravador aberto (null = fechado)
@@ -754,7 +784,7 @@ const PELE_ACU_MS = 1500;   // açúcar: 1,5 s por etapa
 // chegam pelos vasos (o pulso que corre na artéria e na veia antes de a pele mudar)
 const PELE_F = {
   sol:{ nome:'Sol', mal:true }, prot:{ nome:'Protetor' }, cor:{ nome:'Protetor com cor', curto:'Com cor' }, mor:{ nome:'Pele morena', painel:'Pele morena (mancha)' },
-  cig:{ nome:'Cigarro', mal:true, on:'A fumaça estreita os vasinhos e solta a enzima que quebra o colágeno: a pele fica opaca e mais fina, em anos.', off:'Parar segura o avanço. Se o que foi perdido volta, não se sabe.' },
+  cig:{ nome:'Cigarro', mal:true, on:'A fumaça estreita os vasinhos e quebra o colágeno: a pele fica opaca e mais fina, em anos.', off:'Parar segura o avanço. Se o que foi perdido volta, não se sabe.' },
   acu:{ nome:'Açúcar', mal:true, sangue:[255, 186, 60], on:'O açúcar alto chega pelo sangue e gruda no colágeno: ele endurece e amarela, devagar, em anos.', off:'Baixar a glicose segura o avanço. O que endureceu fica.' },
   ind:{ nome:'Industrializados', mal:true, sangue:[255, 186, 60], on:'Comida ultraprocessada sobe a glicose: o mesmo caminho do açúcar, mais fraco.', off:'Baixar a glicose segura o avanço. O que endureceu fica.' },
   sono:{ nome:'Sono', mal:true, sangue:[140, 185, 255], on:'Noite curta: o sangue circula pior, a pele fica pálida e apagada no dia seguinte. Volta quando você dorme.', off:'Dormir bem devolve.' },
@@ -1052,6 +1082,21 @@ function peleAnda(P, agora){
   if (P.g > .003){ if (P.g <= 1) cs.push({ n:'acucar', w:P.g }); else { if (P.g < 2) cs.push({ n:'acucar', w:2 - P.g }); cs.push({ n:'acucar-forte', w:P.g - 1 }); } }
   return cs;
 }
+// a legenda do toque: 26 px se couber em 2 linhas; senão 23 px (até 3). Nunca corta com "…"
+function legendaPele(ctx, txt, w){
+  ctx.font = `600 26px ${FONTE}`; let ls = quebra(ctx, txt, w, 99);
+  if (ls.length <= 2) return { ls, lh:31, px:26 };
+  ctx.font = `600 23px ${FONTE}`; ls = quebra(ctx, txt, w, 99);
+  return { ls, lh:ls.length > 2 ? 27 : 29, px:23 };
+}
+// todas as frases possíveis (para o teste conferir que cabem)
+function textosPele(){
+  const out = new Set();
+  Object.values(PELE_F).forEach(f => { if (f.on) out.add(f.on); if (f.off) out.add(f.off); });
+  for (const sol of [0, 1]) for (const prot of [0, 1]) for (const cor of [0, 1]) for (const mor of [0, 1]) for (const dano of [0, 1]) for (const liga of [0, 1])
+    for (const id of ['sol', 'prot', 'cor', 'mor']){ const P = { on:{ sol:!!sol, prot:!!prot, cor:!!cor, mor:!!mor } }; out.add(peleFrase(P, id, !!liga, !!dano)[0]); }
+  return [...out].filter(Boolean);
+}
 // a frase do toque e a cor dela: verde = protege ou alivia, amarelo = estraga
 function peleFrase(P, id, liga, dano){
   const o = P.on, filme = o.prot || o.cor;
@@ -1061,7 +1106,7 @@ function peleFrase(P, id, liga, dano){
   if (id === 'prot' || id === 'cor' || id === 'mor'){
     if (!liga && id !== 'mor') return o.sol ? ['Sem protetor, o sol volta a quebrar a pele.', false] : ['Sem protetor.', true];
     if (!liga) return ['De volta à pele do começo.', true];
-    if (o.mor) return o.cor ? ['O protetor com cor segura também a luz visível: a mancha para de escurecer e pode clarear um pouco. Não some.', true] : ['O protetor comum segura o UV, mas a luz visível passa: em pele morena, a mancha cresce e escurece.', false];
+    if (o.mor) return o.cor ? ['O protetor com cor segura a luz visível: a mancha para de escurecer e clareia um pouco, sem sumir.', true] : ['O protetor comum segura o UV, mas a luz visível passa: em pele morena, a mancha cresce e escurece.', false];
     if (dano) return ['O protetor segura o sol novo, mas não apaga o que já foi feito: a mancha e o colágeno quebrado ficam.', false];
     return [o.cor ? 'O protetor com cor segura o UV e também a luz visível, que escurece mancha em pele morena.' : 'O protetor segura o UV no filme, em cima da pele.', true];
   }
@@ -1160,8 +1205,9 @@ function desenhaPele(ctx, c, L){
   let yy = y + h + 40;
   if (P.msg && P.msg.txt){
     const e = sai((agora - P.msg.t) / 300);
-    ctx.globalAlpha = al * e; ctx.font = `600 26px ${FONTE}`; ctx.fillStyle = P.msg.bem ? VERDE : AMARELO; ctx.textAlign = 'left';
-    quebra(ctx, P.msg.txt, w, 3).forEach((l, i) => ctx.fillText(l, x, yy - 4 + i * 31));
+    ctx.globalAlpha = al * e; ctx.fillStyle = P.msg.bem ? VERDE : AMARELO; ctx.textAlign = 'left';
+    const L2 = legendaPele(ctx, P.msg.txt, w);   // 18/11: a frase cabe inteira (26 px em 2 linhas; senão 23 px)
+    L2.ls.forEach((l, i) => ctx.fillText(l, x, yy - 4 + i * L2.lh));
   }
   yy = y + h + 124;
   const ch = chipsPele(ctx, L.grupos, P, x, yy, w, al);
@@ -1310,7 +1356,7 @@ function prompter(){
   D.pDep.textContent = G.bloco < n - 1 ? String(bs[G.bloco + 1].fala || '').replace(/\[[^\]]*\]/g, ' ').replace(/\{nome\}/g, '').replace(/\s+/g, ' ').replace(/^[\s,]+/, '').trim() : '';
   cabeTexto();
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
-  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; G.peleChips = []; if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; G.peleChips = []; confereVersao(false); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
   marcaTempo();
   botoesFoco(); botoesPele();
   nota();
@@ -1347,6 +1393,7 @@ function info(t){ D.info.textContent = t || ''; }
 function estado(e){
   G.estado = e;
   D.el.dataset.estado = e;
+  if (e === 'prep' && vNova) setTimeout(recarregaSePode, 0);   // 18/11: a versão nova que chegou gravando entra quando volta ao preparo
   const rev = e === 'rev' || e === 'fim';
   D.grav.hidden = rev; D.rev.hidden = e !== 'rev'; D.fim.hidden = e !== 'fim';
   D.tela.hidden = rev; D.cam.style.visibility = rev || !G.mostraCam || !G.cam ? 'hidden' : '';
@@ -1384,6 +1431,7 @@ async function abrir(o){
   exemplosDe(G.o.blocos).forEach(carregaExemplo);   // 13/11: a imagem do exemplo (não segura a abertura)
   preparaFormas(G.o.blocos);   // 17/11: as ilustrações do "Como se forma"
   preparaPele(G.o.blocos);     // 18/11: os quadros da pele interativa
+  confereVersao(true);         // 18/11: a versão publicada (recarrega se houver nova)
   await Promise.all([Promise.all(G.fotos.map(carregaFoto)).then(() => { if (G === g0) achaRosto(); }), abreCamera()]);
   if (G !== g0) return;
   const algumaFoto = G.fotos.some(f => f.img);
@@ -1719,5 +1767,5 @@ function diag(motivo, g){
 function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); preparaFormas(bs); preparaPele(bs); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; D.pele.dataset.k = ''; prompter(); return true; }
 // 13/11 19h45: o "Gravar análise" da lista abre o gravador na hora, com o Gravar segurado até o roteiro do Claude chegar (ou o prazo vencer)
 function liberar(){ if (!G || !G.aguarda) return; G.aguarda = false; if (G.estado === 'prep'){ estado('prep'); if (G.pronto) D.rec.focus(); } }
-return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _pele:() => ({ vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
+return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _pele:() => ({ vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _versao:() => ({ carregada:V_CARREGADA, nova:vNova, url:V_URL }), _confereVersao:confereVersao, _peleLegendas:() => { const c = document.createElement('canvas').getContext('2d'); return textosPele().map(t => { const L = legendaPele(c, t, PX.w); return { t, n:L.ls.length, px:L.px, corta:L.ls.some(l => /…$/.test(l)) }; }); }, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
 })();
