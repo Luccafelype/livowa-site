@@ -27,7 +27,7 @@
    são baixados (CDN público). Tocar e segurar e a pinça seguem iguais (as lupas acompanham o zoom). */
 window.GRAVADOR = (() => {
 'use strict';
-const VERSAO = '1911a';
+const VERSAO = '2011a';
 const W = 720, H = 1280, FPS = 30;
 // 13/11 (2º treino da Carla: bloco 1 de 6 s durou 43 s, o corte dos 90 s levou a pergunta): os números vêm dos Ajustes
 // (o.params; padrões abaixo). alvo = o relógio fica vermelho; salto = pula para o último bloco (desejo e pergunta); teto = corta.
@@ -120,6 +120,7 @@ function monta(){
     <div class="ga-p-rola"><p class="ga-p-txt"></p><div class="ga-p-opc" hidden></div></div>
     <div class="ga-foco" role="group" aria-label="Foco no vídeo" hidden></div>
     <div class="ga-pele" role="group" aria-label="Pele no vídeo" hidden></div>
+    <div class="ga-pele ga-rosto" role="group" aria-label="Rosto no vídeo" hidden></div>
     <div class="ga-pele-menu" role="dialog" aria-label="Pele no vídeo" hidden></div>
     <div class="ga-nota" hidden></div>
     <p class="ga-p-dep" aria-hidden="true"></p>
@@ -159,7 +160,7 @@ function monta(){
   </div>`;
   document.body.append(el);
   const q = s => el.querySelector(s);
-  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'), foco:q('.ga-foco'), pele:q('.ga-pele'), peleMenu:q('.ga-pele-menu'),
+  D = { el, quadro:q('.ga-quadro'), tela:q('.ga-tela'), cam:q('.ga-cam'), prompt:q('.ga-prompt'), pTit:q('.ga-p-tit'), pPos:q('.ga-p-pos'), pTxt:q('.ga-p-txt'), pOpc:q('.ga-p-opc'), pDep:q('.ga-p-dep'), pPassos:q('.ga-p-passos'), pRola:q('.ga-p-rola'), foco:q('.ga-foco'), pele:q('.ga-pele:not(.ga-rosto)'), rostoP:q('.ga-rosto'), peleMenu:q('.ga-pele-menu'),
     conta:q('.ga-conta'), aviso:q('.ga-aviso'), nota:q('.ga-nota'), ver:q('.ga-ver'), msg:q('.ga-msg'), fotos:q('.ga-fotos'), zoom:q('.ga-zoom'), cami:q('.ga-cami'), aa:q('.ga-aa'),
     fechar:q('.ga-fechar'), ant:q('.ga-ant'), rec:q('.ga-rec-b'), recT:q('.ga-rec-t'), prox:q('.ga-prox'), grav:q('.ga-grav'), rev:q('.ga-rev'), fim:q('.ga-fim'),
     refazer:q('.ga-refazer'), enviar:q('.ga-enviar'), baixar:q('.ga-baixar'), marcar:q('.ga-marcar'), denovo:q('.ga-denovo'), info:q('.ga-info'), tentar:q('.ga-tentar') };
@@ -184,12 +185,13 @@ function encaixa(){
 function cabeTexto(){
   if (!G || !D || D.prompt.hidden) return;
   let fs = fsPrompt; const r = D.pRola;
-  D.foco.classList.remove('aperto'); D.pele.classList.remove('aperto');
+  D.foco.classList.remove('aperto'); D.pele.classList.remove('aperto'); D.rostoP.classList.remove('aperto');
   D.prompt.style.setProperty('--fs', fs + 'px');
   const sobra = () => D.pTxt.getBoundingClientRect().height > r.clientHeight + .5;   // 14/11: medida com fração (78,4 px num painel de 77 passava por "coube")
   while (fs > 14 && sobra()){ fs--; D.prompt.style.setProperty('--fs', fs + 'px'); }   // só a fala decide; as notas ficam com o que sobrar (rolam)
   if (sobra() && !D.foco.hidden) D.foco.classList.add('aperto');
-  if (sobra() && !D.pele.hidden) D.pele.classList.add('aperto');   // 18/11: idem com os botões da pele (o toque nos rótulos sob a pele faz o mesmo)   // 14/11: a fala não coube nem com 14 px: os botões de foco saem (no celular, o toque no ponto do rosto faz o mesmo)
+  if (sobra() && !D.pele.hidden) D.pele.classList.add('aperto');
+  if (sobra() && !D.rostoP.hidden) D.rostoP.classList.add('aperto');   // 20/11: idem com o rosto (o toque no quadro abre o menu)   // 18/11: idem com os botões da pele (o toque nos rótulos sob a pele faz o mesmo)   // 14/11: a fala não coube nem com 14 px: os botões de foco saem (no celular, o toque no ponto do rosto faz o mesmo)
   r.scrollTop = 0;
 }
 
@@ -323,7 +325,7 @@ function montagem(ctx, agora){
   let fez = false;   // a cena desenhou alguma coisa (então a faixa verde não entra)
   ctx.save();
   try {
-    if (c.tipo === 'idade') fez = cenaIdade(ctx, c, t);
+    if (c.tipo === 'idade') fez = cenaIdadeRosto(ctx, c, t);   // 20/11: com 'Mostrar no rosto', o rosto de exemplo por cima
     else if (c.tipo === 'foto') fez = cenaFoto(ctx, c, agora);
     else if (c.tipo === 'dentro') fez = cenaDentro(ctx, c, t);
     else if (c.tipo === 'desejo') fez = cenaDesejo(ctx, c, t);
@@ -343,6 +345,7 @@ function nota(){
   const b = G.o.blocos[G.bloco], c = b && b.cena; let t = '';
   if (c && c.tipo === 'desejo' && !(c.itens && c.itens.length)) t = c.aviso || 'O que importa: conteúdo em pesquisa. Este cartão não entra no vídeo.';
   else if (c && c.tipo === 'exemplo' && !c.img) t = c.erro ? 'A imagem do exemplo não carregou: pule esta parte.' : 'Carregando a imagem do exemplo…';
+  else if (c && c.tipo === 'idade' && G.ri && G.ri.on && !riObj(c)) t = RI.erro ? 'O rosto de exemplo não carregou: fale com a idade na tela.' : 'Carregando o rosto de exemplo…';
   else if (c && c.tipo === 'mecanismo'){ const b = FORMA[c.tema] ? carregaForma('forma/' + FORMA[c.tema].q[0] + '.webp') : null; if (!b) t = 'Sem ilustração para este ponto: fale com a foto na tela.'; else if (b.erro) t = 'A ilustração não carregou: fale com a foto na tela.'; else if (!b.ok) t = 'Carregando a ilustração…'; }
   else if (c && c.pele && !(c.pele.modo === 'caminho' && !(G.pele && G.pele.aberto))){ const b = carregaForma(PELE_SRC('base')); if (b.erro) t = 'A pele não carregou: fale com a tela de antes.'; else if (!b.ok) t = 'Carregando a pele…'; }
   else if (c && c.tipo === 'foto'){
@@ -384,6 +387,152 @@ function cenaIdade(ctx, c, t){
   ctx.fillStyle = AZUL; ctx.beginPath(); ctx.arc(xv, yR, 9, 0, Math.PI * 2); ctx.fill();
   ctx.globalAlpha = p; ctx.font = `700 26px ${MONO}`; ctx.fillText(String(c.idade), xv, yR - 62);
   return true;
+}
+
+// ---------- 20/11 (pedido do Lucca): "na hora de explicar de onde vem a idade, colocar aquelas imagens que fizemos alterando as
+// texturas, os vincos e manchas, para mostrar como isso afeta a percepção da idade". No bloco da idade (só o do rosto, sem c.rot),
+// o botão do painel "Mostrar no rosto" (F) troca a cena para um ROSTO DE EXEMPLO do mesmo sexo e da idade mais perto (o do Simulador
+// do Rosto), com a idade estimada grande em cima da cabeça (mesmo amarelo e mesma fonte da cena da idade) e, embaixo, cada sinal
+// com a sua nota. Os controles são só dele (painel, teclas e o menu do toque; nunca no vídeo): por sinal Menos · Hoje · Mais
+// (Mais = 1–5, Menos = Q W E R T, de novo volta a Hoje), Tudo como hoje (0), Voltar à idade (F). O número conta até o novo valor
+// (~0,6 s) e a imagem anda em ~0,45 s, para ele falar em cima. A conta é a MESMA da análise (assets/rosto-idade/rosto-idade.js,
+// porte do calcularIdade da edge); olheiras e viço mexem no rosto e não no número (fora da conta, como na edge).
+// As diferenças das imagens são calculadas ao abrir o gravador, nunca gravando (lição da pele interativa, 18/11).
+const RI_URL = (() => { try { return new URL('../assets/rosto-idade/rosto-idade.js?v=20261120a', V_SRC || location.href).href; } catch (e) { return '/assets/rosto-idade/rosto-idade.js?v=20261120a'; } })();
+const RI = { mod:null, r:{}, erro:false };
+const RI_MAIS = ['1', '2', '3', '4', '5'], RI_MENOS = ['Q', 'W', 'E', 'R', 'T'];
+const riCena = () => { const c = G && (G.o.blocos[G.bloco] || {}).cena; return c && c.tipo === 'idade' && !c.rot ? c : null; };
+const riId = c => window.RostoIdade ? window.RostoIdade.escolher(c.sexo === 'm' ? 'm' : 'f', c.idade) : null;
+const riObj = c => { const id = c && riId(c), r = id && RI.r[id]; return r && r.pronto ? r.obj : null; };
+function riModulo(){
+  if (window.RostoIdade) return Promise.resolve(window.RostoIdade);
+  if (!RI.mod) RI.mod = new Promise((ok, ko) => { const s = document.createElement('script'); s.src = RI_URL; s.async = true; s.onload = () => window.RostoIdade ? ok(window.RostoIdade) : ko(new Error('sem módulo')); s.onerror = () => { RI.mod = null; ko(new Error('módulo')); }; document.head.append(s); });
+  return RI.mod;
+}
+function preparaRosto(bs){
+  const c = (bs || []).map(b => b && b.cena).find(x => x && x.tipo === 'idade' && !x.rot); if (!c) return;
+  riModulo().then(M => {
+    const id = riId(c); if (!id || RI.r[id]) return;
+    const e = RI.r[id] = { pronto:false };
+    // nunca lê pixels gravando: se ele apertou Gravar no meio, espera o fim da gravação
+    M.criar(id, { pode:() => !G || G.estado !== 'rec' }).then(obj => { e.obj = obj; e.pronto = true; if (G){ nota(); botoesRosto(); } }).catch(() => { delete RI.r[id]; RI.erro = true; if (G) nota(); });
+  }).catch(() => { RI.erro = true; if (G) nota(); });
+}
+function riSai(){ if (G) G.ri = null; Object.values(RI.r).forEach(e => { if (e.obj){ e.obj.hoje(); e.obj.anda(performance.now(), 0); } }); }   // troca de bloco: o rosto volta a Hoje
+function riNovo(r){ r.hoje(); r.anda(performance.now(), 0); return { on:false, k:0, kUlt:0, cont:window.RostoIdade.contador(r.idade().idade), ult:null }; }
+function riTecla(c, key){
+  const K = String(key).toUpperCase(), r = riObj(c);
+  if (K === 'F') return 'rosto';
+  if (!r) return null;
+  if (K === '0') return 'hoje';
+  const i = RI_MAIS.indexOf(K), j = RI_MENOS.indexOf(K);
+  if (i >= 0 && r.ctrl[i]) return r.ctrl[i].k + ':mais';
+  if (j >= 0 && r.ctrl[j]) return r.ctrl[j].k + ':menos';
+  return null;
+}
+function riAcao(a){
+  if (!G || !['prep', 'conta', 'rec'].includes(G.estado)) return;
+  const c = riCena(); if (!c) return;
+  const r = riObj(c);
+  G.rostoUlt = performance.now();   // ele está mexendo (o salto automático espera)
+  if (!r){ G.ri = G.ri || { on:false, k:0, kUlt:0 }; if (a === 'rosto') G.ri.on = !G.ri.on; nota(); botoesRosto(); return; }   // ainda carregando: o aviso aparece só no painel
+  const S = G.ri && G.ri.cont ? G.ri : (G.ri = { ...riNovo(r), on:!!(G.ri && G.ri.on) });
+  if (a === 'rosto') S.on = !S.on;
+  else if (a === 'hoje'){ r.hoje(); S.on = true; S.ult = null; }
+  else {
+    const [k, lado] = a.split(':'), q = r.ctrl.find(x => x.k === k); if (!q) return;
+    const alvo = lado === 'mais' ? q.max : lado === 'menos' ? q.min : q.hoje;
+    r.por(k, r.pos[k] === alvo ? q.hoje : alvo);   // de novo no mesmo: volta a hoje
+    S.on = true; S.ult = { k, t:performance.now() };
+  }
+  S.cont.alvo(r.idade().idade);
+  G.riUsos = (G.riUsos || 0) + 1;
+  botoesRosto(); nota();
+}
+function botoesRosto(){
+  if (!D || !G) return;
+  const c = riCena(), r = c && riObj(c), S = G.ri, on = !!(S && S.on);
+  const k = c ? G.bloco + '|' + (r ? r.id : 'carregando') : '';
+  if (D.rostoP.dataset.k !== k){
+    D.rostoP.dataset.k = k;
+    D.rostoP.innerHTML = !c ? '' : `<button type="button" class="ga-foco-b ga-pele-b zera" data-r="rosto" aria-pressed="false"><kbd>F</kbd><b>Mostrar no rosto</b></button>` +
+      (r ? `<button type="button" class="ga-foco-b ga-pele-b" data-r="hoje"><kbd>0</kbd><b>Tudo como hoje</b></button>` +
+        r.ctrl.map((q, i) => `<i class="ga-pele-q"></i><span class="ga-pele-g">${esc(q.nome)}</span>` +
+          [['menos', RI_MENOS[i], 'Menos', q.min < q.hoje], ['hoje', '', 'Hoje', true], ['mais', RI_MAIS[i], 'Mais', q.max > q.hoje]].map(([l, t, n, pode]) =>
+            `<button type="button" class="ga-foco-b ga-pele-b" data-r="${q.k}:${l}" aria-pressed="false"${pode ? '' : ' disabled'}>${t ? `<kbd>${t}</kbd>` : ''}<b>${n}</b></button>`).join('')).join('') : '');
+  }
+  D.rostoP.hidden = !c || G.estado === 'rev' || G.estado === 'fim';
+  const b0 = D.rostoP.querySelector('[data-r="rosto"]');
+  if (b0){ b0.setAttribute('aria-pressed', String(on)); b0.querySelector('b').textContent = on ? 'Voltar à idade' : 'Mostrar no rosto'; }
+  if (r) r.ctrl.forEach(q => { const n = r.pos[q.k], v = n === q.hoje ? 'hoje' : n > q.hoje ? 'mais' : 'menos';
+    D.rostoP.querySelectorAll(`[data-r^="${q.k}:"]`).forEach(b => b.setAttribute('aria-pressed', String(on && b.dataset.r === q.k + ':' + v))); });
+}
+// o menu do toque (iPhone, quando a fala não deixa espaço para os botões): os mesmos controles, por cima do painel, fora do vídeo
+function abreMenuRosto(){
+  const c = riCena(); if (!c || !D) return;
+  const r = riObj(c), on = !!(G.ri && G.ri.on);
+  D.peleMenu.innerHTML = `<div class="ga-pm-topo"><button type="button" class="ga-pm-b zera" data-r="rosto">${on ? 'Voltar à idade' : 'Mostrar no rosto'}</button><button type="button" class="ga-pm-x" aria-label="Fechar">✕</button></div>` +
+    (r ? '<div class="ga-pm-bs">' + `<button type="button" class="ga-pm-b" data-r="hoje">Tudo como hoje</button>` + r.ctrl.map(q => { const n = r.pos[q.k];
+      return (q.min < q.hoje ? `<button type="button" class="ga-pm-b" data-r="${q.k}:menos" aria-pressed="${on && n < q.hoje}">${esc(q.curto)}: menos</button>` : '') +
+        (q.max > q.hoje ? `<button type="button" class="ga-pm-b" data-r="${q.k}:mais" aria-pressed="${on && n > q.hoje}">${esc(q.curto)}: mais</button>` : ''); }).join('') + '</div>' : '');
+  D.peleMenu.hidden = false; G.peleMenuAberto = true;
+}
+function riEstado(){
+  const c = riCena(), r = c && riObj(c), S = G && G.ri;
+  return { cena:!!c, id:c ? riId(c) : null, pronto:!!r, on:!!(S && S.on), k:S ? S.k : 0, pos:r ? { ...r.pos } : null, notas:r ? r.notas() : null, idade:r ? r.idade() : null, mostrado:S && S.cont ? S.cont.valor() : null,
+    ctrl:r ? r.ctrl.map(q => ({ k:q.k, nome:q.nome, min:q.min, hoje:q.hoje, max:q.max, na_conta:q.na_conta })) : null, t:r ? { ...r._t } : null, sexo:c ? c.sexo || null : null, erro:RI.erro,
+    painel:D ? [...D.rostoP.querySelectorAll('button[data-r]')].map(b => b.dataset.r + (b.getAttribute('aria-pressed') === 'true' ? '*' : '') + (b.disabled ? '-' : '')) : [], canvas:r ? r.canvas : null };
+}
+// a cena: a da idade de sempre; com o rosto ligado, o rosto entra por cima em 0,35 s (e sai do mesmo jeito)
+function cenaIdadeRosto(ctx, c, t){
+  const S = G.ri, r = c.rot ? null : riObj(c), agora = performance.now();
+  if (S && r && !S.cont){ Object.assign(S, riNovo(r), { on:S.on }); botoesRosto(); }   // ligou enquanto o rosto carregava
+  if (S && r && S.cont){ const dt = Math.min(100, Math.max(0, agora - (S.kUlt || agora))); S.kUlt = agora; const a = S.on ? 1 : 0; S.k = S.k < a ? Math.min(a, S.k + dt / 350) : Math.max(a, S.k - dt / 350); }
+  const k = S && r && S.cont ? sai(S.k) : 0;
+  if (k < 1) cenaIdade(ctx, c, t);
+  if (k <= 0) return true;
+  ctx.globalAlpha = 1; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  cenaRosto(ctx, c, r, S, k, agora);
+  return true;
+}
+const RQ = { x:89, y:344, w:542, h:620, sy:65, sh:511 };   // o rosto no quadro (corte da testa ao queixo, 447×511 da imagem)
+function cenaRosto(ctx, c, r, S, k, agora){
+  r.anda(agora, 450, 66);   // a imagem a ~15 quadros/s no meio da troca (a mistura leva ~20-30 ms); o vídeo segue a 30
+  const n = S.cont.anda(agora);
+  ctx.fillStyle = `rgba(4,7,6,${k.toFixed(3)})`; ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = k;
+  // o rosto
+  ctx.save(); caixa(ctx, RQ.x, RQ.y, RQ.w, RQ.h, 22); ctx.clip();
+  try { ctx.drawImage(r.canvas, 0, RQ.sy, r.w, RQ.sh, RQ.x, RQ.y, RQ.w, RQ.h); } catch (e) { /* ok */ }
+  ctx.restore();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.14)'; caixa(ctx, RQ.x, RQ.y, RQ.w, RQ.h, 22); ctx.stroke();
+  // em cima: o rótulo e a idade grande (amarelo, a fonte do número da cena da idade)
+  const sobe = (1 - k) * 26;
+  ctx.textAlign = 'center'; ctx.fillStyle = AMARELO; ctx.font = `600 30px ${FONTE}`; ctx.fillText('Idade que este rosto aparenta', W / 2, 204);
+  ctx.font = `700 112px ${MONO}`; const txt = String(n), nw = ctx.measureText(txt).width; ctx.fillText(txt, W / 2, 322 + sobe);
+  ctx.textAlign = 'left'; ctx.fillStyle = APAGADO; ctx.font = `500 26px ${FONTE}`; ctx.fillText('anos', W / 2 + nw / 2 + 14, 280 + sobe);
+  ctx.font = `600 19px ${FONTE}`; const sw = ctx.measureText('simulação').width + 20;
+  caixa(ctx, W / 2 + nw / 2 + 12, 294 + sobe, sw, 30, 15); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,.8)'; ctx.fillText('simulação', W / 2 + nw / 2 + 22, 315 + sobe);
+  // embaixo, à esquerda da câmera: cada sinal com a nota (3 traços); o último que ele mexeu acende
+  const x0 = 24, xm = 300, larg = (G.mostraCam && G.cam ? CIRC.cx - CIRC.r - 16 : W - 24) - x0, passo = r.ctrl.length > 3 ? 40 : 46;
+  let y = RQ.y + RQ.h + 40;
+  r.ctrl.forEach(q => {
+    const nt = r.pos[q.k], vivo = S.ult && S.ult.k === q.k ? Math.max(0, 1 - (agora - S.ult.t) / 1800) : 0;
+    ctx.globalAlpha = k; ctx.textAlign = 'left';
+    ctx.fillStyle = vivo > 0 ? '#fff' : 'rgba(255,255,255,.86)'; ctx.font = `${vivo > 0 ? 700 : 600} 25px ${FONTE}`; ctx.fillText(q.nome, x0, y);
+    for (let i = 0; i < 3; i++){
+      const cheio = i < nt;
+      ctx.fillStyle = cheio ? (q.na_conta ? AMARELO : AZUL) : 'rgba(255,255,255,.16)';
+      caixa(ctx, xm + i * 40, y - 15, 34, 12, 6); ctx.fill();
+    }
+    if (!q.na_conta){ ctx.fillStyle = APAGADO; ctx.font = `500 18px ${FONTE}`; ctx.fillText('não muda a idade', xm, y + 18); }
+    if (vivo > 0){ ctx.globalAlpha = k * vivo; ctx.fillStyle = AMARELO; ctx.beginPath(); ctx.moveTo(x0 - 16, y - 18); ctx.lineTo(x0 - 6, y - 10); ctx.lineTo(x0 - 16, y - 2); ctx.fill(); }
+    y += passo + (q.na_conta ? 0 : 6);
+  });
+  ctx.globalAlpha = k; ctx.fillStyle = APAGADO; ctx.font = `500 19px ${FONTE}`; ctx.textAlign = 'left';
+  quebra(ctx, 'Rosto de exemplo, criado por IA. Simulação, não é previsão.', Math.min(larg, 420), 2).forEach((l, i, ls) => ctx.fillText(l, x0, H - 18 - (ls.length - 1 - i) * 24));
+  ctx.globalAlpha = 1;
 }
 
 // foto: lupas nos sinais. Pontos do rosto (FaceLandmarker do /pele) na foto de frente; posição = pixel da foto, então
@@ -1535,9 +1684,9 @@ function prompter(){
   D.pDep.textContent = G.bloco < n - 1 ? String(bs[G.bloco + 1].fala || '').replace(/\[[^\]]*\]/g, ' ').replace(/\{nome\}/g, '').replace(/\s+/g, ' ').replace(/^[\s,]+/, '').trim() : '';
   cabeTexto();
   D.ant.disabled = G.bloco === 0; D.prox.disabled = G.bloco >= n - 1;
-  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; G.peleChips = []; G.peleImg = null; G.formaMan = null; fechaMenuPele(); confereVersao(false); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
+  if (G.blocoVisto !== G.bloco){ G.blocoVisto = G.bloco; G.blocoT = performance.now(); G.foco = null; G.pele = null; riSai(); G.peleChips = []; G.peleImg = null; G.formaMan = null; fechaMenuPele(); confereVersao(false); if (G.estado === 'rec'){ (G.blocosVistos ||= new Set()).add(G.bloco); contaBloco(); } }   // a cena do bloco começa agora
   marcaTempo();
-  botoesFoco(); botoesPele();
+  botoesFoco(); botoesPele(); botoesRosto();
   nota();
 }
 // 13/11 (d-20261113-narrativa-analise-todas-iscas): o rótulo do bloco 1 (o incômodo ou objetivo nas palavras dela) em destaque
@@ -1586,7 +1735,7 @@ function estado(e){
   D.rec.disabled = e === 'prep' && (!G.pronto || !!G.aguarda);
   D.fotos.querySelectorAll('button').forEach(b => { b.disabled = rev; });
   D.zoom.disabled = rev; D.cami.disabled = rev || !G.cam;
-  botoesFoco(); botoesPele();
+  botoesFoco(); botoesPele(); botoesRosto();
   nota();
 }
 
@@ -1611,6 +1760,7 @@ async function abrir(o){
   exemplosDe(G.o.blocos).forEach(carregaExemplo);   // 13/11: a imagem do exemplo (não segura a abertura)
   preparaFormas(G.o.blocos);   // 17/11: as ilustrações do "Como se forma"
   preparaPele(G.o.blocos);     // 18/11: os quadros da pele interativa
+  preparaRosto(G.o.blocos);    // 20/11: o rosto de exemplo do bloco da idade (diferenças prontas antes de gravar)
   confereVersao(true);         // 18/11: a versão publicada (recarrega se houver nova)
   await Promise.all([Promise.all(G.fotos.map(carregaFoto)).then(() => { if (G === g0) achaRosto(); }), abreCamera()]);
   if (G !== g0) return;
@@ -1728,7 +1878,7 @@ function comeca(){
     // 18/11 noite (gravação do Samuel: aos 2:40 o salto levou para a pergunta no meio do açúcar; "cadê o açúcar?… uma bugada"):
     // se ele mexeu na pele ou no "como se forma" nos últimos 20 s, não pula: avisa só no painel (o corte do teto segue valendo)
     if (!G.saltou && ms >= G.p.salto * 1000 && G.bloco < n - 1){
-      const mexendo = Math.max(G.peleUlt || 0, G.formaUlt || 0) > performance.now() - 20000;
+      const mexendo = Math.max(G.peleUlt || 0, G.formaUlt || 0, G.rostoUlt || 0) > performance.now() - 20000;   // 20/11: o rosto também
       if (mexendo){ if (!G.saltoAdiado){ G.saltoAdiado = true; nota(); } }
       else if (!G.saltoAdiado){ G.saltou = true; G.bloco = n - 1; prompter(); }
     }
@@ -1878,6 +2028,7 @@ function soltou(ev){
     { const cm = (G.o.blocos[G.bloco] || {}).cena; if (cm && cm.tipo === 'mecanismo' && FORMA[cm.tema] && fim.y >= FQ.y && fim.y <= FQ.y + FQ.h) formaPula(null); }   // 18/11: toque no esquema = a etapa seguinte
     const pi = G.peleImg, pc0 = peleCena(), naPele = pc0 && pi && (pc0.pele.modo !== 'caminho' || (G.pele && G.pele.aberto)) && fim.x >= pi.x && fim.x <= pi.x + pi.w && fim.y >= pi.y && fim.y <= pi.y + pi.h;
     if (naPele) abreMenuPele();   // 18/11 tarde: toque na pele abre o menu (fora do vídeo)
+    else if (riCena()) abreMenuRosto();   // 20/11: no bloco da idade, o toque no quadro abre o menu do rosto (fora do vídeo)
     else if (!alvo){ const c = peleCena(); if (c && c.pele.modo === 'caminho' && !(G.pele && G.pele.aberto)){ const p = (c.passos || []).findIndex(x => x.k === c.pele.k), y = 350 + p * Math.min(124, (880 - 350) / Math.max(1, (c.passos.length - 1) || 1)); if (p >= 0 && Math.abs(fim.y - y) < 50) peleAcao('abrir'); } }   // toque no item da inflamação (ou, sem ele, no do metabolismo) abre
   }
   if (G.ptrs.size < 2) G.gesto = null;
@@ -1899,7 +2050,8 @@ function liga(){
   D.ant.onclick = () => { if (G && G.bloco > 0){ G.bloco--; prompter(); } };
   D.foco.onclick = ev => { const b = ev.target.closest('button[data-id]'); if (b) focar(b.dataset.id); };
   D.pele.onclick = ev => { const b = ev.target.closest('button[data-p]'); if (b){ b.blur(); peleAcao(b.dataset.p); } };
-  D.peleMenu.onclick = ev => { const b = ev.target.closest('button[data-p]'); if (b) peleAcao(b.dataset.p); if (b || ev.target.closest('.ga-pm-x')) fechaMenuPele(); };
+  D.peleMenu.onclick = ev => { const r = ev.target.closest('button[data-r]'); if (r){ riAcao(r.dataset.r); fechaMenuPele(); return; } const b = ev.target.closest('button[data-p]'); if (b) peleAcao(b.dataset.p); if (b || ev.target.closest('.ga-pm-x')) fechaMenuPele(); };
+  D.rostoP.onclick = ev => { const b = ev.target.closest('button[data-r]'); if (b){ b.blur(); riAcao(b.dataset.r); } };
   D.fotos.onclick = ev => { const b = ev.target.closest('button[data-f]'); if (!b || !G) return; G.foto = +b.dataset.f; G.anel = null; D.fotos.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); nota(); };
   D.zoom.onclick = () => { const f = G && G.fotos[G.foto]; if (f && f.base) f.z = { ...f.base }; };
   D.cami.onclick = () => { if (!G || !G.cam) return; G.mostraCam = !G.mostraCam; D.cami.setAttribute('aria-pressed', String(G.mostraCam)); D.cam.style.visibility = G.mostraCam ? '' : 'hidden'; };
@@ -1927,6 +2079,8 @@ function liga(){
     { const cm = vale && !ev.target.closest?.('input, textarea') && (G.o.blocos[G.bloco] || {}).cena; if (cm && cm.tipo === 'mecanismo' && FORMA[cm.tema] && /^[1-9]$/.test(ev.key) && +ev.key <= FORMA[cm.tema].et.length){ ev.preventDefault(); formaPula(+ev.key - 1); return; } }   // 18/11: 1–4 = etapa do "como se forma"
     const pc = vale && !ev.target.closest?.('input, textarea') && !ev.metaKey && !ev.ctrlKey && !ev.altKey && peleCena();   // 18/11: as teclas da pele (1–9, 0, M, R; no caminho P e 1–6)
     if (pc){ const tk = teclasPele(pc).find(([, t]) => t === ev.key.toUpperCase()); if (tk){ ev.preventDefault(); if (!ev.repeat) peleAcao(tk[0]); return; } }
+    const rc = vale && !ev.target.closest?.('input, textarea') && !ev.metaKey && !ev.ctrlKey && !ev.altKey && riCena();   // 20/11: as teclas do rosto (F, 0, 1–5 Mais, Q–T Menos)
+    if (rc){ const a = riTecla(rc, ev.key); if (a){ ev.preventDefault(); if (!ev.repeat) riAcao(a); return; } }
     if (/^[1-9]$/.test(ev.key) && vale && !ev.target.closest?.('input, textarea')){ const b = D.foco.querySelectorAll('button')[+ev.key - 1]; if (b && !D.foco.hidden){ ev.preventDefault(); focar(b.dataset.id); } return; }   // 14/11: 1, 2, 3 = foco
     if (ev.key === 'ArrowRight'){ ev.preventDefault(); D.prox.click(); }
     else if (ev.key === 'ArrowLeft'){ ev.preventDefault(); D.ant.click(); }
@@ -1953,8 +2107,8 @@ function diag(motivo, g){
 }
 
 // 13/11: o roteiro do Claude chegou com o gravador aberto e ainda sem gravar: troca os blocos e volta ao 1º
-function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); preparaFormas(bs); preparaPele(bs); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; D.pele.dataset.k = ''; prompter(); return true; }
+function trocarBlocos(bs, fonte){ if (!G || G.estado !== 'prep' || !Array.isArray(bs) || !bs.length) return false; exemplosDe(bs).forEach(carregaExemplo); preparaFormas(bs); preparaPele(bs); preparaRosto(bs); G.o.blocos = bs; G.o.fonte = fonte; G.bloco = 0; G.blocoVisto = -1; G.lupasLay = null; D.foco.dataset.k = ''; D.pele.dataset.k = ''; D.rostoP.dataset.k = ''; prompter(); return true; }
 // 13/11 19h45: o "Gravar análise" da lista abre o gravador na hora, com o Gravar segurado até o roteiro do Claude chegar (ou o prazo vencer)
 function liberar(){ if (!G || !G.aguarda) return; G.aguarda = false; if (G.estado === 'prep'){ estado('prep'); if (G.pronto) D.rec.focus(); } }
-return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _peleMenu:() => ({ aberto:!!(D && D.peleMenu && !D.peleMenu.hidden), ids:D ? [...D.peleMenu.querySelectorAll('button[data-p]')].map(b => b.dataset.p) : [] }), _pele:() => ({ entra:G && G.pele && G.pele.entra ? G.pele.entra.id : null, vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _forma:() => (G && G.formaVis) || null, _formaHoras:(tema, fala) => horasForma(FORMA[tema], fala, 2.5), _versao:() => ({ carregada:V_CARREGADA, nova:vNova, url:V_URL }), _confereVersao:confereVersao, _peleLegendas:() => { const c = document.createElement('canvas').getContext('2d'); return textosPele().map(t => { const L = legendaPele(c, t, PX.w); return { t, n:L.ls.length, px:L.px, corta:L.ls.some(l => /…$/.test(l)) }; }); }, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
+return { abrir, fechar, trocarBlocos, liberar, versao:VERSAO, _estado:() => G, _mime:pickMime, _decideParada:decideParada, _tempoBloco:tempoBloco, _params:params, _layoutExemplo:layoutExemplo, _peleMenu:() => ({ aberto:!!(D && D.peleMenu && !D.peleMenu.hidden), ids:D ? [...D.peleMenu.querySelectorAll('button[data-p]')].map(b => b.dataset.p) : [] }), _pele:() => ({ entra:G && G.pele && G.pele.entra ? G.pele.entra.id : null, vasos:PX.vI ? PX.vI.length : 0, pulso:!!(G && G.pele && G.pele.pulso), P:G && G.pele, px:PX.ult || null, chips:G && G.peleChips, difs:Object.keys(PX.d), chave:PX.chave }), _peleAcao:peleAcao, _rosto:() => riEstado(), _riAcao:a => riAcao(a), _forma:() => (G && G.formaVis) || null, _formaHoras:(tema, fala) => horasForma(FORMA[tema], fala, 2.5), _versao:() => ({ carregada:V_CARREGADA, nova:vNova, url:V_URL }), _confereVersao:confereVersao, _peleLegendas:() => { const c = document.createElement('canvas').getContext('2d'); return textosPele().map(t => { const L = legendaPele(c, t, PX.w); return { t, n:L.ls.length, px:L.px, corta:L.ls.some(l => /…$/.test(l)) }; }); }, _formas:() => [...FORMA_CACHE].map(([src, e]) => ({ src, ok:e.ok, erro:e.erro, w:e.img.naturalWidth })) };
 })();

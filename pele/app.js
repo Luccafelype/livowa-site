@@ -27,6 +27,9 @@ import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
 import * as Scan from './scan.js?v=4';
 import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=2';
+// 20/11 (Lucca): na espera da análise, um rosto de exemplo que envelhece com a idade em cima (rosto-toy.js). Import dinâmico: se
+// não carregar, a espera segue como antes. Resultado pronto com ela mexendo = botão "Ver o meu resultado" (não troca sozinho).
+const RostoToy = import('./rosto-toy.js?v=20261120a').catch(() => null);
 
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
@@ -381,6 +384,7 @@ async function enviar(f){
   const ETAPAS = [{ i:0, ate:30, txt:n > 1 ? `Lendo as suas ${n} fotos` : 'Lendo a sua foto' },
                   { i:1, ate:76, txt:contou ? `Pesando o que você contou: ${contou}` : 'Pesando o que você contou' }, { i:2, ate:100, txt:'Montando o seu resultado' }];
   show('carregando'); progresso(0, ETAPAS[0]);
+  RostoToy.then(m => m && m.iniciar({ sexo:R.sexo, idade:R.idade, track })).catch(() => {});
   const angulos = ['frente','esquerda','direita'].filter(a => f[a]);
   const imagens = angulos.map(a => { const cv = montarEnvio(f[a].src, f[a].g), d = cv.toDataURL('image/jpeg', angulos.length > 1 ? .85 : .9).split(',')[1]; cv.width = cv.height = 0; return d; });
   const corpo = { imagens, modo:'rosto', ocultas:['olhos'], codigo:meuCodigo(), ...(angulos.length > 1 ? { angulos } : {}), ...(R.sexo === 'f' || R.sexo === 'm' ? { sexo:R.sexo } : {}) };   // 17/11: a idade do rosto é calculada pela tabela do sexo
@@ -400,6 +404,7 @@ async function enviar(f){
     if (resta > 0) await new Promise(res => setTimeout(res, resta));
     fim = true; clearInterval(tick);
     for (const p of [96, 100]){ progresso(p, ETAPAS[2]); await new Promise(res => setTimeout(res, 380)); }
+    try { const m = await RostoToy; if (m) await m.antesDoResultado(); } catch (e) { /* o rosto nunca segura o resultado */ }
     montarResultado(j, f);
     show('resultado');
   } catch (e) {
