@@ -9,6 +9,7 @@
 // sozinha: aparece "Ver o meu resultado". Sem toque recente, segue como antes.
 // Medição: track('answer', { stepId:'rosto_toy', valueText }) no padrão das outras respostas: viu · mexeu (1ª vez) · sinal
 // (cada troca de sinal) · esperou (resultado pronto com ela mexendo) · ver_resultado (tocou no botão) · resumo (ao sair).
+// 22/11: quadro ~quadrado (aspect-ratio 1.1) e foco em 34%: o rosto inteiro, da testa ao queixo (a firmeza mexe no sulco e na mandíbula; com 16% o queixo saía).
 // Tudo nesta tela: o cartão é criado aqui dentro da seção 'carregando' (o index.html e o pele.css não mudam).
 const SRC = new URL('../assets/rosto-idade/rosto-idade.js?v=20261122c', import.meta.url).href;
 const TODOS = '*';   // o controle "Todos juntos"
@@ -29,8 +30,8 @@ const CSS = `
 .com-rosto .dots,.com-rosto>.nota,.com-rosto.pronto #prog-etapa{display:none}
 .rt{width:100%;text-align:left;gap:12px;padding:14px;margin-top:2px}
 .rt-tit{font-size:var(--t2);font-weight:700;line-height:1.3}
-.rt-quadro{position:relative;height:clamp(190px,33svh,290px);border-radius:12px;overflow:hidden;background:var(--accent-2)}
-.rt-quadro canvas{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 16%}
+.rt-quadro{position:relative;height:clamp(190px,33svh,290px);aspect-ratio:1.1;max-width:100%;margin:0 auto;border-radius:12px;overflow:hidden;background:var(--accent-2)}
+.rt-quadro canvas{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 34%}
 .rt-num{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:baseline;gap:6px;padding:4px 14px 6px;border-radius:999px;background:rgba(15,22,18,.78);color:#fff;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .rt-num b{font-size:var(--t1);font-variant-numeric:tabular-nums;line-height:1.1}
 .rt-num span{font-size:var(--t3);font-weight:600}

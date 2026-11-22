@@ -29,7 +29,7 @@ import * as Scan from './scan.js?v=4';
 import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, medir, pose, caixa, OVAL, NITIDEZ_MIN } from './rosto.js?v=2';
 // 20/11 (Lucca): na espera da análise, um rosto de exemplo que envelhece com a idade em cima (rosto-toy.js). Import dinâmico: se
 // não carregar, a espera segue como antes. Resultado pronto com ela mexendo = botão "Ver o meu resultado" (não troca sozinho).
-const RostoToy = import('./rosto-toy.js?v=20261122a').catch(() => null);
+const RostoToy = import('./rosto-toy.js?v=20261122b').catch(() => null);
 
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
