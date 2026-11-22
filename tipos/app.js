@@ -3,7 +3,9 @@
 // (hungry brain, hungry gut, emotional hunger, slow burn) com os nomes e as segundas linhas da tela do vídeo.
 // O teste é uma ESTIMATIVA POR AUTORRELATO: a Mayo mediu cada tipo em exame (refeição livre, esvaziamento do estômago,
 // questionários, gasto de repouso). As frases seguem a ideia de escalas de autorrelato (AEBQ e TFEQ) e não são validadas:
-// ver livowa-empresa/tarefas/teste-4-tipos/pesquisa.md. Na tela: "Estimativa pelas suas respostas, não é o exame da Mayo".
+// ver livowa-empresa/tarefas/teste-4-tipos/pesquisa.md. Na tela: "Estimativa pelas suas respostas, não é diagnóstico".
+// v2 (22/11, resposta B do Lucca): capa diz que é o teste; "já tentou" no meio das frases; o fim sem estudo e sem barras:
+// as frases dela → "Isso tem cara de" + o tipo → "não se resolve só com [o que ela tentou]" → cartão verde.
 // Regras (as mesmas dos outros testes): sem promessa de resultado e sem número sem fonte; nada de diagnóstico; não indica
 // remédio; sem "grátis" nem "consulta" (o "sem custo" do prazo é a regra de 09/11); fim sem "vídeo", "um por um" ou "24 h".
 // Molde visual e de fechamento: /pele/ v2 (barra log, capa = 1ª pergunta, interstício com fonte, resultado = tela final,
@@ -19,7 +21,7 @@ const LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
 
 const SUPA_URL = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', SUPA_KEY = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';   // chave pública
 const PONTE = window.lvPonte?.props?.() || {};
-const track = (tipo, o = {}) => Analytics.track(tipo, { ...o, props:{ ...(o.props || {}), versao:'v1', ...PONTE } });
+const track = (tipo, o = {}) => Analytics.track(tipo, { ...o, props:{ ...(o.props || {}), versao:'v2', ...PONTE } });
 Analytics.init({ enabled:true, funnelId:'teste-tipos', variant:Q.get('v') || 'direto', supabaseUrl:SUPA_URL, supabaseKey:SUPA_KEY });
 track('view');
 const WHATSAPP = '5562991774809';
@@ -48,6 +50,13 @@ const TIPOS = {
   gl:{ nome:'GASTO LENTO', linha2:'queima menos', curto:'Gasto lento', art:'o',
        oque:'O corpo gasta menos energia em repouso do que o esperado para o seu tamanho, e costuma vir com menos músculo e menos movimento.' },
 };
+// 22/11 v2: o porquê de "não se resolve só com [o que ela tentou]", 1 frase por tipo, pela definição do estudo (sem promessa)
+const PQ = {
+  cb:'Se o aviso de “já chega” demora, comer menos na força de vontade vira uma briga todo dia.',
+  ef:'Se o estômago esvazia rápido, a vontade de comer volta cedo, mesmo comendo direito.',
+  em:'Se quem puxa a comida é a ansiedade, cortar comida não tira a ansiedade: a vontade volta junto com a tensão.',
+  gl:'Se o corpo gasta menos em repouso, comer cada vez menos não devolve o gasto nem o músculo que faltam.',
+};
 const ORDEM_TIPOS = ['cb', 'ef', 'em', 'gl'];
 // 3 frases por tipo, em 1ª pessoa, com a palavra do público ("vontade de comer"; VOZ-DO-PUBLICO.md). @ = a|o pelo sexo.
 // Cada frase segue o que a Mayo mediu ou relatou do tipo (pesquisa.md §1 e §3): cérebro = precisa de mais comida para
@@ -74,34 +83,36 @@ const ESCALA = [['0', 'Quase nunca'], ['1', 'Às vezes'], ['2', 'Muitas vezes'],
 const ESCALA_TXT = Object.fromEntries(ESCALA);
 const frase = t => t.replace(/@/g, fem() ? 'a' : 'o');
 
-// telas das 12 frases, geradas aqui (mesmo molde de .screen q); o interstício 2 entra depois da 6ª
+// telas das 12 frases, geradas aqui (mesmo molde de .screen q); o interstício 2 e o "já tentou" entram depois da 6ª
 (function montarItens(){
-  const ancora = $('itens'), mais1 = document.querySelector('[data-s="mais1"]'), frag = [];
+  const ancora = $('itens'), mais1 = document.querySelector('[data-s="mais1"]'), tentou = document.querySelector('[data-s="tentou"]'), frag = [];
   ITENS.forEach(([id], k) => {
     const s = document.createElement('section');
     s.className = 'screen q'; s.dataset.s = id; s.hidden = true;
     s.innerHTML = `<p class="nota">Quanto isso parece com você?</p><h2 class="frase" data-frase="${id}"></h2>
       <div class="opts escala" data-q="${id}">${ESCALA.map(([v, t]) => `<button type="button" class="opt" data-v="${v}">${t}</button>`).join('')}</div>`;
     frag.push(s);
-    if (k === 5) frag.push(mais1);
+    if (k === 5) frag.push(mais1, tentou);
   });
   ancora.replaceWith(...frag);
 })();
 
 const ROT = {
   tentou:{ dieta:'dieta da internet', low_carb:'cortar carboidrato', jejum:'jejum', academia:'academia ou corrida', nutri:'nutricionista', cha:'chá, shake ou suplemento', remedio:'remédio ou caneta', nenhum:'nenhum destes' },
+  // para a frase "não se resolve só com …" (sem vírgula dentro do item, para a lista ler bem)
+  so:{ dieta:'dieta da internet', low_carb:'cortar carboidrato', jejum:'jejum', academia:'academia', nutri:'dieta de nutricionista', cha:'chá ou shake', remedio:'remédio ou caneta' },
   objetivo:{ roupas:'voltar a usar as roupas que você gosta', nao_voltar:'parar de engordar tudo de novo', disposicao:'ter mais disposição no dia a dia', saude:'cuidar da saúde e dos exames', corpo:'se sentir bem com o seu corpo' },
   objetivoEu:{ roupas:'voltar a usar as roupas que eu gosto', nao_voltar:'parar de engordar tudo de novo', disposicao:'ter mais disposição no dia a dia', saude:'cuidar da saúde e dos exames', corpo:'me sentir bem com o meu corpo' },
 };
 
 // ---------- telas ----------
 const ITEM_IDS = ITENS.map(([id]) => id);
-const ORDEM = ['capa', 'idade', 'nome', 'medidas', 'mayo', ...ITEM_IDS.slice(0, 6), 'mais1', ...ITEM_IDS.slice(6), 'tentou', 'objetivo', 'carregando', 'resultado'];
+const ORDEM = ['capa', 'idade', 'nome', 'medidas', 'mayo', ...ITEM_IDS.slice(0, 6), 'mais1', 'tentou', ...ITEM_IDS.slice(6), 'objetivo', 'carregando', 'resultado'];
 const UM = [...ITEM_IDS, 'objetivo'];   // uma escolha (avança sozinho; o sexo está na capa)
 // barra: todas as telas da capa ao resultado; valor = log(passo)/log(total) (Conrad 2010; Villar 2013; o mesmo do /pele/)
 const BARRA = ORDEM.slice(0, ORDEM.indexOf('resultado') + 1);
 const pBarra = s => { const i = BARRA.indexOf(s); return i < 0 ? null : Math.log(i + 2) / Math.log(BARRA.length + 1); };
-const LIMITE = [0, (pBarra('mayo') + pBarra(ITEM_IDS[0])) / 2, (pBarra(ITEM_IDS[11]) + pBarra('tentou')) / 2, 1];
+const LIMITE = [0, (pBarra('mayo') + pBarra(ITEM_IDS[0])) / 2, (pBarra(ITEM_IDS[11]) + pBarra('objetivo')) / 2, 1];
 (function montarBarra(){ [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => { el.style.flex = `${LIMITE[k + 1] - LIMITE[k]} 1 0`; }); })();
 function pintarBarra(s){
   const p = pBarra(s); if (p == null) return;
@@ -259,10 +270,11 @@ function pontuar(){
   const menor = ord[ord.length - 1];
   return { P, ord, seus, forte, menor };
 }
-// a frase dela que mais pesou no tipo principal (para citar no resultado)
-function fraseDela(t){
-  const xs = ITENS.filter(([, tt]) => tt === t).map(([id, , f]) => ({ id, f, v:+(R[id] ?? 0) })).sort((a, b) => b.v - a.v);
-  return xs[0] && xs[0].v >= 2 ? xs[0] : null;
+// as frases dela que mais pesaram no tipo (para citar no resultado): as de "muitas vezes" ou "quase sempre", até n;
+// se nenhuma chega a isso (nenhum tipo forte), as de "às vezes"
+function frasesDela(t, n, min = 2){
+  return ITENS.filter(([, tt]) => tt === t).map(([id, , f]) => ({ id, f, v:+(R[id] ?? 0) }))
+    .filter(x => x.v >= min).sort((a, b) => b.v - a.v).slice(0, n);
 }
 function imc(){ return R.peso && R.altura ? Math.round(R.peso / (R.altura / 100) ** 2 * 10) / 10 : null; }
 
@@ -283,34 +295,33 @@ async function calcular(){
   await new Promise(res => setTimeout(res, RAPIDO ? 50 : 350));
   montarResultado();
   show('resultado');
-  requestAnimationFrame(() => setTimeout(() => document.querySelectorAll('.barras .tr b').forEach(b => { b.style.width = b.dataset.w; }), 60));
 }
 
 function montarResultado(){
   RES = pontuar();
-  const { P, seus, forte, menor } = RES, nome = nomeBonito(), T = seus.map(t => TIPOS[t]), dois = seus.length === 2;
-  const sel = forte ? (dois ? 'Os seus tipos' : 'O seu tipo') : 'Nenhum dos 4 apareceu forte. O que mais apareceu';
-  const fd = fraseDela(seus[0]);
-  $('r-tipo').innerHTML = `<p class="nota">${nome ? esc(nome) + ', ' + sel[0].toLowerCase() + sel.slice(1) : sel}</p>
-    <p class="nome${dois ? ' dois' : ''}">${T.map(x => esc(x.nome)).join(' <span class="dest">+</span> ')}</p>
-    <p class="linha2">${T.map(x => esc(x.linha2)).join(' · ')}</p>
-    <p>${esc(frase(T[0].oque))}${dois ? ' ' + esc(frase(T[1].oque)) : ''}</p>
-    ${fd ? `<p class="nota">Você marcou <b>${esc(ESCALA_TXT[R[fd.id]].toLowerCase())}</b> em:</p><q>${esc(frase(fd.f))}</q>` : ''}`;
+  const { P, seus, forte } = RES, nome = nomeBonito(), T = seus.map(t => TIPOS[t]), dois = seus.length === 2;
+  const zero = P[seus[0]] === 0;
+  // 1) as frases que ela marcou mais alto → "Isso tem cara de" + o tipo (22/11 v2, pedido do Lucca: "X mais Y mais Z tem cara de ser [tipo]")
+  let fs = dois ? [...frasesDela(seus[0], 2), ...frasesDela(seus[1], 1)] : frasesDela(seus[0], 3);
+  if (!fs.length && !zero) fs = frasesDela(seus[0], 2, 1);
+  const lis = fs.map(x => `<li><q>${esc(frase(x.f))}</q> <em>${esc(ESCALA_TXT[R[x.id]].toLowerCase())}</em></li>`).join('');
+  const abre = fs.length ? `<p class="nota">${nome ? esc(nome) + ', você' : 'Você'} marcou:</p><ul class="marcou">${lis}</ul>` : '';
+  const cara = !forte ? (zero ? 'Nenhum dos 4 tipos apareceu nas suas respostas.' : 'Nenhum dos 4 apareceu forte. O que mais apareceu foi')
+    : (fs.length ? 'Isso tem cara de' : 'O que mais apareceu foi');
+  const nomes = dois ? `${esc(T[0].nome)} <span class="junto">junto com</span> ${esc(T[1].nome)}` : esc(T[0].nome);
+  $('r-tipo').innerHTML = `${abre}<p class="cara">${cara}</p>
+    ${zero ? '' : `<p class="nome${dois ? ' dois' : ''}">${nomes}</p><p class="linha2">${T.map(x => esc(x.linha2)).join(' · ')}</p>
+    <p>${esc(frase(T[0].oque))}${dois ? ' ' + esc(frase(T[1].oque)) : ''}</p>`}`;
 
-  // os 4 tipos nas respostas dela (barra = pontos ÷ 9); o que está bem antes do que pesa: o que menos apareceu
-  const bem = P[menor] <= 3 && !seus.includes(menor) ? `<p class="nota">Ponto para você: ${esc(TIPOS[menor].art + ' ' + TIPOS[menor].curto.toLowerCase())} quase não apareceu.</p>` : '';
-  $('r-barras').innerHTML = `<h3>Os 4 tipos nas suas respostas</h3>
-    <ul class="barras">${ORDEM_TIPOS.map(t => `<li class="${seus.includes(t) ? 'seu' : ''}"><span class="rot">${esc(TIPOS[t].nome)} <em>${P[t]} de 9</em></span><span class="tr"><b data-w="${Math.max(4, Math.round(P[t] / 9 * 100))}%"></b></span></li>`).join('')}</ul>
-    ${bem}`;
-
-  // por que o tipo muda o caminho: o que ela tentou (tudo igual para todo mundo) + o estudo
-  const tent = R.tentou.filter(x => x !== 'nenhum').map(x => ROT.tentou[x]);
-  const abre = tent.length ? `Você já tentou ${lista(tent)}. Quase sempre, isso é o mesmo plano para todo mundo, e não olha o seu tipo.`
-    : 'Você ainda não tentou nada para emagrecer: dá para começar já sabendo o seu tipo.';
-  $('r-caminho').innerHTML = `<h3>Por que saber o tipo muda o caminho</h3>
-    <p>${esc(abre)}</p>
-    <p>Na Mayo Clinic, os pacientes tratados pelo tipo perderam, em 1 ano, <b>15,9% do peso</b>, contra 9,0% dos tratados do jeito de sempre.*</p>`;
-  $('r-fonte').textContent = '*Acosta et al., Obesity 2021 · comparação de 2 grupos de pacientes da Mayo Clinic (84 e 228), sem sorteio. O seu resultado é uma estimativa pelas suas respostas: não é o exame da Mayo nem diagnóstico.';
+  // 2) não se resolve só com [o que ela já tentou] ou, se não tentou nada, com dieta e treino comuns
+  const tent = R.tentou.filter(x => x !== 'nenhum').map(x => ROT.so[x]).filter(Boolean);
+  const com = tent.length ? lista(tent) : 'dieta e treino comuns';
+  const quem = cap(T[0].art + ' ' + T[0].curto.toLowerCase());
+  $('r-caminho').innerHTML = zero || !forte
+    ? `<p><b>Quando nenhum tipo aparece forte, vale olhar o seu caso com calma:</b> emagrecer não se resolve só com ${esc(com)}.</p>`
+    : dois ? `<p><b>Cada um pede uma coisa diferente, e nenhum dos dois se resolve só com ${esc(com)}.</b></p>`
+    : `<p><b>${esc(quem)} não se resolve só com ${esc(com)}.</b> ${esc(PQ[seus[0]])}</p>`;
+  $('r-fonte').textContent = 'Estimativa pelas suas respostas, não é diagnóstico.';
 
   track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:seus.join('+'),
     props:{ codigo:meuCodigo(), tipo:seus[0], tipos:seus.join('+'), forte, pontos:P, imc:imc(), respostas:respostasLimpa() } });
@@ -325,15 +336,17 @@ const sou = () => nomeBonito() ? `Sou ${g('a', 'o')} ${nomeBonito()}. ` : '';
 function mensagem(){
   const t = RES ? RES.seus.map(x => TIPOS[x].nome).join(' + ') : '';
   const obj = R.objetivo ? ` Meu objetivo é ${ROT.objetivoEu[R.objetivo]}.` : '';
-  return `Oi, Dr. Lucca! ${sou()}Fiz o teste dos 4 tipos, código ${meuCodigo()}.${t ? ` Deu ${t}.` : ''}${obj} Quero entender o meu tipo.\n${linhaPrazo()}`;
+  // nenhum forte: a mensagem diz o mesmo que a tela (v2, 22/11)
+  const deu = !t ? '' : RES.forte ? ` Deu ${t}.` : RES.P[RES.seus[0]] === 0 ? ' Nenhum tipo apareceu forte.' : ` Nenhum tipo deu forte; o que mais apareceu foi ${t}.`;
+  return `Oi, Dr. Lucca! ${sou()}Fiz o teste dos 4 tipos, código ${meuCodigo()}.${deu}${obj} Quero entender o meu tipo.\n${linhaPrazo()}`;
 }
 const linkWA = () => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 function prepararFechamento(){
-  const nome = nomeBonito(), T0 = RES ? TIPOS[RES.seus[0]] : null, dois = RES?.seus.length === 2;
-  const tit = T0 ? (dois ? 'o que os seus dois tipos pedem no seu caso?' : `o que ${T0.art} ${T0.curto.toLowerCase()} pede no seu caso?`) : 'o que o seu tipo pede no seu caso?';
+  const nome = nomeBonito(), dois = RES?.seus.length === 2;
+  const tit = `quer uma estratégia para ${dois ? 'os seus dois tipos' : 'o seu tipo'}?`;
   $('r-ponte-tit').textContent = nome ? `${nome}, ${tit}` : cap(tit);
   const obj = R.objetivo ? ` para ${ROT.objetivo[R.objetivo]}` : '';
-  $('r-ponte-txt').textContent = `Cada tipo pede um caminho diferente. O Dr. Lucca lê as suas respostas e te explica por onde começar${obj}.`;
+  $('r-ponte-txt').textContent = `Mande a mensagem pronta no WhatsApp. O Dr. Lucca analisa as suas respostas e te diz por onde começar${obj}.`;
   $('r-cta').href = linkWA();
 }
 const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo(), tipo:RES?.seus.join('+') || null });
@@ -365,7 +378,7 @@ function pintarPrazo(){
   $('r-prazo').hidden = cur !== 'resultado' || r == null;
   if (r == null) return;
   $('r-prazo').classList.toggle('acabou', !ok);
-  const txt = ok ? 'Análise sem custo se enviar em' : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  const txt = ok ? 'Análise sem custo se enviar nos próximos' : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
   if ($('r-prazo-txt').textContent !== txt) $('r-prazo-txt').textContent = txt;
   $('r-prazo-rel').hidden = !ok; $('r-prazo-rel').textContent = ok ? mmss(r) : '';
   if (cur === 'resultado') $('r-cta').href = linkWA();

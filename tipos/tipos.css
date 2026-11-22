@@ -152,15 +152,15 @@ b,strong{font-weight:700}
 .r-tipo .nome{font-size:var(--tn);font-weight:700;line-height:1;letter-spacing:-.02em;color:var(--fg);text-wrap:balance}
 .r-tipo .nome.dois{font-size:var(--t1);line-height:1.15}
 .r-tipo .linha2{font-weight:700;color:var(--accent)}
-.r-tipo q{display:block;font-weight:600;quotes:"“" "”"}
-.barras{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
-.barras li{display:flex;flex-direction:column;gap:6px}
-.barras .rot{display:flex;justify-content:space-between;gap:8px;font-size:var(--t3);font-weight:700;color:var(--muted);letter-spacing:.02em}
-.barras .rot em{font-style:normal;font-weight:400}
-.barras li.seu .rot{color:var(--fg)}
-.barras .tr{display:block;height:12px;border-radius:99px;background:var(--line);overflow:hidden}
-.barras .tr b{display:block;height:100%;border-radius:inherit;background:#a9b6ae;width:0;transition:width .8s ease}
-.barras li.seu .tr b{background:var(--accent)}
+.r-tipo q{font-weight:600;quotes:"“" "”"}
+/* v2 (22/11): as frases que ela marcou → "Isso tem cara de" → o tipo */
+.marcou{list-style:none;margin:0 0 6px;padding:0;display:flex;flex-direction:column;gap:8px}
+.marcou li{padding-left:12px;border-left:3px solid var(--accent)}
+.marcou em{font-style:normal;font-size:var(--t3);color:var(--muted);white-space:nowrap}
+.r-tipo .cara{font-weight:600}
+.r-tipo .junto{display:block;font-size:var(--t2);font-weight:600;color:var(--accent);letter-spacing:0;margin:2px 0}
+/* capa v2: a etiqueta diz que é o teste */
+.etq{font-size:var(--t3);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:-10px}
 .rodas{display:flex;gap:12px;align-self:stretch;justify-content:center}
 .rodas .wheelbox{flex:1;max-width:200px;display:flex;flex-direction:column;gap:6px}
 .rodas label{text-align:center}

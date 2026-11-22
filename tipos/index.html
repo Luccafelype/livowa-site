@@ -5,10 +5,10 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f5f2">
-<title>Qual dos 4 tipos de engordar é o seu? · Dr. Lucca</title>
+<title>Teste: qual dos 4 tipos de engordar é o seu? · Dr. Lucca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="tipos.css?v=2">
+<link rel="stylesheet" href="tipos.css?v=3">
 </head>
 <body>
 <!-- livowa.com/tipos (22/11/2026) · teste dos 4 tipos de engordar, a isca dos vídeos QD73 V1 ("comenta TESTE") e do carrinho
@@ -32,7 +32,9 @@
     <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span class="nota">Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
     <!-- 22/11: a cena dos 4 tipos do vídeo QD73 V1 v2 (render, out/qd73/v1/capa_teste_4tipos_1x1.png), para a pessoa reconhecer o vídeo -->
     <img class="capa-img" src="img/capa-4tipos.webp" alt="Os 4 tipos de engordar: cérebro, estômago, emoção e gasto" width="720" height="648" fetchpriority="high">
-    <h1>Qual dos 4 tipos de engordar é o seu?</h1>
+    <!-- 22/11 v2 (Lucca: "só tem que ficar claro que se trata do teste para descobrir os 4 tipos") -->
+    <p class="etq">Teste · 12 frases · 2 minutos</p>
+    <h1>Descubra qual dos 4 tipos de engordar é o seu</h1>
     <p>Para começar, você é:</p>
     <div class="opts duas" data-q="sexo">
       <button type="button" class="opt grande" data-v="f">Mulher</button>
@@ -74,7 +76,7 @@
     <p class="nota">Fonte: Acosta et al., Obesity 2021 · 312 pacientes da Mayo Clinic, em 2 grupos</p>
   </section>
 
-  <!-- 5 a 16 · as 12 frases (3 por tipo, intercaladas) entram aqui pelo app.js; o interstício 2 vai no meio -->
+  <!-- as 12 frases (3 por tipo, intercaladas) entram aqui pelo app.js; no meio, o interstício 2 e o "já tentou" -->
   <div id="itens"></div>
 
   <!-- interstício 2: mais de um tipo (Acosta 2021) -->
@@ -87,7 +89,7 @@
     <p class="nota">Fonte: Acosta et al., Obesity 2021 · 450 pacientes classificados</p>
   </section>
 
-  <!-- 17 · o que já tentou (várias) -->
+  <!-- o que já tentou (várias; 22/11 v2: no meio das frases, logo depois do interstício 2; o app.js põe no lugar) -->
   <section class="screen q" data-s="tentou" hidden>
     <h2>O que você já tentou para emagrecer?</h2>
     <p class="nota">Marque tudo o que já tentou.</p>
@@ -122,18 +124,19 @@
     <div class="dots" id="prog-dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
   </section>
 
-  <!-- 20 · resultado = tela final: o tipo (nome grande + 2ª linha do vídeo + a frase dela) → os 4 tipos em barras →
-       por que o tipo muda o caminho (o que ela tentou + o estudo) → cartão verde com UM botão e o prazo -->
+  <!-- 20 · resultado = tela final (v2, 22/11, pedido do Lucca: sem estudo no fim, "X mais Y mais Z tem cara de [tipo]"):
+       as frases que ela marcou mais alto → "Isso tem cara de" + o tipo (nome grande + 2ª linha do vídeo) → "não se resolve
+       só com [o que ela já tentou]" → cartão verde com UM botão e o prazo → 1 linha: estimativa, não é diagnóstico.
+       O estudo fica só nos interstícios (mayo, mais1). -->
   <section class="screen res" data-s="resultado" hidden>
     <div class="cartao r-tipo" id="r-tipo"></div>
-    <div class="cartao" id="r-barras"></div>
     <div class="cartao" id="r-caminho"></div>
     <div class="cartao r-ponte" id="r-ponte">
       <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span class="nota">Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
-      <h2 id="r-ponte-tit">O que o seu tipo pede no seu caso?</h2>
-      <p class="r-ponte-txt" id="r-ponte-txt">O Dr. Lucca lê as suas respostas e te explica por onde começar.</p>
-      <p class="r-prazo" id="r-prazo" hidden><span id="r-prazo-txt">Análise sem custo se enviar em</span> <b id="r-prazo-rel">30:00</b></p>
-      <a class="btn ico" id="r-cta" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="r-cta-txt">Quero entender o meu tipo</span></a>
+      <h2 id="r-ponte-tit">Quer uma estratégia para o seu tipo?</h2>
+      <p class="r-ponte-txt" id="r-ponte-txt">Mande a mensagem pronta no WhatsApp. O Dr. Lucca analisa as suas respostas e te diz por onde começar.</p>
+      <p class="r-prazo" id="r-prazo" hidden><span id="r-prazo-txt">Análise sem custo se enviar nos próximos</span> <b id="r-prazo-rel">30:00</b></p>
+      <a class="btn ico" id="r-cta" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="r-cta-txt">Quero a minha estratégia</span></a>
       <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
     </div>
     <p class="nota" id="r-fonte"></p>
@@ -152,6 +155,6 @@
   </div></div>
 </div>
 <script defer src="/assets/js/ponte.js?v=2"></script>
-<script type="module" src="app.js?v=1"></script>
+<script type="module" src="app.js?v=2"></script>
 </body>
 </html>
