@@ -7,7 +7,7 @@
 // Medição: track('answer', { stepId:'rosto_toy', valueText }) no padrão das outras respostas: viu · mexeu (1ª vez) · sinal
 // (cada troca de sinal) · esperou (resultado pronto com ela mexendo) · ver_resultado (tocou no botão) · resumo (ao sair).
 // Tudo nesta tela: o cartão é criado aqui dentro da seção 'carregando' (o index.html e o pele.css não mudam).
-const SRC = new URL('../assets/rosto-idade/rosto-idade.js?v=20261120a', import.meta.url).href;
+const SRC = new URL('../assets/rosto-idade/rosto-idade.js?v=20261122a', import.meta.url).href;
 const MEXENDO_MS = 5000;
 let modulo = null, el = null, rosto = null, cont = null, sinal = null, laco = 0, ultToque = 0, toques = 0, mexidos = new Set(), trk = () => {}, esperando = null, abriu = false, vez = 0;
 

@@ -398,7 +398,7 @@ function cenaIdade(ctx, c, t){
 // (~0,6 s) e a imagem anda em ~0,45 s, para ele falar em cima. A conta é a MESMA da análise (assets/rosto-idade/rosto-idade.js,
 // porte do calcularIdade da edge); olheiras e viço mexem no rosto e não no número (fora da conta, como na edge).
 // As diferenças das imagens são calculadas ao abrir o gravador, nunca gravando (lição da pele interativa, 18/11).
-const RI_URL = (() => { try { return new URL('../assets/rosto-idade/rosto-idade.js?v=20261120a', V_SRC || location.href).href; } catch (e) { return '/assets/rosto-idade/rosto-idade.js?v=20261120a'; } })();
+const RI_URL = (() => { try { return new URL('../assets/rosto-idade/rosto-idade.js?v=20261122a', V_SRC || location.href).href; } catch (e) { return '/assets/rosto-idade/rosto-idade.js?v=20261120a'; } })();
 const RI = { mod:null, r:{}, erro:false };
 const RI_MAIS = ['1', '2', '3', '4', '5'], RI_MENOS = ['Q', 'W', 'E', 'R', 'T'];
 const riCena = () => { const c = G && (G.o.blocos[G.bloco] || {}).cena; return c && c.tipo === 'idade' && !c.rot ? c : null; };

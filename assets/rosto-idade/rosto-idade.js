@@ -21,7 +21,7 @@
    promessa de resultado. */
 (function (g) {
 'use strict';
-const VERSAO = '20261120a';
+const VERSAO = '20261122a';
 const BASE = (() => { try { return new URL('./', document.currentScript.src).href; } catch (e) { return '/assets/rosto-idade/'; } })();
 
 // ---------------------------------------------------------------- a régua (porte de logica.ts, régua-2026-11-17)
@@ -83,19 +83,22 @@ const CONTROLES = {
   vico:{ nome:'Viço', curto:'Viço', sinais:['textura_poros'], fina:false },
 };
 const ROSTOS = {
-  carla:{ sexo:'f', idade:48, nome:'Mulher, 45 a 52 anos', c:[['manchas', true], ['linhas', true], ['firmeza', true], ['olheiras', true], ['vico', true]] },
-  marcos:{ sexo:'m', idade:49, nome:'Homem, 45 a 53 anos', c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
-  nina:{ sexo:'f', idade:25, nome:'Mulher, 25 anos', c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
-  helena:{ sexo:'f', idade:40, nome:'Mulher, 40 anos', c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
+  carla:{ sexo:'f', idade:48, nome:'Mulher, 45 a 52 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', true], ['olheiras', true], ['vico', true]] },
+  marcos:{ sexo:'m', idade:49, nome:'Homem, 45 a 53 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
+  nina:{ sexo:'f', idade:25, nome:'Mulher, 25 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
+  helena:{ sexo:'f', idade:40, nome:'Mulher, 40 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
 };
-/** O rosto do mesmo sexo e da idade mais perto (homem → marcos; mulher < 33 → nina; 33–44 → helena; ≥ 45 → carla).
- *  jovem (o /pele/): mulher < 33 → nina; senão helena (o rosto começa novo e a idade sobe com os sinais). */
+/** O rosto do mesmo sexo e da idade mais perto da dela (empate: o mais novo). Sem idade: o de 48 (gravador) ou o mais novo (jovem).
+ *  jovem (o /pele/): só os rostos com menos de 45 (o rosto começa novo e a idade sobe com os sinais); se o sexo não tem nenhum,
+ *  todos. 22/11 (mais rostos): a regra é a mesma de 20/11 escrita em geral; com os 4 de antes dá o mesmo (mulher < 33 → nina,
+ *  33–44 → helena, ≥ 45 → carla; jovem: < 33 → nina, senão helena; homem → marcos). */
 function escolher(sexo, idade, o){
-  if (sexo === 'm') return 'marcos';
-  const i = Number(idade);
-  if (o && o.jovem) return Number.isFinite(i) && i >= 33 ? 'helena' : 'nina';
-  if (!Number.isFinite(i)) return 'carla';
-  return i < 33 ? 'nina' : i < 45 ? 'helena' : 'carla';
+  const s = sexo === 'm' ? 'm' : 'f', jovem = !!(o && o.jovem), i = Number(idade);
+  let ids = Object.keys(ROSTOS).filter(k => ROSTOS[k].sexo === s);
+  if (jovem && ids.some(k => ROSTOS[k].idade < 45)) ids = ids.filter(k => ROSTOS[k].idade < 45);
+  ids.sort((a, b) => ROSTOS[a].idade - ROSTOS[b].idade);
+  if (!Number.isFinite(i)) return jovem ? ids[0] : ids.reduce((a, b) => Math.abs(ROSTOS[b].idade - 48) < Math.abs(ROSTOS[a].idade - 48) ? b : a);
+  return ids.reduce((a, b) => Math.abs(ROSTOS[b].idade - i) < Math.abs(ROSTOS[a].idade - i) ? b : a);
 }
 /** Os controles de um rosto: { k, nome, curto, i (imagem cN-1), hoje, min, max, na_conta }. */
 function controles(id){
@@ -169,6 +172,13 @@ async function criar(id, o){
     if (!melhor) c.min = c.hoje;
     if (!pior) c.max = c.hoje;
   }
+  // 22/11 (o Lucca: "o cabelo tem que acompanhar, não faz sentido alguém muito velha com cabelo cheio de contraste"): a variante
+  // da IA com o cabelo grisalho (<rosto>-cabelo, só a região do cabelo, alinhar-v2.py) entra pela IDADE mostrada em cima: 0 até a
+  // idade de hoje do rosto, 100% em +15 anos; no lado "Menos" fica o cabelo da base. Diferença inteira (fora da pele, não empilha).
+  let Hc = null;
+  if (R.cabelo){ try { const ic = await carregar(url('cabelo')); await vez(); const c = rgb(ic); Hc = new Int16Array(P * 3); for (let i = 0; i < Hc.length; i++) Hc[i] = c[i] - base[i]; } catch (e) { Hc = null; } }
+  const idadeHoje = (idadeDe(id, null) || { idade:R.idade }).idade;
+  const pesoCabelo = () => { const a = idadeDe(id, pos); return a ? Math.max(0, Math.min(1, (a.idade - idadeHoje) / 15)) : 0; };
   const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
   // a tela do rosto fica na CPU (willReadFrequently): o gravador do iPhone/Chrome não gosta de quadro que volta da GPU no meio
   // da gravação (lição da pele interativa, 18/11)
@@ -176,6 +186,7 @@ async function criar(id, o){
   for (let i = 3; i < saida.data.length; i += 4) saida.data[i] = 255;
   const pos = {}, t = {}, alvo = {};
   ctrl.forEach(c => { pos[c.k] = c.hoje; t[c.k] = 0; alvo[c.k] = 0; });
+  const tc = { v:0, alvo:0 };   // o peso do cabelo (anda junto com os sinais)
   // nota → peso na imagem: abaixo de hoje vai para a ponta "melhor"; acima, para a "pior" (Menos = −1, Hoje = 0, Mais = +1)
   const peso = (c, n) => n < c.hoje ? (c.hoje > c.min ? -(c.hoje - n) / (c.hoje - c.min) : 0) : n > c.hoje ? (c.max > c.hoje ? (n - c.hoje) / (c.max - c.hoje) : 0) : 0;
   let chave = null, ult = 0, ultPinta = -1e9;
@@ -185,9 +196,10 @@ async function criar(id, o){
     ctrl.forEach((c, j) => { const w = t[c.k]; if (Math.abs(w) < .004) return; const x = w < 0 ? d[j].melhor : d[j].pior; if (x) at.push({ w:Math.abs(w), x }); });
     const n = at.length, Ls = at.map(a => a.x.L), ws = at.map(a => a.w);
     const fi = at.filter(a => a.x.F), nf = fi.length, Fs = fi.map(a => a.x.F), Ms = fi.map(a => a.x.M), wf = fi.map(a => a.w);   // a parte fina: só manchas e linhas
-    const o = saida.data;
+    const o = saida.data, hw = Hc && tc.v > .004 ? tc.v : 0;
     for (let p = 0, i = 0, q = 0; p < P; p++, i += 3, q += 4){
       let r = base[i], g = base[i + 1], b = base[i + 2];
+      if (hw){ r += hw * Hc[i]; g += hw * Hc[i + 1]; b += hw * Hc[i + 2]; }
       for (let j = 0; j < n; j++){ const L = Ls[j], w = ws[j]; r += w * L[i]; g += w * L[i + 1]; b += w * L[i + 2]; }
       if (nf){
         let k = 0;
@@ -202,18 +214,21 @@ async function criar(id, o){
   const api = {
     id, sexo:R.sexo, idadeRosto:R.idade, nome:R.nome, canvas, ctrl, pos, w:W, h:H,
     /** muda a nota de um controle (limitada ao que o rosto tem); a imagem anda até lá em ~0,45 s em anda() */
-    por(k, nota){ const c = ctrl.find(x => x.k === k); if (!c) return false; const n = Math.max(c.min, Math.min(c.max, Math.round(nota))); pos[k] = n; alvo[k] = peso(c, n); return true; },
+    por(k, nota){ const c = ctrl.find(x => x.k === k); if (!c) return false; const n = Math.max(c.min, Math.min(c.max, Math.round(nota))); pos[k] = n; alvo[k] = peso(c, n); tc.alvo = pesoCabelo(); return true; },
     hoje(){ ctrl.forEach(c => api.por(c.k, c.hoje)); },
     idade(){ return idadeDe(id, pos); },
     notas(){ return notasDe(id, pos); },
-    parado(){ return ctrl.every(c => t[c.k] === alvo[c.k]); },
+    parado(){ return ctrl.every(c => t[c.k] === alvo[c.k]) && tc.v === tc.alvo; },
+    /** 22/11: o cabelo grisalho: { tem, peso (0–1, o mostrado), alvo } */
+    cabelo(){ return { tem:!!Hc, peso:tc.v, alvo:tc.alvo }; },
     /** avança a transição e repinta se mudou; ms = duração de 0 a 1 (0 = na hora); cada = intervalo mínimo entre pinturas no meio da
      *  transição (o gravador usa 66 ms: a imagem anda a ~15 quadros/s e o vídeo segue a 30; a pintura final sempre sai). Devolve true se repintou. */
     anda(agora, ms, cada){
       const dt = ult ? Math.min(100, Math.max(0, agora - ult)) : 16; ult = agora;
       const v = ms === 0 ? 9 : dt / (ms || 450);
       ctrl.forEach(c => { const a = alvo[c.k], w = t[c.k]; t[c.k] = w < a ? Math.min(a, w + v) : Math.max(a, w - v); });
-      const k = ctrl.map(c => t[c.k].toFixed(3)).join('|');
+      tc.v = tc.v < tc.alvo ? Math.min(tc.alvo, tc.v + v) : Math.max(tc.alvo, tc.v - v);
+      const k = ctrl.map(c => t[c.k].toFixed(3)).join('|') + '|' + tc.v.toFixed(3);
       if (k === chave) return false;
       if (cada && agora - ultPinta < cada && !api.parado()) return false;
       chave = k; ultPinta = agora; pinta(); return true;
