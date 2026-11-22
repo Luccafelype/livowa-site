@@ -21,7 +21,7 @@
    promessa de resultado. */
 (function (g) {
 'use strict';
-const VERSAO = '20261122a';
+const VERSAO = '20261122c';
 const BASE = (() => { try { return new URL('./', document.currentScript.src).href; } catch (e) { return '/assets/rosto-idade/'; } })();
 
 // ---------------------------------------------------------------- a régua (porte de logica.ts, régua-2026-11-17)
@@ -87,6 +87,11 @@ const ROSTOS = {
   marcos:{ sexo:'m', idade:49, nome:'Homem, 45 a 53 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
   nina:{ sexo:'f', idade:25, nome:'Mulher, 25 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
   helena:{ sexo:'f', idade:40, nome:'Mulher, 40 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
+  // 22/11, rodada 2 (o Lucca: "tem que ter mais opções"): mais 4, cada um em lugar, roupa e luz diferentes
+  rosa:{ sexo:'f', idade:60, nome:'Mulher, 60 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
+  julia:{ sexo:'f', idade:33, nome:'Mulher, 33 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
+  rafael:{ sexo:'m', idade:30, nome:'Homem, 30 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
+  jose:{ sexo:'m', idade:60, nome:'Homem, 60 anos', cabelo:true, c:[['manchas', true], ['linhas', true], ['firmeza', false]] },
 };
 /** O rosto do mesmo sexo e da idade mais perto da dela (empate: o mais novo). Sem idade: o de 48 (gravador) ou o mais novo (jovem).
  *  jovem (o /pele/): só os rostos com menos de 45 (o rosto começa novo e a idade sobe com os sinais); se o sexo não tem nenhum,
