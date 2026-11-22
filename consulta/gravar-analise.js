@@ -425,6 +425,8 @@ function riTecla(c, key){
   if (K === 'F') return 'rosto';
   if (!r) return null;
   if (K === '0') return 'hoje';
+  if (K === '+' || K === '=') return 'todos:mais';    // 22/11 (o Lucca: "alterar as características separadamente ou juntas"): todos os sinais juntos
+  if (K === '-' || K === '_') return 'todos:menos';
   const i = RI_MAIS.indexOf(K), j = RI_MENOS.indexOf(K);
   if (i >= 0 && r.ctrl[i]) return r.ctrl[i].k + ':mais';
   if (j >= 0 && r.ctrl[j]) return r.ctrl[j].k + ':menos';
@@ -439,6 +441,13 @@ function riAcao(a){
   const S = G.ri && G.ri.cont ? G.ri : (G.ri = { ...riNovo(r), on:!!(G.ri && G.ri.on) });
   if (a === 'rosto') S.on = !S.on;
   else if (a === 'hoje'){ r.hoje(); S.on = true; S.ult = null; }
+  else if (a.startsWith('todos:')){
+    // todos juntos: cada sinal na ponta dele (Menos = min, Mais = max); de novo no mesmo: todos voltam a Hoje. A idade em cima e o
+    // cabelo acompanham sozinhos (a mesma conta e o mesmo peso do cabelo de quando ele mexe sinal por sinal)
+    const mais = a === 'todos:mais', ponta = q => mais ? q.max : q.min, ja = riTodos(r) === (mais ? 'mais' : 'menos');
+    r.ctrl.forEach(q => r.por(q.k, ja ? q.hoje : ponta(q)));
+    S.on = true; S.ult = { k:'*', t:performance.now() };
+  }
   else {
     const [k, lado] = a.split(':'), q = r.ctrl.find(x => x.k === k); if (!q) return;
     const alvo = lado === 'mais' ? q.max : lado === 'menos' ? q.min : q.hoje;
@@ -449,6 +458,13 @@ function riAcao(a){
   G.riUsos = (G.riUsos || 0) + 1;
   botoesRosto(); nota();
 }
+/** Todos os sinais na mesma ponta? 'mais' | 'menos' | null (sinal sem a ponta "menos" conta como na ponta quando está em Hoje). */
+function riTodos(r){
+  if (!r) return null;
+  if (r.ctrl.every(q => r.pos[q.k] === q.max)) return 'mais';
+  if (r.ctrl.some(q => q.min < q.hoje) && r.ctrl.every(q => r.pos[q.k] === q.min)) return 'menos';
+  return null;
+}
 function botoesRosto(){
   if (!D || !G) return;
   const c = riCena(), r = c && riObj(c), S = G.ri, on = !!(S && S.on);
@@ -457,6 +473,8 @@ function botoesRosto(){
     D.rostoP.dataset.k = k;
     D.rostoP.innerHTML = !c ? '' : `<button type="button" class="ga-foco-b ga-pele-b zera" data-r="rosto" aria-pressed="false"><kbd>F</kbd><b>Mostrar no rosto</b></button>` +
       (r ? `<button type="button" class="ga-foco-b ga-pele-b" data-r="hoje"><kbd>0</kbd><b>Tudo como hoje</b></button>` +
+        `<button type="button" class="ga-foco-b ga-pele-b" data-r="todos:menos" aria-pressed="false"><kbd>−</kbd><b>Tudo Menos</b></button>` +
+        `<button type="button" class="ga-foco-b ga-pele-b" data-r="todos:mais" aria-pressed="false"><kbd>+</kbd><b>Tudo Mais</b></button>` +
         r.ctrl.map((q, i) => `<i class="ga-pele-q"></i><span class="ga-pele-g">${esc(q.nome)}</span>` +
           [['menos', RI_MENOS[i], 'Menos', q.min < q.hoje], ['hoje', '', 'Hoje', true], ['mais', RI_MAIS[i], 'Mais', q.max > q.hoje]].map(([l, t, n, pode]) =>
             `<button type="button" class="ga-foco-b ga-pele-b" data-r="${q.k}:${l}" aria-pressed="false"${pode ? '' : ' disabled'}>${t ? `<kbd>${t}</kbd>` : ''}<b>${n}</b></button>`).join('')).join('') : '');
@@ -464,6 +482,7 @@ function botoesRosto(){
   D.rostoP.hidden = !c || G.estado === 'rev' || G.estado === 'fim';
   const b0 = D.rostoP.querySelector('[data-r="rosto"]');
   if (b0){ b0.setAttribute('aria-pressed', String(on)); b0.querySelector('b').textContent = on ? 'Voltar à idade' : 'Mostrar no rosto'; }
+  if (r){ const td = riTodos(r); D.rostoP.querySelectorAll('[data-r^="todos:"]').forEach(b => b.setAttribute('aria-pressed', String(on && b.dataset.r === 'todos:' + td))); }
   if (r) r.ctrl.forEach(q => { const n = r.pos[q.k], v = n === q.hoje ? 'hoje' : n > q.hoje ? 'mais' : 'menos';
     D.rostoP.querySelectorAll(`[data-r^="${q.k}:"]`).forEach(b => b.setAttribute('aria-pressed', String(on && b.dataset.r === q.k + ':' + v))); });
 }
@@ -472,7 +491,9 @@ function abreMenuRosto(){
   const c = riCena(); if (!c || !D) return;
   const r = riObj(c), on = !!(G.ri && G.ri.on);
   D.peleMenu.innerHTML = `<div class="ga-pm-topo"><button type="button" class="ga-pm-b zera" data-r="rosto">${on ? 'Voltar à idade' : 'Mostrar no rosto'}</button><button type="button" class="ga-pm-x" aria-label="Fechar">✕</button></div>` +
-    (r ? '<div class="ga-pm-bs">' + `<button type="button" class="ga-pm-b" data-r="hoje">Tudo como hoje</button>` + r.ctrl.map(q => { const n = r.pos[q.k];
+    (r ? '<div class="ga-pm-bs">' + `<button type="button" class="ga-pm-b" data-r="hoje">Tudo como hoje</button>` +
+      `<button type="button" class="ga-pm-b" data-r="todos:menos" aria-pressed="${on && riTodos(r) === 'menos'}">Tudo menos</button>` +
+      `<button type="button" class="ga-pm-b" data-r="todos:mais" aria-pressed="${on && riTodos(r) === 'mais'}">Tudo mais</button>` + r.ctrl.map(q => { const n = r.pos[q.k];
       return (q.min < q.hoje ? `<button type="button" class="ga-pm-b" data-r="${q.k}:menos" aria-pressed="${on && n < q.hoje}">${esc(q.curto)}: menos</button>` : '') +
         (q.max > q.hoje ? `<button type="button" class="ga-pm-b" data-r="${q.k}:mais" aria-pressed="${on && n > q.hoje}">${esc(q.curto)}: mais</button>` : ''); }).join('') + '</div>' : '');
   D.peleMenu.hidden = false; G.peleMenuAberto = true;
@@ -480,7 +501,7 @@ function abreMenuRosto(){
 function riEstado(){
   const c = riCena(), r = c && riObj(c), S = G && G.ri;
   return { cena:!!c, id:c ? riId(c) : null, pronto:!!r, on:!!(S && S.on), k:S ? S.k : 0, pos:r ? { ...r.pos } : null, notas:r ? r.notas() : null, idade:r ? r.idade() : null, mostrado:S && S.cont ? S.cont.valor() : null,
-    ctrl:r ? r.ctrl.map(q => ({ k:q.k, nome:q.nome, min:q.min, hoje:q.hoje, max:q.max, na_conta:q.na_conta })) : null, t:r ? { ...r._t } : null, sexo:c ? c.sexo || null : null, erro:RI.erro,
+    ctrl:r ? r.ctrl.map(q => ({ k:q.k, nome:q.nome, min:q.min, hoje:q.hoje, max:q.max, na_conta:q.na_conta })) : null, t:r ? { ...r._t } : null, cabelo:r && r.cabelo ? r.cabelo().peso : null, sexo:c ? c.sexo || null : null, erro:RI.erro,
     painel:D ? [...D.rostoP.querySelectorAll('button[data-r]')].map(b => b.dataset.r + (b.getAttribute('aria-pressed') === 'true' ? '*' : '') + (b.disabled ? '-' : '')) : [], canvas:r ? r.canvas : null };
 }
 // a cena: a da idade de sempre; com o rosto ligado, o rosto entra por cima em 0,35 s (e sai do mesmo jeito)
@@ -518,7 +539,7 @@ function cenaRosto(ctx, c, r, S, k, agora){
   const x0 = 24, xm = 300, larg = (G.mostraCam && G.cam ? CIRC.cx - CIRC.r - 16 : W - 24) - x0, passo = r.ctrl.length > 3 ? 40 : 46;
   let y = RQ.y + RQ.h + 40;
   r.ctrl.forEach(q => {
-    const nt = r.pos[q.k], vivo = S.ult && S.ult.k === q.k ? Math.max(0, 1 - (agora - S.ult.t) / 1800) : 0;
+    const nt = r.pos[q.k], vivo = S.ult && (S.ult.k === q.k || S.ult.k === '*') ? Math.max(0, 1 - (agora - S.ult.t) / 1800) : 0;
     ctx.globalAlpha = k; ctx.textAlign = 'left';
     ctx.fillStyle = vivo > 0 ? '#fff' : 'rgba(255,255,255,.86)'; ctx.font = `${vivo > 0 ? 700 : 600} 25px ${FONTE}`; ctx.fillText(q.nome, x0, y);
     for (let i = 0; i < 3; i++){
@@ -2082,7 +2103,7 @@ function liga(){
     { const cm = vale && !ev.target.closest?.('input, textarea') && (G.o.blocos[G.bloco] || {}).cena; if (cm && cm.tipo === 'mecanismo' && FORMA[cm.tema] && /^[1-9]$/.test(ev.key) && +ev.key <= FORMA[cm.tema].et.length){ ev.preventDefault(); formaPula(+ev.key - 1); return; } }   // 18/11: 1–4 = etapa do "como se forma"
     const pc = vale && !ev.target.closest?.('input, textarea') && !ev.metaKey && !ev.ctrlKey && !ev.altKey && peleCena();   // 18/11: as teclas da pele (1–9, 0, M, R; no caminho P e 1–6)
     if (pc){ const tk = teclasPele(pc).find(([, t]) => t === ev.key.toUpperCase()); if (tk){ ev.preventDefault(); if (!ev.repeat) peleAcao(tk[0]); return; } }
-    const rc = vale && !ev.target.closest?.('input, textarea') && !ev.metaKey && !ev.ctrlKey && !ev.altKey && riCena();   // 20/11: as teclas do rosto (F, 0, 1–5 Mais, Q–T Menos)
+    const rc = vale && !ev.target.closest?.('input, textarea') && !ev.metaKey && !ev.ctrlKey && !ev.altKey && riCena();   // 20/11: as teclas do rosto (F, 0, 1–5 Mais, Q–T Menos; 22/11: + Tudo Mais, − Tudo Menos)
     if (rc){ const a = riTecla(rc, ev.key); if (a){ ev.preventDefault(); if (!ev.repeat) riAcao(a); return; } }
     if (/^[1-9]$/.test(ev.key) && vale && !ev.target.closest?.('input, textarea')){ const b = D.foco.querySelectorAll('button')[+ev.key - 1]; if (b && !D.foco.hidden){ ev.preventDefault(); focar(b.dataset.id); } return; }   // 14/11: 1, 2, 3 = foco
     if (ev.key === 'ArrowRight'){ ev.preventDefault(); D.prox.click(); }

@@ -1,13 +1,17 @@
 // livowa.com/pele · "Enquanto analisa" (20/11/2026, pedido do Lucca): na tela de carregamento, um rosto de exemplo do mesmo sexo,
-// realista, com a idade estimada em cima; ela escolhe o sinal (Manchas · Linhas · Firmeza) e arrasta, e o número sobe ou desce
-// pela MESMA conta da análise (assets/rosto-idade/rosto-idade.js, porte do calcularIdade da edge). Uma etapa por vez: um sinal
-// à vista, um controle grande. Sem texto longo; "Rosto de exemplo, criado por IA. Simulação." fixo embaixo (zero promessa).
+// realista, com a idade estimada em cima; ela arrasta os sinais (Manchas · Linhas · Firmeza) e o número sobe ou desce
+// pela MESMA conta da análise (assets/rosto-idade/rosto-idade.js, porte do calcularIdade da edge). Sem texto longo; "Rosto de
+// exemplo, criado por IA. Simulação." fixo embaixo (zero promessa).
+// 22/11 (o Lucca: "alterar as características separadamente ou juntas, conforme já fizemos no passado"): era UM sinal por vez
+// (botões + um controle); agora cada sinal tem o próprio controle (as 4 posições, 0–3) e "Todos juntos" move todos de uma vez
+// (−3 a +3: cada sinal vai de Hoje até a ponta dele na mesma proporção; o cabelo acompanha pela idade, como no gravador).
 // Regra da espera (pedido dele): se o resultado fica pronto enquanto ela mexe (tocou nos últimos 5 s), a tela NÃO troca
 // sozinha: aparece "Ver o meu resultado". Sem toque recente, segue como antes.
 // Medição: track('answer', { stepId:'rosto_toy', valueText }) no padrão das outras respostas: viu · mexeu (1ª vez) · sinal
 // (cada troca de sinal) · esperou (resultado pronto com ela mexendo) · ver_resultado (tocou no botão) · resumo (ao sair).
 // Tudo nesta tela: o cartão é criado aqui dentro da seção 'carregando' (o index.html e o pele.css não mudam).
 const SRC = new URL('../assets/rosto-idade/rosto-idade.js?v=20261122c', import.meta.url).href;
+const TODOS = '*';   // o controle "Todos juntos"
 const MEXENDO_MS = 5000;
 let modulo = null, el = null, rosto = null, cont = null, sinal = null, laco = 0, ultToque = 0, toques = 0, mexidos = new Set(), trk = () => {}, esperando = null, abriu = false, vez = 0;
 
@@ -25,22 +29,24 @@ const CSS = `
 .com-rosto .dots,.com-rosto>.nota,.com-rosto.pronto #prog-etapa{display:none}
 .rt{width:100%;text-align:left;gap:12px;padding:14px;margin-top:2px}
 .rt-tit{font-size:var(--t2);font-weight:700;line-height:1.3}
-.rt-quadro{position:relative;height:clamp(220px,40svh,300px);border-radius:12px;overflow:hidden;background:var(--accent-2)}
+.rt-quadro{position:relative;height:clamp(190px,33svh,290px);border-radius:12px;overflow:hidden;background:var(--accent-2)}
 .rt-quadro canvas{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 16%}
 .rt-num{position:absolute;left:50%;top:10px;transform:translateX(-50%);display:flex;align-items:baseline;gap:6px;padding:4px 14px 6px;border-radius:999px;background:rgba(15,22,18,.78);color:#fff;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .rt-num b{font-size:var(--t1);font-variant-numeric:tabular-nums;line-height:1.1}
 .rt-num span{font-size:var(--t3);font-weight:600}
 .rt-num small{font-size:var(--t3);color:rgba(255,255,255,.72);border-left:1px solid rgba(255,255,255,.3);padding-left:7px;margin-left:2px}
-.rt-chips{display:flex;gap:6px}
-.rt-chip{flex:1;min-height:44px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:12px;font:600 var(--t2)/1.1 var(--font);cursor:pointer;-webkit-tap-highlight-color:transparent;padding:6px 4px}
-.rt-chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.rt-ctrls{display:grid;grid-template-columns:max-content 1fr;align-items:center;column-gap:12px;row-gap:0}
+.rt-ctrls>span{font-size:var(--t2);font-weight:600;line-height:1.1}
+.rt-ctrls>.rt-todos-n{font-weight:700}
+.rt-ctrls>.rt-sep{grid-column:1/-1;height:1px;background:var(--line);margin:2px 0}
+.rt-ctrls>.rt-pontas{grid-column:2;margin:0}
 .rt-faixa{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:0;touch-action:pan-y;font-size:var(--t3)}
 .rt-faixa::-webkit-slider-runnable-track{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--accent-2),#c8a27a)}
 .rt-faixa::-moz-range-track{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--accent-2),#c8a27a)}
 .rt-faixa::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-12px;border-radius:50%;background:var(--surface);border:3px solid var(--accent);box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .rt-faixa::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--surface);border:3px solid var(--accent)}
 .rt-faixa:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:8px}
-.rt-pontas{display:flex;justify-content:space-between;font-size:var(--t3);color:var(--muted);margin-top:-8px}
+.rt-pontas{display:flex;justify-content:space-between;font-size:var(--t3);color:var(--muted)}
 .rt-ver{margin-top:2px}
 .rt-pe{font-size:var(--t3);color:var(--muted)}
 `;
@@ -51,32 +57,44 @@ function monta(sec){
   el.innerHTML = `<p class="rt-tit">Enquanto analisa: veja o que muda a idade de um rosto</p>
     <div class="rt-quadro"><canvas id="rt-tela" width="447" height="720" aria-label="Rosto de exemplo, com a idade estimada em cima"></canvas>
       <div class="rt-num" aria-live="polite"><b id="rt-idade">--</b><span>anos</span><small>simulação</small></div></div>
-    <div class="rt-chips" id="rt-chips" role="group" aria-label="O que mudar no rosto"></div>
-    <input class="rt-faixa" id="rt-faixa" type="range" min="0" max="3" step="1" value="0" aria-label="Quanto">
-    <div class="rt-pontas" aria-hidden="true"><span>Menos</span><span>Mais</span></div>
+    <div class="rt-ctrls" id="rt-ctrls" role="group" aria-label="O que mudar no rosto"></div>
     <button class="btn rt-ver" id="rt-ver" type="button" hidden>Ver o meu resultado</button>
     <p class="rt-pe">Rosto de exemplo, criado por IA. Simulação.</p>`;
   sec.append(el);
-  const fx = el.querySelector('#rt-faixa');
   const toque = () => { ultToque = performance.now(); };
   ['pointerdown', 'touchstart', 'keydown'].forEach(n => el.addEventListener(n, toque, { passive:true }));
-  fx.addEventListener('input', () => { toque(); if (!rosto || !sinal) return; rosto.por(sinal, +fx.value); mexeu(); });
-  el.querySelector('#rt-chips').addEventListener('click', ev => { const b = ev.target.closest('button[data-k]'); if (!b) return; toque(); escolhe(b.dataset.k, true); });
+  el.querySelector('#rt-ctrls').addEventListener('input', ev => {
+    const fx = ev.target.closest('input[data-k]'); if (!fx || !rosto) return;
+    toque();
+    const k = fx.dataset.k, v = +fx.value;
+    if (sinal !== k){ sinal = k; trk('sinal', { sinal:k === TODOS ? 'todos' : k }); }
+    if (k === TODOS) todos(v); else rosto.por(k, v);
+    mexeu();
+  });
   el.querySelector('#rt-ver').addEventListener('click', () => { trk('ver_resultado', { espera_ms:esperando ? Math.round(performance.now() - esperando.t0) : null }); const e = esperando; esperando = null; if (e) e.ok(); });
   return el;
 }
-function escolhe(k, porToque){
-  const c = rosto.ctrl.find(x => x.k === k); if (!c) return;
-  sinal = k;
-  el.querySelectorAll('.rt-chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === k)));
-  const fx = el.querySelector('#rt-faixa'); fx.min = c.min; fx.max = c.max; fx.value = rosto.pos[k];
-  fx.setAttribute('aria-label', c.nome + ': quanto');
-  if (porToque) trk('sinal', { sinal:k });
+/** Todos juntos: v de −3 (todos na ponta Menos) a +3 (todos em Mais); 0 = Hoje. Cada sinal anda a mesma proporção até a ponta dele. */
+function todos(v){
+  const t = Math.max(-3, Math.min(3, v)) / 3;
+  usaveis().forEach(c => rosto.por(c.k, Math.round(t >= 0 ? c.hoje + t * (c.max - c.hoje) : c.hoje + t * (c.hoje - c.min))));
+  sincroniza();
+}
+const usaveis = () => rosto.ctrl.filter(c => c.max > c.min);
+/** Os controles de cada sinal mostram a posição de agora (depois do "Todos juntos"). */
+function sincroniza(){ el.querySelectorAll('#rt-ctrls input[data-k]').forEach(fx => { if (fx.dataset.k !== TODOS) fx.value = rosto.pos[fx.dataset.k]; }); }
+function montaCtrls(){
+  const linha = (k, nome, rot, min, max, v, cls) => `<span class="${cls || ''}" aria-hidden="true">${nome}</span>` +
+    `<input class="rt-faixa" type="range" data-k="${k}" min="${min}" max="${max}" step="1" value="${v}" aria-label="${rot}: quanto">`;
+  el.querySelector('#rt-ctrls').innerHTML = `<span aria-hidden="true"></span><div class="rt-pontas" aria-hidden="true"><span>Menos</span><span>Mais</span></div>` +
+    linha(TODOS, 'Todos juntos', 'Todos juntos', -3, 3, 0, 'rt-todos-n') + `<i class="rt-sep" aria-hidden="true"></i>` +
+    usaveis().map(c => linha(c.k, c.curto, c.nome, c.min, c.max, rosto.pos[c.k])).join('');
 }
 function mexeu(){
   toques++;
-  if (!mexidos.size) trk('mexeu', { sinal });
-  mexidos.add(sinal);
+  const s = sinal === TODOS ? 'todos' : sinal;
+  if (!mexidos.size) trk('mexeu', { sinal:s });
+  mexidos.add(s);
   if (cont) cont.alvo(rosto.idade().idade);
 }
 function anda(){
@@ -104,11 +122,10 @@ export async function iniciar(o){
     else rosto.hoje();
   } catch (e) { return false; }
   if (meu !== vez || sec.hidden) return false;   // a análise acabou antes de o rosto ficar pronto
-  const ch = el.querySelector('#rt-chips');
-  ch.innerHTML = rosto.ctrl.filter(c => c.max > c.min).map(c => `<button type="button" class="rt-chip" data-k="${c.k}" aria-pressed="false">${c.curto}</button>`).join('');
+  sinal = null;
+  montaCtrls();
   cont = window.RostoIdade.contador(rosto.idade().idade);
   el.querySelector('#rt-idade').textContent = cont.valor();
-  escolhe(rosto.ctrl.find(c => c.max > c.min).k, false);
   rosto.anda(performance.now(), 0);
   const q = el.querySelector('.rt-quadro'), cv = q.querySelector('canvas');
   if (cv !== rosto.canvas){ rosto.canvas.id = 'rt-tela'; rosto.canvas.setAttribute('aria-label', 'Rosto de exemplo, com a idade estimada em cima'); cv.replaceWith(rosto.canvas); }
@@ -135,4 +152,4 @@ function limpar(){ if (laco) cancelAnimationFrame(laco); laco = 0; if (el){ el.h
 /** Para tudo (erro de rede, refazer). */
 export function parar(){ vez++; esperando = null; limpar(); }
 // para o teste: o estado à vista
-export const _estado = () => ({ rosto:rosto && rosto.id, sinal, pos:rosto && { ...rosto.pos }, idade:rosto && rosto.idade(), mostrado:cont && cont.valor(), notas:rosto && rosto.notas(), toques, aberto:!!el && !el.hidden, esperando:!!esperando, ctrl:rosto && rosto.ctrl.map(c => ({ k:c.k, min:c.min, hoje:c.hoje, max:c.max })) });
+export const _estado = () => ({ rosto:rosto && rosto.id, sinal:sinal === TODOS ? 'todos' : sinal, todos:el ? +((el.querySelector(`#rt-ctrls input[data-k="${TODOS}"]`) || {}).value || 0) : null, pos:rosto && { ...rosto.pos }, idade:rosto && rosto.idade(), mostrado:cont && cont.valor(), notas:rosto && rosto.notas(), toques, aberto:!!el && !el.hidden, esperando:!!esperando, ctrl:rosto && rosto.ctrl.map(c => ({ k:c.k, min:c.min, hoje:c.hoje, max:c.max })) });
