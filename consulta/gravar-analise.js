@@ -869,10 +869,13 @@ function cenaExemplo(ctx, c, t){
 // No pé: "Ilustração. Varia de pessoa para pessoa." Sem a imagem carregada, nada no canvas: o aviso é só DOM (nota).
 const FORMA = {
   linhas:{ q:['linhas-m1', 'linhas-m2', 'linhas-m3', 'linhas-m4'], f:['linhas-f1', 'linhas-f2', 'linhas-f3'], fs:{ m:['linhas-f1-m', 'linhas-f2-m', 'linhas-f3-m'] }, et:[
-    { q:0, pulsa:1, f:0, chave:/m[úu]sculo|mexe/i, leg:'O músculo puxa: a pele dobra e volta', rot:'músculo contrai', a:[.5, .93], p:[.06, .68] },
-    { q:0, de:1, f:0, chave:/devolve/i, leg:'Pele nova: o colágeno devolve', rot:'colágeno firme', a:[.55, .5], p:[.5, .7] },   // a dobra se desfaz (m2 → m1)
+    // 22/11 (o Lucca, RESPONDER.txt: "o músculo dobrar faz o colágeno afinar? se não, seria melhor sol, colágeno afina, músculo dobra,
+    // a dobra fica pois o colágeno afinou"): quem afina a rede é o sol e o tempo (pesquisa/estudo-pele/A-causas.md §2.2); o músculo só
+    // marca o lugar da dobra. Ordem nova: rede firme (m1) → afina (m3) → o músculo dobra a pele fina (pulsa m3↔m4) → a dobra fica (m4)
+    { q:0, f:0, chave:/col[áa]geno/i, leg:'Pele nova: a rede de colágeno é firme', rot:'colágeno firme', a:[.55, .5], p:[.5, .7] },
     { q:2, f:1, chave:/afina/i, leg:'Sol e anos: a rede afina', rot:'rede afinou', a:[.55, .5], p:[.5, .7] },
-    { q:3, f:2, chave:/parad|marcad|fica/i, leg:'A dobra fica, com o rosto parado', rot:'a dobra ficou', a:[.5, .37], p:[.58, .06] }] },
+    { q:2, pulsa:1, pq:3, f:1, chave:/m[úu]sculo|mexe/i, leg:'O músculo puxa: a pele fina dobra', rot:'a pele dobra', a:[.5, .37], p:[.06, .68] },
+    { q:3, f:2, chave:/parad|marcad|fica/i, leg:'Não volta: a dobra fica, com o rosto parado', rot:'a dobra ficou', a:[.5, .37], p:[.58, .06] }] },
   manchas:{ q:['manchas-e1', 'manchas-e2', 'manchas-e3'], f:['manchas-f1', 'manchas-f2', 'manchas-f3'], et:[
     { q:0, f:0, chave:/c[ée]lula|pigmento/i, leg:'A célula que fabrica o pigmento', rot:'célula do pigmento', a:[.5, .46], p:[.06, .72] },
     { q:1, f:1, chave:/a mais|luz/i, leg:'A luz faz fabricar a mais', rot:'pigmento a mais', a:[.5, .46], p:[.5, .72] },
@@ -955,7 +958,7 @@ function cenaMecanismo(ctx, c, t){
   if (E.pulsa){
     quadro(E.q, 1);
     const p = (1 - Math.cos(2 * Math.PI * (te / 1000) / 1.3)) / 2;   // contrai e solta enquanto ele fala do músculo
-    quadro(1, p);
+    quadro(E.pq != null ? E.pq : 1, p);   // 22/11: pq = o quadro da contração (linhas: m4, a dobra na rede fina)
   } else { if (fus < 1) quadro(deQ, 1); quadro(E.q, fus); }
   ctx.restore();
   ctx.globalAlpha = ent; ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(255,255,255,.14)'; caixa(ctx, x, y, w, h, r); ctx.stroke();
