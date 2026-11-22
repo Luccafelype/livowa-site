@@ -164,3 +164,5 @@ b,strong{font-weight:700}
 .rodas{display:flex;gap:12px;align-self:stretch;justify-content:center}
 .rodas .wheelbox{flex:1;max-width:200px;display:flex;flex-direction:column;gap:6px}
 .rodas label{text-align:center}
+.capa-img{display:block;width:100%;height:auto;max-height:36svh;object-fit:cover;object-position:top;border-radius:var(--raio);background:var(--line)}
+.screen.capa{gap:16px}
