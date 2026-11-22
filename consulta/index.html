@@ -516,7 +516,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
 <script src="uso.js?v=20261113y"></script>
-<script src="kits.js?v=20261114v5"></script>
+<script src="kits.js?v=20261122a"></script>
 <script src="roteiro.js?v=20261118x"></script>
 <script src="gravar-analise.js?v=20261120a"></script>
 <script>
@@ -559,7 +559,7 @@ const semAnaliseP = p => p.funil === 'pele-idade' && (p.etapa === 'limite' || p.
 const temPele = l => (l.partes || []).some(p => (p.funil === 'pele-idade' || p.funil === 'pele2' || p.etapa === 'pele-resultado') && !semAnaliseP(p));
 const ehPI = l => (l.partes || []).some(p => p.funil === 'pele-idade');
 // 13/11 (d-20261113-narrativa-analise-todas-iscas): os testes que seguem o passo a passo da pele (a mesma próxima ação no cartão)
-const ehPasso = l => (l.partes || []).some(p => ['pele-idade', 'teste-braco', 'teste-pernas', 'quiz-longevidade', 'teste-emagrecimento', 'pele2'].includes(p.funil) && p.etapa !== 'pele-resultado');
+const ehPasso = l => (l.partes || []).some(p => ['pele-idade', 'teste-braco', 'teste-pernas', 'quiz-longevidade', 'teste-emagrecimento', 'teste-tipos', 'pele2'].includes(p.funil) && p.etapa !== 'pele-resultado');   // 22/11: teste-tipos (livowa.com/tipos)
 const soSemAnalise = l => { const ps = (l.partes || []).filter(p => p.funil === 'pele-idade'); return ps.length > 0 && ps.every(semAnaliseP); };
 function proxAcao(l, et){
   const pi = ehPasso(l);
@@ -582,7 +582,7 @@ function apagaFoto(l){
   return dias <= 0 ? 'A foto já apagou (7 dias)' : dias === 1 ? 'A foto apaga em 1 dia' : `A foto apaga em ${dias} dias`;
 }
 const NOME_PI = 'Pele: idade e vitalidade';   // livowa.com/pele (funnelId pele-idade, 04/11)
-const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'pele-idade' ? NOME_PI : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil;
+const NOME_FUNIL = p => p.etapa === 'pele-resultado' ? 'Pele' : p.funil === 'pele2' ? 'Pele 2' : p.funil === 'pele-idade' ? NOME_PI : p.funil === 'teste-pernas' ? 'Pernas' : p.funil === 'quiz-longevidade' ? 'Quiz' : p.funil === 'teste-braco' ? 'Idade muscular' : p.funil === 'teste-emagrecimento' ? 'Emagrecimento' : p.funil === 'teste-tipos' ? '4 tipos' : p.funil;
 let LEADS = [], filtro = 'fila', CARREGOU = false;
 // 13/11 (CRM v3): o banco devolve conversa_em, proximo_toque_em e primeira_resposta_em (sql-crm-v3.sql)? Sem isso, a
 // página esconde as datas e funciona como antes
@@ -660,7 +660,7 @@ function quemHtml(l){
 // (vermelho depois de 24 h na fila); na pele nova, o incômodo dela; UM botão que já faz a próxima ação e o ⋯ que abre o lead
 // inteiro. Etapa, nota, aceite, etiquetas, resumo e "a foto apaga" ficam dentro do lead (a foto vira um ponto nos 2 últimos dias).
 const TESTE_1 = p => p.etapa === 'pele-resultado' || p.funil === 'pele2' || p.funil === 'pele-idade' ? 'Pele'
-  : { 'teste-pernas':'Pernas', 'quiz-longevidade':'Quiz', 'teste-braco':'Braço', 'teste-emagrecimento':'Emagrecimento' }[p.funil] || p.funil || '';
+  : { 'teste-pernas':'Pernas', 'quiz-longevidade':'Quiz', 'teste-braco':'Braço', 'teste-emagrecimento':'Emagrecimento', 'teste-tipos':'4 tipos' }[p.funil] || p.funil || '';
 const INC_PI = { cansada:m => m ? 'cara de cansado' : 'cara de cansada', caindo:() => 'rosto caindo', pescoco:() => 'pescoço e papada', palpebra:() => 'pálpebra pesando',
   manchas:() => 'manchas e rugas', velho:m => m ? 'parece mais velho' : 'parece mais velha' };
 function incomodoCurto(l){
@@ -1089,11 +1089,12 @@ async function salvarPorta(el){
 }
 
 // ---------- Funil (01/11): onde as pessoas caem, etapa por etapa (RPCs funil_opcoes e funil_etapas, pela edge) ----------
-const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['pele2','Pele 2'],['pele-idade',NOME_PI],['teste-braco','Idade muscular'],['teste-emagrecimento','Emagrecimento'],['quiz-longevidade','Quiz'],['link-bio','Link da bio'],['quiz-metabolico','Quiz do app']];
+const FUNIS = [['teste-pernas','Pernas'],['teste-pele','Pele'],['pele2','Pele 2'],['pele-idade',NOME_PI],['teste-braco','Idade muscular'],['teste-emagrecimento','Emagrecimento'],['teste-tipos','4 tipos'],['quiz-longevidade','Quiz'],['link-bio','Link da bio'],['quiz-metabolico','Quiz do app']];
 const ETAPA = {
   'teste-pernas': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, peso e altura', camera:'Câmera (5 levantadas)', resultado:'Resultado', fechar:'Médico (tela final)' },
   'pele2': { capa:'Capa (promessa)', nome:'Nome', sexo:'Sexo', seguranca:'Gestação/amamentação', alergia:'Alergia', incomoda:'O que incomoda (fotos)', tipo:'Tipo de pele', sol:'Sol por dia', agua:'Água', sono:'Sono', rotina:'Rotina', objetivo:'Objetivo', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (frente e lados)', carregando:'Analisando', resultado:'Resultado', fechar:'Médico + dois caminhos', erro:'Erro' },
   'pele-idade': { inicio:'Abriu a página', capa:'Capa = sexo (v2) · capa (v1)', sexo:'Sexo (v1)', idade:'Idade real (roda)', reforco1:'Interstício 1 (gêmeos)', nome:'Nome (com Pular)', espelho:'Espelho (o que mais incomoda, v3)', sol:'Sol', cigarro:'Cigarro', reforco2:'Interstício 2 (cigarro)', metabolico:'Pressão e glicose', movimento:'Movimento', sono:'Sono e energia', futuro:'Daqui a 10 anos', instrucao:'Instrução da câmera (aceite)', scan:'Câmera (3 fotos; v1 só de frente)', carregando:'Analisando', resultado:'Resultado (idade do rosto)', fechar:'Médico (um passo)', erro:'Erro' },
+  'teste-tipos': { capa:'Capa = sexo', idade:'Idade (roda)', nome:'Nome', medidas:'Peso e altura', mayo:'Interstício: a Mayo e os 4 tipos', cb1:'Frase 1 · cérebro', ef1:'Frase 2 · estômago', em1:'Frase 3 · emocional', gl1:'Frase 4 · gasto', cb2:'Frase 5 · cérebro', ef2:'Frase 6 · estômago', mais1:'Interstício: mais de um tipo', em2:'Frase 7 · emocional', gl2:'Frase 8 · gasto', cb3:'Frase 9 · cérebro', ef3:'Frase 10 · estômago', em3:'Frase 11 · emocional', gl3:'Frase 12 · gasto', tentou:'O que já tentou', objetivo:'Objetivo', carregando:'Calculando', resultado:'Resultado (tela final)' },   // 22/11
   'teste-emagrecimento': { capa:'Capa (promessa)', sexo:'Sexo', fase:'Gestação/amamentação', idade:'Idade', nome:'Nome', medidas:'Peso e altura', cintura:'Cintura (até 03/11)', acontece:'O que mais acontece (decide o perfil)', tentou:'O que já tentou', ciclo:'Menstruação', pele:'Pelos, espinhas, cabelo', tireoide:'Sinais da tireoide', exames:'Pressão, glicose, gordura', remedios:'Remédios contínuos', vontade:'Vontade de comer', sono:'Sono', ronco:'Ronco', forca:'Força', proteina:'Proteína (até 03/11)', objetivo:'Objetivo', carregando:'Calculando', resultado:'Resultado', fechar:'Médico (um passo)' },
   'teste-pele': { 'pele-inicio':'Início da pele (aceite)', 'pele-camera':'Câmera da selfie', 'pele-envio':'Conferir e enviar a foto', 'pele-analise':'Analisando a foto', 'pele-resultado':'Tela final da pele', 'pele-erro':'Erro na pele' },
   'teste-braco': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, sexo e peso', sensor:'Permissão do sensor', medir:'Medição (10 s)', analise:'Analisando', resultado:'Resultado', erro:'Erro no sensor', fechar:'Médico (tela final)' },
@@ -1510,6 +1511,13 @@ const EMAG = {
   sinais:{ sop:'sinais de SOP (ciclo e pelos)', menopausa:'menopausa', tireoide:'sinais de tireoide lenta', metabolica:'sinais de síndrome metabólica', sem_exames:'sem exames recentes', remedio:'remédio de uso contínuo', ronco:'ronco e cansaço (rastrear apneia)', nenhum:'nenhum' },
 };
 const SIMNAO = { sim:'sim', nao:'não', true:'sim', false:'não' };
+// 22/11: teste dos 4 tipos (tipos/app.js): nomes, frases (texto da tela, em 1ª pessoa) e a escala de 0 a 3
+const TIPOS4 = { cb:'Cérebro faminto', ef:'Estômago faminto', em:'Fome emocional', gl:'Gasto lento' };
+const FRASES4 = [['cb1', 'Cérebro · precisa comer bastante para se sentir satisfeita(o)'], ['cb2', 'Cérebro · de barriga cheia, ainda cabe mais'], ['cb3', 'Cérebro · precisa de prato maior que o dos outros'],
+  ['ef1', 'Estômago · pouco depois de comer, a vontade volta'], ['ef2', 'Estômago · precisa beliscar entre as refeições'], ['ef3', 'Estômago · refeição completa segura pouco'],
+  ['em1', 'Emocional · ansiedade aumenta a vontade de comer'], ['em2', 'Emocional · tensa(o) ou nervosa(o) durante o dia'], ['em3', 'Emocional · num dia ruim, a comida acalma'],
+  ['gl1', 'Gasto lento · come pouco e o peso não desce'], ['gl2', 'Gasto lento · passa a maior parte do dia sentada(o)'], ['gl3', 'Gasto lento · sente que perdeu força ou músculo']];
+const ESCALA4 = { '0':'quase nunca', '1':'às vezes', '2':'muitas vezes', '3':'quase sempre' };
 const TEC_COMUM = [['versao', 'Versão do teste'], ['ponte', 'Veio pela ponte da bio', SIMNAO], ['lv', 'Marca do Direct (link do OpenReply)'],
   ['utm_source', 'Origem do link (utm_source)'], ['utm_medium', 'Meio (utm_medium)'], ['utm_campaign', 'Campanha (utm_campaign)'], ['utm_content', 'Conteúdo (utm_content)'],
   ['utm_term', 'Termo (utm_term)'], ['utm_source_real', 'Origem real (aparelho do Lucca)'], ['referrer', 'Página de onde veio'], ['user_agent', 'Aparelho e navegador']];
@@ -1536,6 +1544,20 @@ const DET = {
       ['proteina', 'Proteína (até 03/11)', { '1menos':'em 1 refeição ou menos', '2':'em 2 refeições', '3mais':'em 3 refeições ou mais' }],
       ['objetivo', 'Objetivo', { roupas:'voltar a usar as roupas que gosta', nao_voltar:'parar de engordar tudo de novo', disposicao:'ter mais disposição no dia a dia', saude:'cuidar da saúde e dos exames', corpo:'se sentir bem com o corpo', outro:'outro' }]],
     ocultoResp:['nome', 'faseAuto'], nome:true,   // 12/11: o nome vai na linha Nome (linhaNome), no topo das respostas
+  },
+  // 22/11: livowa.com/tipos (teste dos 4 tipos de engordar, Acosta 2021). Chaves conferidas no tipos/app.js (complete):
+  // tipo, tipos ('cb+ef'), forte, pontos {cb, ef, em, gl} de 0 a 9, imc; respostas: sexo, idade, peso, altura, cb1..gl3 (0-3), tentou, objetivo
+  'teste-tipos': {
+    res:(e, d) => { const t = String(d.tipos || e.resumo || '').split('+').filter(Boolean).map(x => TIPOS4[x] || x).join(' + '); return t ? (d.forte === false ? 'Nenhum forte; mais: ' : 'Tipo: ') + t : e.resumo; },
+    principal:[['tipos', 'Tipo (5 pontos ou mais = marcado)', v => String(v).split('+').map(x => TIPOS4[x] || x).join(' + ')],
+      ['forte', 'Algum tipo marcado', SIMNAO],
+      ['pontos', 'Pontos (0 a 9)', v => ['cb', 'ef', 'em', 'gl'].map(k => `${TIPOS4[k]} ${v?.[k] ?? '—'}`).join(' · ')],
+      ['imc', 'IMC (peso ÷ altura²)', v => `${num(+v)} kg/m²`]],
+    respostas:[['sexo', 'Sexo', SEXO], ['idade', 'Idade', anos], ['peso', 'Peso', un(' kg')], ['altura', 'Altura', un(' cm')],
+      ...FRASES4.map(([k, t]) => [k, t, ESCALA4]),
+      ['tentou', 'Já tentou', { dieta:'dieta da internet ou de revista', low_carb:'cortar carboidrato', jejum:'jejum intermitente', academia:'academia ou corrida', nutri:'nutricionista', cha:'chá, shake ou suplemento', remedio:'remédio ou caneta para emagrecer', nenhum:'nenhum destes' }],
+      ['objetivo', 'Objetivo', { roupas:'voltar a usar as roupas que gosta', nao_voltar:'parar de engordar tudo de novo', disposicao:'ter mais disposição no dia a dia', saude:'cuidar da saúde e dos exames', corpo:'se sentir bem com o corpo' }]],
+    ocultoResp:['nome'], nome:true,
   },
   'teste-pernas': {
     res:(e, d) => d.faixa || e.resumo ? `Pernas com a força de quem tem ${d.faixa || e.resumo}` : '',
@@ -1669,7 +1691,7 @@ async function ver(c){
     if (!j.lista.length && !FOTOS.length){ $('gestao').innerHTML = ''; return poeOut(`<p class="aviso">Nenhum resultado com ${esc(c)}.</p>`); }
     poeOut(j.lista.map(e => {
       const quando = new Date(e.quando).toLocaleString('pt-BR', { timeZone:TZ, dateStyle:'short', timeStyle:'short' });
-      const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'pele-idade' ? NOME_PI : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil === 'teste-emagrecimento' ? 'Emagrecimento' : e.funil;
+      const nome = e.etapa === 'pele-resultado' ? 'Pele' : e.funil === 'pele2' ? 'Pele 2' : e.funil === 'pele-idade' ? NOME_PI : e.funil === 'teste-pernas' ? 'Pernas' : e.funil === 'quiz-longevidade' ? 'Quiz de longevidade' : e.funil === 'teste-braco' ? 'Idade muscular' : e.funil === 'teste-emagrecimento' ? 'Emagrecimento' : e.funil === 'teste-tipos' ? '4 tipos' : e.funil;
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2' || e.funil === 'pele-idade') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
       if (e.funil === 'pele-idade') return cartaoPeleIdade(e, quando, g);
@@ -1681,7 +1703,7 @@ async function ver(c){
     window.ROTEIRO?.depois(c);
     // 13/11: registro de uso: só o tipo do teste e se é treino (o código fica na memória da aba, para contar reaberturas)
     const e0 = (j.lista || [])[0], lx = LEADS.find(x => x.codigo === c);
-    window.USO?.abriuLead(c, e0 ? (e0.etapa === 'pele-resultado' ? 'pele' : { 'teste-pernas':'pernas', 'teste-braco':'braco', 'quiz-longevidade':'quiz', 'teste-emagrecimento':'emagrecimento' }[e0.funil] || e0.funil) : 'nenhum', lx ? ehTreino(lx) : false);
+    window.USO?.abriuLead(c, e0 ? (e0.etapa === 'pele-resultado' ? 'pele' : { 'teste-pernas':'pernas', 'teste-braco':'braco', 'quiz-longevidade':'quiz', 'teste-emagrecimento':'emagrecimento', 'teste-tipos':'tipos' }[e0.funil] || e0.funil) : 'nenhum', lx ? ehTreino(lx) : false);
   } catch { window.USO?.sinal('erro', { onde:'lead' }); poeOut('<p class="aviso">Sem conexão.</p>'); }
 }
 // Fotos de um grupo, com a chave certa: pele antiga = repouso/sorriso/sobrancelhas; pele2 = frente/esquerda/direita.
@@ -1720,12 +1742,12 @@ $('out').addEventListener('click', async ev => {
 // ---------- Kit de resposta (01/11): faixa, mensagens prontas e modo react; tudo local, nada vai para o servidor ----------
 let KB = [], KM = [], KIT_NOME = '', KIT_COD = '', NOME_G = '', R = null;   // KB = blocos da tela; KM = mensagens desenhadas; KIT_NOME começa com o nome guardado (NOME_G, 12/11) e o que ele digitar fica só nesta tela
 const kitTeste = e => e.etapa === 'pele-resultado' ? 'pele' : e.funil === 'pele2' ? 'pele2' : e.funil === 'pele-idade' ? 'pele-idade' : e.funil === 'teste-braco' ? 'braco' : e.funil === 'teste-pernas' ? 'pernas'
-  : e.funil === 'quiz-longevidade' ? 'quiz-longevidade' : e.funil === 'teste-emagrecimento' ? 'quiz-emagrecimento' : null;
+  : e.funil === 'quiz-longevidade' ? 'quiz-longevidade' : e.funil === 'teste-emagrecimento' ? 'quiz-emagrecimento' : e.funil === 'teste-tipos' ? 'quiz-tipos' : null;
 // 13/11 (d-20261113-narrativa-analise-todas-iscas): uma narrativa só; braço, pernas, quizzes e pele2 seguem o passo a passo da pele
-const PASSO_KIT = new Set(['pele-idade', 'braco', 'pernas', 'pele2', 'quiz-longevidade', 'quiz-emagrecimento']);
+const PASSO_KIT = new Set(['pele-idade', 'braco', 'pernas', 'pele2', 'quiz-longevidade', 'quiz-emagrecimento', 'quiz-tipos']);
 const FOTO_KIT = new Set(['pele', 'pele2', 'pele-idade']);
 // "Agora não": o próximo teste de quem fez cada um (o da pele nova vai pelo desejo dela)
-const NUTRIR_TESTE = { braco:'reconhecer', pernas:'chegar10', pele2:'reconhecer', 'quiz-longevidade':'chegar10', 'quiz-emagrecimento':'chegar10' };
+const NUTRIR_TESTE = { braco:'reconhecer', pernas:'chegar10', pele2:'reconhecer', 'quiz-longevidade':'chegar10', 'quiz-emagrecimento':'chegar10', 'quiz-tipos':'chegar10' };
 // o que vai na tela do gravador e da revisão: as fotos (pele) ou o quadro com o resultado (os outros)
 function telasKit(b){
   if (FOTO_KIT.has(b.t)) return fotosDoGrupo(b.g, b.e).filter(f => f.url).map(f => ({ rot:f.rot, url:f.url, chave:f.chave }));
@@ -2134,7 +2156,7 @@ async function comExemplo(blocos){
 // 14/11 (mapa do vídeo): o que vai no quadro do vídeo fala com ela, nunca dela, e sem "frágil" (o resultado dela nunca mostrou essa palavra)
 const paraLead = t => t == null ? t : String(t).replace(/faixa pré-frágil/gi, 'abaixo do esperado').replace(/faixa frágil/gi, 'bem abaixo do esperado')
   .replace(/\(tem (\d+)\)/g, '(você tem $1)').replace(/; tem (\d+) anos/g, '; você tem $1 anos');
-const faixaVideo = b => b.t === 'quiz-emagrecimento' || b.t === 'quiz-longevidade' ? null : paraLead(b.c?.simples || null);   // nos quizzes o quadro já mostra as respostas
+const faixaVideo = b => b.t === 'quiz-emagrecimento' || b.t === 'quiz-longevidade' || b.t === 'quiz-tipos' ? null : paraLead(b.c?.simples || null);   // nos quizzes o quadro já mostra as respostas
 // 13/11: fora da pele nova, a cena do bloco 2 é a régua (o número do teste ao lado da idade dela), quando os dois são números
 function cenaOutro(id, b){
   if (id !== 'resultado' && id !== 'cl-idade') return null;
@@ -2545,7 +2567,7 @@ $('f').addEventListener('submit', e => { e.preventDefault(); const c = $('c').va
 // volta ao app (iPhone): recarrega a caixa
 // ---------- 13/11: a aba Ajustes ----------
 const AJ = { escopo:'geral', lead:'', tempo:{} };
-const AJ_TESTES = [['pele-idade', 'Pele: idade e vitalidade'], ['teste-braco', 'Idade muscular (braço)'], ['teste-pernas', 'Pernas'], ['quiz-longevidade', 'Quiz da longevidade'], ['pele2', 'Pele 2'], ['pele', 'Pele (selfie, antiga)'], ['teste-emagrecimento', 'Emagrecimento']];
+const AJ_TESTES = [['pele-idade', 'Pele: idade e vitalidade'], ['teste-braco', 'Idade muscular (braço)'], ['teste-pernas', 'Pernas'], ['quiz-longevidade', 'Quiz da longevidade'], ['pele2', 'Pele 2'], ['pele', 'Pele (selfie, antiga)'], ['teste-emagrecimento', 'Emagrecimento'], ['teste-tipos', '4 tipos de engordar']];
 const AJ_COORTES = [['treino', 'Treino'], ['pele', 'PELE'], ['pernas', 'PERNAS'], ['musculo', 'MÚSCULO'], ['idade', 'IDADE'], ['bio', 'Bio'], ['direct', 'Direct'], ['whatsapp', 'WhatsApp']];
 const nomeEscopo = e => e === 'padrão' || e === 'geral' ? e : e.startsWith('coorte:') ? 'coorte ' + e.slice(7).toUpperCase() : e.slice(6);
 const cadeiaAj = () => AJ.escopo === 'geral' ? ['geral'] : [AJ.escopo, 'geral'];

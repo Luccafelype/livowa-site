@@ -1,0 +1,166 @@
+/* livowa.com/tipos (22/11/2026): o sistema visual do /pele/ v2 (pele.css), sem a câmera, + as barras dos 4 tipos.
+   Origem: livowa.com/pele v2 (04/11/2026), desenho-v2.md (livowa-empresa/tarefas/pele-idade-vitalidade/).
+   Sistema: UMA família (IBM Plex Sans) · TRÊS tamanhos: --t1 28px (título), --t2 17px (corpo, botão, opção),
+   --t3 13px (nota, rótulo da barra, rodapé) · exceções: --tn 56px, só no número do resultado; --tg 20px, só no texto e no
+   botão do cartão final do Dr. Lucca (11/11 23h, Lucca: “letras miúdas”).
+   Ênfase só por peso (700) ou pela cor de destaque. Cores: texto, cinza, 1 destaque (verde). UM estilo de cartão (.cartao).
+   Nada de vermelho. Todo font-size usa uma das 5 variáveis. */
+:root{
+  --t1:28px; --t2:17px; --t3:13px; --tn:56px; --tg:20px;
+  --bg:#f3f5f2; --surface:#ffffff; --fg:#141c17; --muted:#5d6b63; --line:#dde3de;
+  --accent:#0d6a4d; --accent-2:#dcefe6; --on-accent:#ffffff;
+  --font:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --raio:16px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:var(--t2);line-height:1.45;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,p{margin:0}
+h1,h2{font-size:var(--t1);font-weight:700;line-height:1.15;letter-spacing:-.01em;text-wrap:balance}
+h3{font-size:var(--t2);font-weight:700}
+b,strong{font-weight:700}
+.dest{color:var(--accent)}
+.nota{font-size:var(--t3);color:var(--muted);line-height:1.4}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 11/11 (Lucca): no iPhone a capa ficava a 60-65% da tela. O 100vh do Safari é a tela SEM as barras; o 100svh é a parte
+   que se vê com elas. Fallback 100vh para navegador antigo. */
+.app{max-width:520px;margin:0 auto;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+
+/* ---------- topo: voltar + barra de progresso segmentada (3 trechos; 09/11: sem rótulo) ---------- */
+.top{display:flex;align-items:center;gap:8px;padding-top:8px;min-height:52px}
+.back{flex:none;width:44px;height:44px;margin-left:-10px;background:none;border:0;color:var(--fg);font-size:var(--t1);line-height:1;cursor:pointer}
+.back.some{visibility:hidden}
+.barra{flex:1}
+.b-trilho{display:flex;gap:4px}
+.b-trilho i{display:block;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.b-trilho b{display:block;height:100%;width:0;background:var(--accent);border-radius:inherit;transition:width .45s ease}
+
+/* ---------- telas ---------- */
+.screen{flex:1;display:flex;flex-direction:column;gap:16px;padding-block:12px calc(var(--cta-h,96px) + 20px);animation:entra .25s ease}
+@keyframes entra{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+.screen.c{text-align:center;justify-content:center;align-items:center}
+
+/* capa = 1ª pergunta */
+/* 11/11: centro de verdade da tela visível: o fundo compensa a barra do topo (52 px) que fica em cima */
+.screen.capa{justify-content:center;gap:20px;padding-bottom:64px}
+.medico-mini{display:flex;align-items:center;gap:10px}
+.medico-mini img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none}
+
+/* cartão: o único estilo */
+.cartao{background:var(--surface);border:1px solid var(--line);border-radius:var(--raio);padding:18px;display:flex;flex-direction:column;gap:10px}
+.cartao.prova .num{font-size:var(--t1);font-weight:700;color:var(--accent);line-height:1.1}
+
+/* opções */
+.opts{display:flex;flex-direction:column;gap:10px}
+.opts.duas{flex-direction:row}
+.opt{display:flex;align-items:center;width:100%;min-height:56px;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--raio);padding:12px 16px;font:400 var(--t2)/1.3 var(--font);color:var(--fg);text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s,background .15s}
+.opt.grande{flex:1;min-height:72px;justify-content:center;text-align:center;font-weight:600}
+.opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-2);font-weight:600}
+@media (hover:hover){.opt:hover{border-color:var(--accent)}}
+
+/* campo do nome */
+.campo input{width:100%;min-height:56px;padding:14px 16px;font:400 var(--t2) var(--font);color:var(--fg);background:var(--surface);border:1.5px solid var(--line);border-radius:var(--raio)}
+.campo input:focus{outline:none;border-color:var(--accent)}
+.campo .nota{display:block;margin-bottom:6px}   /* “Outro” no espelho (11/11) */
+
+/* roda da idade */
+.wheelbox{align-self:center;width:min(220px,100%)}
+.wheel-wrap{position:relative;height:220px;background:var(--surface);border:1px solid var(--line);border-radius:var(--raio);overflow:hidden}
+.wheel-wrap::before{content:"";position:absolute;left:6px;right:6px;top:88px;height:44px;border-radius:10px;background:var(--accent-2);pointer-events:none}
+.wheel-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(var(--surface),transparent 35%,transparent 65%,var(--surface))}
+.wheel-wrap .un{position:absolute;right:16px;top:88px;height:44px;display:grid;place-items:center;color:var(--accent);font-size:var(--t3);font-weight:600;pointer-events:none;z-index:1}
+.wheel{position:relative;height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;padding-block:88px;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.wheel::-webkit-scrollbar{display:none}
+.wheel:focus-visible{box-shadow:inset 0 0 0 2px var(--accent);border-radius:var(--raio)}
+.wheel div{height:44px;display:grid;place-items:center;scroll-snap-align:center;font-size:var(--t2);font-variant-numeric:tabular-nums;color:var(--muted);cursor:pointer;user-select:none;-webkit-user-select:none}
+.wheel div.sel{color:var(--fg);font-size:var(--t1);font-weight:700}
+
+/* ---------- botões ---------- */
+.cta{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(transparent,var(--bg) 22%)}
+.teclado .cta{bottom:var(--kb,0px);padding-bottom:10px}   /* 09/11: com o teclado aberto, o botão fica logo acima dele */
+.cta > div{max-width:488px;margin:0 auto;display:flex;flex-direction:column;gap:2px}
+.btn{display:block;width:100%;min-height:54px;padding:14px 16px;border:0;border-radius:var(--raio);background:var(--accent);color:var(--on-accent);font:700 var(--t2)/1.25 var(--font);text-align:center;text-decoration:none;cursor:pointer}
+.btn.off{opacity:.4}
+.btn.ico{display:flex;align-items:center;justify-content:center;gap:10px}
+.btn.ico svg{width:22px;height:22px;flex:none}
+.link-alt{align-self:center;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 12px;background:none;border:0;cursor:pointer;color:var(--accent);font:600 var(--t2) var(--font);text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- carregamento ---------- */
+.prog{position:relative;width:min(200px,54vw);aspect-ratio:1}
+.prog svg{width:100%;height:100%;transform:rotate(-90deg)}
+.prog .tr{fill:none;stroke:var(--accent-2);stroke-width:7}
+.prog .pr{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset .45s ease}
+.prog b{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--t1);font-variant-numeric:tabular-nums}
+#prog-tit{min-height:2.3em;max-width:340px;display:flex;align-items:center;justify-content:center}
+#prog-tit.troca{animation:entra .35s ease}
+#prog-etapa{min-height:3em;max-width:340px}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:8px;height:8px;border-radius:99px;background:var(--line);transition:all .3s}
+.dots i.on{width:22px;background:var(--accent)}
+
+/* ---------- resultado ---------- */
+.screen.res{gap:12px;padding-top:4px;padding-bottom:32px}
+.r-cab{display:flex;align-items:center;gap:12px}
+.r-cab img{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none;background:var(--line)}
+.numero{font-size:var(--tn);font-weight:700;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.numero span{font-size:var(--t2);font-weight:600;letter-spacing:0;color:var(--muted);margin-left:6px}
+.regua{position:relative;height:64px;margin:6px 4px 0}
+.rg-trilho{position:absolute;left:0;right:0;top:26px;height:10px;border-radius:99px;background:var(--line)}
+.rg-faixa{position:absolute;top:0;bottom:0;border-radius:99px;background:var(--accent)}
+.rg-voce{position:absolute;top:-8px;width:3px;height:26px;margin-left:-1.5px;border-radius:2px;background:var(--fg)}
+.rg-rot{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;font-size:var(--t3);font-weight:700;color:var(--fg)}
+.rg-ponta{position:absolute;top:44px;font-size:var(--t3);color:var(--muted)}
+.rg-ponta.fim{transform:translateX(-100%)}
+.recortes,.fatores{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.recortes li{display:flex;align-items:center;gap:12px}
+.recortes canvas{width:64px;height:64px;border-radius:12px;flex:none;background:var(--line)}
+.recortes b{display:block}
+.fatores li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
+.fatores i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;font-style:normal;font-weight:700;background:var(--bg);color:var(--fg)}
+.fatores i.bom{background:var(--accent-2);color:var(--accent)}
+/* 11/11 (Lucca: “esse CTA parece nota de rodapé”): o fim é o cartão do Dr. Lucca, em destaque (fundo verde), com o
+   título que fecha a narrativa e UM botão claro e maior. Mesmo raio e respiro do .cartao. */
+.cartao.r-ponte{background:var(--accent);border-color:var(--accent);color:var(--on-accent);gap:12px;padding:20px 18px;margin-top:8px;box-shadow:0 10px 30px rgba(13,106,77,.28)}
+.r-ponte .medico-mini img{border:2px solid rgba(255,255,255,.85)}
+.r-ponte .nota{color:rgba(255,255,255,.86)}
+/* 11/11 23h (Lucca: “chamada fraquíssima, letras miúdas”; a tela final saiu e o cartão é o fim): texto e botão em --tg
+   (20 px), relógio em --t1 (28 px), sem nota embaixo do botão; Direct e código à vista, em branco */
+.r-ponte-txt{font-size:var(--tg);line-height:1.35}
+.r-prazo{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:2px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.13);text-align:center;font-weight:600;text-wrap:balance}
+.r-prazo b{font-size:var(--t1);font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--on-accent)}
+.r-prazo.acabou{font-weight:400}
+.r-ponte .btn{background:var(--surface);color:var(--accent);min-height:64px;font-size:var(--tg);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.r-ponte .btn.ico svg{width:26px;height:26px}
+.r-ponte .link-alt{color:var(--on-accent);margin-top:-4px}
+.toast{position:fixed;left:50%;top:max(16px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;width:min(440px,calc(100% - 32px));background:var(--fg);color:#fff;border-radius:var(--raio);padding:12px 16px;font-size:var(--t3);text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.toast b{display:block;font-size:var(--t2)}
+.aviso-dm{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:20px}
+.aviso-dm > div{background:var(--surface);color:var(--fg);border-radius:var(--raio);padding:24px 22px;max-width:420px;display:flex;flex-direction:column;gap:12px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.aviso-dm b{font-size:var(--t1);line-height:1.15}
+.aviso-dm q{font-weight:600;color:var(--accent);-webkit-user-select:all;user-select:all}
+.aviso-dm span{font-size:var(--t3);color:var(--muted)}
+
+/* ---------- 4 tipos (22/11) ---------- */
+.escala .opt{min-height:52px}
+.frase{font-size:var(--t1);font-weight:700;line-height:1.2;text-wrap:balance}
+.r-tipo{gap:6px}
+.r-tipo .nome{font-size:var(--tn);font-weight:700;line-height:1;letter-spacing:-.02em;color:var(--fg);text-wrap:balance}
+.r-tipo .nome.dois{font-size:var(--t1);line-height:1.15}
+.r-tipo .linha2{font-weight:700;color:var(--accent)}
+.r-tipo q{display:block;font-weight:600;quotes:"“" "”"}
+.barras{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.barras li{display:flex;flex-direction:column;gap:6px}
+.barras .rot{display:flex;justify-content:space-between;gap:8px;font-size:var(--t3);font-weight:700;color:var(--muted);letter-spacing:.02em}
+.barras .rot em{font-style:normal;font-weight:400}
+.barras li.seu .rot{color:var(--fg)}
+.barras .tr{display:block;height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+.barras .tr b{display:block;height:100%;border-radius:inherit;background:#a9b6ae;width:0;transition:width .8s ease}
+.barras li.seu .tr b{background:var(--accent)}
+.rodas{display:flex;gap:12px;align-self:stretch;justify-content:center}
+.rodas .wheelbox{flex:1;max-width:200px;display:flex;flex-direction:column;gap:6px}
+.rodas label{text-align:center}

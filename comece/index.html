@@ -19,7 +19,7 @@
 // vale a RESERVA abaixo (o estado de 31/10).
 //   ?canal=direct   usa a rota do Direct (as campanhas do OpenReply mandam assim); sem canal = bio
 //   ?camp=PERNAS    a campanha pode ter um teste fixo (definido na aba Portas) ou seguir as % do Direct
-//   ?f=<id>         força um teste (link mandado à mão; ?f=pele2 abre a pele nova; ?f=emag abre o emagrecimento)
+//   ?f=<id>         força um teste (link mandado à mão; ?f=pele2 abre a pele nova; ?f=emag abre o emagrecimento; ?f=tipos o dos 4 tipos)
 // Pele A/B (01/11, pedido do Lucca): a fatia "pele" das Portas se divide entre a selfie de /idade (pele) e o funil novo
 // /pele2 (pele2), PELE2_PCT % para o pele2, sorteado uma vez por aparelho. Sem mexer no banco: a aba Portas continua
 // com um só número para a pele. Desligar = PELE2_PCT = 0. Comparar na aba Funil: botão Pele (teste-pele) × Pele 2.
@@ -27,13 +27,13 @@ const analyticsPronto = import('./funnel-analytics.js');   // 02/11: em paralelo
 const SUPA = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co', CHAVE = 'sb_publishable_YD3iJdsZlE3gjXM1DdmszA_G9mDNf-K';
 const DESTINOS = {
   longevidade: { pele:'/idade/?pele=1', quiz:'/longevidade/', teste:'/idade/', braco:'/braco/', pele2:'/pele2/', pelenova:'/pele/' },
-  emagrecimento: { emag:'/emagrecimento/' },   // 02/11: teste do emagrecimento (funnelId teste-emagrecimento). Salvar o tema na aba Portas pede a edge com emagrecimento:['emag'] (OPERACOES/funis.md)
+  emagrecimento: { emag:'/emagrecimento/', tipos:'/tipos/' },   // 02/11: teste do emagrecimento (funnelId teste-emagrecimento). Salvar o tema na aba Portas pede a edge com emagrecimento:['emag'] (OPERACOES/funis.md). 22/11: tipos = teste dos 4 tipos (funnelId teste-tipos; campanhas TESTE e TIPO, presas ao post do vídeo)
 };
 const RESERVA = {
   bio:    { tema:'longevidade', pesos:{ pele:50, quiz:50, teste:0, braco:0 }, fixo:null },
   direct: { tema:'longevidade', pesos:{ pele:25, quiz:25, teste:0, braco:50 }, fixo:null },
 };
-const CAMP_RESERVA = { PERNAS:'braco', MUSCULO:'braco', PELE:'pele', IDADE:'quiz' };   // 10/11 D1: PERNAS leva ao braço
+const CAMP_RESERVA = { PERNAS:'braco', MUSCULO:'braco', PELE:'pele', IDADE:'quiz', POTENCIA:'braco', TESTE:'tipos', TIPO:'tipos' };   // 10/11 D1: PERNAS leva ao braço; 22/11: os links das campanhas já levam f= (POTENCIA braco, TESTE/TIPO tipos); aqui é a reserva
 const PELE2_PCT = 100;   // 03/11, Lucca: "pode deixar a pele 2". A pele antiga (/idade/?pele=1) sai do sorteio; continua no ar e abre com ?f=pele. Voltar ao A/B = 50
 const q = new URLSearchParams(location.search);
 const canal = q.get('canal') === 'direct' ? 'direct' : 'bio', camp = (q.get('camp') || '').toUpperCase() || null;

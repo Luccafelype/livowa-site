@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f5f2">
+<title>Qual dos 4 tipos de engordar é o seu? · Dr. Lucca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="tipos.css?v=1">
+</head>
+<body>
+<!-- livowa.com/tipos (22/11/2026) · teste dos 4 tipos de engordar, a isca dos vídeos QD73 V1 ("comenta TESTE") e do carrinho
+     ("comenta TIPO"). Base: Acosta et al., Obesity 2021 (Mayo Clinic), 4 tipos: CÉREBRO FAMINTO, ESTÔMAGO FAMINTO, FOME
+     EMOCIONAL, GASTO LENTO (os mesmos nomes e segundas linhas da tela do vídeo). Pesquisa, fontes e decisões:
+     livowa-empresa/tarefas/teste-4-tipos.md e tarefas/teste-4-tipos/pesquisa.md.
+     Sistema visual do /pele/ v2: 1 família (IBM Plex Sans), 3 tamanhos + o nome do tipo no resultado, 1 estilo de cartão,
+     barra log(passo)/log(total) no topo, capa = 1ª pergunta, estudo só em interstício com a fonte embaixo, resultado = tela
+     final com o cartão verde (WhatsApp com a mensagem pronta e o código, prazo real de 30 min). As 12 frases são geradas
+     pelo app.js (ITENS). -->
+<div class="app">
+  <div class="top" id="top">
+    <button class="back" id="back" type="button" aria-label="Voltar">←</button>
+    <div class="barra" id="barra" aria-hidden="true">
+      <div class="b-trilho"><i data-sec="0"><b></b></i><i data-sec="1"><b></b></i><i data-sec="2"><b></b></i></div>
+    </div>
+  </div>
+
+  <!-- 0 · capa = 1ª pergunta (sexo) -->
+  <section class="screen capa" data-s="capa">
+    <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span class="nota">Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
+    <h1>Qual dos 4 tipos de engordar é o seu?</h1>
+    <p>Para começar, você é:</p>
+    <div class="opts duas" data-q="sexo">
+      <button type="button" class="opt grande" data-v="f">Mulher</button>
+      <button type="button" class="opt grande" data-v="m">Homem</button>
+    </div>
+  </section>
+
+  <!-- 1 · idade (roda) -->
+  <section class="screen q" data-s="idade" hidden>
+    <h2>Quantos anos você tem?</h2>
+    <div class="wheelbox"><label id="l-idade" class="sr">Sua idade</label><div class="wheel-wrap"><div class="wheel" id="w-idade" tabindex="0" role="listbox" aria-labelledby="l-idade" aria-describedby="un-idade"></div><span class="un" id="un-idade">anos</span></div></div>
+  </section>
+
+  <!-- 2 · nome, com Pular -->
+  <section class="screen q" data-s="nome" hidden>
+    <h2>Como o Dr. Lucca pode te chamar no seu resultado?</h2>
+    <label class="campo"><span class="sr">Seu primeiro nome</span>
+      <input id="nome" type="text" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" maxlength="40" placeholder="Seu primeiro nome"></label>
+  </section>
+
+  <!-- 3 · peso e altura (rodas; o resultado não mostra o IMC, a Caixa mostra) -->
+  <section class="screen q" data-s="medidas" hidden>
+    <h2><span class="nm"></span>qual é o seu peso e a sua altura?</h2>
+    <p class="nota">Arraste cada roda até o seu número. Pode ser aproximado.</p>
+    <div class="rodas">
+      <div class="wheelbox"><label id="l-peso" class="nota">Peso</label><div class="wheel-wrap"><div class="wheel" id="w-peso" tabindex="0" role="listbox" aria-labelledby="l-peso" aria-describedby="un-peso"></div><span class="un" id="un-peso">kg</span></div></div>
+      <div class="wheelbox"><label id="l-altura" class="nota">Altura</label><div class="wheel-wrap"><div class="wheel" id="w-altura" tabindex="0" role="listbox" aria-labelledby="l-altura" aria-describedby="un-altura"></div><span class="un" id="un-altura">cm</span></div></div>
+    </div>
+  </section>
+
+  <!-- 4 · interstício 1: o estudo (Acosta 2021) -->
+  <section class="screen q inter" data-s="mayo" hidden>
+    <h2>Nem todo mundo engorda pelo mesmo motivo.</h2>
+    <div class="cartao prova">
+      <p class="num">Na Mayo Clinic, os médicos acharam 4 tipos.</p>
+      <p>Os pacientes tratados pelo tipo perderam quase o dobro de peso em 1 ano: 15,9% contra 9,0% dos tratados do jeito de sempre.</p>
+    </div>
+    <p>Agora, frases rápidas. Toque no quanto cada uma parece com você.</p>
+    <p class="nota">Fonte: Acosta et al., Obesity 2021 · 312 pacientes da Mayo Clinic, em 2 grupos</p>
+  </section>
+
+  <!-- 5 a 16 · as 12 frases (3 por tipo, intercaladas) entram aqui pelo app.js; o interstício 2 vai no meio -->
+  <div id="itens"></div>
+
+  <!-- interstício 2: mais de um tipo (Acosta 2021) -->
+  <section class="screen q inter" data-s="mais1" hidden>
+    <h2><span class="nm"></span>metade feita.</h2>
+    <div class="cartao prova">
+      <p class="num">Quase 3 em cada 10 têm mais de um tipo.</p>
+      <p>Na Mayo Clinic, 27% dos pacientes tinham 2 tipos ou mais. Por isso o teste olha os 4 até o fim.</p>
+    </div>
+    <p class="nota">Fonte: Acosta et al., Obesity 2021 · 450 pacientes classificados</p>
+  </section>
+
+  <!-- 17 · o que já tentou (várias) -->
+  <section class="screen q" data-s="tentou" hidden>
+    <h2>O que você já tentou para emagrecer?</h2>
+    <p class="nota">Marque tudo o que já tentou.</p>
+    <div class="opts" data-q="tentou" data-tipo="varias">
+      <button type="button" class="opt" data-v="dieta">Dieta da internet ou de revista</button>
+      <button type="button" class="opt" data-v="low_carb">Cortar carboidrato</button>
+      <button type="button" class="opt" data-v="jejum">Jejum intermitente</button>
+      <button type="button" class="opt" data-v="academia">Academia ou corrida</button>
+      <button type="button" class="opt" data-v="nutri">Nutricionista</button>
+      <button type="button" class="opt" data-v="cha">Chá, shake ou suplemento</button>
+      <button type="button" class="opt" data-v="remedio">Remédio ou caneta para emagrecer</button>
+      <button type="button" class="opt" data-v="nenhum" data-x="1">Ainda nenhum destes</button>
+    </div>
+  </section>
+
+  <!-- 18 · objetivo -->
+  <section class="screen q" data-s="objetivo" hidden>
+    <h2>Qual é o seu <span class="dest">verdadeiro</span> objetivo?</h2>
+    <div class="opts" data-q="objetivo">
+      <button type="button" class="opt" data-v="roupas">Voltar a usar as roupas que eu gosto</button>
+      <button type="button" class="opt" data-v="nao_voltar">Parar de engordar tudo de novo</button>
+      <button type="button" class="opt" data-v="disposicao">Ter mais disposição no dia a dia</button>
+      <button type="button" class="opt" data-v="saude">Cuidar da saúde e dos exames</button>
+      <button type="button" class="opt" data-v="corpo">Me sentir bem com o meu corpo</button>
+    </div>
+  </section>
+
+  <!-- 19 · carregamento -->
+  <section class="screen c" data-s="carregando" hidden>
+    <div class="prog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="tr"/><circle cx="60" cy="60" r="52" class="pr" id="prog-c"/></svg><b id="prog-pct">0%</b></div>
+    <h2 id="prog-tit" aria-live="polite">Lendo as suas respostas…</h2>
+    <div class="dots" id="prog-dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+  </section>
+
+  <!-- 20 · resultado = tela final: o tipo (nome grande + 2ª linha do vídeo + a frase dela) → os 4 tipos em barras →
+       por que o tipo muda o caminho (o que ela tentou + o estudo) → cartão verde com UM botão e o prazo -->
+  <section class="screen res" data-s="resultado" hidden>
+    <div class="cartao r-tipo" id="r-tipo"></div>
+    <div class="cartao" id="r-barras"></div>
+    <div class="cartao" id="r-caminho"></div>
+    <div class="cartao r-ponte" id="r-ponte">
+      <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span class="nota">Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
+      <h2 id="r-ponte-tit">O que o seu tipo pede no seu caso?</h2>
+      <p class="r-ponte-txt" id="r-ponte-txt">O Dr. Lucca lê as suas respostas e te explica por onde começar.</p>
+      <p class="r-prazo" id="r-prazo" hidden><span id="r-prazo-txt">Análise sem custo se enviar em</span> <b id="r-prazo-rel">30:00</b></p>
+      <a class="btn ico" id="r-cta" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span id="r-cta-txt">Quero entender o meu tipo</span></a>
+      <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques"><span>ou pelo Direct do Instagram</span></a>
+    </div>
+    <p class="nota" id="r-fonte"></p>
+  </section>
+
+  <div class="cta" id="cta-bar"><div>
+    <button class="btn" id="cta" type="button">Continuar</button>
+    <button class="link-alt" id="cta-2" type="button" hidden></button>
+  </div></div>
+  <div class="toast" id="toast" hidden role="status" aria-live="polite"><b>Mensagem copiada</b>É só colar no Direct: toque e segure na caixa de mensagem e escolha Colar.</div>
+  <div class="aviso-dm" id="aviso-dm" hidden role="alertdialog" aria-live="assertive"><div>
+    <b id="aviso-tit">Mande esta mensagem no Direct</b>
+    <q id="aviso-msg">Oi, Dr. Lucca! Meu código é LV-0000</q>
+    <span id="aviso-txt">Toque e segure na mensagem, escolha Copiar e cole no Direct.</span>
+    <a class="btn" id="aviso-link" href="https://ig.me/m/dr.luccamarques">Abrir o Direct</a>
+  </div></div>
+</div>
+<script defer src="/assets/js/ponte.js?v=2"></script>
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>

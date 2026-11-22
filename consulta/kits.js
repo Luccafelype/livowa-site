@@ -864,6 +864,57 @@ CONVERSA_PI.forEach((x, i) => {
   (x.itens || []).forEach((t, j) => editavel(x.itens, j, `conv_${i}_item_${j}`, 'pele-idade', 'A conversa de 15 min', `${r} · item ${j + 1}`));
 });
 
+// ---------- 4 TIPOS (22/11): livowa.com/tipos, funil teste-tipos. Textos de livowa-empresa/paginas/escada-isca/refs/kit-resposta-tipos.md
+// (fonte: tarefas/teste-4-tipos/pesquisa.md). Segue o passo a passo (PASSO_KIT); aqui ficam só a fala do tipo e o estudo,
+// em "Mais textos deste teste". Sem nome de remédio, sem promessa. Editáveis nos Ajustes (teste: 4 tipos de engordar).
+const TIPOS4 = {
+  cb:{ nome:'CÉREBRO FAMINTO', curto:'cérebro faminto', art:'o',
+    fala:'Oi, {nome}, aqui é o Lucca. Abri o seu teste dos 4 tipos. O que mais apareceu foi o cérebro faminto.\nVocê marcou {marcou} em “{frase}”. Nesse tipo, o aviso de “já chega” demora a chegar: a pessoa precisa de mais comida para encerrar a refeição. Na Mayo, quem tinha esse tipo comeu, numa refeição livre, bem mais do que quem não tinha. Não é falta de força de vontade: é o sinal de saciedade que chega tarde.\nUma ressalva honesta: lá, esse tipo se mede num exame de refeição. O teste é uma estimativa pelas suas respostas.\nO que esse tipo costuma pedir é trabalhar a saciedade, para o “chega” vir antes. Como fazer isso no seu caso é o que eu gostaria de conversar com você.' },
+  ef:{ nome:'ESTÔMAGO FAMINTO', curto:'estômago faminto', art:'o',
+    fala:'Oi, {nome}, aqui é o Lucca. Abri o seu teste dos 4 tipos. O que mais apareceu foi o estômago faminto.\nVocê marcou {marcou} em “{frase}”. Nesse tipo, a saciedade dura pouco: na Mayo, o estômago de quem tinha esse tipo esvaziava mais rápido, e a vontade de comer voltava antes.\nUma ressalva honesta: lá, isso se mede num exame do estômago. O teste é uma estimativa pelas suas respostas.\nO que esse tipo costuma pedir é segurar a saciedade por mais tempo depois de cada refeição. Como fazer isso no seu caso é o que eu gostaria de conversar com você.' },
+  em:{ nome:'FOME EMOCIONAL', curto:'fome emocional', art:'a',
+    fala:'Oi, {nome}, aqui é o Lucca. Abri o seu teste dos 4 tipos. O que mais apareceu foi a fome emocional.\nVocê marcou {marcou} em “{frase}”. Nesse tipo, a fome do corpo funciona normal; o que puxa a comida é a emoção, principalmente a ansiedade. Na Mayo, esse tipo se mede justamente por um questionário de ansiedade.\nEntão aqui não adianta só cortar comida: a vontade volta junto com a tensão.\nO que esse tipo costuma pedir é cuidar da ansiedade junto com o peso. Como fazer isso no seu caso é o que eu gostaria de conversar com você.' },
+  gl:{ nome:'GASTO LENTO', curto:'gasto lento', art:'o',
+    fala:'Oi, {nome}, aqui é o Lucca. Abri o seu teste dos 4 tipos. O que mais apareceu foi o gasto lento.\nVocê marcou {marcou} em “{frase}”. Nesse tipo, o corpo gasta menos energia em repouso do que o esperado para o tamanho dele. Na Mayo, quem tinha esse tipo também tinha menos músculo e se mexia menos.\nUma ressalva honesta: lá, isso se mede num exame do gasto em repouso. O teste é uma estimativa pelas suas respostas.\nO que esse tipo costuma pedir é devolver o gasto, e músculo é parte disso. Como fazer isso no seu caso é o que eu gostaria de conversar com você.' },
+};
+const TEXTO4 = {
+  dois:'No seu caso apareceram dois: {tipo1} e {tipo2}. Na Mayo, quase 3 em cada 10 tinham mais de um tipo, e isso muda a ordem do que fazer.',
+  nenhum:'Nenhum dos 4 apareceu forte nas suas respostas; o que mais apareceu foi {tipo1}. Na Mayo, 15% das pessoas também não tinham nenhum tipo marcado. Isso não quer dizer que não tem o que fazer: quer dizer que vale olhar o seu caso com calma.',
+  estudo:'Por que o tipo importa: na Mayo Clinic, os pacientes tratados pelo tipo perderam em 1 ano 15,9% do peso, contra 9,0% dos tratados do jeito de sempre (Acosta, Obesity, 2021). É uma comparação de dois grupos de pacientes, sem sorteio, então ainda precisa de estudo maior. Mas aponta na direção que faz sentido: o mesmo plano para todo mundo não funciona igual para todo mundo.',
+};
+// as frases do teste (tipos/app.js, ITENS) em 1ª pessoa; @ = a|o pelo sexo
+const FRASE4 = { cb1:'Preciso comer bastante para me sentir satisfeit@.', cb2:'Mesmo de barriga cheia, ainda cabe mais um pouco.', cb3:'Para ficar satisfeit@, preciso de um prato maior que o das pessoas à minha volta.',
+  ef1:'Pouco tempo depois de comer, a vontade de comer já volta.', ef2:'Entre uma refeição e outra, preciso beliscar alguma coisa.', ef3:'Uma refeição completa me segura só por pouco tempo.',
+  em1:'Quando fico ansios@ ou preocupad@, a vontade de comer aumenta.', em2:'Fico tens@ ou nervos@ durante o dia.', em3:'Num dia ruim, a comida é o que me acalma.',
+  gl1:'Como pouco e, mesmo assim, o peso não desce.', gl2:'Passo a maior parte do dia sentad@.', gl3:'Sinto que perdi força ou músculo nos últimos anos.' };
+const MARCOU4 = { 2:'muitas vezes', 3:'quase sempre' };
+function classificaTipos(d){
+  const r = d.respostas || {}, tipos = String(d.tipos || '').split('+').filter(x => TIPOS4[x]), t0 = tipos[0];
+  const masc = (r.sexo || d.sexo) === 'm';
+  let frase = null, marcou = null;
+  if (t0){ const top = ['1', '2', '3'].map(n => t0 + n).map(k => ({ k, v:+(r[k] ?? 0) })).sort((a, b) => b.v - a.v)[0];
+    if (top && top.v >= 2){ frase = FRASE4[top.k].replace(/@/g, masc ? 'o' : 'a'); marcou = MARCOU4[top.v]; } }
+  const nomes = tipos.map(x => TIPOS4[x].nome), P = d.pontos || {};
+  return { teste:'quiz-tipos', faixa:null, titulo:'Teste dos 4 tipos', simples:t0 ? `${d.forte === false ? 'Nenhum forte; o que mais apareceu: ' : ''}${nomes.join(' + ')}${P[t0] != null ? ` (${P[t0]} de 9)` : ''}` : 'Tipo não calculado',
+    refazer:false, cor:d.forte === false ? 'meh' : 'ok',
+    vars:{ tipo:nomes.join(' + ') || null, tipo1:t0 ? TIPOS4[t0].curto : null, tipo2:tipos[1] ? TIPOS4[tipos[1]].curto : null, frase, marcou, pontos:t0 && P[t0] != null ? `${P[t0]} de 9` : null },
+    tipos, forte:d.forte !== false };
+}
+function mensagensTipos(c){
+  const out = [];
+  if (!c.tipos.length) return out;
+  out.push({ ordem:1, rotulo:`Fala da análise · ${TIPOS4[c.tipos[0]].nome}`, quando:'O Lucca adapta; sem nome de remédio', texto:TIPOS4[c.tipos[0]].fala });
+  if (c.tipos[1]) out.push({ ordem:1, rotulo:`Dois tipos · ${TIPOS4[c.tipos[1]].nome}`, quando:'Junto da fala de cima', texto:TEXTO4.dois + '\n' + TIPOS4[c.tipos[1]].fala.split('\n').slice(1).join('\n') });
+  if (!c.forte) out.push({ ordem:1, rotulo:'Nenhum tipo forte', quando:'No lugar da 1ª frase da fala', texto:TEXTO4.nenhum });
+  out.push({ ordem:3, rotulo:'O estudo (escrito)', quando:'Depois da análise', texto:TEXTO4.estudo });
+  return out;
+}
+NOME_TESTE['quiz-tipos'] = 'Teste dos 4 tipos';
+for (const [k, x] of Object.entries(TIPOS4)) editavel(x, 'fala', `tipos_${k}_fala`, 'teste-tipos', '4 tipos · ' + x.nome, 'Fala da análise');
+editavel(TEXTO4, 'dois', 'tipos_dois', 'teste-tipos', '4 tipos · comum', 'Dois tipos');
+editavel(TEXTO4, 'nenhum', 'tipos_nenhum', 'teste-tipos', '4 tipos · comum', 'Nenhum tipo forte');
+editavel(TEXTO4, 'estudo', 'tipos_estudo', 'teste-tipos', '4 tipos · comum', 'O estudo (escrito)');
+
 return {
   T, T2, REF, preencher, pedacos, NOME_TESTE,
   textos:TEXTOS, texto:c => POR_CHAVE.get(c), ligar:f => { ler = f; }, editavel,
@@ -875,6 +926,7 @@ return {
   // 13/11 (d-20261113-narrativa-analise-todas-iscas): os quizzes ganham o mesmo passo a passo (sem mensagens próprias)
   'quiz-longevidade':{ classifica:() => ({ teste:'quiz-longevidade', faixa:null, titulo:'Quiz da longevidade', simples:'As respostas dela', refazer:false, cor:'ok', vars:{} }), mensagens:() => [], atalhos:[] },
   'quiz-emagrecimento':{ classifica:() => ({ teste:'quiz-emagrecimento', faixa:null, titulo:'Teste do emagrecimento', simples:'As respostas dela', refazer:false, cor:'ok', vars:{} }), mensagens:() => [], atalhos:[] },
+  'quiz-tipos':{ classifica:classificaTipos, mensagens:mensagensTipos, atalhos:[] },   // 22/11
   'pele-idade':{ classifica:classificaPeleIdade, mensagens:mensagensPeleIdade, atalhos:atalhosPeleIdade, caso:CASO_PI, futuro:FUTURO_PI, v3:V3_PI, nutrir:nutrirPI, conversa:CONVERSA_PI },
 };
 })();
