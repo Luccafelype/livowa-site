@@ -280,12 +280,12 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
        pronta e o código; o Direct fica embaixo; o código não aparece na tela (segue na mensagem e no banco).
        23/11 (Lucca: "pode mostrar a idade muscular estimada"): a idade muscular aparece no topo (a trava e o embaçado saíram). -->
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
-    <span class="pill">Teste concluído</span>
+    <!-- 23/11 (Lucca, comentário no artefato Potência: "Colocar apenas: Resultado"): saíram o selo "Teste concluído" e o título longo -->
     <!-- 23/11 (Lucca: "falta informações importantes e interessantes… máxima velocidade, variação de angulação, variação de
          velocidade e aceleração, comparação com as pessoas da mesma idade… um gosto de explicação racional, de forma
          conduzida"): as medidas dela com 1 linha cada e a referência. A idade muscular: a mesma conta da Caixa (idadeMusc).
          Referências: tarefas/escada-isca/pesquisa/braco-sensor-referencias.md (Toosizadeh 2015/2017, Zhou 2021, Toji 2007). -->
-    <h2 id="res-tit">A sua idade muscular × <em>a sua idade</em></h2>
+    <h2 id="res-tit">Resultado</h2>
     <div class="medida idm" id="idm">
       <span class="rot">Idade muscular estimada</span>
       <b id="idm-v">—</b>
@@ -612,7 +612,7 @@ const pares = () => sexo === 'f' ? 'mulheres' : sexo === 'm' ? 'homens' : 'pesso
 // toda frase que depende de uma resposta cita a resposta (o peso vai para a ficha, mas não entra na régua do braço)
 function personalizar(){
   const i = dados.idade;
-  $('res-tit').innerHTML = `A sua idade muscular × os seus <em>${i}&nbsp;anos</em>`;
+  $('res-tit').textContent = 'Resultado';   // 23/11 (Lucca: "Colocar apenas: Resultado")
   // 16/11 (texto do Lucca, Central braço-08): os 3 pontos que ele explica; o 3º usa o objetivo de 10 anos dela
   const d = desejo(FUT_VOCE);
   $('res-txt2').innerHTML = `<p>O Dr. Lucca junta essas medidas, compara com as de <b>${pares()} de ${i}&nbsp;anos</b> e te explica 3 pontos:</p>
@@ -653,7 +653,10 @@ function montarIdade(){
     nota = 'Quando o número vem assim, a primeira coisa é conferir a medição: com o celular frouxo, o punho girando ou o movimento curto, o sensor lê menos do que você fez. O Dr. Lucca confere a medição com você e vê o que pesa nesse número.';
   }
   if (m.angMed && m.angMed < 85 && im.ate !== 50) nota += ` O seu movimento saiu curto (${m.angMed}°): isso baixa a velocidade e sobe a idade muscular. Do bolso ao queixo, o número fica mais perto do real.`;
-  $('idm-v').innerHTML = `${im.txt} <small>anos</small>`; $('idm-sub').textContent = sub; $('idm-txt').textContent = nota;
+  // 23/11 (Lucca, comentário no artefato Potência: "Retirar essa explicação aqui"): a explicação embaixo da idade muscular saiu;
+  // fica só o aviso de movimento curto, quando houver (é sobre a medição, não explicação)
+  const curto = m.angMed && m.angMed < 85 && im.ate !== 50 ? `O seu movimento saiu curto (${m.angMed}°): isso baixa a velocidade e sobe a idade muscular. Do bolso ao queixo, o número fica mais perto do real.` : '';
+  $('idm-v').innerHTML = `${im.txt} <small>anos</small>`; $('idm-sub').textContent = sub; $('idm-txt').textContent = curto; $('idm-txt').hidden = !curto;
   // régua de 20 a 90 anos: a idade dela (tracejado) e a idade muscular (bolinha; "até 50" e "mais de 76" viram faixa)
   const pa = a => Math.min(97, Math.max(3, (a - 20) / 70 * 100));
   $('idm-ref-m').style.left = pa(i) + '%'; $('idm-ref-lbl').textContent = `os seus ${i}`; $('idm-ref-lbl').style.transform = `translateX(-${pa(i)}%)`;
