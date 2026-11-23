@@ -1,0 +1,314 @@
+{
+ "protocolos": [
+  {
+   "t": "**O que os protocolos dizem**"
+  },
+  {
+   "itens": [
+    "Treino de força 2 a 3 vezes por semana, com um dia de folga entre os treinos.",
+    "Para potência: peso leve a moderado, subida o mais rápido possível e descida controlada.",
+    "Começar com 1 ou 2 séries e subir aos poucos para 2 ou 3 séries de 8 a 12 repetições.",
+    "Descanso de 1 a 3 minutos entre as séries.",
+    "Aumentar o peso só quando as repetições ficarem fáceis.",
+    "Depois dos 65 anos, juntar força e equilíbrio em 3 ou mais dias por semana.",
+    "Somar também 150 a 300 minutos por semana de caminhada ou outra atividade moderada.",
+    "Um pouco é melhor que nada."
+   ]
+  }
+ ],
+ "abertura": {
+  "abaixo": [
+   {
+    "t": "O seu braço ficou abaixo do esperado para os seus {idade} anos."
+   },
+   {
+    "t": "Isso é comum e tem explicação. Com os anos, as fibras rápidas, que dão a velocidade do movimento, são as que mais encolhem. E um teste de 5 segundos no celular serve como ponto de partida, não como diagnóstico."
+   },
+   {
+    "t": "A boa notícia vem dos estudos: essas fibras respondem a treino, também depois dos 70 anos. Abaixo está o que os protocolos indicam para {desejo}."
+   }
+  ],
+  "linha": [
+   {
+    "t": "O seu braço ficou na linha do esperado para os seus {idade} anos."
+   },
+   {
+    "t": "É um bom ponto de partida. Daqui para frente, o que importa é para onde esse número vai. Com a idade, a potência cai antes da força e cai mais rápido."
+   },
+   {
+    "t": "Com exercício certo, essa queda fica bem menor. Abaixo está o que os protocolos indicam para {desejo}."
+   }
+  ],
+  "acima": [
+   {
+    "t": "O seu braço ficou acima do esperado para os seus {idade} anos."
+   },
+   {
+    "t": "Para {desejo}, isso conta a seu favor. A pergunta agora é como manter. A potência cai antes da força com a idade, e o que freia essa queda é exercício feito do jeito certo."
+   },
+   {
+    "t": "Abaixo está o passo a passo."
+   }
+  ]
+ },
+ "porque": {
+  "chegar10": [
+   {
+    "t": "Atleta treina duas coisas: força e velocidade. Os protocolos para quem passou dos 40 juntam as duas, porque juntas elas melhoram força, potência e músculo ao mesmo tempo."
+   },
+   {
+    "t": "E as fibras rápidas respondem. Num estudo com homens de 72 anos, depois de 3 meses de treino de força, as fibras rápidas cresceram. As lentas não mudaram."
+   }
+  ],
+  "firme": [
+   {
+    "t": "Braço firme é braço com músculo. E o músculo responde a treino de força também depois dos 70 anos. As fibras rápidas são as que mais crescem: num estudo com homens de 72 anos, depois de 3 meses de treino, só elas cresceram."
+   },
+   {
+    "t": "Subir o peso com a intenção de ir o mais rápido possível é o que mais chama essas fibras para o trabalho."
+   }
+  ],
+  "disposicao": [
+   {
+    "t": "A potência é o que deixa leves as tarefas do dia, como levantar da cadeira, subir escada e andar rápido. Nos estudos, quem tem mais potência se sai melhor nessas tarefas, e a potência prevê isso até melhor que a força."
+   },
+   {
+    "t": "Nos estudos com idosos, o treino de força bem puxado também melhorou o fôlego, de forma parecida com a caminhada moderada."
+   }
+  ],
+  "devagar": [
+   {
+    "t": "Com a idade, a potência cai antes da força e cai mais rápido. O motivo é que as fibras rápidas são as que mais encolhem."
+   },
+   {
+    "t": "Num estudo no Rio de Janeiro, 3.889 pessoas de 46 a 75 anos foram acompanhadas por cerca de 11 anos. A potência dos músculos mostrou melhor do que a força quem viveu mais. O estudo mostra essa ligação, mas não mede o efeito do treino."
+   },
+   {
+    "t": "O que dá para fazer é treinar justamente o que cai primeiro, e manter isso por anos."
+   }
+  ],
+  "independente": [
+   {
+    "t": "Levantar da cadeira, subir um degrau e se segurar quando perde o equilíbrio: tudo isso depende de força feita rápido. Pouca potência está ligada a mais dificuldade nas tarefas do dia nos homens, e mais ainda nas mulheres."
+   },
+   {
+    "t": "O treino de potência foi ligado a mais capacidade e a menos quedas, até em pessoas muito idosas e frágeis."
+   }
+  ]
+ },
+ "regras": [
+  {
+   "t": "**Antes de começar:** leia \"Quando falar com o médico antes\" no fim desta página."
+  },
+  {
+   "t": "**A regra de todos os exercícios:** suba rápido e desça devagar."
+  },
+  {
+   "itens": [
+    "Na hora do esforço (levantar da cadeira, puxar o elástico, empurrar a parede), vá o mais rápido que conseguir, com controle.",
+    "Na volta, conte 2 a 3 segundos.",
+    "A série termina com você ainda rápida. Se ficou lenta, a série acabou."
+   ]
+  },
+  {
+   "t": "**Aqueça** fazendo o mesmo movimento, mais devagar, uma vez."
+  },
+  {
+   "t": "**Respire:** solte o ar na subida. Não prenda a respiração."
+  },
+  {
+   "t": "**Descanse** 1 a 2 minutos entre as séries. Deixe um dia de folga entre um treino e outro."
+  },
+  {
+   "t": "**Peso:** no começo, o seu corpo e um elástico bastam. Quando ficar fácil, deixe mais difícil."
+  },
+  {
+   "t": "**Dor:** um pouco de dor no músculo no dia seguinte pode acontecer. Dor na articulação é diferente: pare esse exercício e fale com o médico."
+  }
+ ],
+ "exercicios": [
+  {
+   "t": "**Sentar e levantar rápido.** Use uma cadeira firme, encostada na parede. Cruze os braços no peito; no começo, pode apoiar as mãos nas coxas. Levante o mais rápido que conseguir, fique reta e sente devagar, contando 2 a 3 segundos."
+  },
+  {
+   "t": "**Subir degrau.** Use o primeiro degrau da escada, segurando no corrimão. Suba rápido com uma perna e desça devagar. Faça as repetições com uma perna e depois troque."
+  },
+  {
+   "t": "**Flexão na parede.** Mãos na parede, na altura do peito, corpo reto. Desça devagar até perto da parede e empurre rápido para voltar. Para deixar mais difícil, apoie as mãos mais baixo: primeiro na bancada da pia, depois no assento de um sofá firme."
+  },
+  {
+   "t": "**Remada com elástico.** Prenda o elástico na maçaneta de uma porta fechada, ou sente e passe o elástico pelos pés. Puxe rápido, com os cotovelos rentes ao corpo, e volte devagar."
+  },
+  {
+   "t": "**Rosca rápida.** Em pé, com uma garrafa de água ou um halter leve em cada mão. Suba rápido até o ombro, como no teste, sem balançar o corpo. Desça em 2 a 3 segundos."
+  },
+  {
+   "t": "**Tríceps coice.** Incline o corpo para a frente, com uma mão apoiada no encosto de uma cadeira. Com o cotovelo colado ao corpo, estique o braço para trás rápido e volte devagar."
+  },
+  {
+   "t": "**Equilíbrio num pé.** Fique atrás de uma cadeira, segurando no encosto, e fique num pé só por 10 a 30 segundos. Para deixar mais difícil, segure com uma mão, depois com um dedo e depois sem a mão."
+  },
+  {
+   "t": "**Na academia (opção):** leg press, peito na máquina e remada na máquina. Peça ao professor um peso leve a moderado, que você levantaria bem mais de 10 vezes, para subir rápido. Ele vai entender como 40 a 60% da sua carga máxima."
+  }
+ ],
+ "passo": {
+  "chegar10": [
+   {
+    "t": "**Os 5 exercícios:** sentar e levantar rápido, subir degrau, flexão na parede, remada com elástico e rosca rápida."
+   },
+   {
+    "t": "**Passo 1 · semana 1.** 2 treinos, por exemplo terça e sexta. 1 a 2 séries de 8 repetições de cada exercício. Comece num ritmo confortável para aprender o movimento. No segundo treino, já suba mais rápido."
+   },
+   {
+    "t": "**Passo 2 · semana 2.** 2 treinos. 2 séries de 8 a 10. Agora toda subida é o mais rápido que você conseguir."
+   },
+   {
+    "t": "**Passo 3 · semana 3.** 2 ou 3 treinos, sempre com um dia de folga. 2 a 3 séries. Quando 10 repetições ficarem fáceis, deixe o exercício mais difícil: cadeira mais baixa ou uma garrafa segura no peito no sentar e levantar, elástico mais forte, flexão na bancada em vez da parede, garrafa mais pesada na rosca."
+   },
+   {
+    "t": "**Passo 4 · semana 4.** 3 treinos. 3 séries de 8 a 10. Se você já vai à academia, pode trocar pelo leg press, peito na máquina e remada na máquina, com peso leve a moderado e subida rápida."
+   },
+   {
+    "t": "**Passo 5 · daqui para frente.** Mantenha 2 a 3 treinos por semana. Sempre que as repetições ficarem fáceis, aumente um pouco o peso. Fora do treino, some caminhada até chegar a 150 minutos por semana."
+   },
+   {
+    "t": "**Cuidado:** se um exercício doer na articulação, troque por outro ou pare e fale com o médico."
+   }
+  ],
+  "firme": [
+   {
+    "t": "**Os 5 exercícios:** remada com elástico, flexão na parede, rosca rápida, tríceps coice e sentar e levantar rápido. Treinar as pernas também faz parte: os protocolos pedem o corpo todo."
+   },
+   {
+    "t": "**Passo 1 · semana 1.** 2 treinos. 1 a 2 séries de 8 a 10 de cada exercício. Aprenda o movimento antes de acelerar."
+   },
+   {
+    "t": "**Passo 2 · semana 2.** 2 treinos. 2 séries de 8 a 12. Subida rápida e descida em 2 a 3 segundos."
+   },
+   {
+    "t": "**Passo 3 · semana 3.** 2 ou 3 treinos. 3 séries nos exercícios de braço e 2 no sentar e levantar. Quando 12 ficarem fáceis, deixe mais difícil: elástico mais forte, garrafa ou halter mais pesado, flexão mais baixa."
+   },
+   {
+    "t": "**Passo 4 · semana 4.** 3 treinos, com um dia de folga entre eles. 3 séries de 8 a 12, com 1 a 2 minutos de descanso. Na academia, a remada e o peito na máquina entram no lugar do elástico e da parede."
+   },
+   {
+    "t": "**Passo 5 · daqui para frente.** 2 a 3 treinos por semana. Sempre que 12 repetições ficarem fáceis, aumente um pouco o peso."
+   },
+   {
+    "t": "**Cuidado:** se o ombro doer ao levantar o braço, avise o médico antes de pôr peso. Nenhum exercício daqui é feito acima da cabeça."
+   }
+  ],
+  "disposicao": [
+   {
+    "t": "**Os 4 exercícios:** sentar e levantar rápido, subir degrau, remada com elástico e flexão na parede. Dá cerca de 20 minutos."
+   },
+   {
+    "t": "**Passo 1 · semana 1.** 2 treinos. 1 série de 8 de cada exercício. Se sobrar fôlego, faça uma segunda série."
+   },
+   {
+    "t": "**Passo 2 · semana 2.** 2 treinos. 2 séries de 8 a 10, com subida rápida."
+   },
+   {
+    "t": "**Passo 3 · semana 3.** 2 treinos. 2 a 3 séries. Quando 10 repetições ficarem fáceis, use a versão mais difícil do exercício."
+   },
+   {
+    "t": "**Passo 4 · semana 4.** 2 treinos de 3 séries. Nos outros dias, caminhe."
+   },
+   {
+    "t": "**Passo 5 · daqui para frente.** 2 treinos por semana já estão dentro do que os estudos usaram. Some caminhada até chegar a 150 minutos por semana. Um pouco é melhor que nada."
+   },
+   {
+    "t": "**Cuidado:** um treino perdido não apaga os outros. Retome no próximo dia de treino."
+   }
+  ],
+  "devagar": [
+   {
+    "t": "**Os 5 exercícios:** sentar e levantar rápido, subir degrau, flexão na parede, remada com elástico e rosca rápida."
+   },
+   {
+    "t": "**Passo 1 · semana 1.** 2 treinos. 1 a 2 séries de 8 de cada exercício, para aprender o movimento."
+   },
+   {
+    "t": "**Passo 2 · semana 2.** 2 treinos. 2 séries de 8 a 10, com subida o mais rápido possível."
+   },
+   {
+    "t": "**Passo 3 · semana 3.** 2 ou 3 treinos. 2 a 3 séries. Deixe mais difícil o que ficou fácil: flexão na bancada, elástico mais forte, garrafa mais pesada."
+   },
+   {
+    "t": "**Passo 4 · semana 4.** 3 treinos de 3 séries. Se o joelho não dói, termine o sentar e levantar com um pulinho pequeno. Na academia, use o leg press, o peito e a remada na máquina, com peso leve a moderado e subida rápida."
+   },
+   {
+    "t": "**Passo 5 · daqui para frente.** O que conta aqui são anos, não semanas. 2 a 3 treinos por semana, aumentando o peso aos poucos. Some 150 minutos de caminhada por semana."
+   },
+   {
+    "t": "**Cuidado:** o pulinho é opcional. Com dor no joelho, osteoporose ou desgaste, não pule."
+   }
+  ],
+  "independente": [
+   {
+    "t": "**Os 5 exercícios:** sentar e levantar rápido, subir degrau, flexão na parede, remada com elástico e equilíbrio num pé."
+   },
+   {
+    "t": "**Passo 1 · semana 1.** 2 treinos. 1 série de 8 de cada exercício. No sentar e levantar, pode usar as mãos nas coxas ou a ajuda de alguém. No equilíbrio, segure com as duas mãos."
+   },
+   {
+    "t": "**Passo 2 · semana 2.** 2 treinos. 2 séries de 8. Comece a subir mais rápido. No equilíbrio, segure com uma mão só."
+   },
+   {
+    "t": "**Passo 3 · semana 3.** 3 treinos, com um dia de folga entre eles. 2 séries de 8 a 10. Levante da cadeira sem as mãos, se conseguir com segurança. O equilíbrio pode ser feito todo dia."
+   },
+   {
+    "t": "**Passo 4 · semana 4.** 3 treinos de 2 a 3 séries. Levante o mais rápido que conseguir. No equilíbrio, tente apoiar só um dedo."
+   },
+   {
+    "t": "**Passo 5 · daqui para frente.** Força e equilíbrio em 3 ou mais dias por semana. Quando ficar fácil, segure uma garrafa no peito no sentar e levantar, ou use um elástico mais forte."
+   },
+   {
+    "t": "**Cuidado:** use uma cadeira firme encostada na parede e treine perto de um apoio. Nas primeiras vezes, peça para alguém ficar por perto."
+   }
+  ]
+ },
+ "proteina": [
+  {
+   "t": "O músculo cresce com treino e com proteína. Numa análise de 49 estudos, quem treinou força e comeu mais proteína ganhou um pouco mais de músculo e de força do que quem só treinou."
+  },
+  {
+   "t": "Para quem tem mais de 65 anos, as diretrizes europeias falam em pelo menos 1,0 a 1,2 g de proteína por quilo de peso por dia, e um pouco mais para quem treina. Para quem tem doença nos rins, a conta é outra."
+  },
+  {
+   "t": "A quantidade certa para você depende do seu peso, da sua saúde e do que você já come. Carne, frango, peixe, ovo, leite, iogurte, queijo e feijão têm proteína."
+  }
+ ],
+ "seguranca": [
+  {
+   "t": "**Para a maioria das pessoas, começar com exercício leve a moderado não exige liberação médica.** Mas fale com o médico antes de começar se:"
+  },
+  {
+   "itens": [
+    "algum médico já disse que você tem doença do coração ou pressão alta;",
+    "você sente dor no peito parada, no dia a dia ou quando faz esforço;",
+    "você perdeu o equilíbrio por tontura ou desmaiou nos últimos 12 meses;",
+    "a sua pressão em repouso fica em 16 por 9 ou mais, ou você não sabe qual é a sua pressão;",
+    "você tem um problema de osso, articulação, músculo ou tendão (agora ou nos últimos 12 meses) que pode piorar com exercício;",
+    "você teve fratura recente, ou fratura por osteoporose;",
+    "você tem diabetes e costuma ter queda de açúcar depois de se exercitar;",
+    "você teve derrame nos últimos 6 meses, ou faz tratamento de câncer agora;",
+    "você tem hérnia na barriga ou na virilha;",
+    "algum médico já disse que você só deve fazer exercício com supervisão;",
+    "você está grávida."
+   ]
+  },
+  {
+   "t": "**Espere para começar** se está gripada ou com febre."
+  },
+  {
+   "t": "**Pare na hora e procure atendimento** se sentir, durante o exercício, dor ou aperto no peito, tontura forte, falta de ar fora do normal ou o coração disparado."
+  }
+ ],
+ "fecho": [
+  {
+   "t": "Este passo a passo é geral. Para ajustar ao seu caso (a sua rotina, o que dói, o que já funciona), responda a mensagem no WhatsApp."
+  }
+ ]
+}

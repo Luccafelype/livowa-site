@@ -1625,6 +1625,25 @@ const resDet = e => { const f = DET[chaveDet(e)]?.res; return f ? f(e, e.dados |
 // Toosizadeh 2017 (BMC Geriatr, PMID 28577355): 20 s de flexão rápida do cotovelo; robustos (76 anos) 1.099 °/s,
 // pré-frágeis 812, frágeis 535; flexões 25/21/15; queda 3/6/15%. Toji 2007: velocidade igual até 50 anos, −0,8%/ano depois.
 // Junção (extrapolação): referência aos 50 = 1.099 / (1 − 0,008 × 26) ≈ 1.390 °/s. Mulher × 0,9 (estimativa).
+// 23/11 (Lucca: "Quero o passo a passo… o sistema já tem que ter feito"): o link da página só dela, montado com o desejo,
+// a faixa (a mesma conta da tela do braço: velocidade × 0,97 ÷ esperado para a idade; acima ≥ 1,05, na linha ≥ 0,95) e a
+// idade. Nada pessoal no servidor: tudo vai no link. PASSO_APROVADO = false enquanto o Dr. Lucca não aprova o conteúdo.
+const PASSO_APROVADO = false;
+function linkPassoBraco(d){
+  if (!d.velMedia || !d.idade) return null;
+  const SEG = { '5s':5, '10s':10 }[d.protocolo] || 20, v = d.velMedia * (SEG < 20 ? .97 : 1), i = +d.idade;
+  const ref = 1390 * (d.sexo === 'f' ? .9 : 1) * (i <= 50 ? 1 : Math.max(.5, 1 - .008 * (i - 50))), r = v / ref;
+  const f = r >= 1.05 ? 'acima' : r >= .95 ? 'linha' : 'abaixo';
+  const des = ['chegar10', 'firme', 'disposicao', 'devagar', 'independente'].includes(d.futuro) ? d.futuro : 'chegar10';
+  return `https://livowa.com/passo/?d=${des}&f=${f}&i=${i}`;
+}
+function passoBraco(d){
+  const u = linkPassoBraco(d); if (!u) return '';
+  return `<div class="interp ok"><h3>Passo a passo dela</h3>
+    ${PASSO_APROVADO ? '' : '<p class="alerta">Rascunho: o conteúdo espera a sua aprovação antes de ir para a lead.</p>'}
+    <div class="l"><span>Link</span><b><a href="${esc(u)}" target="_blank" rel="noopener">abrir</a></b></div>
+    <button type="button" class="kit-copiar passo-copiar" data-url="${esc(u)}">Copiar mensagem com o link</button></div>`;
+}
 function interpretaBraco(d){
   const SEG = { '5s':5, '10s':10 }[d.protocolo] || 20, curto10 = SEG < 20;   // 10 s e 5 s (22/11): a média sai ~1–7% acima da de 20 s (menos cansaço) → corrige ×0,97
   const v = d.velMedia ? Math.round(d.velMedia * (curto10 ? 0.97 : 1)) : 0, f = d.sexo === 'f' ? 0.9 : d.sexo === 'n' ? 0.95 : 1, VREF = 1390 * f, ROB = 1099 * f, PRE = 955 * f, FRA = 673 * f;
@@ -1697,7 +1716,7 @@ async function ver(c){
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2' || e.funil === 'pele-idade') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
       if (e.funil === 'pele-idade') return cartaoPeleIdade(e, quando, g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado e respostas', resDet(e) || '', `${g ? blocoFotos(g, e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) : ''}${detalhe(e)}`, 'sec-res')}${g ? rotP(e) : ''}${rotSec(e)}${assSec(e)}${kitBloco(e)}</div>`;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado e respostas', resDet(e) || '', `${g ? blocoFotos(g, e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) + passoBraco(e.dados || {}) : ''}${detalhe(e)}`, 'sec-res')}${g ? rotP(e) : ''}${rotSec(e)}${assSec(e)}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : ''));
@@ -2210,6 +2229,7 @@ function kitCopiar(btn){
   catch { selecionar(); }
 }
 $('out').addEventListener('click', ev => {
+  const ps = ev.target.closest('.passo-copiar'); if (ps){ copiaTexto(`Aqui está o seu passo a passo: ${ps.dataset.url}`, ps); return; }   // 23/11
   const cp = ev.target.closest('.kit-copiar'); if (cp){ kitCopiar(cp); return; }
   const pf = ev.target.closest('.kit-perfil button');
   if (pf){ const i = +pf.dataset.kb; KB[i].forcar = pf.dataset.perfil; const sec = pf.closest('.kit'); sec.innerHTML = kitCorpo(i); sec.querySelector(`.kit-perfil [data-perfil="${pf.dataset.perfil}"]`)?.focus(); return; }
