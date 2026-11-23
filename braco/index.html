@@ -138,6 +138,9 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .cmp-voce::before{content:"";position:absolute;top:13px;left:-11px;width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--surface);box-shadow:0 1px 6px rgba(0,0,0,.25)}
 .cmp-voce span{top:38px;color:var(--accent)}
 .cmp-status{font:700 1.02rem var(--body);margin-top:12px}
+.pot-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.pot-mini div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.medida.pot .pot-mini b{font:800 1.45rem/1.1 var(--display);color:var(--fg);font-variant-numeric:tabular-nums}
 .nota{font-size:.86rem;color:var(--muted);line-height:1.4}
 .grade{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mini2{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 13px;display:flex;flex-direction:column;gap:3px;text-align:left;min-width:0}
@@ -294,23 +297,18 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
       <p class="nota" id="idm-txt"></p>
     </div>
     <div class="medida pot">
-      <span class="rot">Potência do movimento</span>
+      <span class="rot">Potência estimada</span>
       <b><span id="res-v">0</span> <small>°/s</small></b>
       <span class="medida-sub" id="res-medida">0 movimentos em 5 s</span>
       <div class="cmp" aria-hidden="true"><div class="cmp-trilho"></div><i class="cmp-ref" id="res-ref-m"><span id="res-ref-lbl">referência</span></i><i class="cmp-voce" id="res-v-m"><span>você</span></i></div>
       <p class="cmp-status" id="res-status"></p>
-      <p class="nota" id="res-pot-txt">A velocidade com que o cotovelo dobra e estica, somando a ida e a volta: é a medida dos estudos, e é dela que sai a idade muscular. Depois dos 50 anos, ela cai perto de 0,8% por ano (Toji, 2007).</p>
-    </div>
-    <div class="grade">
-      <div class="mini2"><span class="rot">Pico</span><b id="res-pico">—</b><span id="res-pico-txt"></span></div>
-      <div class="mini2"><span class="rot">Arranque</span><b id="res-arr">—</b><span id="res-arr-txt"></span></div>
-      <div class="mini2"><span class="rot">Constância</span><b id="res-var">—</b><span id="res-var-txt"></span></div>
-      <div class="mini2"><span class="rot">Amplitude</span><b id="res-ang">—</b><span id="res-ang-txt"></span></div>
-    </div>
-    <div class="graf">
-      <span class="rot">A velocidade de cada movimento</span>
-      <div class="graf-area" aria-hidden="true"><div class="graf-barras" id="res-graf"></div><i class="graf-ref" id="res-graf-ref"></i></div>
-      <p class="graf-leg"><span class="lg-b"></span>cada movimento <span class="lg-r"></span>referência da sua idade</p>
+      <!-- 23/11 (Lucca, comentários no artefato Potência: "retire a explicação desse card"; "quero que mostre a força de arranque, a
+           velocidade em quilômetros por hora e a potência estimada"; as 4 medidas "ficariam no card acima"; o gráfico, "delete"):
+           o card diz potência estimada (média da soma ida + volta de cada movimento × 0,97), arranque e velocidade máxima da mão. -->
+      <div class="pot-mini">
+        <div><span class="rot">Arranque</span><b id="res-arr">—</b></div>
+        <div><span class="rot">Velocidade máxima da mão</span><b id="res-kmh">—</b></div>
+      </div>
     </div>
     <div class="res-txt" id="res-txt2"></div>
     <p class="rodape">Medido pelo sensor do seu celular e comparado com estudos que usaram sensor no punho, com pessoas de 60 anos ou mais; para quem é mais novo, a referência é estimada. Estimativa, não é diagnóstico.</p>
@@ -676,21 +674,10 @@ function montarMedidas(){
   $('res-ref-m').style.left = pos(ref) + '%'; $('res-ref-lbl').textContent = `${grupo}: ${num(ref)}`;
   $('res-v-m').style.left = '3%'; requestAnimationFrame(() => requestAnimationFrame(() => { $('res-v-m').style.left = pos(m.v) + '%'; }));
   $('res-status').textContent = r >= 1.05 ? `Acima da referência de ${grupo}` : r >= .95 ? `Na linha da referência de ${grupo}` : `Abaixo da referência de ${grupo}`;
-  $('res-pico').textContent = `${num(m.picoMax)} °/s`;
-  $('res-pico-txt').textContent = `no movimento mais rápido, a sua mão chegou a ${num(m.kmh, 1)} km/h`;
+  // 23/11 (Lucca, artefato Potência): no card, só arranque e velocidade máxima da mão, sem explicação; saíram pico em °/s,
+  // constância, amplitude (segue no aviso de movimento curto da idade) e o gráfico
   $('res-arr').textContent = m.tDobra != null ? `${num(m.tDobra)} ms` : '—';
-  $('res-arr-txt').textContent = 'o tempo de cada dobra; em quem tem 65 a 70 anos e boa saúde, perto de 300 ms';
-  $('res-var').textContent = m.variab != null ? `${m.variab}%` : '—';
-  $('res-var-txt').textContent = 'quanto a velocidade mudou de um movimento para o outro; em idosos com boa saúde, perto de 9%';
-  $('res-ang').textContent = m.angMed ? `${m.angMed}°` : '—';
-  $('res-ang-txt').textContent = !m.angMed ? 'o quanto o cotovelo abriu e fechou'
-    : m.angMed < 85 ? 'o quanto o cotovelo abriu e fechou: movimento curto, a velocidade pode ter saído menor'
-    : m.angMed > 140 ? 'o quanto o cotovelo abriu e fechou: movimento amplo' : 'o quanto o cotovelo abriu e fechou: no tamanho que o teste pede';
-  // gráfico: uma barra por movimento (ida + volta), na mesma escala da linha da referência
-  const g = $('res-graf'), alto = Math.max(ref, ...m.amps) * 1.08;
-  g.innerHTML = m.amps.map(a => `<i style="height:${Math.max(4, a / alto * 100).toFixed(1)}%"></i>`).join('');
-  $('res-graf-ref').style.bottom = (ref / alto * 100).toFixed(1) + '%';
-  g.classList.add('zero'); requestAnimationFrame(() => requestAnimationFrame(() => g.classList.remove('zero')));
+  $('res-kmh').textContent = `${num(m.kmh, 1)} km/h`;
 }
 function mensagem(){
   const d = desejo(FUT_EU), quer = d ? ` Daqui a 10 anos, quero ${d}.` : '';
