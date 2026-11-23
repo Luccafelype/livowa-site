@@ -1,11 +1,12 @@
 /* livowa.com/pele v2 (04/11/2026). Reescrito do zero pelo desenho-v2.md (livowa-empresa/tarefas/pele-idade-vitalidade/).
    Sistema: UMA família (IBM Plex Sans) · TRÊS tamanhos: --t1 28px (título), --t2 17px (corpo, botão, opção),
    --t3 13px (nota, rótulo da barra, rodapé) · exceções: --tn 56px, só no número do resultado; --tg 20px, só no texto e no
-   botão do cartão final do Dr. Lucca (11/11 23h, Lucca: “letras miúdas”).
+   botão do cartão final do Dr. Lucca (11/11 23h, Lucca: “letras miúdas”); --tc 24px, só no título do cartão verde abaixo de 420 px
+   de tela (23/11: o título novo, longo, em até 5 linhas a 375 px).
    Ênfase só por peso (700) ou pela cor de destaque. Cores: texto, cinza, 1 destaque (verde). UM estilo de cartão (.cartao).
-   Nada de vermelho. Todo font-size usa uma das 5 variáveis. */
+   Nada de vermelho. Todo font-size usa uma das 6 variáveis. */
 :root{
-  --t1:28px; --t2:17px; --t3:13px; --tn:56px; --tg:20px;
+  --t1:28px; --t2:17px; --t3:13px; --tn:56px; --tg:20px; --tc:24px;
   --bg:#f3f5f2; --surface:#ffffff; --fg:#141c17; --muted:#5d6b63; --line:#dde3de;
   --accent:#0d6a4d; --accent-2:#dcefe6; --on-accent:#ffffff;
   --font:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
@@ -212,14 +213,18 @@ b,strong{font-weight:700}
 .lupa{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:#1b1f1d;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lupa-cam{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 .lupa-foto{display:block}
-.lupa-anel{position:absolute;border-radius:50%;border:5px solid rgba(255,255,255,.55);box-shadow:0 0 0 2px rgba(0,0,0,.18);transition:border-color .3s}
-.lupa-anel.on{border-color:#fff}
+/* 23/11 (Lucca: "uma bola por vez, ou um destaque por vez"): só o anel do ponto atual; o antigo sai (.25 s) e depois o novo entra */
+.lupa-anel{position:absolute;border-radius:50%;border:5px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.18);opacity:0;transition:opacity .25s}
+.lupa-anel.on{opacity:1;transition:opacity .35s .25s}
+@media (prefers-reduced-motion:reduce){.lupa-anel,.lupa-anel.on{transition:none}}
+.selo{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:var(--t3);font-weight:600;vertical-align:2px;white-space:nowrap}
 .lupa-rot{position:absolute;left:10px;right:10px;bottom:10px;padding:7px 11px;border-radius:10px;background:rgba(20,28,23,.72);color:#fff;font-size:var(--t3);line-height:1.35}
 .lupa-rot b{font-weight:700}
 .lupa:not(.passeando) .lupa-rot{display:none}   /* 23/11: o rótulo só durante o passeio; parado, o ponto ativo fica marcado na lista */
-/* 23/11 (título novo do Lucca, longo): até 3 linhas a 375 px com nome, em 17 px; de 420 px para cima, 20 px */
-#r-ponte-tit{font-size:var(--t2);line-height:1.3}
-@media (min-width:420px){#r-ponte-tit{font-size:var(--tg)}}
+/* 23/11 (título novo do Lucca, longo; e o pedido dele de 11/11: "esse CTA parece nota de rodapé, tem que ficar mais destacado"):
+   o maior tamanho que cabe em até 5 linhas a 375 px, com nome longo ("Maximiliana"): 24 px (--tc); de 420 px para cima, 28 px */
+#r-ponte-tit{font-size:var(--tc);line-height:1.18}
+@media (min-width:420px){#r-ponte-tit{font-size:var(--t1)}}
 .rec-bt{display:flex;align-items:center;gap:12px;width:100%;margin:0;padding:6px;border:2px solid transparent;border-radius:14px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .rec-bt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-2)}
 .rec-bt span{display:block}

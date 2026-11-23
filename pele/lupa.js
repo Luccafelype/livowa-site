@@ -42,6 +42,8 @@ let anterior = null;   // refez a foto: o cartão de antes para de andar e solta
 export function montarLupa(o){
   anterior?.soltar();
   const { bloco, al, g, sel, SINAL, nivel, txt, dorId, idade, track } = o;
+  // 23/11: o passeio (ordem) e onde a câmera para (fim = o ponto mais diferente da idade dela); vêm do app.js (seção 2)
+  const ordem = o.ordem || sel, fim = o.fim || sel[sel.length - 1];
   const sexo = o.sexo === 'm' ? 'm' : 'f';
   const reduzir = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const q = quadroTopo(g), foto = fotoCamera(al, g, q);
@@ -57,7 +59,7 @@ export function montarLupa(o){
       <p class="lupa-rot" aria-live="polite"></p>
     </div>
     <ul class="recortes">${sel.map(id => `<li data-id="${id}"${id === dorId ? ' data-dor="1"' : ''}><button type="button" class="rec-bt" aria-pressed="false"><canvas data-r="${area(id)}" role="img" aria-label="Recorte da sua foto: ${pesoTexto(SINAL[id].nome)}"></canvas>
-      <div><b>${SINAL[id].nome}</b><span>${txt(id)}</span></div></button></li>`).join('')}</ul>
+      <div><b>${SINAL[id].nome}${id === fim ? ' <small class="selo">o que mais aparece</small>' : ''}</b><span>${txt(id)}</span></div></button></li>`).join('')}</ul>
     <div class="lupa-mais"></div>`;
   const cam = bloco.querySelector('.lupa-cam'), vis = bloco.querySelector('.lupa'), rot = bloco.querySelector('.lupa-rot'), mais = bloco.querySelector('.lupa-mais');
   foto.className = 'lupa-foto'; cam.prepend(foto);
@@ -79,11 +81,12 @@ export function montarLupa(o){
     cam.style.transform = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${z.toFixed(4)})`;
     cam.dataset.z = z.toFixed(3);
   }
-  function rotulo(id){ rot.innerHTML = id ? `<b>${SINAL[id].nome}</b>` : 'A sua foto'; }   // o que a foto mostra está na lista, logo abaixo
+  // a legenda (só no passeio): o nome do ponto; no ponto final, o selo (o que a foto mostra está na lista, logo abaixo)
+  function rotulo(id){ rot.innerHTML = id ? `<b>${SINAL[id].nome}</b>${id === fim ? ' · o que mais aparece na sua foto' : ''}` : 'A sua foto'; }
   function ativar(id, quem){
     ativo = id;
     bloco.querySelectorAll('.recortes li').forEach(li => li.querySelector('.rec-bt').setAttribute('aria-pressed', String(li.dataset.id === id)));
-    bloco.querySelectorAll('.lupa-anel').forEach(a => a.classList.toggle('on', a.dataset.id === id));
+    bloco.querySelectorAll('.lupa-anel').forEach(a => a.classList.toggle('on', a.dataset.id === id));   // um anel por vez (CSS: o antigo sai, depois o novo entra)
     rotulo(id); pintarMais(id);
     if (quem === 'toque') track('answer', { stepId:'resultado-lupa', valueText:id, props:{ nivel:nivel(id) } });
   }
@@ -118,27 +121,31 @@ export function montarLupa(o){
   const timers = []; let passeando = false;
   const depois = (ms, f) => timers.push(setTimeout(f, ms));
   const parar = () => { timers.splice(0).forEach(clearTimeout); passeando = false; vis.classList.remove('passeando'); };
+  // 23/11: o incômodo dela → os outros em ordem crescente de diferença → PARA no mais diferente (fim); a legenda fica nele
   function passeio(){
-    if (passeando) return; passeando = true; vis.classList.add('passeando');
+    parar(); passeando = true; vis.classList.add('passeando');
     enquadrar(null, 0, 0); rotulo(null);
+    bloco.querySelectorAll('.lupa-anel').forEach(a => a.classList.remove('on')); ativo = null;   // rosto inteiro: nenhum anel
     let t = 700;
-    sel.forEach(id => {
-      depois(t, () => { ativar(id); enquadrar(id, -.14); }); t += 1100;
-      depois(t, () => enquadrar(id, .14, 1900, 'linear')); t += 2000;   // anda pela área (as partes dela)
+    ordem.forEach((id, k) => {
+      const ultimo = k === ordem.length - 1;
+      depois(t, () => { ativar(id); enquadrar(id, ultimo ? 0 : -.14); }); t += 1100;
+      if (!ultimo){ depois(t, () => enquadrar(id, .14, 1900, 'linear')); t += 2000; }   // anda pela área (as partes dela)
     });
-    depois(t, () => { ativar(sel[0]); enquadrar(sel[0]); passeando = false; vis.classList.remove('passeando'); track('answer', { stepId:'resultado-lupa', valueText:'passeio-fim' }); });
+    depois(t + 1600, () => { passeando = false; vis.classList.remove('passeando'); track('answer', { stepId:'resultado-lupa', valueText:'passeio-fim', props:{ fim } }); });
   }
   bloco.querySelectorAll('.rec-bt').forEach(b => b.addEventListener('click', () => { const id = b.closest('li').dataset.id; parar(); ativar(id, 'toque'); enquadrar(id); }));
   vis.addEventListener('click', () => { if (passeando) return; const i = sel.indexOf(ativo); const id = sel[(i + 1) % sel.length]; ativar(id, 'toque'); enquadrar(id); });
   const aoMudar = () => { if (!passeando) enquadrar(ativo, 0, 0); };
   addEventListener('resize', aoMudar);
 
-  // começa no rosto inteiro com o 1º ponto marcado; o passeio roda quando o cartão aparece na tela
-  ativar(sel[0]); enquadrar(null, 0, 0); rotulo(null);
+  // começa no rosto inteiro, já marcando o ponto mais diferente; o passeio roda quando o cartão aparece na tela
+  ativar(fim); enquadrar(null, 0, 0); rotulo(null);
   let io = null;
   const soltar = () => { parar(); io?.disconnect(); removeEventListener('resize', aoMudar); };
-  if (reduzir){ enquadrar(sel[0], 0, 0); rotulo(sel[0]); return (anterior = { parar, soltar }); }
+  const estado = () => ({ ativo, passeando, ordem, fim, z:+cam.dataset.z, aneis:[...bloco.querySelectorAll('.lupa-anel')].map(a => +getComputedStyle(a).opacity), rot:rot.textContent });
+  if (reduzir){ enquadrar(fim, 0, 0); rotulo(fim); return (anterior = { parar, soltar, estado }); }
   io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)){ io.disconnect(); passeio(); } }, { threshold:.6 });
   requestAnimationFrame(() => io.observe(vis));
-  return (anterior = { parar, soltar, passeio });
+  return (anterior = { parar, soltar, passeio, estado });
 }

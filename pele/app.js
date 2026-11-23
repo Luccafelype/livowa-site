@@ -32,7 +32,7 @@ import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, me
 const RostoToy = import('./rosto-toy.js?v=20261122b').catch(() => null);
 // 23/11 (ponto 7 da tela 16, lote de 15/11): o cartão "O que a sua foto mostra" com a câmera que anda pelos pontos, a mesma região
 // em outras idades e o exemplo de fora (lupa.js). Sem número (foto ruim), fica a lista de recortes de antes.
-import { montarLupa } from './lupa.js?v=20261123a';
+import { montarLupa } from './lupa.js?v=20261123c';
 
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
@@ -515,17 +515,24 @@ function montarResultado(j, f){
   // da câmera: o incômodo dela (a região da resposta do espelho) primeiro, depois os outros do mais marcado para o menos; o sulco
   // (do nariz ao canto da boca, o "bigode chinês") entra sempre que a nota dele for 1 ou mais (pedido do Lucca). Antes (04/11 a
   // 23/11): 2 mais marcados + 1 a favor; com o incômodo, 2.
-  const vis = Object.keys(SINAL).filter(id => nivel(id) != null).sort((a, b) => nivel(b) - nivel(a));
-  const D = DOR[R.espelho], dorId = D ? D.ids.filter(id => nivel(id) != null).sort((a, b) => nivel(b) - nivel(a))[0] || null : null;
+  // 23/11 (3ª rodada; Lucca: "e se uma parte do rosto for mais diferente que a outra, onde o sistema focaria?"; o coordenador
+  // decidiu): "diferença" = a nota da área; no empate, o peso dela na régua da idade (a da edge analisar-pele). O passeio começa
+  // no incômodo dela, passa pelos outros em ordem crescente de diferença e PARA no mais diferente (o "o que mais aparece").
+  // Se o incômodo é o mais diferente, começa e termina nele. A região do incômodo também é a mais diferente entre as dele.
+  const PESO = { flacidez:.25, olhos:.20, sulco_nasolabial:.20, linhas_testa:.15, manchas:.10 };
+  const dif = id => nivel(id) * 10 + PESO[id];
+  const vis = Object.keys(SINAL).filter(id => nivel(id) != null).sort((a, b) => dif(b) - dif(a));
+  const D = DOR[R.espelho], dorId = D ? D.ids.filter(id => nivel(id) != null).sort((a, b) => dif(b) - dif(a))[0] || null : null;
   const sel = [...(dorId ? [dorId] : []), ...vis.filter(id => id !== dorId)].slice(0, 2);   // 2 pontos (limite de 200 palavras)…
   if (nivel('sulco_nasolabial') >= 1 && !sel.includes('sulco_nasolabial')) sel.push('sulco_nasolabial');   // …+ o sulco, se marcou
-  const resto = sel.filter(id => id !== dorId).sort((a, b) => nivel(b) - nivel(a));
+  const resto = sel.filter(id => id !== dorId).sort((a, b) => dif(a) - dif(b));   // crescente: o mais diferente por último
   sel.splice(0, sel.length, ...(dorId ? [dorId] : []), ...resto);
+  const fimId = vis[0] || null, ordemPasseio = dorId && dorId === fimId ? [...sel, dorId] : [...sel];
   resultado.dor = dorId;
   // 23/11 (limite de 200 palavras): mais curta, com as palavras do botão que ela tocou ("O rosto caindo te incomoda. Na foto: …")
   const txtRecorte = id => id === dorId ? `${cap(D.t())} te ${D.pl ? 'incomodam' : 'incomoda'}. Na foto: ${SINAL[id].c[nivel(id)].toLocaleLowerCase('pt-BR')}.` : SINAL[id].c[nivel(id)];
   $('r-foto-bloco').hidden = !daParaDizer || !sel.length;
-  if (daParaDizer && sel.length) montarLupa({ bloco:$('r-foto-bloco'), al, g:fr.g, sel, SINAL, nivel, txt:id => esc(txtRecorte(id)), dorId, sexo:R.sexo, idade, track });
+  if (daParaDizer && sel.length) window.__peleLupa = montarLupa({ bloco:$('r-foto-bloco'), al, g:fr.g, sel, ordem:ordemPasseio, fim:fimId, SINAL, nivel, txt:id => esc(txtRecorte(id)), dorId, sexo:R.sexo, idade, track });
   else $('r-foto-bloco').innerHTML = `<h3>O que a sua foto mostra</h3><ul class="recortes">${sel.map(id => `<li data-id="${id}"${id === dorId ? ' data-dor="1"' : ''}><canvas data-r="${SINAL[id].recorte}" role="img" aria-label="Recorte da sua foto: ${esc(SINAL[id].nome.toLowerCase())}"></canvas>
     <div><b>${esc(SINAL[id].nome)}</b><span>${esc(txtRecorte(id))}</span></div></li>`).join('')}</ul>`;
   if (!(daParaDizer && sel.length)) $('r-foto-bloco').querySelectorAll('canvas[data-r]').forEach(c => { const r = recorteRegiao(al, fr.g, c.dataset.r, 128); c.width = r.width; c.height = r.height; c.getContext('2d').drawImage(r, 0, 0); r.width = 0; });
