@@ -323,7 +323,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
            o card diz potência estimada (média da soma ida + volta de cada movimento × 0,97), arranque e velocidade máxima da mão. -->
       <div class="pot-mini">
         <div><span class="rot">Movimentos</span><b id="res-medida">0 movimentos em 5 s</b></div>
-        <div id="res-acc-box"><span class="rot">Arranque</span><b id="res-acc">—</b><span class="mini-sub" id="res-acc-txt"></span></div>
+        <div id="res-acc-box"><span class="rot">Ativação muscular</span><b id="res-acc">—</b><span class="mini-sub" id="res-acc-txt"></span></div>
       </div>
     </div>
     <!-- 23/11 (Lucca, artefato Potência: "quero que isso integre já com o botão verde… igual na pele, um card verde com o CTA e o
@@ -598,9 +598,15 @@ function encerrar(){
   // tranco solto não virar o número. Fora de 0,3 a 8 g (leitura estranha) não aparece na tela; vai nos eventos para conferir.
   const accs = amostras.filter(a => a.t >= z && a.t <= z + DURACAO && a.acc > 0).map(a => a.acc).sort((x, y) => x - y);
   const accMao = accs.length >= 20 ? accs[Math.floor(accs.length * .9)] : null;
+  // 23/11 (Lucca: "arranque mede o quê? 2,2 g não faz sentido… capacidade de ativação das fibras… uma comparação, o mínimo de
+  // palavras"): o tempo do zero à velocidade máxima em cada meio movimento = o "rise time" do teste UEF (Toosizadeh 2015: robustos
+  // de ~75 anos 0,26 s, pré-frágeis 0,33, frágeis 0,44). Início = a menor rotação desde o pico anterior (a virada); mediana.
+  const subidas = picos.map((p, k) => { const de = k ? picos[k - 1].t : p.t - 700, jan = amostras.filter(a => a.t > de && a.t <= p.t);
+    if (jan.length < 3) return null; const mn = jan.reduce((m, a) => a.w < m.w ? a : m); return p.t - mn.t; }).filter(x => x != null && x > 40 && x < 1000);
+  const tSobe = subidas.length >= 3 ? [...subidas].sort((a, b) => a - b)[Math.floor(subidas.length / 2)] : null;
   MED = { v:Math.round(Math.round(media(amp)) * .97),   // = Caixa: round(velMedia × 0,97)
     amps:amp.map(a => Math.round(a * .97)), picoMax,
-    kmh:picoMax * Math.PI / 180 * ANTEBRACO * 3.6, tDobra:difs.length ? Math.round(media(difs)) : null, variab, angMed, accMao };
+    kmh:picoMax * Math.PI / 180 * ANTEBRACO * 3.6, tDobra:difs.length ? Math.round(media(difs)) : null, variab, angMed, accMao, tSobe };
   setTimeout(() => analisar(() => {
     // 02/11: a tela repete o que o sensor mediu (a pessoa viu o número subir) e cita as respostas dela em cada frase
     $('res-medida').textContent = `${reps} ${reps === 1 ? 'movimento' : 'movimentos'} em ${Math.round(DURACAO / 1000)}\u00a0s`;
@@ -608,7 +614,7 @@ function encerrar(){
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
       valueText:`${reps} movimentos em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em teste curto ela mistura a aceleração do começo
       props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, futuro:dados.futuro || null, desejo:desejo(FUT_EU) || null, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
-        queda, variab, vmao:+vmao.toFixed(2), picoMax, tDobra:MED.tDobra, wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'5s', angMed, angs:angs.slice(0, 40), accMao:MED.accMao != null ? +MED.accMao.toFixed(1) : null, idadeMusc:MED.idade?.txt || null,
+        queda, variab, vmao:+vmao.toFixed(2), picoMax, tDobra:MED.tDobra, wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'5s', angMed, angs:angs.slice(0, 40), accMao:MED.accMao != null ? +MED.accMao.toFixed(1) : null, tSobe:MED.tSobe != null ? Math.round(MED.tSobe) : null, idadeMusc:MED.idade?.txt || null,
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
           leit5s:[0,1].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
           picos5s:[0,1].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length),
@@ -704,9 +710,10 @@ function montarMedidas(){
   $('res-status').textContent = r >= 1.05 ? `${Math.round((r - 1) * 100)}% acima do esperado para ${grupo}` : r >= .95 ? `Na linha do esperado para ${grupo}` : `${Math.round((1 - r) * 100)}% abaixo do esperado para ${grupo}`;
   // 23/11 (Lucca, artefato Potência): no card, só arranque e velocidade máxima da mão, sem explicação; saíram pico em °/s,
   // constância, amplitude (segue no aviso de movimento curto da idade) e o gráfico
-  const g = m.accMao != null ? m.accMao / 9.81 : null, okG = g != null && g >= .3 && g <= 8;
-  $('res-acc-box').hidden = !okG;
-  if (okG){ $('res-acc').textContent = `${num(g, 1)} g`; $('res-acc-txt').textContent = `a sua mão acelerou ${num(g, 1)} vezes a gravidade`; }
+  // 23/11: a aceleração em g saiu da tela (segue nos eventos, accMao); entra o tempo do zero à velocidade máxima, com a referência do estudo
+  const okT = m.tSobe != null && m.tSobe >= 80 && m.tSobe <= 800;
+  $('res-acc-box').hidden = !okT;
+  if (okT){ $('res-acc').textContent = `${num(m.tSobe / 1000, 2)} s`; $('res-acc-txt').textContent = 'do zero à velocidade máxima · aos 75, com boa saúde: 0,26 s'; }
 }
 function mensagem(){
   const d = desejo(FUT_EU), quer = d ? ` Daqui a 10 anos, quero ${d}.` : '';
