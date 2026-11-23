@@ -589,7 +589,7 @@ function mensagem(){
   const s = sou(), fx = resultado?.faixa;
   const rosto = fx && R.idade ? ` Tenho ${R.idade} anos e o meu rosto deu ${fx.min} a ${fx.max}.` : '';
   const d = desejo(FUT_EU), quer = d ? ` Daqui a 10 anos, quero ${d}.` : '';
-  return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste da idade do rosto, código ${meuCodigo()}.${rosto}${quer} Quero que você me explique o meu resultado.\n${linhaPrazo()}`;
+  return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz o teste da idade do rosto, código ${meuCodigo()}.${rosto}${quer} Quero que você me explique o meu resultado.`;
 }
 const linkWA = () => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 function prepararFechamento(){
@@ -600,10 +600,10 @@ const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo() });
 // =====================================================================
 // PRAZO (09/11, decisão do Lucca): análise sem custo para quem enviar em 30 min, contados da 1ª vez que a pessoa vê o
 // resultado. Guardado no localStorage pelo código LV: livowa_prazo = { 'LV-XXXX': { t, teste } } (o mesmo objeto do braço).
-// O código é novo a cada carregamento; quem recarrega e refaz o teste em até 24 h herda o início do último resultado
-// deste teste, para o prazo não recomeçar. A mensagem diz se saiu no prazo, lido no toque do botão. Vale no fim A e no B.
+// O código é novo a cada carregamento; cada resultado novo começa o seu prazo (23/11: sem herança).
+// 23/11: a mensagem pronta não leva mais '(enviado no prazo…)'; o noPrazo vai no cta_click (é o que a Caixa lê). Vale no fim A e no B.
 // =====================================================================
-const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele', PRAZO_HERDA = 24 * 3600 * 1000, PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
 function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
 function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
 let prazoT0 = null, prazoIv = null;   // prazoT0: cópia em memória (vale quando o navegador não deixa gravar)
@@ -612,8 +612,7 @@ function iniciarPrazo(){
   if (+m[c]?.t) prazoT0 = +m[c].t;
   else {
     if (prazoT0 == null){
-      const ult = Object.values(m).filter(x => x && x.teste === PRAZO_TESTE && +x.t && agora - x.t < PRAZO_HERDA).sort((a, b) => b.t - a.t)[0];
-      prazoT0 = ult ? +ult.t : agora;
+      prazoT0 = agora;   // 23/11 (Lucca: 'prazo acabou não faz sentido'): cada resultado novo começa o seu prazo, sem herdar o de antes
     }
     for (const k of Object.keys(m)) if (!(agora - (+m[k]?.t || 0) < PRAZO_GUARDA)) delete m[k];   // limpa os velhos
     m[c] = { t:prazoT0, teste:PRAZO_TESTE }; gravarPrazos(m);
@@ -625,17 +624,15 @@ function prazoResta(){   // ms que faltam (null = o resultado ainda não aparece
   return t ? Math.max(0, t + PRAZO_MS - Date.now()) : null;
 }
 function noPrazo(){ const r = prazoResta(); return r == null || r > 0; }
-function linhaPrazo(){ return noPrazo() ? '(enviado no prazo da análise sem custo)' : '(enviado depois do prazo)'; }
 const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 // 11/11 23h: o relógio fica no cartão do resultado, logo acima do botão; vencido, a frase da antiga tela final
 function pintarPrazo(){
   const r = prazoResta(), ok = r == null || r > 0;
-  $('r-prazo').hidden = cur !== 'resultado' || r == null;
-  if (r == null) return;
-  $('r-prazo').classList.toggle('acabou', !ok);
-  const txt = ok ? 'Análise sem custo se enviar em' : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  $('r-prazo').hidden = cur !== 'resultado' || r == null || !ok;   // 23/11: vencido, a linha some (nada de 'o prazo acabou')
+  if (r == null || !ok) return;
+  const txt = 'Análise sem custo se enviar em';
   if ($('r-prazo-txt').textContent !== txt) $('r-prazo-txt').textContent = txt;
-  $('r-prazo-rel').hidden = !ok; $('r-prazo-rel').textContent = ok ? mmss(r) : '';
+  $('r-prazo-rel').hidden = false; $('r-prazo-rel').textContent = mmss(r);
   if (cur === 'resultado') $('r-cta').href = linkWA();
 }
 const fimValor = () => `explicar|fim${FIM}`;

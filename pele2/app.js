@@ -592,7 +592,7 @@ function respostasLimpa(){ const { nome, ...r } = R; return { ...r, incomoda:R.i
 // =====================================================================
 const souA = () => R.sexo === 'm' ? 'o' : 'a';
 const sou = () => nomeBonito() ? `Sou ${souA()} ${nomeBonito()}` : '';
-function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz a análise da pele, código ${meuCodigo()}. Quero que você me explique o meu resultado.\n${linhaPrazo()}`; }
+function mensagem(){ const s = sou(); return `Oi, Dr. Lucca! ${s ? s + '. ' : ''}Fiz a análise da pele, código ${meuCodigo()}. Quero que você me explique o meu resultado.`; }
 const escolha = () => 'explicar';
 function prepararFechamento(){
   const nome = nomeBonito();
@@ -607,7 +607,7 @@ const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo(), noPrazo:noPrazo() 
 // PRAZO (16/11, Lucca: "cadê a escassez de tempo?"): o mesmo da pele e do braço (decisão de 09/11): análise sem custo para
 // quem enviar em 30 min, contados da 1ª vez que vê o resultado (livowa_prazo no localStorage, pelo código LV).
 // =====================================================================
-const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele2', PRAZO_HERDA = 24 * 3600 * 1000, PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele2', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
 function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
 function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
 let prazoT0 = null, prazoIv = null;
@@ -616,8 +616,7 @@ function iniciarPrazo(){
   if (+m[c]?.t) prazoT0 = +m[c].t;
   else {
     if (prazoT0 == null){
-      const ult = Object.values(m).filter(x => x && x.teste === PRAZO_TESTE && +x.t && agora - x.t < PRAZO_HERDA).sort((a, b) => b.t - a.t)[0];
-      prazoT0 = ult ? +ult.t : agora;
+      prazoT0 = agora;   // 23/11 (Lucca: 'prazo acabou não faz sentido'): cada resultado novo começa o seu prazo, sem herdar o de antes
     }
     for (const k of Object.keys(m)) if (!(agora - (+m[k]?.t || 0) < PRAZO_GUARDA)) delete m[k];
     m[c] = { t:prazoT0, teste:PRAZO_TESTE }; gravarPrazos(m);
@@ -626,16 +625,14 @@ function iniciarPrazo(){
 }
 function prazoResta(){ const t = +lerPrazos()[codigo]?.t || prazoT0; return t ? Math.max(0, t + PRAZO_MS - Date.now()) : null; }
 function noPrazo(){ const r = prazoResta(); return r == null || r > 0; }
-function linhaPrazo(){ return noPrazo() ? '(enviado no prazo da análise sem custo)' : '(enviado depois do prazo)'; }
 const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 function pintarPrazo(){
   const r = prazoResta(), ok = r == null || r > 0;
-  $('r-prazo').hidden = cur !== 'resultado' || r == null;
-  if (r == null) return;
-  $('r-prazo').classList.toggle('acabou', !ok);
-  const txt = ok ? 'Análise sem custo se enviar em' : 'O prazo da análise sem custo acabou. Você ainda pode enviar: o Dr. Lucca te responde como fica.';
+  $('r-prazo').hidden = cur !== 'resultado' || r == null || !ok;   // 23/11: vencido, a linha some (nada de 'o prazo acabou')
+  if (r == null || !ok) return;
+  const txt = 'Análise sem custo se enviar em';
   if ($('r-prazo-txt').textContent !== txt) $('r-prazo-txt').textContent = txt;
-  $('r-prazo-rel').hidden = !ok; $('r-prazo-rel').textContent = ok ? mmss(r) : '';
+  $('r-prazo-rel').hidden = false; $('r-prazo-rel').textContent = mmss(r);
 }
 const fimValor = (esc_ = escolha()) => `${esc_}|fim${FIM}`;   // valueText do cta_click final: 'explicar|fimA' ou 'explicar|fimB'
 $('cta-wa').addEventListener('click', () => { $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`; track('cta_click', { stepId:'resultado', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
