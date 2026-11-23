@@ -9,7 +9,7 @@
 // Regras (as mesmas dos outros testes): sem promessa de resultado e sem número sem fonte; nada de diagnóstico; não indica
 // remédio; sem "grátis" nem "consulta" (o "sem custo" do prazo é a regra de 09/11); fim sem "vídeo", "um por um" ou "24 h".
 // Molde visual e de fechamento: /pele/ v2 (barra log, capa = 1ª pergunta, interstício com fonte, resultado = tela final,
-// cartão verde com WhatsApp, Direct e prazo real de 30 min). funnel_id 'teste-tipos'; a Caixa lê o 'complete'.
+// cartão verde com WhatsApp, Direct e prazo real de 5 min (era 30 até 23/11)). funnel_id 'teste-tipos'; a Caixa lê o 'complete'.
 // Texto: sem aspas retas dentro de frase; quando precisar, aspas tipográficas.
 import * as Analytics from '/idade/funnel-analytics.js';
 import { dicaDirect } from '/assets/js/dica-direct.js?v=3';
@@ -330,7 +330,7 @@ function respostasLimpa(){ const { nome, ...r } = R; return { ...r, tentou:R.ten
 
 // =====================================================================
 // FECHAMENTO (molde do /pele/, 11/11 23h): o resultado é a tela final; o cartão verde tem UM botão (WhatsApp com a
-// mensagem pronta e o código), o Direct embaixo e o prazo real de 30 min (decisão de 09/11).
+// mensagem pronta e o código), o Direct embaixo e o prazo real de 5 min (era 30 até 23/11) (decisão de 09/11).
 // =====================================================================
 const sou = () => nomeBonito() ? `Sou ${g('a', 'o')} ${nomeBonito()}. ` : '';
 function mensagem(){
@@ -352,7 +352,7 @@ function prepararFechamento(){
 const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo(), tipo:RES?.seus.join('+') || null });
 
 // PRAZO: o mesmo da pele, do braço e do emagrecimento (livowa_prazo pelo código LV; refazer em 24 h herda o início)
-const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'tipos', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+const PRAZO_MS = 5 * 60 * 1000,   /* 23/11 (Lucca: "pode colocar os prazos para 5 minutos"): era 30 min */  PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'tipos', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
 function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
 function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
 let prazoT0 = null, prazoIv = null;

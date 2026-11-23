@@ -605,9 +605,9 @@ const fimProps = esc_ => ({ escolha:esc_, codigo:meuCodigo(), noPrazo:noPrazo() 
 
 // =====================================================================
 // PRAZO (16/11, Lucca: "cadê a escassez de tempo?"): o mesmo da pele e do braço (decisão de 09/11): análise sem custo para
-// quem enviar em 30 min, contados da 1ª vez que vê o resultado (livowa_prazo no localStorage, pelo código LV).
+// quem enviar em 5 min (23/11; era 30), contados da 1ª vez que vê o resultado (livowa_prazo no localStorage, pelo código LV).
 // =====================================================================
-const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele2', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+const PRAZO_MS = 5 * 60 * 1000,   /* 23/11 (Lucca: "pode colocar os prazos para 5 minutos"): era 30 min */  PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele2', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
 function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
 function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
 let prazoT0 = null, prazoIv = null;

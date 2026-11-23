@@ -11,7 +11,7 @@
 // 09/11 (alfinetes do Lucca): sem rótulos de seção na barra; tela 03 e 08 com frase no lugar do número solto e "Fonte:";
 // Continuar acima do teclado (visualViewport); futuro ganha 'jovem'; carregamento troca o título; resultado sem
 // "Por que isso importa" e com o CTA que liga o que ela marcou ao resultado; fim A sem o parágrafo do vídeo.
-// 09/11 (Lucca): urgência real. Análise sem custo para quem enviar em 30 min contados da 1ª vez que vê o resultado (PRAZO,
+// 09/11 (Lucca): urgência real. Análise sem custo para quem enviar em 5 min (era 30 até 23/11) contados da 1ª vez que vê o resultado (PRAZO,
 // perto do fechamento); o título da tela final perde o "sem custo" e a mensagem pronta diz se saiu no prazo.
 // 11/11 (comentários do Lucca na Central): capa no meio da tela visível (svh); espelho sem pálpebra e sem “Nada em
 // especial”, com “Pareço mais velho(a) do que sou” e “Outro” (campo curto, texto em props.texto do answer e em
@@ -20,7 +20,7 @@
 // 2009) e conduz a UM botão destacado; sai o “Ver os estudos”; instrução com luz frontal.
 // 11/11 23h (lote l-mwcww64n): o resultado vira a TELA FINAL (a antiga 'fechar' saiu). O botão do cartão verde abre o
 // WhatsApp com a mensagem pronta e o código (cta_click canal whatsapp, como a tela final gravava), com o Direct, o código
-// e o cronômetro real de 30 min no mesmo cartão. Título com o nome e o incômodo do espelho; texto com o desejo de 10 anos.
+// e o cronômetro real de 5 min (era 30 até 23/11) no mesmo cartão. Título com o nome e o incômodo do espelho; texto com o desejo de 10 anos.
 // 15/11 (lote l-mwhz04rg): o detector de rosto é aquecido durante o quiz e a câmera abre sem esperar por ele; a instrução
 // do oval não pisca mais (scan.js); o “Seu código: LV-XXXX” saiu do cartão final (segue na mensagem e no banco).
 import * as Analytics from '/idade/funnel-analytics.js';
@@ -598,12 +598,12 @@ function prepararFechamento(){
 const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo() });
 
 // =====================================================================
-// PRAZO (09/11, decisão do Lucca): análise sem custo para quem enviar em 30 min, contados da 1ª vez que a pessoa vê o
+// PRAZO (09/11, decisão do Lucca): análise sem custo para quem enviar em 5 min (23/11; era 30), contados da 1ª vez que a pessoa vê o
 // resultado. Guardado no localStorage pelo código LV: livowa_prazo = { 'LV-XXXX': { t, teste } } (o mesmo objeto do braço).
 // O código é novo a cada carregamento; cada resultado novo começa o seu prazo (23/11: sem herança).
 // 23/11: a mensagem pronta não leva mais '(enviado no prazo…)'; o noPrazo vai no cta_click (é o que a Caixa lê). Vale no fim A e no B.
 // =====================================================================
-const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+const PRAZO_MS = 5 * 60 * 1000,   /* 23/11 (Lucca: "pode colocar os prazos para 5 minutos"): era 30 min */  PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'pele', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
 function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
 function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
 let prazoT0 = null, prazoIv = null;   // prazoT0: cópia em memória (vale quando o navegador não deixa gravar)

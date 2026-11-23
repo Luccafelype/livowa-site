@@ -98,16 +98,15 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 /* fim */
 .pill{align-self:center;display:inline-flex;align-items:center;gap:6px;background:var(--accent-2);color:var(--accent);border-radius:999px;padding:6px 14px;font:600 .85rem var(--body)}
 .final h2{font-size:1.9rem}
-.trava{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px;text-align:left;overflow:hidden}
-.trava .rot{font:600 .78rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.regua{position:relative;height:70px;margin:10px 8px 0;filter:blur(5px);opacity:.9}
-.regua .trilho{position:absolute;left:0;right:0;top:30px;height:10px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent-2) 55%,var(--warn-bg))}
-.regua i{position:absolute;top:24px;width:22px;height:22px;border-radius:50%;margin-left:-11px}
-.regua .a{left:38%;background:var(--fg)} .regua .b{left:66%;background:var(--accent);border:3px solid var(--surface)}
-.regua span{position:absolute;top:56px;font:600 .8rem var(--body);transform:translateX(-50%)}
-.cadeado{position:absolute;inset:0;display:grid;place-items:center;padding:16px}
-.cadeado div{display:flex;align-items:center;gap:10px;background:var(--fg);color:#fff;border-radius:999px;padding:10px 16px;font:600 .92rem var(--body)}
-.cadeado svg{width:18px;height:18px;flex:none}
+/* 23/11 (Lucca: "pode mostrar a idade muscular estimada"): a idade muscular aparece, no topo do resultado (trancada de 28/10 a 23/11) */
+.medida.idm b{font:800 2.3rem/1.05 var(--display);color:var(--accent);font-variant-numeric:tabular-nums}
+.medida.idm b small{font:600 1rem var(--body);color:var(--muted)}
+.idm .cmp-trilho{background:linear-gradient(90deg,var(--accent),var(--accent-2) 55%,var(--warn-bg))}
+.idm-faixa{position:absolute;top:14px;height:20px;border-radius:10px;background:rgba(13,106,77,.22);border:2px solid var(--accent);transition:left .9s cubic-bezier(.2,.8,.2,1),width .9s cubic-bezier(.2,.8,.2,1)}
+.idm .cmp{margin-bottom:26px}
+.idm .cmp-ref{height:34px}
+.idm-lbl{position:absolute;top:40px;white-space:nowrap;font:600 .72rem var(--body);color:var(--accent)}   /* rótulo da idade muscular: ancorado pela posição (não sai da régua) */
+.idm-faixa[hidden],.idm .cmp-voce[hidden]{display:none}
 .logo-anim{display:block;width:min(170px,44vw);height:auto;margin:20px auto 0;mix-blend-mode:darken}
 .loadrow{display:flex;justify-content:space-between;font:600 .82rem var(--body);letter-spacing:.02em;margin-top:14px}
 .loadbar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
@@ -167,7 +166,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .ops button{font:600 1.05rem var(--body);padding:16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;text-align:left}
 .ops button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .link-alt{align-self:center;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 12px;background:none;border:0;cursor:pointer;color:var(--accent);font:600 .95rem var(--body);text-decoration:underline;text-underline-offset:3px}
-/* 09/11 (Lucca): prazo da análise sem custo (30 min do 1º resultado), junto do botão. Discreto, algarismos tabulares */
+/* 09/11 (Lucca): prazo da análise sem custo (5 min do 1º resultado desde 23/11; era 30), junto do botão. Discreto, algarismos tabulares */
 .prazo-mini{text-align:center;font:500 .88rem var(--body);color:var(--muted);font-variant-numeric:tabular-nums;text-wrap:balance}
 .prazo-mini b{font:600 .88rem var(--mono);color:var(--accent)}
 /* 15/11 (Lucca): o resultado é a tela final. O botão abre o WhatsApp com a mensagem e o código; o Direct fica embaixo. */
@@ -175,13 +174,6 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .cta.fim{padding-top:26px;background:linear-gradient(to top,var(--bg) 88%,transparent)}   /* barra mais alta (prazo + botão + Direct): o texto não aparece por trás */
 .cta .link-alt{min-height:40px;margin-top:-4px}
 #cta-link{font-size:min(1.08rem,4vw);padding-inline:12px;gap:8px}   /* a frase inteira numa linha em 375 px */
-.trava{cursor:pointer;-webkit-tap-highlight-color:transparent}
-/* 15/11 (Lucca): tocou no resultado trancado → tudo embaça, menos o botão, e volta devagar (3 s) */
-@keyframes desembaca{0%{filter:blur(0)}7%,22%{filter:blur(9px)}100%{filter:blur(0)}}
-body.foco [data-s="resultado"]>*,body.foco #r-prazo,body.foco #cta-dm{animation:desembaca 3s linear both}
-@keyframes chama{0%{box-shadow:0 0 0 0 rgba(13,106,77,.5)}70%,100%{box-shadow:0 0 0 16px rgba(13,106,77,0)}}
-body.foco #cta-link{animation:chama 1.1s ease-out 2}
-@media (prefers-reduced-motion:reduce){body.foco #cta-link{animation:none}}
 
 .cta{position:fixed;left:0;right:0;bottom:0;padding:14px max(20px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
   background:linear-gradient(to top,var(--bg) 70%,transparent)}
@@ -286,21 +278,28 @@ body.foco #cta-link{animation:chama 1.1s ease-out 2}
        medido e cita as respostas. Um botão só: o Dr. Lucca explica (02/11: o link do lembrete de 4 semanas saiu).
        15/11 (Lucca, lote l-mwhz04rg): esta é a TELA FINAL (a antiga 'fechar' saiu). O botão abre o WhatsApp com a mensagem
        pronta e o código; o Direct fica embaixo; o código não aparece na tela (segue na mensagem e no banco).
-       Tocar no resultado trancado embaça tudo, menos o botão (script: FOCO). -->
+       23/11 (Lucca: "pode mostrar a idade muscular estimada"): a idade muscular aparece no topo (a trava e o embaçado saíram). -->
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Teste concluído</span>
     <!-- 23/11 (Lucca: "falta informações importantes e interessantes… máxima velocidade, variação de angulação, variação de
          velocidade e aceleração, comparação com as pessoas da mesma idade… um gosto de explicação racional, de forma
-         conduzida"): as medidas dela com 1 linha cada e a referência; a idade muscular segue trancada (decisão de 28/10).
+         conduzida"): as medidas dela com 1 linha cada e a referência. A idade muscular: a mesma conta da Caixa (idadeMusc).
          Referências: tarefas/escada-isca/pesquisa/braco-sensor-referencias.md (Toosizadeh 2015/2017, Zhou 2021, Toji 2007). -->
-    <h2 id="res-tit">A sua potência × a de <em>pessoas da sua idade</em></h2>
+    <h2 id="res-tit">A sua idade muscular × <em>a sua idade</em></h2>
+    <div class="medida idm" id="idm">
+      <span class="rot">Idade muscular estimada</span>
+      <b id="idm-v">—</b>
+      <span class="medida-sub" id="idm-sub"></span>
+      <div class="cmp" aria-hidden="true"><div class="cmp-trilho"></div><div class="idm-faixa" id="idm-faixa" hidden></div><i class="cmp-ref" id="idm-ref-m"><span id="idm-ref-lbl">a sua idade</span></i><i class="cmp-voce" id="idm-v-m"></i><span class="idm-lbl" id="idm-lbl"></span></div>
+      <p class="nota" id="idm-txt"></p>
+    </div>
     <div class="medida pot">
       <span class="rot">Potência do movimento</span>
       <b><span id="res-v">0</span> <small>°/s</small></b>
       <span class="medida-sub" id="res-medida">0 movimentos em 5 s</span>
       <div class="cmp" aria-hidden="true"><div class="cmp-trilho"></div><i class="cmp-ref" id="res-ref-m"><span id="res-ref-lbl">referência</span></i><i class="cmp-voce" id="res-v-m"><span>você</span></i></div>
       <p class="cmp-status" id="res-status"></p>
-      <p class="nota" id="res-pot-txt">A velocidade com que o cotovelo dobra e estica, somando a ida e a volta: é a medida dos estudos. Depois dos 50 anos, ela cai perto de 0,8% por ano (Toji, 2007).</p>
+      <p class="nota" id="res-pot-txt">A velocidade com que o cotovelo dobra e estica, somando a ida e a volta: é a medida dos estudos, e é dela que sai a idade muscular. Depois dos 50 anos, ela cai perto de 0,8% por ano (Toji, 2007).</p>
     </div>
     <div class="grade">
       <div class="mini2"><span class="rot">Pico</span><b id="res-pico">—</b><span id="res-pico-txt"></span></div>
@@ -312,11 +311,6 @@ body.foco #cta-link{animation:chama 1.1s ease-out 2}
       <span class="rot">A velocidade de cada movimento</span>
       <div class="graf-area" aria-hidden="true"><div class="graf-barras" id="res-graf"></div><i class="graf-ref" id="res-graf-ref"></i></div>
       <p class="graf-leg"><span class="lg-b"></span>cada movimento <span class="lg-r"></span>referência da sua idade</p>
-    </div>
-    <div class="trava" id="trava" aria-label="Resultado bloqueado: o Dr. Lucca explica">
-      <span class="rot" id="res-rot">A sua idade muscular × a sua idade</span>
-      <div class="regua" aria-hidden="true"><div class="trilho"></div><i class="a"></i><i class="b"></i><span style="left:38%">00 anos</span><span style="left:66%">00 anos</span></div>
-      <div class="cadeado"><div><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>O Dr. Lucca te explica</div></div>
     </div>
     <div class="res-txt" id="res-txt2"></div>
     <p class="rodape">Medido pelo sensor do seu celular e comparado com estudos que usaram sensor no punho, com pessoas de 60 anos ou mais; para quem é mais novo, a referência é estimada. Estimativa, não é diagnóstico.</p>
@@ -579,7 +573,8 @@ function encerrar(){
   // 23/11: as medidas da tela final (mesma correção ×0,97 da Caixa para o teste curto)
   const difs = []; for (let i = 1; i < picos.length; i++){ const d = picos[i].t - picos[i - 1].t; if (d > 0 && d < RITMO_GAP) difs.push(d); }
   const picoMax = Math.round(Math.max(...picos.map(p => p.w)));
-  MED = { v:Math.round(media(amp) * .97), amps:amp.map(a => Math.round(a * .97)), picoMax,
+  MED = { v:Math.round(Math.round(media(amp)) * .97),   // = Caixa: round(velMedia × 0,97)
+    amps:amp.map(a => Math.round(a * .97)), picoMax,
     kmh:picoMax * Math.PI / 180 * ANTEBRACO * 3.6, tDobra:difs.length ? Math.round(media(difs)) : null, variab, angMed };
   setTimeout(() => analisar(() => {
     // 02/11: a tela repete o que o sensor mediu (a pessoa viu o número subir) e cita as respostas dela em cada frase
@@ -588,7 +583,7 @@ function encerrar(){
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
       valueText:`${reps} movimentos em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em teste curto ela mistura a aceleração do começo
       props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, futuro:dados.futuro || null, desejo:desejo(FUT_EU) || null, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
-        queda, variab, vmao:+vmao.toFixed(2), picoMax, tDobra:MED.tDobra, wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'5s', angMed, angs:angs.slice(0, 40),
+        queda, variab, vmao:+vmao.toFixed(2), picoMax, tDobra:MED.tDobra, wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'5s', angMed, angs:angs.slice(0, 40), idadeMusc:MED.idade?.txt || null,
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
           leit5s:[0,1].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
           picos5s:[0,1].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length),
@@ -617,8 +612,7 @@ const pares = () => sexo === 'f' ? 'mulheres' : sexo === 'm' ? 'homens' : 'pesso
 // toda frase que depende de uma resposta cita a resposta (o peso vai para a ficha, mas não entra na régua do braço)
 function personalizar(){
   const i = dados.idade;
-  $('res-rot').textContent = `A sua idade muscular × os seus ${i} anos`;
-  $('res-tit').innerHTML = `A sua potência × a de <em>${pares()} de ${i}&nbsp;anos</em>`;
+  $('res-tit').innerHTML = `A sua idade muscular × os seus <em>${i}&nbsp;anos</em>`;
   // 16/11 (texto do Lucca, Central braço-08): os 3 pontos que ele explica; o 3º usa o objetivo de 10 anos dela
   const d = desejo(FUT_VOCE);
   $('res-txt2').innerHTML = `<p>O Dr. Lucca junta essas medidas, compara com as de <b>${pares()} de ${i}&nbsp;anos</b> e te explica 3 pontos:</p>
@@ -631,8 +625,48 @@ function personalizar(){
 let MED = null;
 const num = (x, d = 0) => Number(x).toLocaleString('pt-BR', { minimumFractionDigits:d, maximumFractionDigits:d });
 const refIdade = i => Math.round(1390 * (sexo === 'f' ? .9 : 1) * (i <= 50 ? 1 : Math.max(.5, 1 - .008 * (i - 50))));
+// 23/11 (Lucca: "pode mostrar a idade muscular estimada"): a MESMA conta da Caixa (consulta/kits.js medidaBraco e
+// consulta/index.html interpretaBraco), para a tela e a mensagem do Dr. Lucca dizerem o mesmo número. Até 50 anos a
+// velocidade quase não muda (Toji 2007): acima da referência dos 50 sai "até 50"; de 50 a 76, pela queda de 0,8% ao ano;
+// abaixo do robusto de 76 anos (Toosizadeh 2017: 1.099 °/s; mulher × 0,9), "mais de 76".
+function idadeMusc(v){
+  const f = sexo === 'f' ? .9 : 1, VREF = 1390 * f, ROB = 1099 * f;
+  if (v >= VREF) return { n:null, de:20, ate:50, txt:'até 50' };
+  if (v >= ROB){ const n = Math.round(50 + (1 - v / VREF) / .008); return { n, txt:String(n) }; }
+  return { n:null, de:76, ate:90, txt:'mais de 76' };
+}
+const anos = n => n === 1 ? '1 ano' : `${n} anos`;
+function montarIdade(){
+  const m = MED, i = dados.idade, im = idadeMusc(m.v), grupo = `${pares()} de ${i} anos`;
+  let sub, nota;
+  if (im.ate === 50){
+    sub = i <= 50 ? `dentro do esperado para os seus ${i} anos` : `pelo menos ${anos(i - 50)} abaixo dos seus ${i}`;
+    nota = i <= 50 ? 'Até os 50 anos, a velocidade do braço quase não muda com a idade (Toji, 2007). Por isso, antes dos 50, o teste não dá um número exato: o seu braço ficou no nível mais alto que ele mede.'
+      : 'Depois dos 50, a velocidade do braço cai perto de 0,8% por ano (Toji, 2007). A sua ficou no nível de quem tem até 50, o mais alto que o teste mede.';
+  } else if (im.n != null){
+    const d = im.n - i;
+    sub = d > 2 ? `${anos(d)} acima dos seus ${i}` : d < -2 ? `${anos(-d)} abaixo dos seus ${i}` : 'igual à sua idade';
+    nota = d > 2 ? 'É comum, e tem explicação. Um dia de cansaço, o celular frouxo na mão ou um movimento curto já baixam a velocidade. E a rotina pesa: muito tempo sentado, pouco treino de força, sono curto.'
+      : d < -2 ? `O seu braço ficou mais rápido do que o esperado para ${grupo}.` : `O seu braço ficou na velocidade esperada para ${grupo}.`;
+  } else {
+    sub = `a velocidade ficou abaixo da de ${pares()} de 76 anos com boa saúde`;
+    nota = 'Quando o número vem assim, a primeira coisa é conferir a medição: com o celular frouxo, o punho girando ou o movimento curto, o sensor lê menos do que você fez. O Dr. Lucca confere a medição com você e vê o que pesa nesse número.';
+  }
+  if (m.angMed && m.angMed < 85 && im.ate !== 50) nota += ` O seu movimento saiu curto (${m.angMed}°): isso baixa a velocidade e sobe a idade muscular. Do bolso ao queixo, o número fica mais perto do real.`;
+  $('idm-v').innerHTML = `${im.txt} <small>anos</small>`; $('idm-sub').textContent = sub; $('idm-txt').textContent = nota;
+  // régua de 20 a 90 anos: a idade dela (tracejado) e a idade muscular (bolinha; "até 50" e "mais de 76" viram faixa)
+  const pa = a => Math.min(97, Math.max(3, (a - 20) / 70 * 100));
+  $('idm-ref-m').style.left = pa(i) + '%'; $('idm-ref-lbl').textContent = `os seus ${i}`; $('idm-ref-lbl').style.transform = `translateX(-${pa(i)}%)`;
+  const fx = $('idm-faixa'), vm = $('idm-v-m'), lbl = $('idm-lbl'), x = im.n != null ? pa(im.n) : (pa(im.de) + pa(im.ate)) / 2;
+  fx.hidden = im.n != null; vm.hidden = im.n == null;
+  lbl.textContent = `idade muscular: ${im.txt}`; lbl.style.left = x + '%'; lbl.style.transform = `translateX(-${x}%)`;   // ancorado: nas pontas não sai da régua
+  if (im.n != null){ vm.style.left = '3%'; requestAnimationFrame(() => requestAnimationFrame(() => { vm.style.left = pa(im.n) + '%'; })); }
+  else { fx.style.left = pa(im.de) + '%'; fx.style.width = (pa(im.ate) - pa(im.de)) + '%'; }
+  return im;
+}
 function montarMedidas(){
   const m = MED; if (!m) return;
+  m.idade = montarIdade();
   const i = dados.idade, ref = refIdade(i), r = m.v / ref, grupo = `${pares()} de ${i} anos`;
   $('res-v').textContent = num(m.v);
   const topo = Math.max(2200, m.v * 1.15, ref * 1.35), pos = x => Math.min(97, Math.max(3, x / topo * 100));
@@ -689,12 +723,12 @@ $('fut-ops').addEventListener('click', e => {
 const linkWA = () => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`;
 
 // =====================================================================
-// PRAZO (09/11, decisão do Lucca): análise sem custo para quem enviar em 30 min, contados da 1ª vez que a pessoa vê o
+// PRAZO (09/11, decisão do Lucca): análise sem custo para quem enviar em 5 min (23/11; era 30), contados da 1ª vez que a pessoa vê o
 // resultado. Guardado no localStorage pelo código LV: livowa_prazo = { 'LV-XXXX': { t, teste } } (o mesmo objeto da pele).
 // O código é novo a cada carregamento; cada resultado novo começa o seu prazo (23/11: sem herança).
 // 23/11: a mensagem pronta não leva mais '(enviado no prazo…)'; o noPrazo vai no cta_click (é o que a Caixa lê).
 // =====================================================================
-const PRAZO_MS = 30 * 60 * 1000, PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'braco', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
+const PRAZO_MS = 5 * 60 * 1000,   /* 23/11 (Lucca: "pode colocar os prazos para 5 minutos"): era 30 min */  PRAZO_CHAVE = 'livowa_prazo', PRAZO_TESTE = 'braco', PRAZO_GUARDA = 7 * 24 * 3600 * 1000;
 function lerPrazos(){ try { const m = JSON.parse(localStorage.getItem(PRAZO_CHAVE) || '{}'); return m && typeof m === 'object' && !Array.isArray(m) ? m : {}; } catch { return {}; } }
 function gravarPrazos(m){ try { localStorage.setItem(PRAZO_CHAVE, JSON.stringify(m)); } catch {} }
 let prazoT0 = null, prazoIv = null;   // prazoT0: cópia em memória (vale quando o navegador não deixa gravar)
@@ -748,17 +782,6 @@ function abrirDirect(e){
 }
 $('aviso-dm').addEventListener('click', ev => { if (ev.target === $('aviso-dm')) $('aviso-dm').hidden = true; });
 $('aviso-link').addEventListener('click', () => { Analytics.track('cta_click', { stepId:cur, valueText:'direct-abrir', props:{ canal:'direct' } }); setTimeout(() => { $('aviso-dm').hidden = true; }, 800); });
-
-// =====================================================================
-// FOCO (15/11, Lucca: “ao clicar aqui, o site poderia colocar tudo embaçado (e ir voltando devagar ao normal) menos o botão
-// de pedir a explicação”): tocar no resultado trancado embaça a tela por 3 s (CSS: desembaca) e deixa só o botão nítido.
-// =====================================================================
-let focoT = null;
-$('trava').addEventListener('click', () => {
-  const b = document.body; b.classList.remove('foco'); void b.offsetWidth; b.classList.add('foco');   // recomeça se tocar de novo
-  clearTimeout(focoT); focoT = setTimeout(() => b.classList.remove('foco'), 3100);
-  Analytics.track('answer', { stepId:'resultado', valueText:'tocou-trancado' });
-});
 
 // =====================================================================
 // RASTRO (15/11): na tela do sensor, as linhas que acompanham o celular do vídeo. TRILHA = o centro do celular em cada
@@ -843,7 +866,7 @@ addEventListener('resize', () => { if (rastroOn && rastroModo === 'parado') dese
 show('inicio');
 window.__braco = { show, dados, DURACAO, rastro:() => ({ ...(window.__rastro || {}), on:rastroOn, modo:rastroModo, pausado:sv.paused, t:sv.currentTime }), mensagem:() => mensagem(), codigo:() => codigo,   // só para teste automatizado
   // resultado sem sensor: n movimentos fingidos (meio movimento a cada 0,4 s), passa pela análise e chega ao resultado
-  testarResultado:n => { amostras = [{ t:0, v:[0,0,0], w:300, acc:0 }]; meias = Array.from({ length:2*n }, (_, k) => ({ t:k*400, w:300 + k, sentido:k % 2 ? -1 : 1 })); estado = 0; ini = 0; gravando = true; encerrar(); } };
+  testarResultado:(n, w = 300) => { amostras = [{ t:0, v:[0,0,0], w, acc:0 }]; meias = Array.from({ length:2*n }, (_, k) => ({ t:k*400, w:w + k, sentido:k % 2 ? -1 : 1 })); estado = 0; ini = 0; gravando = true; encerrar(); } };
 </script>
 </body>
 </html>
