@@ -50,7 +50,9 @@ const FIM = (() => {
 })();
 // Ponte da bio: só a medição (props.ponte). A capa do desenho-v2 não leva parágrafo nenhum, então a linha não é pintada.
 const PONTE = window.lvPonte?.props?.() || {};
-const track = (tipo, o = {}) => Analytics.track(tipo, { ...o, props:{ ...(o.props || {}), fim:FIM, ...PONTE } });
+// 23/11: quem vem do link da bio (?capa=bio) vê a capa da idade biológica (index.html); todo evento leva props.capa='bio'
+const CAPA = new URLSearchParams(location.search).get('capa') === 'bio' ? { capa:'bio' } : {};
+const track = (tipo, o = {}) => Analytics.track(tipo, { ...o, props:{ ...(o.props || {}), fim:FIM, ...PONTE, ...CAPA } });
 track('view');
 
 // ---------- análise: a MESMA edge analisar-pele; com as 3 fotos vai {angulos} (como a pele2), sem extras ----------

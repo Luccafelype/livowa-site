@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
-<link rel="stylesheet" href="pele.css?v=9">
+<link rel="stylesheet" href="pele.css?v=10">
 </head>
 <body>
 <!-- livowa.com/pele v2 (04/11/2026, refeito depois da reprovação do Lucca): segue À RISCA
@@ -29,13 +29,19 @@
   <!-- 0 · capa = 1ª pergunta (sexo) -->
   <section class="screen capa" data-s="capa">
     <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span class="nota">Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
-    <h1>Que idade o seu rosto mostra?</h1>
+    <h1 id="capa-tit">Que idade o seu rosto mostra?</h1>
+    <p class="capa-sub" id="capa-sub" hidden>A pele pode mostrar por fora como o corpo envelhece por dentro.</p>
     <p>Para começar, você é:</p>
     <div class="opts duas" data-q="sexo">
       <button type="button" class="opt grande" data-v="f">Mulher</button>
       <button type="button" class="opt grande" data-v="m">Homem</button>
     </div>
   </section>
+  <!-- 23/11 (Lucca: "na primeira página fale sobre descobrir a idade biológica, só nesse link… para ter uma conexão com o CTA da
+       bio"; a bio promete "Descubra sua idade biológica em 2 minutos"): com ?capa=bio, SÓ a capa muda (título + a frase da ponte
+       aprovada em 03/11, sem número nem estudo). O resto do teste e a capa de quem não vem da bio ficam iguais. Aqui, e não no
+       app.js, para trocar antes de a página aparecer (sem piscar a capa antiga). A medição (props.capa) fica no app.js. -->
+  <script>if (new URLSearchParams(location.search).get('capa') === 'bio'){ document.getElementById('capa-tit').textContent = 'Descubra a sua idade biológica pelo seu rosto'; document.getElementById('capa-sub').hidden = false; document.documentElement.dataset.capa = 'bio'; }</script>
 
   <!-- 1 · idade real (roda) -->
   <section class="screen q" data-s="idade" hidden>
@@ -270,6 +276,6 @@
   </div></div>
 </div>
 <script defer src="/assets/js/ponte.js?v=2"></script>
-<script type="module" src="app.js?v=17"></script>
+<script type="module" src="app.js?v=18"></script>
 </body>
 </html>

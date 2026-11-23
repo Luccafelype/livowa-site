@@ -46,6 +46,7 @@ b,strong{font-weight:700}
 /* capa = 1ª pergunta */
 /* 11/11: centro de verdade da tela visível: o fundo compensa a barra do topo (52 px) que fica em cima */
 .screen.capa{justify-content:center;gap:20px;padding-bottom:64px}
+.capa-sub{margin-top:-8px;color:var(--muted);text-wrap:balance}   /* 23/11: a linha da capa da bio (?capa=bio), embaixo do título */
 .medico-mini{display:flex;align-items:center;gap:10px}
 .medico-mini img{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:none}
 
