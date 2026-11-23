@@ -634,11 +634,9 @@ const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor
 // 11/11 23h: o relógio fica no cartão do resultado, logo acima do botão; vencido, a frase da antiga tela final
 function pintarPrazo(){
   const r = prazoResta(), ok = r == null || r > 0;
-  $('r-prazo').hidden = cur !== 'resultado' || r == null || !ok;   // 23/11: vencido, a linha some (nada de 'o prazo acabou')
-  if (r == null || !ok) return;
-  const txt = 'Análise sem custo se enviar em';
-  if ($('r-prazo-txt').textContent !== txt) $('r-prazo-txt').textContent = txt;
-  $('r-prazo-rel').hidden = false; $('r-prazo-rel').textContent = mmss(r);
+  // 23/11 18h25 (Lucca, no braço: "tire a análise sem custo e o timer"; vale para todos os fins): a linha não aparece mais;
+  // o prazo segue só na medição (noPrazo)
+  $('r-prazo').hidden = true;
   if (cur === 'resultado') $('r-cta').href = linkWA();
 }
 const fimValor = () => `explicar|fim${FIM}`;

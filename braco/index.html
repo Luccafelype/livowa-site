@@ -323,7 +323,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
            o card diz potência estimada (média da soma ida + volta de cada movimento × 0,97), arranque e velocidade máxima da mão. -->
       <div class="pot-mini">
         <div><span class="rot">Movimentos</span><b id="res-medida">0 movimentos em 5 s</b></div>
-        <div id="res-acc-box"><span class="rot">Ativação muscular</span><b id="res-acc">—</b><span class="mini-sub" id="res-acc-txt"></span></div>
+        <div id="res-acc-box"><span class="rot">Arranque</span><b id="res-acc">—</b><span class="mini-sub" id="res-acc-txt"></span></div>
       </div>
     </div>
     <!-- 23/11 (Lucca, artefato Potência: "quero que isso integre já com o botão verde… igual na pele, um card verde com o CTA e o
@@ -333,7 +333,7 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
       <div class="medico-mini"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="40" height="40"><span>Dr. Lucca Marques · Médico · CRM-GO 33.990</span></div>
       <div class="res-txt" id="res-txt2"></div>
       <p class="r-prazo" id="r-prazo" hidden></p>
-      <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span>Quero que o Dr. Lucca me explique</span></a>
+      <a class="btn ico" id="cta-link" href="#" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M3.6 20.4l1.2-4.1a8.4 8.4 0 1 1 3.1 3z"/><path fill="currentColor" d="M9.3 7.6c.3 0 .5 0 .7.5l.8 1.8c.1.3 0 .5-.1.7l-.6.7c-.1.1-.2.3 0 .5a6.4 6.4 0 0 0 3 2.6c.2.1.4.1.5-.1l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.2.1.4.2.4.4 0 .7-.3 1.4-.9 1.8-.7.4-1.6.5-2.6.1a9.6 9.6 0 0 1-5-4.6c-.5-1-.6-2-.1-2.8.3-.6.6-.8.8-.8z"/></svg><span>Quero o passo a passo</span></a>
       <a class="link-alt" id="cta-dm" href="https://ig.me/m/dr.luccamarques" hidden><span>ou pelo Direct do Instagram</span></a>
     </div>
     <!-- 23/11 (Lucca, artefato Potência: "delete isso"): saiu o rodapé; os rótulos já dizem "estimada" (idade muscular e potência) -->
@@ -644,11 +644,13 @@ const pares = () => sexo === 'f' ? 'mulheres' : sexo === 'm' ? 'homens' : 'pesso
 function personalizar(){
   const i = dados.idade;
   $('res-tit').textContent = 'Resultado';   // 23/11 (Lucca: "Colocar apenas: Resultado")
-  // 16/11 (texto do Lucca, Central braço-08): os 3 pontos que ele explica; o 3º usa o objetivo de 10 anos dela
-  const d = desejo(FUT_VOCE);
-  $('res-txt2').innerHTML = `<p>O Dr. Lucca junta essas medidas, compara com as de <b>${pares()} de ${i}&nbsp;anos</b> e te explica 3 pontos:</p>
-    <ol class="pontos"><li>Por que os seus braços têm essa potência hoje</li><li>O jeito certo de melhorar, no seu caso</li>
-    <li>${d ? `Como essa melhora te ajuda a ${esc(d)}` : 'O que essa melhora muda no seu dia a dia'}</li></ol>`;
+  // 23/11 18h25 (texto do Lucca no artefato Potência): a potência ligada a 3 assuntos, o do desejo que ela tocou em primeiro,
+  // e o convite para o passo a passo; sem "o Dr. Lucca te explica/mostra" (pedido dele de 23/11)
+  const d = desejo(FUT_EU), estetica = ['chegar10', 'firme'].includes(dados.futuro);
+  const itens = estetica ? ['Beleza estética', 'Longevidade', 'Resistência a doenças'] : ['Longevidade', 'Resistência a doenças', 'Beleza estética'];
+  $('res-txt2').innerHTML = `<p>A potência muscular mais alta está relacionada com:</p>
+    <ol class="pontos">${itens.map(x => `<li>${x}</li>`).join('')}</ol>
+    <p>Se você quiser o passo a passo${d ? ` para <b>${esc(d)}</b>` : ''} com base nos protocolos científicos mais respeitados, clique no botão abaixo.</p>`;
 }
 // ---------- 23/11: a tela final com as medidas dela ----------
 // Referência da idade = a régua da Caixa (consulta/index.html, interpretaBraco): 1.390 °/s até os 50 anos, −0,8% por ano
@@ -713,11 +715,12 @@ function montarMedidas(){
   // 23/11: a aceleração em g saiu da tela (segue nos eventos, accMao); entra o tempo do zero à velocidade máxima, com a referência do estudo
   const okT = m.tSobe != null && m.tSobe >= 80 && m.tSobe <= 800;
   $('res-acc-box').hidden = !okT;
-  if (okT){ $('res-acc').textContent = `${num(m.tSobe / 1000, 2)} s`; $('res-acc-txt').textContent = 'do zero à velocidade máxima · aos 75, com boa saúde: 0,26 s'; }
+  if (okT){ $('res-acc').textContent = `${num(m.tSobe / 1000, 2)} s`; $('res-acc-txt').textContent = 'tempo até a velocidade máxima · quanto menor, melhor'; }   // 23/11 18h25 (Lucca: "muito confusa")
 }
 function mensagem(){
-  const d = desejo(FUT_EU), quer = d ? ` Daqui a 10 anos, quero ${d}.` : '';
-  return `Oi, Dr. Lucca! Fiz o teste de idade muscular, código ${meuCodigo()}.${quer} Quero que você me explique o meu resultado.`;
+  const d = desejo(FUT_EU);
+  // 23/11 18h25 (Lucca: mensagem "curta, simples e objetiva")
+  return `Oi, Dr. Lucca! Quero o passo a passo${d ? ` para ${d}` : ''}. Código ${meuCodigo()}.`;
 }
 
 // ---------- daqui a 10 anos (16/11): opções pela faixa da idade real, como na pele (11/11, Lucca: "não faz sentido uma
@@ -783,8 +786,8 @@ const noPrazo = () => { const r = prazoResta(); return r == null || r > 0; };
 const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 function pintarPrazo(){
   const r = prazoResta(), ok = r == null || r > 0, el = $('r-prazo');
-  el.hidden = cur !== 'resultado' || r == null || !ok;   // 23/11: vencido, a linha some (nada de 'o prazo acabou')
-  if (!el.hidden) el.innerHTML = `<span>Análise sem custo se enviar em</span> <b>${mmss(r)}</b>`;
+  // 23/11 18h25 (Lucca: "tire a análise sem custo e o timer"): a linha não aparece mais; o prazo segue só na medição (noPrazo)
+  el.hidden = true;
   if (cur === 'resultado') $('cta-link').href = linkWA();
 }
 // 08/11 (Lucca): WhatsApp em primeiro em todos os fins, também para quem veio do Direct pelo link marcado (?lv=). Nada
