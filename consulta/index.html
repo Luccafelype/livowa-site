@@ -516,9 +516,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div class="conv-b"><div class="conv-cab"><h2 id="conv-tit">A conversa de 15 min</h2><button type="button" id="conv-fechar">Fechar</button></div><div id="conv-corpo"></div></div>
 </div>
 <script src="uso.js?v=20261113y"></script>
-<script src="kits.js?v=20261122a"></script>
-<script src="roteiro.js?v=20261118x"></script>
-<script src="gravar-analise.js?v=20261122d"></script>
+<script src="kits.js?v=20261122e"></script>
+<script src="roteiro.js?v=20261122e"></script>
+<script src="gravar-analise.js?v=20261122e"></script>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const K = new URLSearchParams(location.hash.slice(1)).get('k') || '';
@@ -1097,7 +1097,7 @@ const ETAPA = {
   'teste-tipos': { capa:'Capa = sexo', idade:'Idade (roda)', nome:'Nome', medidas:'Peso e altura', mayo:'Interstício: a Mayo e os 4 tipos', cb1:'Frase 1 · cérebro', ef1:'Frase 2 · estômago', em1:'Frase 3 · emocional', gl1:'Frase 4 · gasto', cb2:'Frase 5 · cérebro', ef2:'Frase 6 · estômago', mais1:'Interstício: mais de um tipo', em2:'Frase 7 · emocional', gl2:'Frase 8 · gasto', cb3:'Frase 9 · cérebro', ef3:'Frase 10 · estômago', em3:'Frase 11 · emocional', gl3:'Frase 12 · gasto', tentou:'O que já tentou', objetivo:'Objetivo', carregando:'Calculando', resultado:'Resultado (tela final)' },   // 22/11
   'teste-emagrecimento': { capa:'Capa (promessa)', sexo:'Sexo', fase:'Gestação/amamentação', idade:'Idade', nome:'Nome', medidas:'Peso e altura', cintura:'Cintura (até 03/11)', acontece:'O que mais acontece (decide o perfil)', tentou:'O que já tentou', ciclo:'Menstruação', pele:'Pelos, espinhas, cabelo', tireoide:'Sinais da tireoide', exames:'Pressão, glicose, gordura', remedios:'Remédios contínuos', vontade:'Vontade de comer', sono:'Sono', ronco:'Ronco', forca:'Força', proteina:'Proteína (até 03/11)', objetivo:'Objetivo', carregando:'Calculando', resultado:'Resultado', fechar:'Médico (um passo)' },
   'teste-pele': { 'pele-inicio':'Início da pele (aceite)', 'pele-camera':'Câmera da selfie', 'pele-envio':'Conferir e enviar a foto', 'pele-analise':'Analisando a foto', 'pele-resultado':'Tela final da pele', 'pele-erro':'Erro na pele' },
-  'teste-braco': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, sexo e peso', sensor:'Permissão do sensor', medir:'Medição (10 s)', analise:'Analisando', resultado:'Resultado', erro:'Erro no sensor', fechar:'Médico (tela final)' },
+  'teste-braco': { inicio:'Capa do teste', como:'Como funciona', dados:'Idade, sexo e peso', sensor:'Permissão do sensor', medir:'Medição (5 s)', analise:'Analisando', resultado:'Resultado', erro:'Erro no sensor', fechar:'Médico (tela final)' },
   'quiz-longevidade': { capa:'Capa do quiz', autoridade:'Quem vai ler as respostas', objetivo:'O que quer continuar fazendo', idade:'Idade', 'lugar-certo':'Você está no lugar certo', rotina:'Rotina da semana', ciencia:'A ciência', incomoda:'O que incomoda', atrapalha:'O que trava', ajuda:'Sozinho ou com médico', contato:'Contato', loading:'Calculando', resultado:'Resultado' },
   'link-bio': { roteador:'Tocou no link' },
 };
@@ -1567,9 +1567,9 @@ const DET = {
   },
   'teste-braco': {
     principal:[['idade', 'Idade', anos], ['sexo', 'Sexo', SEXO], ['peso', 'Peso', un(' kg')], ['reps', 'Movimentos contados'], ['dur', 'Tempo medido', un(' s')],
-      ['velMedia', 'Velocidade média (dobrar + esticar o cotovelo)', un(' °/s')], ['queda', 'Quanto a velocidade caiu do começo para o fim', un('%')],
+      ['velMedia', 'Velocidade média (dobrar + esticar o cotovelo)', un(' °/s')], ['angMed', 'Tamanho do movimento (mediana; estudos 107 a 138°)', un('°')], ['queda', 'Quanto a velocidade caiu do começo para o fim', un('%')],
       ['variab', 'Variação de um movimento para o outro', un('%')], ['vmao', 'Velocidade da mão no movimento mais rápido', un(' m/s')]],
-    tecnico:[['protocolo', 'Duração do teste', { '10s':'10 s', '20s':'20 s' }], ['wmax', 'Giro máximo do celular', un(' °/s')], ['hz', 'Leituras do sensor por segundo'],
+    tecnico:[['protocolo', 'Duração do teste', { '5s':'5 s', '10s':'10 s', '20s':'20 s' }], ['angs', 'Tamanho de cada meio movimento (°)'], ['wmax', 'Giro máximo do celular', un(' °/s')], ['hz', 'Leituras do sensor por segundo'],
       ['nav', 'Navegador', { instagram:'navegador do Instagram', facebook:'navegador do Facebook', 'chrome-ios':'Chrome no iPhone', safari:'Safari (iPhone ou iPad)', android:'Android', outro:'outro' }],
       ['picos', 'Velocidade de cada pico (°/s)'],
       ['diag', 'Sensor', v => Object.fromEntries(Object.entries(v || {}).map(([k, x]) => [{ leituras:'leituras gravadas', gravMs:'tempo gravado (ms)', iniMs:'início do movimento (ms)', leit5s:'leituras a cada 5 s', picos5s:'picos a cada 5 s', wmaxSeg:'giro máximo a cada segundo (°/s)', picosT:'momento de cada pico (s)' }[k] || k, x]))]],
@@ -1626,7 +1626,7 @@ const resDet = e => { const f = DET[chaveDet(e)]?.res; return f ? f(e, e.dados |
 // pré-frágeis 812, frágeis 535; flexões 25/21/15; queda 3/6/15%. Toji 2007: velocidade igual até 50 anos, −0,8%/ano depois.
 // Junção (extrapolação): referência aos 50 = 1.099 / (1 − 0,008 × 26) ≈ 1.390 °/s. Mulher × 0,9 (estimativa).
 function interpretaBraco(d){
-  const curto10 = d.protocolo === '10s';   // 10 s: a média sai ~1–7% acima da de 20 s (menos cansaço) → corrige ×0,97
+  const SEG = { '5s':5, '10s':10 }[d.protocolo] || 20, curto10 = SEG < 20;   // 10 s e 5 s (22/11): a média sai ~1–7% acima da de 20 s (menos cansaço) → corrige ×0,97
   const v = d.velMedia ? Math.round(d.velMedia * (curto10 ? 0.97 : 1)) : 0, f = d.sexo === 'f' ? 0.9 : d.sexo === 'n' ? 0.95 : 1, VREF = 1390 * f, ROB = 1099 * f, PRE = 955 * f, FRA = 673 * f;
   if (!v) return '';
   let idadeM = null, faixa, cor;
@@ -1644,7 +1644,7 @@ function interpretaBraco(d){
   const q = d.queda, k = curto10 ? 0.5 : 1;   // em 10 s a queda esperada é cerca de metade da de 20 s
   const qtxt = q == null ? '—' : q <= 4 * k ? `${q}% (como robustos)` : q <= 10 * k ? `${q}% (como pré-frágeis)` : `${q}% (como frágeis)`;
   const reps = d.reps != null && d.dur ? Math.round(d.reps * 20 / Math.max(d.dur, 1)) : null;
-  const curto = d.dur != null && d.dur < (curto10 ? 7 : 15);
+  const curto = d.dur != null && d.dur < SEG * .7;
   const roteiro = cor === 'ok'
     ? 'O seu braço respondeu com velocidade boa para a idade. O que mantém isso é treino de força com intenção de velocidade; no programa a gente mede de novo em 90 dias.'
     : cor === 'meh'
@@ -1654,11 +1654,13 @@ function interpretaBraco(d){
     <div class="l"><span>Idade muscular estimada</span><b>${esc(faixa)}</b></div>
     ${comp ? `<div class="l"><span>Comparação</span><b>${esc(comp)}</b></div>` : ''}
     <div class="l"><span>Velocidade (flexão + extensão)</span><b>${esc(num(v))} °/s · ref. 50 anos ${Math.round(VREF)}</b></div>
+    ${d.angMed ? `<div class="l"><span>Tamanho do movimento</span><b>${esc(num(d.angMed))}° · estudos 107 a 138°</b></div>` : ''}
     ${reps != null ? `<div class="l"><span>Movimentos (em 20 s)</span><b>${reps} · robusto 25 · frágil 15</b></div>` : ''}
     ${curto10 ? '' : `<div class="l"><span>Queda do começo para o fim</span><b>${esc(qtxt)}</b></div>`}
-    ${curto ? `<p class="alerta">Medição curta (${esc(num(d.dur))} s de ${curto10 ? 10 : 20}): repetir o teste antes de concluir.</p>` : ''}
+    ${curto ? `<p class="alerta">Medição curta (${esc(num(d.dur))} s de ${SEG}): repetir o teste antes de concluir.</p>` : ''}
+    ${d.angMed && d.angMed < 80 ? `<p class="alerta">Movimento curto (${esc(num(d.angMed))}°): com movimento curto a velocidade sai menor e a idade muscular, maior. Se a idade muscular ficou alta, peça para repetir do bolso ao queixo.</p>` : ''}
     <p class="rot"><b>Para o áudio (sugestão):</b> ${esc(roteiro)}</p>
-    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado (sexo não informado × 0,95).${curto10 ? ' Teste de 10 s: velocidade corrigida ×0,97 e movimentos dobrados para comparar com os 20 s.' : ''}</p></div>`;
+    <p class="fonte">Régua: Toosizadeh 2017 (20 s de flexão do cotovelo, ≥60 anos) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação; mulher × 0,9 estimado (sexo não informado × 0,95).${curto10 ? ` Teste de ${SEG} s: velocidade corrigida ×0,97 e movimentos multiplicados por ${20 / SEG} para comparar com os 20 s.` : ''}</p></div>`;
 }
 // 13/11: o #out é reescrito a cada lead; o #gestao (que mora no "Detalhes", dentro dele) volta para casa antes
 function poeOut(html){ const g = $('gestao'), o = $('out'); if (o.contains(g)) o.before(g); o.innerHTML = html; }
@@ -2279,15 +2281,15 @@ function quadrosMov(b){
     const m = c.medida, r = REF.braco;
     return [
       { chave:'resultado', rot:'Resultado', url:quadro('Idade muscular · teste do braço', [
-        { rot:'Movimentos em 10 segundos', val:n0(m.roscas), grande:true },
+        { rot:`Movimentos em ${m.seg} segundos`, val:n0(m.roscas), grande:true },
         { rot:'Velocidade média do cotovelo', val:m.v ? `${n0(m.v)} °/s` : '—' },
         { rot:'Idade muscular estimada', val:paraLead(m.faixaTxt) || '—', cor:COR_Q[c.faixa] },
         { rot:'Idade de verdade', val:d.idade ? `${d.idade} anos` : 'não informou' },
       ], c.faixa ? `Faixa ${c.faixa} de 4 · ${c.titulo}. Estimativa comparada com estudos de população; não é diagnóstico.` : '') },
       { chave:'referencia', rot:'Referência', url:quadro('Referência · teste do braço', [
         { rot:'Velocidade de referência aos 50 anos', val:`${n0(Math.round(m.VREF))} °/s` },
-        { rot:'65 a 76 anos com boa saúde (sensor no punho)', val:'perto de 12 movimentos em 10 s' },
-        ...(r ? [{ rot:`${r.nome}, ${r.idade} anos (medido no site)`, val:`${n0(r.roscas)} movimentos em 10 s` }] : []),
+        { rot:'65 a 76 anos com boa saúde (sensor no punho)', val:`perto de ${Math.round(12 * m.seg / 10)} movimentos em ${m.seg} s` },
+        ...(r ? [{ rot:`${r.nome}, ${r.idade} anos (medido no site)`, val:`${n0(Math.round(r.roscas * m.seg / 10))} movimentos em ${m.seg} s` }] : []),
         { rot:'Você', val:`${n0(m.roscas)} movimentos · ${m.v ? n0(m.v) + ' °/s' : '—'}`, cor:'#4fd1a1' },
       ], 'Régua: Toosizadeh 2017 (20 s, 60 anos ou mais) + Toji 2007 (curva por idade). Abaixo dos 76 anos é extrapolação.' + (d.sexo === 'f' ? ' Mulher: × 0,9 (estimativa).' : '')) },
     ];

@@ -137,8 +137,8 @@ function entradaPernas(d, c){
 }
 function entradaBraco(d, c){
   const m = c?.medida || {};
-  return { idade:d.idade, sexo:SEXO[d.sexo] || d.sexo, protocolo:d.protocolo === '10s' ? '10 segundos' : '20 segundos', duracao_medida_s:d.dur, roscas_em_10_s:m.roscas,
-    velocidade_media_graus_por_s:m.v || d.velMedia, idade_muscular_estimada:m.faixaTxt, queda_do_comeco_ao_fim_pct:d.protocolo === '10s' ? undefined : d.queda,
+  return { idade:d.idade, sexo:SEXO[d.sexo] || d.sexo, protocolo:{ '5s':'5 segundos', '10s':'10 segundos' }[d.protocolo] || '20 segundos', duracao_medida_s:d.dur, movimentos_no_teste:m.roscas, tamanho_do_movimento_graus:d.angMed || undefined,
+    velocidade_media_graus_por_s:m.v || d.velMedia, idade_muscular_estimada:m.faixaTxt, queda_do_comeco_ao_fim_pct:m.curto10 ? undefined : d.queda,
     leitura_do_kit:c ? { faixa:c.faixa ? `${c.faixa} de 4 · ${c.titulo}` : 'não calculada', resumo:c.simples, medicao_duvidosa_refazer:!!c.refazer, motivo:c.motivo || undefined } : undefined };
 }
 function entradaEmag(d){
@@ -620,7 +620,7 @@ function rotMov(t, d, c, E){
   const M = E[t], C = E.comum, F = C.fio, A = C.assuntos, out = [], avisos = [], V = {};
   const m = c?.medida || {};
   if (t === 'pernas') Object.assign(V, { tempo:n1(d.t), pc:d.pc != null ? String(d.pc) : null, faixa_idade:d.faixa || null });
-  else Object.assign(V, { roscas:m.roscas != null ? String(m.roscas) : null, idade_m:m.idadeM != null ? m.idadeM + ' anos' : m.v >= m.VREF ? 'até 50 anos' : m.v >= m.PRE ? 'acima de 76 anos, ainda robusto' : null });   // nunca "frágil"
+  else Object.assign(V, { roscas:m.roscas != null ? String(m.roscas) : null, seg:String(m.seg || 10), idade_m:m.idadeM != null ? m.idadeM + ' anos' : m.v >= m.VREF ? 'até 50 anos' : m.v >= m.PRE ? 'acima de 76 anos, ainda robusto' : null });   // nunca "frágil"
   if (c?.refazer){
     const k = t === 'pernas' ? (/mais rápido/.test(c.motivo) ? 'rapido' : /Contou/.test(c.motivo) ? 'reps' : 'padrao')
       : (/curta/.test(c.motivo) ? 'curto' : /Só \d+ movimentos/.test(c.motivo) ? 'poucas' : /não combinam|rara/.test(c.motivo) ? 'estranho' : 'padrao');
@@ -638,7 +638,7 @@ function rotMov(t, d, c, E){
   // 2 · a boa notícia (faixas 1 e 2) ou "Calma" (3 e 4), o número ao lado da idade e a ponte
   const pt = !f ? null : f >= 3 ? 'abaixo' : t === 'braco' && f === 2 && Number.isFinite(m.idadeM) && idade != null && m.idadeM <= idade + 3 ? 'dentro' : f === 2 ? 'acima' : 'dentro';
   if (f) out.push(bloco6('resultado', T4C[1], [f <= 2 ? F.boa : M.calma[f], M.resultado[f], t === 'pernas' && f < 4 ? M.parecida : null, M.ponte[pt]],
-    { ...V, bem:M.boa[f] }, { f:M.resultado.f, circular:t === 'pernas' ? 'o tempo das 5 levantadas e o percentil' : 'as roscas em 10 s e a idade muscular' }));
+    { ...V, bem:M.boa[f] }, { f:M.resultado.f, circular:t === 'pernas' ? 'o tempo das 5 levantadas e o percentil' : `as roscas em ${m.seg || 10} s e a idade muscular` }));
   // 3 · onde: o número que responde ao "daqui"
   if (f) out.push(bloco6('onde', T4C[2], [M.onde, V.resposta ? M.e_o_que.resposta : M.e_o_que.padrao], V, { f:M.porque.f, circular:t === 'pernas' ? 'o tempo das 5 levantadas' : 'a velocidade' }));
   // 4 · o porquê: potência

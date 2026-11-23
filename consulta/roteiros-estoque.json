@@ -766,7 +766,7 @@
  },
  "braco": {
   "abertura": {
-   "f": "regra 6; regra 25 braço (circule as roscas em 10 s e a faixa)"
+   "f": "regra 6; regra 25 braço (circule as roscas e a faixa)"
   },
   "refazer": {
    "f": "regras 16 e 25 braço ('celular firme, cotovelo colado no corpo'); kit-movimento §0",
@@ -785,8 +785,8 @@
   "_antes_1311": {
    "abertura": {
     "texto": [
-     "{nome}, aqui é o doutor Lucca Marques. Você fez {roscas} roscas em 10 segundos. Vou te mostrar o que isso diz.",
-     "{nome}, aqui é o doutor Lucca Marques. Olhei o seu teste do braço: {roscas} roscas em 10 segundos. Vem ver.",
+     "{nome}, aqui é o doutor Lucca Marques. Você fez {roscas} roscas em {seg} segundos. Vou te mostrar o que isso diz.",
+     "{nome}, aqui é o doutor Lucca Marques. Olhei o seu teste do braço: {roscas} roscas em {seg} segundos. Vem ver.",
      "{nome}, aqui é o doutor Lucca Marques. Você fez o teste do braço com cuidado. Vou te explicar o resultado."
     ]
    },
@@ -814,15 +814,15 @@
    "resultado": {
     "f": "3B braço: a âncora é o número dela ao lado da idade real (idade muscular de medidaBraco); faixas 3 e 4 abrem com \"Calma\" (regra 22); no vídeo \"faixa mais baixa\", nunca \"frágil\"",
     "1": [
-     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. Você tem {idade} anos: está dentro do esperado. É estimativa.",
-     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. É estimativa.",
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em {seg} segundos. Idade muscular estimada: {idade_m}. Você tem {idade} anos: está dentro do esperado. É estimativa.",
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em {seg} segundos. Idade muscular estimada: {idade_m}. É estimativa.",
      "Idade muscular estimada, pela velocidade do braço: {idade_m}. É estimativa."
     ],
     "2": [
-     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}. Você tem {idade} anos: ficou um pouco acima. É estimativa.",
-     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Idade muscular estimada: {idade_m}, um pouco acima. É estimativa.",
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em {seg} segundos. Idade muscular estimada: {idade_m}. Você tem {idade} anos: ficou um pouco acima. É estimativa.",
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em {seg} segundos. Idade muscular estimada: {idade_m}, um pouco acima. É estimativa.",
      "Idade muscular estimada, pela velocidade do braço: {idade_m}, um pouco acima. É estimativa.",
-     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em 10 segundos. Ficou um pouco abaixo do esperado para a idade. É estimativa."
+     "A velocidade do seu braço, pelo sensor do celular: {roscas} movimentos em {seg} segundos. Ficou um pouco abaixo do esperado para a idade. É estimativa."
     ],
     "3": [
      "Calma, isso tem explicação. A velocidade do seu braço ficou abaixo do esperado para {idade} anos. É estimativa.",

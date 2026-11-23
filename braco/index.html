@@ -85,7 +85,7 @@ p{margin:0}
 .num small{font-size:.35em;color:var(--muted);font-weight:700}
 .dica{font-size:1.2rem;color:var(--muted)}
 .relogio{font:600 1.6rem var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
-/* 09/11 (Lucca): fundo verde = pode começar (do toque em Começar até o 1º movimento) e de novo no fim dos 10 s */
+/* 09/11 (Lucca): fundo verde = pode começar (do toque em Começar até o 1º movimento) e de novo no fim dos 5 s */
 body{transition:background .25s}
 body.valendo{background:#157a52}
 body.valendo .num,body.valendo .num small,body.valendo .dica,body.valendo .relogio{color:#fff}
@@ -181,7 +181,7 @@ body.foco #cta-link{animation:chama 1.1s ease-out 2}
     <div class="medico"><img src="/assets/img/dr-lucca-avatar.jpg" alt="" width="64" height="64">
       <div><b>Dr. Lucca Marques</b><span>Médico · CRM-GO 33.990</span></div></div>
     <h1>Qual é a sua idade <em>muscular</em>?</h1>
-    <p class="sub">Com o celular na mão, faça o máximo desse movimento em 10 segundos e descubra a idade que a potência dos seus braços mostra.</p>
+    <p class="sub">Com o celular na mão, faça o máximo desse movimento em 5 segundos e descubra a idade que a potência dos seus braços mostra.</p>
     <div class="anim" id="anim" aria-hidden="true">
       <video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video>
     </div>
@@ -193,8 +193,8 @@ body.foco #cta-link{animation:chama 1.1s ease-out 2}
     <div class="anim mini-anim" aria-hidden="true"><video src="img/movimento.mp4" poster="img/movimento.jpg" autoplay muted loop playsinline></video></div>
     <ol class="steps">
       <li><em>1</em><span>Fique em pé e segure o celular muito firme na mão.</span></li>
-      <li><em>2</em><span>Dobre e estique o cotovelo o mais rápido que conseguir, com a mão firme, igual ao movimento mostrado acima.</span></li>
-      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 10 segundos, sem parar. A tela verde avisa o começo; dois bips e outra tela verde indicam o fim.</span></li>
+      <li><em>2</em><span>Cotovelo junto do corpo: suba o celular da altura do bolso até a altura do queixo e desça, o mais rápido que conseguir. Não precisa esticar o braço todo nem encostar no ombro.</span></li>
+      <li><em>3</em><span>Toque em Começar e faça o máximo desse movimento em 5 segundos, sem parar. A tela verde avisa o começo; dois bips e outra tela verde indicam o fim.</span></li>
     </ol>
     <p class="notice">Não faça se tiver dor no ombro, no cotovelo ou no punho.</p>
   </section>
@@ -230,14 +230,14 @@ body.foco #cta-link{animation:chama 1.1s ease-out 2}
     <h2>Libere o sensor de movimento do celular</h2>
     <p class="notice" id="sensor-dica">Ao tocar no botão, o iPhone pergunta se pode usar o sensor de movimento. Toque em <b>Permitir</b>.</p>
     <span class="ok-sensor" id="sensor-ok" hidden>Sensor liberado</span>
-    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 10 segundos. A tela verde avisa o começo; dois bips e outra tela verde indicam o fim.</p>
+    <p class="sub" id="sensor-prox" hidden>Agora toque em <b>Começar</b> e já faça o máximo desse movimento em 5 segundos, do bolso ao queixo. A tela verde avisa o começo; dois bips e outra tela verde indicam o fim.</p>
   </section>
 
   <section class="screen" data-s="medir" data-p="80" hidden>
     <div class="palco">
       <div class="num" id="grande" aria-live="assertive">3</div>
       <p class="dica" id="dica">Prepare o braço</p>
-      <p class="relogio" id="relogio">10 s</p>
+      <p class="relogio" id="relogio">5 s</p>
     </div>
   </section>
 
@@ -259,7 +259,7 @@ body.foco #cta-link{animation:chama 1.1s ease-out 2}
   <section class="screen c final" data-s="resultado" data-p="100" hidden>
     <span class="pill">Teste concluído</span>
     <h2>Seu teste está <em>pronto</em></h2>
-    <div class="medida"><span class="rot">O que o sensor mediu</span><b id="res-medida">0 movimentos em 10 s</b></div>
+    <div class="medida"><span class="rot">O que o sensor mediu</span><b id="res-medida">0 movimentos em 5 s</b></div>
     <div class="trava" id="trava" aria-label="Resultado bloqueado: o Dr. Lucca explica">
       <span class="rot" id="res-rot">A sua idade muscular × a sua idade</span>
       <div class="regua" aria-hidden="true"><div class="trilho"></div><i class="a"></i><i class="b"></i><span style="left:38%">00 anos</span><span style="left:66%">00 anos</span></div>
@@ -319,8 +319,10 @@ window.lvPonte?.pintar(document.querySelector('[data-s="inicio"] .sub'), 'braco'
 const $ = id => document.getElementById(id);
 const WHATSAPP = '5562991774809';
 const ANTEBRACO = 0.30;                    // m, do cotovelo à mão: converte giro (°/s) em velocidade da mão
-const DURACAO = 10000, ESPERA_MAX = 15000;   // 10 s (decisão do Lucca, 31/10); o protocolo dos estudos é 20 s (Toosizadeh): a ficha corrige.
-// 09/11: os 10 s (e o bip do começo) saem do 1º movimento; sem movimento em 15 s depois do toque, encerra com o aviso de erro.
+const DURACAO = 5000, ESPERA_MAX = 15000;   // 5 s (22/11, Lucca: 'menos segundos e um movimento mais curto'; era 10 s desde 31/10); o protocolo dos estudos é 20 s (Toosizadeh): a ficha corrige.
+// 22/11: movimento do bolso ao queixo (~110°, a amplitude dos robustos nos estudos: 107° Najafi 2020, 138° Zhou 2021). Mais curto que isso a velocidade cai junto
+// (no banco, um teste de 03/11 com ~64° deu 799 °/s, contra 1.800–2.100 com ~100°) e a régua acusaria idade a mais.
+// 09/11: os segundos (e o bip do começo) saem do 1º movimento; sem movimento em 15 s depois do toque, encerra com o aviso de erro.
 const ua = navigator.userAgent;
 const NAV = /Instagram/i.test(ua) ? 'instagram' : /FBAN|FBAV/i.test(ua) ? 'facebook' : /CriOS/i.test(ua) ? 'chrome-ios' : /iPhone|iPad/i.test(ua) ? 'safari' : /Android/i.test(ua) ? 'android' : 'outro';
 const order = ['inicio','como','dados','sensor','medir','analise','resultado','erro','futuro'];   // 16/11: 'futuro' entra entre dados e sensor, mas fica no fim da lista para não mudar o número das outras etapas   // 15/11: sem 'fechar' (o resultado é a tela final); era a última, o número das outras etapas no Funil não muda
@@ -406,6 +408,8 @@ let ini = null, relogioT = null;
 // troca de sentido como meio movimento (meia flexão ou meia extensão), com histerese. Não depende de intervalo entre picos: funciona rápido ou devagar.
 const LIMIAR = 90;                       // °/s: abaixo disso não conta troca de sentido (tremor, ajuste da mão)
 let eixo = [1, 0, 0], estado = 0, picoAtual = 0, tPico = 0, meias = [];
+// 22/11: o ângulo de cada meio movimento (giro no eixo do cotovelo somado no tempo), para conferir se a pessoa fez do bolso ao queixo (~110°)
+let angAcc = 0, tAnt = null;
 function atualizaEixo(){
   const win = amostras.slice(-120); if (win.length < 20) return;
   const M = [[0,0,0],[0,0,0],[0,0,0]];
@@ -415,7 +419,7 @@ function atualizaEixo(){
   if (e[0]*eixo[0] + e[1]*eixo[1] + e[2]*eixo[2] < 0) e = e.map(x => -x);   // mantém o mesmo sentido
   eixo = e;
 }
-function fechaMeia(){ if (estado !== 0 && picoAtual > 0){ meias.push({ t: tPico, w: picoAtual, sentido: estado }); picos = meias; $('grande').textContent = Math.floor(meias.length / 2); } }
+function fechaMeia(){ if (estado !== 0 && picoAtual > 0){ meias.push({ t: tPico, w: picoAtual, sentido: estado, ang: Math.abs(angAcc) }); angAcc = 0; picos = meias; $('grande').textContent = Math.floor(meias.length / 2); } }
 function onMotion(ev){
   const now = performance.now(); hz.push(now); while (hz.length && now - hz[0] > 1000) hz.shift();
   if (!gravando) return;
@@ -423,10 +427,11 @@ function onMotion(ev){
   const v = [r.alpha || 0, r.beta || 0, r.gamma || 0];
   const s = { t: now - t0, v, w: Math.hypot(...v), acc: Math.hypot(a.x || 0, a.y || 0, a.z || 0) };
   amostras.push(s);
-  if (ini === null && s.w > 150) comecou(s.t);   // 10 s contados do 1º movimento
+  if (ini === null && s.w > 150) comecou(s.t);   // os 5 s contam do 1º movimento
   if (amostras.length % 10 === 0) atualizaEixo();
   if (ini === null) return;   // só conta depois que o movimento de verdade começou
   const p = v[0]*eixo[0] + v[1]*eixo[1] + v[2]*eixo[2];
+  if (tAnt !== null) angAcc += p * (s.t - tAnt) / 1000; tAnt = s.t;
   const sentido = p > LIMIAR ? 1 : p < -LIMIAR ? -1 : 0;
   if (sentido !== 0 && sentido !== estado){ fechaMeia(); estado = sentido; picoAtual = 0; }
   if (sentido !== 0 && Math.abs(p) > picoAtual){ picoAtual = Math.abs(p); tPico = s.t; }
@@ -457,20 +462,20 @@ function bip(){ try { audio = audio || new (window.AudioContext || window.webkit
   o.frequency.value = 880; g.gain.setValueAtTime(.25, audio.currentTime); g.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .35);
   o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + .36); } catch {} }
 function medir(){
-  // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; os 10 s contam do 1º movimento.
+  // sem contagem regressiva: com o celular na mão a pessoa não vê a tela. Grava desde o toque; os 5 s contam do 1º movimento.
   // 09/11 (Lucca): do toque até o 1º movimento o fundo fica verde (pode começar); o bip do começo toca no 1º movimento.
   try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume();   // libera o bip dentro do toque
         const o = audio.createOscillator(), g = audio.createGain(); g.gain.value = 0; o.connect(g).connect(audio.destination); o.start(); o.stop(audio.currentTime + .05); } catch {}
-  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Pode começar: dobre e estique o cotovelo'; $('relogio').textContent = '10 s';
+  show('medir'); $('grande').textContent = '0'; $('dica').textContent = 'Pode começar: do bolso ao queixo, rápido'; $('relogio').textContent = Math.round(DURACAO / 1000) + ' s';
   document.body.classList.add('valendo'); clearTimeout(verdeT); verdeAte = performance.now() + VERDE_MIN;
-  amostras = []; picos = []; meias = []; estado = 0; picoAtual = 0; eixo = [1, 0, 0]; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
+  amostras = []; picos = []; meias = []; estado = 0; picoAtual = 0; angAcc = 0; tAnt = null; eixo = [1, 0, 0]; ini = null; t0 = performance.now(); gravando = true; vibrar(60);
   clearTimeout(fim); fim = setTimeout(encerrar, ESPERA_MAX);   // se ninguém se mexer em 15 s, encerra
   clearInterval(relogioT); relogioT = setInterval(() => {
     if (ini === null) return; const resta = Math.max(0, Math.ceil((DURACAO - (performance.now() - t0 - ini)) / 1000)); $('relogio').textContent = resta + ' s';
   }, 200);
 }
 
-// 1º movimento: bip, o fundo volta ao normal e os 10 s começam a contar.
+// 1º movimento: bip, o fundo volta ao normal e os 5 s começam a contar.
 // 15/11 (Lucca: “A tela verde avisa o começo”): quem já sai mexendo via o verde por um instante só; agora ele fica no
 // mínimo VERDE_MIN na tela, contado do toque em Começar, mesmo que o movimento comece antes.
 const VERDE_MIN = 900; let verdeAte = 0, verdeT = null;
@@ -489,29 +494,31 @@ function encerrar(){
   if (!gravando) return; gravando = false; clearTimeout(fim); clearTimeout(verdeT); clearInterval(relogioT); bip(); setTimeout(bip, 420); vibrar([60, 60, 60]);
   fechaMeia(); picos = meias;
   const reps = Math.floor(picos.length / 2);
-  if (reps){ document.body.classList.add('valendo'); $('relogio').textContent = '0 s'; $('dica').textContent = 'Pronto! Pode parar'; }   // 09/11: fim dos 10 s = verde de novo
+  if (reps){ document.body.classList.add('valendo'); $('relogio').textContent = '0 s'; $('dica').textContent = 'Pronto! Pode parar'; }   // 09/11: fim do tempo = verde de novo
   const wmaxAll = amostras.length ? Math.round(Math.max(...amostras.map(s => s.w))) : 0;
   if (!reps){
     Analytics.track('answer', { stepId:'medir', valueText:'sem-movimento', props:{ nav:NAV, leituras:amostras.length, wmax:wmaxAll, hz:hz.length } });
-    return erro('Não contei nenhum movimento', `Segure o celular firme na mão, toque em Começar e já dobre e estique o cotovelo, rápido. (${amostras.length} leituras, giro máximo ${wmaxAll} °/s)`);
+    return erro('Não contei nenhum movimento', `Segure o celular firme na mão, toque em Começar e já suba e desça o celular, do bolso ao queixo, rápido. (${amostras.length} leituras, giro máximo ${wmaxAll} °/s)`);
   }
   // medidas no formato dos estudos (Toosizadeh 2015/2017): velocidade, nº de flexões, queda (1ºs × últimos 5 s), variabilidade
   const z = ini ?? 0, dur = Math.min(DURACAO, (picos[picos.length - 1].t - z)) / 1000;
   const media = a => a.reduce((x, y) => x + y, 0) / (a.length || 1);
   const amp = []; for (let i = 0; i + 1 < picos.length; i += 2) amp.push(picos[i].w + picos[i + 1].w);   // flexão + extensão (≈ "speed" do UEF)
-  const ini5 = picos.filter(p => p.t - z <= 3000).map(p => p.w), fim5 = picos.filter(p => p.t - z >= DURACAO - 3000).map(p => p.w);   // 3 primeiros × 3 últimos segundos
+  const JAN = Math.min(3000, DURACAO * .4), ini5 = picos.filter(p => p.t - z <= JAN).map(p => p.w), fim5 = picos.filter(p => p.t - z >= DURACAO - JAN).map(p => p.w);   // começo × fim (2 s cada no teste de 5 s)
   const queda = ini5.length && fim5.length ? Math.round((1 - media(fim5) / media(ini5)) * 100) : null;
   const dp = a => { const m = media(a); return Math.sqrt(media(a.map(x => (x - m) ** 2))); };
   const variab = amp.length > 2 ? Math.round(dp(amp) / media(amp) * 100) : null;
   const vmao = Math.max(...picos.filter((_, i) => i % 2 === 0).map(p => p.w)) * Math.PI / 180 * ANTEBRACO;
+  const angsTodos = picos.map(p => Math.round(p.ang || 0)), angs = angsTodos.length > 4 ? angsTodos.slice(1, -1) : angsTodos;   // sem o 1º e o último (incompletos)
+  const angMed = angs.length ? [...angs].sort((a, b) => a - b)[Math.floor(angs.length / 2)] : null;
   setTimeout(() => analisar(() => {
     // 02/11: a tela repete o que o sensor mediu (a pessoa viu o número subir) e cita as respostas dela em cada frase
     $('res-medida').textContent = `${reps} ${reps === 1 ? 'movimento' : 'movimentos'} em ${Math.round(DURACAO / 1000)}\u00a0s`;
     personalizar();
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
-      valueText:`${reps} movimentos em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em 10 s ela mistura a aceleração do começo
+      valueText:`${reps} movimentos em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em teste curto ela mistura a aceleração do começo
       props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, futuro:dados.futuro || null, desejo:desejo(FUT_EU) || null, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
-        queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'10s',
+        queda, variab, vmao:+vmao.toFixed(2), wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'5s', angMed, angs:angs.slice(0, 40),
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
           leit5s:[0,1].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
           picos5s:[0,1].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length),
