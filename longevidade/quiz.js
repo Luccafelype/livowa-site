@@ -6,7 +6,7 @@
 // Conteúdo: config.js. Este arquivo não precisa mudar para trocar textos.
 // ============================================================
 
-import { CONFIG } from './config.js?v=lg6';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
+import { CONFIG } from './config.js?v=lg12';   // subir o ?v a cada mudança no config.js (o celular guarda a versão velha)
 import * as Analytics from './funnel-analytics.js?v=lg3';
 const FLOW = CONFIG.flow;
 const N = FLOW.length;
@@ -237,10 +237,10 @@ function renderInfo(it) {
       el('div', { class: 'card doc' },
         el('div', { class: 'avatar', 'aria-hidden': 'true' }, it.medico.iniciais),
         el('div', {}, el('b', {}, it.medico.nome), el('span', {}, it.medico.linha))),
-      el('div', { class: 'bignum' },
+      ...(it.estudo ? [el('div', { class: 'bignum' },   // 23/11: o estudo é opcional (o das pernas saiu)
         el('b', {}, it.estudo.numero),
         el('p', {}, it.estudo.texto),
-        el('span', { class: 'src' }, it.estudo.fonte))
+        el('span', { class: 'src' }, it.estudo.fonte))] : [])
     );
   } else if (it.view === 'demo') {
     screen.append(

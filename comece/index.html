@@ -30,7 +30,7 @@ const DESTINOS = {
   emagrecimento: { emag:'/emagrecimento/', tipos:'/tipos/' },   // 02/11: teste do emagrecimento (funnelId teste-emagrecimento). Salvar o tema na aba Portas pede a edge com emagrecimento:['emag'] (OPERACOES/funis.md). 22/11: tipos = teste dos 4 tipos (funnelId teste-tipos; campanhas TESTE e TIPO, presas ao post do vídeo)
 };
 const RESERVA = {
-  bio:    { tema:'longevidade', pesos:{ pele:50, quiz:50, teste:0, braco:0 }, fixo:null },
+  bio:    { tema:'longevidade', pesos:{ pele:100, quiz:0, teste:0, braco:0 }, fixo:null },   // 23/11 (Lucca): a bio abre SÓ o teste da pele (era 50 pele/50 quiz; o quiz mostrava o teste das pernas)
   direct: { tema:'longevidade', pesos:{ pele:25, quiz:25, teste:0, braco:50 }, fixo:null },
 };
 const CAMP_RESERVA = { PERNAS:'braco', MUSCULO:'braco', PELE:'pele', IDADE:'quiz', POTENCIA:'braco', TESTE:'tipos', TIPO:'tipos' };   // 10/11 D1: PERNAS leva ao braço; 22/11: os links das campanhas já levam f= (POTENCIA braco, TESTE/TIPO tipos); aqui é a reserva
@@ -80,10 +80,13 @@ if (id === 'pele' && q.get('f') !== 'pele' && PELE2_PCT > 0){
   id = lado;
 }
 const url = todos[id];
+// 23/11 (Lucca): quem vem da BIO para a pele vê a 1ª página falando de idade biológica (a bio promete "Descubra sua idade
+// biológica"); só a capa muda, e só neste link. Campanha do Direct e ?f= mantêm a capa de sempre.
+const capaBio = canal === 'bio' && !camp && !q.get('f') && id === 'pelenova';
 try { const Analytics = await Promise.race([analyticsPronto, new Promise((_, n) => setTimeout(n, 300))]);
   Analytics.init({ enabled:true, funnelId:'link-bio', variant:id, supabaseUrl:SUPA, supabaseKey:CHAVE });
   Analytics.track('view', { stepId:'roteador', valueText:`${canal}:${tema}${camp ? ':' + camp : ''}:${rota.fonte}` }); } catch {}
-['f', 'camp'].forEach(x => q.delete(x)); q.set('v', id); q.set('canal', canal);   // sem ?sid: cada funil abre a própria sessão. 03/11: canal=bio|direct segue para o teste (a ponte da bio, /assets/js/ponte.js, só aparece com canal=bio)
+['f', 'camp'].forEach(x => q.delete(x)); q.set('v', id); q.set('canal', canal); if (capaBio) q.set('capa', 'bio');   // sem ?sid: cada funil abre a própria sessão. 03/11: canal=bio|direct segue para o teste (a ponte da bio, /assets/js/ponte.js, só aparece com canal=bio)
 if (!q.has('utm_source')) q.set('utm_source', canal === 'direct' ? 'ig_direct' : 'ig_bio');
 if (camp && !q.has('utm_campaign')) q.set('utm_campaign', camp.toLowerCase());
 // o sid da bio fica na aba; apagar para o funil abrir sessão nova e não cair na linha 'link-bio' do resumo

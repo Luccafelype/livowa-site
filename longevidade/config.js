@@ -74,11 +74,7 @@ export const CONFIG = {
       pill: 'Quem montou este quiz',
       title: 'Quem vai ler *as suas respostas*',
       medico: { nome: 'Dr. Lucca Marques', linha: 'Médico · CRM-GO 33.990', iniciais: 'LM' },
-      estudo: {
-        numero: '12.864',
-        texto: 'pessoas fizeram o teste de pernas que ele usa como régua.',
-        fonte: 'Coelho-Junior et al., J Cachexia Sarcopenia Muscle, 2024'
-      },
+      // 23/11 (Lucca: "teste da perna porra, já falei para tirar"): saiu o número do teste das pernas (12.864, Coelho-Junior 2024)
       cta: 'Continuar'
     },
 
@@ -110,28 +106,8 @@ export const CONFIG = {
       ]
     },
 
-    // ---- Tela 4: "você está no lugar certo" + demo viva do teste das pernas ----
-    // A demo mostra o produto real (livowa.com/idade): 5 levantadas, cronômetro, barra medindo.
-    // Sem seta de resultado ("↑ subindo" seria promessa implícita).
-    {
-      id: 'lugar-certo', type: 'info', view: 'demo',
-      emoji: '',
-      title: 'Perfeito, você está no lugar certo!',
-      texto: (s, curto) => {
-        const n = (s.answers.objetivo || []).length;
-        const quer = n === 1 ? curto('objetivo') : 'tudo isso';
-        return `Pra ${quer || 'chegar bem aos próximos 10 anos'}, muita coisa passa pelas pernas. E a força delas *dá pra medir em 1 minuto*.`;
-      },
-      demo: {
-        titulo: 'Teste das pernas',
-        tag: 'câmera do celular',
-        contagem: 'levantadas da cadeira',
-        barra: 'Potência das pernas',
-        medindo: 'medindo…',
-        pronto: 'medida'
-      },
-      cta: 'Continuar'
-    },
+    // ---- Tela 4 ("você está no lugar certo" + demo do teste das pernas) SAIU em 23/11 (Lucca: "teste da perna porra, já
+    // falei para tirar essa porra"; decisão d-20261110-pernas-sai). O quiz não mostra mais o teste das pernas em lugar nenhum.
 
     // ---- Tela 5: rotina (pergunta 3) ----
     {
@@ -256,7 +232,7 @@ export const CONFIG = {
     { id: 'prevencao-60',
       quando: { idade: ['60-69', '70+'] },
       titulo: 'Depois dos 60, sem depender de ninguém',
-      frase: 'Depois dos 60, as pernas viram prioridade. E dá pra começar em qualquer idade.',
+      frase: 'Depois dos 60, a força vira prioridade. E dá pra começar em qualquer idade.',
       video: '' },
     { id: 'agenda-cheia',
       quando: [{ atrapalha: ['tempo'] }, { rotina: ['empresario'] }],
@@ -266,11 +242,11 @@ export const CONFIG = {
     { id: 'corpo-cobrando',
       quando: { incomoda: ['cansaco', 'peso', 'forca'] },
       titulo: 'O corpo começou a cobrar',
-      frase: 'Dá pra começar pelas pernas, sem virar a sua rotina de cabeça pra baixo.',
+      frase: 'Dá pra começar pela força, sem virar a sua rotina de cabeça pra baixo.',
       video: '' },
     { id: 'padrao', padrao: true,
       titulo: 'Quer chegar bem aos próximos 10 anos',
-      frase: 'O caminho passa pelas pernas, e começa simples.',
+      frase: 'O caminho passa pela força dos músculos, e começa simples.',
       video: '' }
   ],
 
