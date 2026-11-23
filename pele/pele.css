@@ -206,6 +206,37 @@ b,strong{font-weight:700}
 .recortes li{display:flex;align-items:center;gap:12px}
 .recortes canvas{width:64px;height:64px;border-radius:12px;flex:none;background:var(--line)}
 .recortes b{display:block}
+/* 23/11 (Lucca, 15/11: "um card mais amplo, dando zoom e andando pelos pontos destacados… ver como seria em diferentes idades…
+   um exemplo outsider"): a câmera na foto dela (lupa.js), os pontos viram botões, as idades e o exemplo de fora */
+.lupa{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;background:#1b1f1d;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lupa-cam{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.lupa-foto{display:block}
+.lupa-anel{position:absolute;border-radius:50%;border:5px solid rgba(255,255,255,.55);box-shadow:0 0 0 2px rgba(0,0,0,.18);transition:border-color .3s}
+.lupa-anel.on{border-color:#fff}
+.lupa-rot{position:absolute;left:10px;right:10px;bottom:10px;padding:7px 11px;border-radius:10px;background:rgba(20,28,23,.72);color:#fff;font-size:var(--t3);line-height:1.35}
+.lupa-rot b{font-weight:700}
+.lupa:not(.passeando) .lupa-rot{display:none}   /* 23/11: o rótulo só durante o passeio; parado, o ponto ativo fica marcado na lista */
+/* 23/11 (título novo do Lucca, longo): até 3 linhas a 375 px com nome, em 17 px; de 420 px para cima, 20 px */
+#r-ponte-tit{font-size:var(--t2);line-height:1.3}
+@media (min-width:420px){#r-ponte-tit{font-size:var(--tg)}}
+.rec-bt{display:flex;align-items:center;gap:12px;width:100%;margin:0;padding:6px;border:2px solid transparent;border-radius:14px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rec-bt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-2)}
+.rec-bt span{display:block}
+.recortes{gap:6px}
+.lupa-mais{display:flex;flex-direction:column;gap:10px}
+.lupa-tit{font-weight:700;color:var(--fg)}
+.idades{display:flex;gap:6px}
+.idades figure,.fora-par figure{margin:0;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.idades img,.idades canvas{width:100%;aspect-ratio:1;height:auto;border-radius:10px;background:var(--line);object-fit:cover;display:block}
+.idades figcaption,.fora-par figcaption{font-size:var(--t3);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.idades .voce canvas{outline:3px solid var(--accent);outline-offset:-3px}
+.idades .voce figcaption{color:var(--accent);font-weight:700}
+.fora{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--bg)}
+.fora-par{display:flex;gap:10px}
+.fora-par img,.fora-par canvas{width:100%;aspect-ratio:1;height:auto;border-radius:12px;background:var(--line);object-fit:cover;display:block}
+.fora-par figure:last-child img{outline:3px solid var(--accent);outline-offset:-3px}
+.fora-par figure:last-child figcaption{color:var(--accent);font-weight:700}
+.fora-par figcaption{white-space:normal;text-align:center;text-wrap:balance;line-height:1.3}
 .fatores li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start}
 .fatores i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;font-style:normal;font-weight:700;background:var(--bg);color:var(--fg)}
 .fatores i.bom{background:var(--accent-2);color:var(--accent)}

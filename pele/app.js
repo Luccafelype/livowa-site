@@ -30,6 +30,9 @@ import { montarEnvio, alinhar, fotoTopo, recorteRegiao, criarFace, geometria, me
 // 20/11 (Lucca): na espera da análise, um rosto de exemplo que envelhece com a idade em cima (rosto-toy.js). Import dinâmico: se
 // não carregar, a espera segue como antes. Resultado pronto com ela mexendo = botão "Ver o meu resultado" (não troca sozinho).
 const RostoToy = import('./rosto-toy.js?v=20261122b').catch(() => null);
+// 23/11 (ponto 7 da tela 16, lote de 15/11): o cartão "O que a sua foto mostra" com a câmera que anda pelos pontos, a mesma região
+// em outras idades e o exemplo de fora (lupa.js). Sem número (foto ruim), fica a lista de recortes de antes.
+import { montarLupa } from './lupa.js?v=20261123a';
 
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
@@ -506,20 +509,24 @@ function montarResultado(j, f){
   const topo = fotoTopo(al, fr.g, 240); $('r-foto').src = topo.toDataURL('image/jpeg', .86); topo.width = topo.height = 0;
   $('r-refazer')?.addEventListener('click', () => { track('answer', { stepId:'resultado-refazer', valueText:'abriu' }); show('instrucao'); });
 
-  // 2. o que a foto mostra: até 2 sinais mais marcados + 1 a favor (o mais liso), com o recorte da própria foto
+  // 2. o que a foto mostra, com o recorte da própria foto. 23/11 (prévia do cartão com zoom): 2 pontos (+ o sulco), na ordem do passeio
+  // da câmera: o incômodo dela (a região da resposta do espelho) primeiro, depois os outros do mais marcado para o menos; o sulco
+  // (do nariz ao canto da boca, o "bigode chinês") entra sempre que a nota dele for 1 ou mais (pedido do Lucca). Antes (04/11 a
+  // 23/11): 2 mais marcados + 1 a favor; com o incômodo, 2.
   const vis = Object.keys(SINAL).filter(id => nivel(id) != null).sort((a, b) => nivel(b) - nivel(a));
-  const sel = vis.filter(id => nivel(id) >= 1).slice(0, 2);
-  const liso = [...vis].reverse().find(id => !sel.includes(id) && nivel(id) === 0); if (liso) sel.push(liso);
-  for (const id of vis) if (sel.length < 3 && !sel.includes(id)) sel.push(id);
-  // a dor do espelho primeiro (se a região apareceu na foto); com ela, 2 recortes
   const D = DOR[R.espelho], dorId = D ? D.ids.filter(id => nivel(id) != null).sort((a, b) => nivel(b) - nivel(a))[0] || null : null;
-  if (dorId){ sel.splice(0, sel.length, dorId, ...sel.filter(id => id !== dorId)); sel.length = Math.min(sel.length, 2); }
+  const sel = [...(dorId ? [dorId] : []), ...vis.filter(id => id !== dorId)].slice(0, 2);   // 2 pontos (limite de 200 palavras)…
+  if (nivel('sulco_nasolabial') >= 1 && !sel.includes('sulco_nasolabial')) sel.push('sulco_nasolabial');   // …+ o sulco, se marcou
+  const resto = sel.filter(id => id !== dorId).sort((a, b) => nivel(b) - nivel(a));
+  sel.splice(0, sel.length, ...(dorId ? [dorId] : []), ...resto);
   resultado.dor = dorId;
-  const txtRecorte = id => id === dorId ? `Você disse que ${D.t()} te ${D.pl ? 'incomodam' : 'incomoda'}. Na sua foto: ${SINAL[id].c[nivel(id)].toLocaleLowerCase('pt-BR')}.` : SINAL[id].c[nivel(id)];
+  // 23/11 (limite de 200 palavras): mais curta, com as palavras do botão que ela tocou ("O rosto caindo te incomoda. Na foto: …")
+  const txtRecorte = id => id === dorId ? `${cap(D.t())} te ${D.pl ? 'incomodam' : 'incomoda'}. Na foto: ${SINAL[id].c[nivel(id)].toLocaleLowerCase('pt-BR')}.` : SINAL[id].c[nivel(id)];
   $('r-foto-bloco').hidden = !daParaDizer || !sel.length;
-  $('r-foto-bloco').innerHTML = `<h3>O que a sua foto mostra</h3><ul class="recortes">${sel.map(id => `<li data-id="${id}"${id === dorId ? ' data-dor="1"' : ''}><canvas data-r="${SINAL[id].recorte}" role="img" aria-label="Recorte da sua foto: ${esc(SINAL[id].nome.toLowerCase())}"></canvas>
+  if (daParaDizer && sel.length) montarLupa({ bloco:$('r-foto-bloco'), al, g:fr.g, sel, SINAL, nivel, txt:id => esc(txtRecorte(id)), dorId, sexo:R.sexo, idade, track });
+  else $('r-foto-bloco').innerHTML = `<h3>O que a sua foto mostra</h3><ul class="recortes">${sel.map(id => `<li data-id="${id}"${id === dorId ? ' data-dor="1"' : ''}><canvas data-r="${SINAL[id].recorte}" role="img" aria-label="Recorte da sua foto: ${esc(SINAL[id].nome.toLowerCase())}"></canvas>
     <div><b>${esc(SINAL[id].nome)}</b><span>${esc(txtRecorte(id))}</span></div></li>`).join('')}</ul>`;
-  $('r-foto-bloco').querySelectorAll('canvas[data-r]').forEach(c => { const r = recorteRegiao(al, fr.g, c.dataset.r, 128); c.width = r.width; c.height = r.height; c.getContext('2d').drawImage(r, 0, 0); r.width = 0; });
+  if (!(daParaDizer && sel.length)) $('r-foto-bloco').querySelectorAll('canvas[data-r]').forEach(c => { const r = recorteRegiao(al, fr.g, c.dataset.r, 128); c.width = r.width; c.height = r.height; c.getContext('2d').drawImage(r, 0, 0); r.width = 0; });
   al.width = al.height = 0;
 
   // 3. o que pode estar por trás do rosto (só o que ela tem ou marcou), com as fontes numa linha
@@ -531,7 +538,7 @@ function montarResultado(j, f){
     : '<p>Nas suas respostas não apareceu nenhum dos fatores mais estudados.</p>'}`;
   // 4. o cartão do Dr. Lucca (tela final): título com o nome e o incômodo dela, texto com o desejo de 10 anos, UM botão
   $('r-ponte-tit').textContent = tituloCTA();
-  $('r-ponte-txt').textContent = textoCTA();
+  $('r-ponte-txt').hidden = true;   // 23/11: o título novo do Lucca já diz o que ela leva; o desejo de 10 anos segue na mensagem do WhatsApp
 
   // complete: o que a Caixa lê (codigo, idade, sexo, faixa, caso, respostas com o primeiro nome, angulos/enviadas para as 3 fotos, desejo)
   track('complete', { stepId:'resultado', stepIndex:ORDEM.indexOf('resultado'), valueText:caso,
@@ -560,22 +567,12 @@ function respostasLimpa(){ const { nome, ...r } = R; return { ...r, nome:nomeBon
 // (o público diz com número: “tenho 43 mas parece que tenho 80”, voz-pele-potencia.md A6). Texto: o que o Dr. Lucca faz
 // (analisa e explica) e o desejo de 10 anos. Igual no fim A e no B (o A/B só falava em vídeo, e isso saiu em 09/11;
 // props.fim segue na medição).
-const DOR_TIT = {
-  cansada:() => `da cara de ${fem() ? 'cansada' : 'cansado'}`,
-  caindo:() => 'do rosto caindo',
-  pescoco:() => 'do pescoço e da papada',
-  palpebra:() => 'da pálpebra pesando',   // leads antigos
-  manchas:() => 'das manchas e das rugas',
-  velho:() => resultado?.caso === 'mais_velho' && resultado.faixa && R.idade ? `de um rosto de ${resultado.faixa.min} a ${resultado.faixa.max} aos ${R.idade} anos` : 'do que você vê no espelho',
-  outro:() => 'do que você vê no espelho',
-};
+// 23/11 (Lucca, comentário na prévia do cartão com zoom): um título só para todas as respostas do espelho, que fecha o cartão
+// "O que a sua foto mostra" (as características que ela acabou de ver) e diz o que ela leva: o porquê e como agir.
+// Antes (11/11 a 23/11): "o que pode estar por trás {da cara de cansada | do rosto caindo | ...}?" (DOR_TIT).
 function tituloCTA(){
-  const nome = nomeBonito(), t = `o que pode estar por trás ${DOR_TIT[R.espelho]?.() || 'do que o seu rosto mostra'}?`;
+  const nome = nomeBonito(), t = 'quer entender o que deixa o seu rosto com essas características e como agir para mudar e preservar?';
   return nome ? `${nome}, ${t}` : cap(t);
-}
-function textoCTA(){
-  const d = desejo(FUT_VOCE);
-  return `O Dr. Lucca analisa a sua foto com as suas respostas e te explica por onde começar${d ? ` para ${d}` : ''}.`;
 }
 
 // =====================================================================
