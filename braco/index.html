@@ -141,6 +141,8 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
 .pot-mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .pot-mini div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .medida.pot .pot-mini b{font:800 1.45rem/1.1 var(--display);color:var(--fg);font-variant-numeric:tabular-nums}
+.pot-mini .mini-sub{font-size:.8rem;color:var(--muted);line-height:1.3}
+.medida.pot .pot-mini #res-medida{font-size:1.15rem}
 .nota{font-size:.86rem;color:var(--muted);line-height:1.4}
 .grade{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mini2{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 13px;display:flex;flex-direction:column;gap:3px;text-align:left;min-width:0}
@@ -308,17 +310,20 @@ html.medindo,html.medindo body{overflow:hidden;overscroll-behavior:none;touch-ac
       <p class="nota" id="idm-txt"></p>
     </div>
     <div class="medida pot">
-      <span class="rot">Potência estimada</span>
-      <b><span id="res-v">0</span> <small>°/s</small></b>
-      <span class="medida-sub" id="res-medida">0 movimentos em 5 s</span>
+      <!-- 23/11 (Lucca: "340 ms não significa nada… 12,9 km/h é mais aceitável… os graus por segundo também não indicam nada";
+           escolheu a V1 da prévia 3.2b): o número grande é a velocidade da mão; a régua diz a potência em % do esperado para a idade;
+           saem ms e °/s (a potência em °/s segue na conta, na idade muscular e na Caixa) -->
+      <span class="rot">Velocidade dos seus braços</span>
+      <b><span id="res-kmh">0</span> <small>km/h</small></b>
+      <span class="medida-sub" id="res-kmh-txt"></span>
       <div class="cmp" aria-hidden="true"><div class="cmp-trilho"></div><i class="cmp-ref" id="res-ref-m"><span id="res-ref-lbl">referência</span></i><i class="cmp-voce" id="res-v-m"><span>você</span></i></div>
       <p class="cmp-status" id="res-status"></p>
       <!-- 23/11 (Lucca, comentários no artefato Potência: "retire a explicação desse card"; "quero que mostre a força de arranque, a
            velocidade em quilômetros por hora e a potência estimada"; as 4 medidas "ficariam no card acima"; o gráfico, "delete"):
            o card diz potência estimada (média da soma ida + volta de cada movimento × 0,97), arranque e velocidade máxima da mão. -->
       <div class="pot-mini">
-        <div><span class="rot">Arranque</span><b id="res-arr">—</b></div>
-        <div><span class="rot">Velocidade máxima da mão</span><b id="res-kmh">—</b></div>
+        <div><span class="rot">Movimentos</span><b id="res-medida">0 movimentos em 5 s</b></div>
+        <div id="res-acc-box"><span class="rot">Arranque</span><b id="res-acc">—</b><span class="mini-sub" id="res-acc-txt"></span></div>
       </div>
     </div>
     <!-- 23/11 (Lucca, artefato Potência: "quero que isso integre já com o botão verde… igual na pele, um card verde com o CTA e o
@@ -588,9 +593,14 @@ function encerrar(){
   // 23/11: as medidas da tela final (mesma correção ×0,97 da Caixa para o teste curto)
   const difs = []; for (let i = 1; i < picos.length; i++){ const d = picos[i].t - picos[i - 1].t; if (d > 0 && d < RITMO_GAP) difs.push(d); }
   const picoMax = Math.round(Math.max(...picos.map(p => p.w)));
+  // 23/11 (Lucca: "não ia colocar outras coisas como a aceleração também, da forma específica e interessante?"): a aceleração
+  // da mão vem do acelerômetro do celular (devicemotion.acceleration, já sem a gravidade), dentro dos 5 s; percentil 90 para um
+  // tranco solto não virar o número. Fora de 0,3 a 8 g (leitura estranha) não aparece na tela; vai nos eventos para conferir.
+  const accs = amostras.filter(a => a.t >= z && a.t <= z + DURACAO && a.acc > 0).map(a => a.acc).sort((x, y) => x - y);
+  const accMao = accs.length >= 20 ? accs[Math.floor(accs.length * .9)] : null;
   MED = { v:Math.round(Math.round(media(amp)) * .97),   // = Caixa: round(velMedia × 0,97)
     amps:amp.map(a => Math.round(a * .97)), picoMax,
-    kmh:picoMax * Math.PI / 180 * ANTEBRACO * 3.6, tDobra:difs.length ? Math.round(media(difs)) : null, variab, angMed };
+    kmh:picoMax * Math.PI / 180 * ANTEBRACO * 3.6, tDobra:difs.length ? Math.round(media(difs)) : null, variab, angMed, accMao };
   setTimeout(() => analisar(() => {
     // 02/11: a tela repete o que o sensor mediu (a pessoa viu o número subir) e cita as respostas dela em cada frase
     $('res-medida').textContent = `${reps} ${reps === 1 ? 'movimento' : 'movimentos'} em ${Math.round(DURACAO / 1000)}\u00a0s`;
@@ -598,7 +608,7 @@ function encerrar(){
     Analytics.track('complete', { stepId:'resultado', stepIndex:order.indexOf('resultado'),
       valueText:`${reps} movimentos em ${dur.toFixed(0)} s · velocidade ${Math.round(media(amp))} °/s`,   // queda fora do resumo: em teste curto ela mistura a aceleração do começo
       props:{ codigo:meuCodigo(), idade:dados.idade, sexo, peso:dados.peso, futuro:dados.futuro || null, desejo:desejo(FUT_EU) || null, reps, dur:+dur.toFixed(1), velMedia:Math.round(media(amp)),
-        queda, variab, vmao:+vmao.toFixed(2), picoMax, tDobra:MED.tDobra, wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'5s', angMed, angs:angs.slice(0, 40), idadeMusc:MED.idade?.txt || null,
+        queda, variab, vmao:+vmao.toFixed(2), picoMax, tDobra:MED.tDobra, wmax:wmaxAll, picos:picos.map(p => Math.round(p.w)), hz:hz.length, nav:NAV, protocolo:'5s', angMed, angs:angs.slice(0, 40), accMao:MED.accMao != null ? +MED.accMao.toFixed(1) : null, idadeMusc:MED.idade?.txt || null,
         diag:{ leituras:amostras.length, gravMs:Math.round(amostras.length ? amostras[amostras.length - 1].t : 0), iniMs:Math.round(z),
           leit5s:[0,1].map(k => amostras.filter(a => a.t - z >= k * 5000 && a.t - z < (k + 1) * 5000).length),
           picos5s:[0,1].map(k => picos.filter(p => p.t - z >= k * 5000 && p.t - z < (k + 1) * 5000).length),
@@ -686,15 +696,17 @@ function montarMedidas(){
   const m = MED; if (!m) return;
   m.idade = montarIdade();
   const i = dados.idade, ref = refIdade(i), r = m.v / ref, grupo = `${pares()} de ${i} anos`;
-  $('res-v').textContent = num(m.v);
+  const kmhComp = k => k < 6 ? 'na velocidade de uma caminhada rápida' : k < 10 ? 'na velocidade de uma corrida leve' : k < 15 ? 'mais rápida que uma corrida leve' : 'na velocidade de uma bicicleta na cidade';   // comparação aproximada
+  $('res-kmh').textContent = num(m.kmh, 1); $('res-kmh-txt').textContent = `no movimento mais rápido, a sua mão foi ${kmhComp(m.kmh)}`;
   const topo = Math.max(2200, m.v * 1.15, ref * 1.35), pos = x => Math.min(97, Math.max(3, x / topo * 100));
-  $('res-ref-m').style.left = pos(ref) + '%'; $('res-ref-lbl').textContent = `${grupo}: ${num(ref)}`;
+  $('res-ref-m').style.left = pos(ref) + '%'; $('res-ref-lbl').textContent = `esperado aos ${i}`;
   $('res-v-m').style.left = '3%'; requestAnimationFrame(() => requestAnimationFrame(() => { $('res-v-m').style.left = pos(m.v) + '%'; }));
-  $('res-status').textContent = r >= 1.05 ? `Acima da referência de ${grupo}` : r >= .95 ? `Na linha da referência de ${grupo}` : `Abaixo da referência de ${grupo}`;
+  $('res-status').textContent = r >= 1.05 ? `${Math.round((r - 1) * 100)}% acima do esperado para ${grupo}` : r >= .95 ? `Na linha do esperado para ${grupo}` : `${Math.round((1 - r) * 100)}% abaixo do esperado para ${grupo}`;
   // 23/11 (Lucca, artefato Potência): no card, só arranque e velocidade máxima da mão, sem explicação; saíram pico em °/s,
   // constância, amplitude (segue no aviso de movimento curto da idade) e o gráfico
-  $('res-arr').textContent = m.tDobra != null ? `${num(m.tDobra)} ms` : '—';
-  $('res-kmh').textContent = `${num(m.kmh, 1)} km/h`;
+  const g = m.accMao != null ? m.accMao / 9.81 : null, okG = g != null && g >= .3 && g <= 8;
+  $('res-acc-box').hidden = !okG;
+  if (okG){ $('res-acc').textContent = `${num(g, 1)} g`; $('res-acc-txt').textContent = `a sua mão acelerou ${num(g, 1)} vezes a gravidade`; }
 }
 function mensagem(){
   const d = desejo(FUT_EU), quer = d ? ` Daqui a 10 anos, quero ${d}.` : '';
