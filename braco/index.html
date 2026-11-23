@@ -724,13 +724,18 @@ function mensagem(){
 // pessoa de 30 anos falar que aos 40 não quer depender de ninguém"). Base: pesquisa/voz-pele-potencia.md. ----------
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const FUT_FAIXA = i => i < 35 ? 'ate34' : i < 50 ? '35a49' : i < 65 ? '50a64' : '65mais';
-const FUT_OPCOES = { ate34:['disposicao', 'devagar', 'antes'], '35a49':['disposicao', 'chegar10', 'devagar', 'antes'],
-  '50a64':['disposicao', 'chegar10', 'independente', 'antes'], '65mais':['chegar10', 'independente', 'disposicao'] };
-const FUT_ROT = { disposicao:'Ter a mesma disposição de hoje', chegar10:i => `Chegar aos ${i} com força`, independente:'Não depender de ninguém',
-  devagar:'Envelhecer mais devagar', antes:'Cuidar da saúde antes de aparecer problema' };
-const FUT_EU = { disposicao:'ter a mesma disposição de hoje', chegar10:i => `chegar aos ${i} com força`, independente:'não depender de ninguém',
-  devagar:'envelhecer mais devagar', antes:'cuidar da saúde antes de aparecer problema' };
-const FUT_VOCE = { ...FUT_EU, disposicao:'ter, daqui a 10 anos, a mesma disposição de hoje', independente:'não depender de ninguém daqui a 10 anos' };
+// 23/11 (Lucca, comentário no artefato Potência: "a pessoa não quer chegar com força aos 50, ela quer chegar potente, bonita, não só
+// sendo uma atleta, mas parecendo uma atleta… o CTA tem que conversar com o desejo que foi manifestado"): o desejo vem primeiro;
+// "braços firmes" é a fala do público ("braço mole", pesquisa/voz-pele-potencia.md B8); sai o "antes de aparecer problema" (prevenção,
+// não desejo). A chave chegar10 segue (eventos antigos), com o texto novo.
+const FUT_OPCOES = { ate34:['chegar10', 'firme', 'disposicao'], '35a49':['chegar10', 'firme', 'disposicao', 'devagar'],
+  '50a64':['chegar10', 'firme', 'disposicao', 'independente'], '65mais':['independente', 'chegar10', 'firme', 'disposicao'] };
+const FUT_ROT = { disposicao:'Ter a mesma disposição de hoje', chegar10:i => `Chegar aos ${i} com corpo de atleta`, firme:'Ter braços firmes e fortes',
+  independente:'Não depender de ninguém', devagar:'Envelhecer mais devagar', antes:'Cuidar da saúde antes de aparecer problema' };
+const FUT_EU = { disposicao:'ter a mesma disposição de hoje', chegar10:i => `chegar aos ${i} com corpo de atleta`, firme:'ter braços firmes e fortes',
+  independente:'não depender de ninguém', devagar:'envelhecer mais devagar', antes:'cuidar da saúde antes de aparecer problema' };
+const FUT_VOCE = { ...FUT_EU, disposicao:'ter, daqui a 10 anos, a mesma disposição de hoje', firme:'ter braços firmes e fortes daqui a 10 anos',
+  independente:'não depender de ninguém daqui a 10 anos' };
 const i10 = () => (dados.idade || 40) + 10;
 const desejo = M => { const v = M[dados.futuro]; return typeof v === 'function' ? v(i10()) : v || ''; };
 function montarFuturo(){
