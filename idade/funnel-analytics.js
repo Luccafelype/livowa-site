@@ -97,6 +97,9 @@ export function track(eventType, opts = {}) {
     // 16/11 (Lucca: "eu deveria saber quem foi a pessoa"): a marca do link pessoal vai em TODO evento, para saber até onde
     // cada pessoa foi e em qual tela parou, e não só em quem terminou
     if (!props.lv) { const lv = getLv(); if (lv) props.lv = lv; }
+    // 24/11 (Lucca: "posso perguntar, ver instagram, tipo de aparelho celular, carro… eu ofereço o acompanhamento"): o
+    // navegador ia só no 1º evento da visita e a Caixa lê o 'complete' (0 de 129 leads mostravam o aparelho). Vai nele também.
+    if (eventType === 'complete' && !props.user_agent && navigator.userAgent) props.user_agent = navigator.userAgent;
     send('log_funnel_event', {
       p_event_id: uuid(),
       p_funnel_id: cfg.funnelId,

@@ -1602,6 +1602,32 @@ function sinaisPele(v){
 }
 // respostas que um cartão próprio (Pele 2, Pele idade) não conhece: nome legível, uma por linha
 const respostasExtras = (r, conhecidas) => Object.keys(r || {}).filter(k => !conhecidas.includes(k) && !['nome', 'idade', 'segAuto'].includes(k)).map(k => linhas(humano(k), r[k], null, {})).join('');
+// 24/11 (Lucca, pergunta 2: "quem… tiver uma boa condição, isso eu posso perguntar, ver instagram, tipo de aparelho celular,
+// carro… eu ofereço o acompanhamento"): o modelo do celular, legível. O navegador de dentro do Instagram informa o modelo até
+// no iPhone ("iPhone17,3"); no Android vem marca e código ("samsung; SM-S731B"). Fora do Instagram o iPhone não informa e o
+// Android quase nunca. Tabela: identificador da Apple → nome e ano de lançamento (até a linha 17, de 2025). Vai no topo do
+// cartão, ao lado da data, e NUNCA no detalhe(): o detalhe vira a imagem "suas respostas" que a lead recebe (quadrosQuiz).
+const IPHONE = { '10,1':'8 (2017)', '10,4':'8 (2017)', '10,2':'8 Plus (2017)', '10,5':'8 Plus (2017)', '10,3':'X (2017)', '10,6':'X (2017)',
+  '11,2':'XS (2018)', '11,4':'XS Max (2018)', '11,6':'XS Max (2018)', '11,8':'XR (2018)', '12,1':'11 (2019)', '12,3':'11 Pro (2019)', '12,5':'11 Pro Max (2019)',
+  '12,8':'SE 2ª geração (2020)', '13,1':'12 mini (2020)', '13,2':'12 (2020)', '13,3':'12 Pro (2020)', '13,4':'12 Pro Max (2020)',
+  '14,4':'13 mini (2021)', '14,5':'13 (2021)', '14,2':'13 Pro (2021)', '14,3':'13 Pro Max (2021)', '14,6':'SE 3ª geração (2022)', '14,7':'14 (2022)', '14,8':'14 Plus (2022)',
+  '15,2':'14 Pro (2022)', '15,3':'14 Pro Max (2022)', '15,4':'15 (2023)', '15,5':'15 Plus (2023)', '16,1':'15 Pro (2023)', '16,2':'15 Pro Max (2023)',
+  '17,1':'16 Pro (2024)', '17,2':'16 Pro Max (2024)', '17,3':'16 (2024)', '17,4':'16 Plus (2024)', '17,5':'16e (2025)',
+  '18,1':'17 Pro (2025)', '18,2':'17 Pro Max (2025)', '18,3':'17 (2025)', '18,4':'Air (2025)' };
+const SAMSUNG = [[/^SM-F/, 'Galaxy Z, dobrável'], [/^SM-S/, 'linha Galaxy S, a mais cara'], [/^SM-N/, 'Galaxy Note'], [/^SM-G9/, 'Galaxy S antigo'],
+  [/^SM-A/, 'linha Galaxy A, intermediária'], [/^SM-[ME]/, 'linha Galaxy M/F, de entrada']];
+function aparelho(ua){
+  if (!ua || typeof ua !== 'string') return null;
+  let m = /\((iPhone|iPad)(\d+,\d+);/.exec(ua);
+  if (m) return m[1] === 'iPad' ? 'iPad' : IPHONE[m[2]] ? `iPhone ${IPHONE[m[2]]}` : `iPhone (código ${m[2]}, mais novo que a tabela)`;
+  m = /Android \([^;]*;[^;]*;[^;]*;\s*([^;]+);\s*([^;]+);/.exec(ua);   // Instagram no Android: (api/versão; dpi; tela; marca; modelo; …)
+  if (m){ const marca = m[1].trim(), mod = m[2].trim(), s = /samsung/i.test(marca) && SAMSUNG.find(([re]) => re.test(mod));
+    return `${marca[0].toUpperCase() + marca.slice(1)} ${mod}${s ? ` (${s[1]})` : ''}`; }
+  if (/iPhone/.test(ua)) return 'iPhone (abriu fora do Instagram: o modelo não aparece)';
+  m = /Android [\d.]+; ([^;)]+?)(?: Build[^;)]*)?\)/.exec(ua);
+  if (m && m[1].trim() !== 'K'){ const mod = m[1].trim(), s = SAMSUNG.find(([re]) => re.test(mod)); return s ? `Samsung ${mod} (${s[1]})` : `Android ${mod}`; }
+  return /Android/.test(ua) ? 'Android (o navegador não informa o modelo)' : null;
+}
 function detalhe(e){
   const d = e.dados || {}, S = DET[chaveDet(e)] || {}, r = d.respostas && typeof d.respostas === 'object' && !Array.isArray(d.respostas) ? d.respostas : null;
   const princ = S.principal || [], tec = [...(S.tecnico || []), ...TEC_COMUM];
@@ -1716,7 +1742,7 @@ async function ver(c){
       const g = (e.etapa === 'pele-resultado' || e.funil === 'pele2' || e.funil === 'pele-idade') && e.dados?.foto; if (g) usados.add(g);
       if (e.funil === 'pele2') return cartaoPele2(e, quando, g);
       if (e.funil === 'pele-idade') return cartaoPeleIdade(e, quando, g);
-      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}</div>${secao('Resultado e respostas', resDet(e) || '', `${g ? blocoFotos(g, e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) + passoBraco(e.dados || {}) : ''}${detalhe(e)}`, 'sec-res')}${g ? rotP(e) : ''}${rotSec(e)}${assSec(e)}${kitBloco(e)}</div>`;
+      return `<div class="card"><h2>${esc(nome)}</h2><div class="q">${esc(quando)}${aparelho((e.dados || {}).user_agent) ? ` · celular: ${esc(aparelho(e.dados.user_agent))}` : ''}</div>${secao('Resultado e respostas', resDet(e) || '', `${g ? blocoFotos(g, e) : ''}${resDet(e) ? `<div class="res">${esc(resDet(e))}</div>` : ''}${e.funil === 'teste-braco' ? interpretaBraco(e.dados || {}) + passoBraco(e.dados || {}) : ''}${detalhe(e)}`, 'sec-res')}${g ? rotP(e) : ''}${rotSec(e)}${assSec(e)}${kitBloco(e)}</div>`;
     }).join('') + [...new Set(FOTOS.map(f => f.grupo))].filter(g => !usados.has(g)).map(g =>
       `<div class="card"><h2>Fotos da pele</h2><div class="q">sem resultado ligado</div>${blocoFotos(g)}</div>`).join('')
       + (j.fotosErro ? '<p class="aviso">Não consegui carregar as fotos agora.</p>' : ''));
@@ -1777,8 +1803,9 @@ function telasKit(b){
 // quiz: um quadro com as respostas dela (os mesmos rótulos do "Respostas do teste")
 function quadrosQuiz(b){
   const doc = new DOMParser().parseFromString(`<div>${detalhe(b.e)}</div>`, 'text/html');
-  const ls = [...doc.querySelectorAll('.p2 .l, .l')].map(l => ({ rot:l.querySelector('span')?.textContent?.trim() || '', val:l.querySelector('b')?.textContent?.trim() || '' }))
-    .filter(x => x.rot && x.val && !/^nome$/i.test(x.rot)).filter((x, k, a) => a.findIndex(y => y.rot === x.rot) === k).slice(0, 4);
+  // 24/11: sem os "Dados técnicos" (o navegador agora vem no 'complete' e não pode ir para a imagem que a lead recebe)
+  const ls = [...doc.querySelectorAll('.p2 .l, .l')].map(l => ({ l, rot:l.querySelector('span')?.textContent?.trim() || '', val:l.querySelector('b')?.textContent?.trim() || '' }))
+    .filter(x => x.rot && x.val && !/^nome$/i.test(x.rot) && !x.l.closest('.tec')).filter((x, k, a) => a.findIndex(y => y.rot === x.rot) === k).slice(0, 4);
   return [{ chave:'resultado', rot:'Respostas', url:quadro(`${b.c?.titulo || 'Quiz'} · suas respostas`, ls.length ? ls : [{ rot:'Respostas', val:'—' }]) }];
 }
 function kitBloco(e){
