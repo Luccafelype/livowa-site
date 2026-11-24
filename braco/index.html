@@ -646,11 +646,11 @@ function personalizar(){
   $('res-tit').textContent = 'Resultado';   // 23/11 (Lucca: "Colocar apenas: Resultado")
   // 23/11 18h25 (texto do Lucca no artefato Potência): a potência ligada a 3 assuntos, o do desejo que ela tocou em primeiro,
   // e o convite para o passo a passo; sem "o Dr. Lucca te explica/mostra" (pedido dele de 23/11)
-  const estetica = ['chegar10', 'firme'].includes(dados.futuro);
+  const d = desejo(FUT_EU), estetica = ['chegar10', 'firme'].includes(dados.futuro);
   const itens = estetica ? ['Beleza estética', 'Longevidade', 'Resistência a doenças'] : ['Longevidade', 'Resistência a doenças', 'Beleza estética'];
   $('res-txt2').innerHTML = `<p>A potência muscular mais alta está relacionada com:</p>
     <ol class="pontos">${itens.map(x => `<li>${x}</li>`).join('')}</ol>
-    <p>Se você quiser o passo a passo com base nos protocolos científicos mais respeitados, clique no botão abaixo.</p>`;   // 23/11 21h (Lucca: "tire isto": sem a frase do desejo)
+    <p>Se você quiser o passo a passo${d ? ` para <b>${esc(d)}</b>` : ''} com base nos protocolos científicos mais respeitados, clique no botão abaixo.</p>`;   // 23/11 21h30 (Lucca: "aqui tem que estar o objetivo marcado pela pessoa no quiz"): o desejo que ela tocou, com as palavras da opção
 }
 // ---------- 23/11: a tela final com as medidas dela ----------
 // Referência da idade = a régua da Caixa (consulta/index.html, interpretaBraco): 1.390 °/s até os 50 anos, −0,8% por ano
