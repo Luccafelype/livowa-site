@@ -1,0 +1,406 @@
+{
+ "teste-braco": {
+  "nome": "Idade muscular (braço)",
+  "pasta": "braco",
+  "etapas": {
+   "inicio": {
+    "nome": "Capa",
+    "img": "img/teste-braco/inicio.jpg"
+   },
+   "como": {
+    "nome": "Como fazer",
+    "img": "img/teste-braco/como.jpg"
+   },
+   "dados": {
+    "nome": "Sobre você",
+    "img": "img/teste-braco/dados.jpg"
+   },
+   "futuro": {
+    "nome": "Daqui a 10 anos",
+    "img": "img/teste-braco/futuro.jpg"
+   },
+   "sensor": {
+    "nome": "Libere o sensor",
+    "img": "img/teste-braco/sensor.jpg"
+   },
+   "medir": {
+    "nome": "Medindo",
+    "img": "img/teste-braco/medir.jpg"
+   },
+   "analise": {
+    "nome": "Analisando",
+    "img": "img/teste-braco/analise.jpg"
+   },
+   "resultado": {
+    "nome": "Resultado",
+    "img": "img/teste-braco/resultado.jpg"
+   }
+  }
+ },
+ "teste-emagrecimento": {
+  "nome": "Emagrecimento",
+  "pasta": "emagrecimento",
+  "etapas": {
+   "capa": {
+    "nome": "Capa",
+    "img": "img/teste-emagrecimento/capa.jpg"
+   },
+   "sexo": {
+    "nome": "Sexo",
+    "img": "img/teste-emagrecimento/sexo.jpg"
+   },
+   "fase": {
+    "nome": "Fase (gestação, menopausa)",
+    "img": "img/teste-emagrecimento/fase.jpg"
+   },
+   "idade": {
+    "nome": "Idade",
+    "img": "img/teste-emagrecimento/idade.jpg"
+   },
+   "nome": {
+    "nome": "Nome",
+    "img": "img/teste-emagrecimento/nome.jpg"
+   },
+   "medidas": {
+    "nome": "Peso e altura",
+    "img": "img/teste-emagrecimento/medidas.jpg"
+   },
+   "acontece": {
+    "nome": "O que acontece",
+    "img": "img/teste-emagrecimento/acontece.jpg"
+   },
+   "tentou": {
+    "nome": "O que já tentou",
+    "img": "img/teste-emagrecimento/tentou.jpg"
+   },
+   "ciclo": {
+    "nome": "Ciclo",
+    "img": "img/teste-emagrecimento/ciclo.jpg"
+   },
+   "pele": {
+    "nome": "Pelos e espinhas",
+    "img": "img/teste-emagrecimento/pele.jpg"
+   },
+   "tireoide": {
+    "nome": "Sinais da tireoide",
+    "img": "img/teste-emagrecimento/tireoide.jpg"
+   },
+   "exames": {
+    "nome": "Exames",
+    "img": "img/teste-emagrecimento/exames.jpg"
+   },
+   "remedios": {
+    "nome": "Remédios",
+    "img": "img/teste-emagrecimento/remedios.jpg"
+   },
+   "vontade": {
+    "nome": "Vontade de comer",
+    "img": "img/teste-emagrecimento/vontade.jpg"
+   },
+   "sono": {
+    "nome": "Sono",
+    "img": "img/teste-emagrecimento/sono.jpg"
+   },
+   "ronco": {
+    "nome": "Ronco",
+    "img": "img/teste-emagrecimento/ronco.jpg"
+   },
+   "forca": {
+    "nome": "Força",
+    "img": "img/teste-emagrecimento/forca.jpg"
+   },
+   "objetivo": {
+    "nome": "Objetivo",
+    "img": "img/teste-emagrecimento/objetivo.jpg"
+   },
+   "carregando": {
+    "nome": "Calculando",
+    "img": "img/teste-emagrecimento/carregando.jpg"
+   },
+   "resultado": {
+    "nome": "Resultado",
+    "img": "img/teste-emagrecimento/resultado.jpg"
+   }
+  }
+ },
+ "quiz-longevidade": {
+  "nome": "Quiz da longevidade",
+  "pasta": "longevidade",
+  "etapas": {
+   "capa": {
+    "nome": "Capa",
+    "img": "img/quiz-longevidade/capa.jpg"
+   },
+   "autoridade": {
+    "nome": "Quem é o Dr. Lucca",
+    "img": "img/quiz-longevidade/autoridade.jpg"
+   },
+   "objetivo": {
+    "nome": "Objetivo",
+    "img": "img/quiz-longevidade/objetivo.jpg"
+   },
+   "idade": {
+    "nome": "Idade",
+    "img": "img/quiz-longevidade/idade.jpg"
+   },
+   "rotina": {
+    "nome": "Rotina",
+    "img": "img/quiz-longevidade/rotina.jpg"
+   },
+   "ciencia": {
+    "nome": "O que a ciência diz",
+    "img": "img/quiz-longevidade/ciencia.jpg"
+   },
+   "incomoda": {
+    "nome": "O que incomoda",
+    "img": "img/quiz-longevidade/incomoda.jpg"
+   },
+   "atrapalha": {
+    "nome": "O que atrapalha",
+    "img": "img/quiz-longevidade/atrapalha.jpg"
+   },
+   "loading": {
+    "nome": "Calculando",
+    "img": "img/quiz-longevidade/loading.jpg"
+   },
+   "resultado": {
+    "nome": "Resultado",
+    "img": "img/quiz-longevidade/resultado.jpg"
+   }
+  }
+ },
+ "pele-idade": {
+  "nome": "Pele",
+  "pasta": "pele",
+  "etapas": {
+   "capa": {
+    "nome": "Capa",
+    "img": "img/pele-idade/capa.jpg"
+   },
+   "idade": {
+    "nome": "Idade",
+    "img": "img/pele-idade/idade.jpg"
+   },
+   "reforco1": {
+    "nome": "Reforço da idade",
+    "img": "img/pele-idade/reforco1.jpg"
+   },
+   "nome": {
+    "nome": "Nome",
+    "img": "img/pele-idade/nome.jpg"
+   },
+   "espelho": {
+    "nome": "Espelho",
+    "img": "img/pele-idade/espelho.jpg"
+   },
+   "sol": {
+    "nome": "Sol",
+    "img": "img/pele-idade/sol.jpg"
+   },
+   "cigarro": {
+    "nome": "Cigarro",
+    "img": "img/pele-idade/cigarro.jpg"
+   },
+   "reforco2": {
+    "nome": "Reforço do cigarro",
+    "img": "img/pele-idade/reforco2.jpg"
+   },
+   "metabolico": {
+    "nome": "Pressão e glicose",
+    "img": "img/pele-idade/metabolico.jpg"
+   },
+   "movimento": {
+    "nome": "Movimento",
+    "img": "img/pele-idade/movimento.jpg"
+   },
+   "sono": {
+    "nome": "Sono",
+    "img": "img/pele-idade/sono.jpg"
+   },
+   "futuro": {
+    "nome": "Daqui a 10 anos",
+    "img": "img/pele-idade/futuro.jpg"
+   },
+   "instrucao": {
+    "nome": "Instrução da foto",
+    "img": "img/pele-idade/instrucao.jpg"
+   },
+   "scan": {
+    "nome": "Câmera",
+    "img": "img/pele-idade/scan.jpg"
+   },
+   "carregando": {
+    "nome": "Analisando as fotos",
+    "img": "img/pele-idade/carregando.jpg"
+   },
+   "resultado": {
+    "nome": "Resultado",
+    "img": "img/pele-idade/resultado.jpg"
+   }
+  }
+ },
+ "pele2": {
+  "nome": "Pele 2",
+  "pasta": "pele2",
+  "etapas": {
+   "capa": {
+    "nome": "Capa",
+    "img": "img/pele2/capa.jpg"
+   },
+   "sexo": {
+    "nome": "Sexo",
+    "img": "img/pele2/sexo.jpg"
+   },
+   "seguranca": {
+    "nome": "Segurança (gestação)",
+    "img": "img/pele2/seguranca.jpg"
+   },
+   "alergia": {
+    "nome": "Alergia",
+    "img": "img/pele2/alergia.jpg"
+   },
+   "nome": {
+    "nome": "Nome",
+    "img": "img/pele2/nome.jpg"
+   },
+   "incomoda": {
+    "nome": "O que incomoda",
+    "img": "img/pele2/incomoda.jpg"
+   },
+   "tipo": {
+    "nome": "Tipo de pele",
+    "img": "img/pele2/tipo.jpg"
+   },
+   "sol": {
+    "nome": "Sol",
+    "img": "img/pele2/sol.jpg"
+   },
+   "agua": {
+    "nome": "Água",
+    "img": "img/pele2/agua.jpg"
+   },
+   "sono": {
+    "nome": "Sono",
+    "img": "img/pele2/sono.jpg"
+   },
+   "rotina": {
+    "nome": "Rotina",
+    "img": "img/pele2/rotina.jpg"
+   },
+   "objetivo": {
+    "nome": "Objetivo",
+    "img": "img/pele2/objetivo.jpg"
+   },
+   "instrucao": {
+    "nome": "Instrução da foto",
+    "img": "img/pele2/instrucao.jpg"
+   },
+   "scan": {
+    "nome": "Câmera",
+    "img": "img/pele2/scan.jpg"
+   },
+   "carregando": {
+    "nome": "Analisando a foto",
+    "img": "img/pele2/carregando.jpg"
+   },
+   "resultado": {
+    "nome": "Resultado",
+    "img": "img/pele2/resultado.jpg"
+   }
+  }
+ },
+ "teste-tipos": {
+  "nome": "4 tipos",
+  "pasta": "tipos",
+  "etapas": {
+   "capa": {
+    "nome": "Capa",
+    "img": "img/teste-tipos/capa.jpg"
+   },
+   "idade": {
+    "nome": "Idade",
+    "img": "img/teste-tipos/idade.jpg"
+   },
+   "nome": {
+    "nome": "Nome",
+    "img": "img/teste-tipos/nome.jpg"
+   },
+   "medidas": {
+    "nome": "Peso e altura",
+    "img": "img/teste-tipos/medidas.jpg"
+   },
+   "mayo": {
+    "nome": "O estudo da Mayo",
+    "img": "img/teste-tipos/mayo.jpg"
+   },
+   "cb1": {
+    "nome": "Frase 1 (cérebro)",
+    "img": "img/teste-tipos/cb1.jpg"
+   },
+   "ef1": {
+    "nome": "Frase 2 (estômago)",
+    "img": "img/teste-tipos/ef1.jpg"
+   },
+   "em1": {
+    "nome": "Frase 3 (emocional)",
+    "img": "img/teste-tipos/em1.jpg"
+   },
+   "gl1": {
+    "nome": "Frase 4 (gasto lento)",
+    "img": "img/teste-tipos/gl1.jpg"
+   },
+   "cb2": {
+    "nome": "Frase 5 (cérebro)",
+    "img": "img/teste-tipos/cb2.jpg"
+   },
+   "ef2": {
+    "nome": "Frase 6 (estômago)",
+    "img": "img/teste-tipos/ef2.jpg"
+   },
+   "mais1": {
+    "nome": "Mais uma coisa",
+    "img": "img/teste-tipos/mais1.jpg"
+   },
+   "tentou": {
+    "nome": "O que já tentou",
+    "img": "img/teste-tipos/tentou.jpg"
+   },
+   "em2": {
+    "nome": "Frase 7 (emocional)",
+    "img": "img/teste-tipos/em2.jpg"
+   },
+   "gl2": {
+    "nome": "Frase 8 (gasto lento)",
+    "img": "img/teste-tipos/gl2.jpg"
+   },
+   "cb3": {
+    "nome": "Frase 9 (cérebro)",
+    "img": "img/teste-tipos/cb3.jpg"
+   },
+   "ef3": {
+    "nome": "Frase 10 (estômago)",
+    "img": "img/teste-tipos/ef3.jpg"
+   },
+   "em3": {
+    "nome": "Frase 11 (emocional)",
+    "img": "img/teste-tipos/em3.jpg"
+   },
+   "gl3": {
+    "nome": "Frase 12 (gasto lento)",
+    "img": "img/teste-tipos/gl3.jpg"
+   },
+   "objetivo": {
+    "nome": "Objetivo",
+    "img": "img/teste-tipos/objetivo.jpg"
+   },
+   "carregando": {
+    "nome": "Calculando",
+    "img": "img/teste-tipos/carregando.jpg"
+   },
+   "resultado": {
+    "nome": "Resultado",
+    "img": "img/teste-tipos/resultado.jpg"
+   }
+  }
+ }
+}

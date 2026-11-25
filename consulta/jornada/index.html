@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Jornada · Livowa</title>
+<!-- RASCUNHO de 25/11/2026 (Lucca: "um fluxo, como aqueles fluxos de construção de funil, para ver a jornada do cliente, e eu
+     poderia acrescentar passos, fazer comentários… ver integrações"; referência dele: Funnelytics; "ter os dados em tempo real…
+     para todos os funis… integração automática").
+     - Números AO VIVO: o mesmo pedido da Caixa ({k, acao:'funil'}), refeito a cada 60 s. Nada de número escrito à mão.
+     - Todo funil aparece sozinho: a lista vem dos dados (opcoes.funis); nomes e miniaturas vêm de mapa.json
+       (gerado por livowa-empresa/scripts/jornada_miniaturas.py a partir das telas da Central).
+     - Comentário e "+ passo" gravam no mesmo lugar dos Ajustes da Caixa (config_salvar, escopo teste:<funil>, chaves jn_* e jp_*);
+       o Claude lê de lá. Só lê e grava texto; não muda funil nenhum sozinho. -->
+<style>
+:root{--bg:#0e1311;--s:#171e1a;--s2:#1f2823;--fg:#e6ece8;--m:#a0aea6;--l:#2d3732;--a:#5cc99c;--a2:#173a2d;--w:#e8ad57;--w2:#3a2b14;--r:#ff8f7a;--r2:#3d1d18;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+button,select,textarea{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--l);padding:12px max(16px,env(safe-area-inset-left)) 10px}
+.h1{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}
+.h1 h1{margin:0;font-size:1.15rem}
+.vivo{font-size:.78rem;color:var(--m)}.vivo i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--a);margin-right:6px;animation:p 2s infinite}
+.vivo.erro i{background:var(--r);animation:none}
+@keyframes p{50%{opacity:.25}}
+.h1 a{margin-left:auto;color:var(--a);font-size:.85rem;text-decoration:none}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button,.seg button{background:var(--s);border:1px solid var(--l);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.84rem}
+.chips button small{color:var(--m);margin-left:4px}
+.chips button[aria-pressed=true],.seg button[aria-pressed=true]{background:var(--a2);border-color:var(--a);color:var(--a)}
+.seg{display:flex;gap:4px}
+select{background:var(--s);border:1px solid var(--l);border-radius:8px;padding:5px 8px;font-size:.84rem;max-width:230px}
+.resumo{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px max(16px,env(safe-area-inset-left)) 0;font-size:.9rem;color:var(--m)}
+.resumo b{color:var(--fg);font-size:1.1rem;margin-right:5px;font-variant-numeric:tabular-nums}
+.resumo .q b{color:var(--r)}
+#tela{overflow-x:auto;padding:18px max(16px,env(safe-area-inset-left)) 40px;-webkit-overflow-scrolling:touch}
+#fluxo{display:flex;align-items:flex-start;gap:0;width:max-content;min-height:330px}
+.faixa{display:flex;flex-direction:column;gap:8px}
+.faixa>h2{margin:0 0 2px;font:600 .68rem/1 ui-monospace,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--m)}
+.linha{display:flex;align-items:center}
+.sep{width:26px;align-self:stretch;border-left:1px dashed var(--l);margin:22px 0 0 26px}
+.no{position:relative;width:132px;flex:none;background:var(--s);border:1px solid var(--l);border-radius:10px;padding:0;cursor:pointer;text-align:left;overflow:hidden;display:flex;flex-direction:column}
+.no:hover,.no:focus-visible{border-color:var(--a);outline:none}
+.no .mini{height:150px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.9rem;color:var(--m);border-bottom:1px solid var(--l)}
+.no .mini img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.no .tx{padding:7px 9px 9px;display:flex;flex-direction:column;gap:1px;min-height:74px}
+.no .t{font-size:.78rem;line-height:1.25;color:var(--m);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.no .n{font-size:1.35rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.no .p{font-size:.72rem;color:var(--m)}
+.no.queda{border-color:var(--r)}
+.no.sem .n{color:var(--m);font-size:.82rem;font-weight:500}
+.no.ideia{border-style:dashed;border-color:var(--w);background:var(--w2)}
+.no.ideia .mini{background:transparent;color:var(--w);height:60px;border-bottom:1px dashed var(--w)}
+.no.fonte .mini,.no.acao .mini,.no.voce .mini{height:60px}
+.no.voce{border-color:var(--w)}.no.voce .mini{color:var(--w)}
+.no .nota{position:absolute;top:6px;right:6px;background:var(--w);color:#201400;font:700 .66rem/1 ui-monospace,Menlo,monospace;border-radius:999px;padding:3px 6px}
+.seta{width:58px;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;color:var(--m);font-variant-numeric:tabular-nums}
+.seta::after{content:"";display:block;width:100%;height:2px;background:linear-gradient(90deg,var(--l),var(--a));border-radius:2px}
+.seta b{color:var(--fg);font-weight:600}
+.seta.queda b,.seta.queda span{color:var(--r)}.seta.queda::after{background:var(--r)}
+.pilha{display:flex;flex-direction:column;gap:8px}
+.vazio,.aviso{padding:26px max(16px,env(safe-area-inset-left));color:var(--m)}
+#painel{position:fixed;top:0;right:0;bottom:0;width:min(380px,100vw);background:var(--s);border-left:1px solid var(--l);z-index:20;padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow-y:auto;display:flex;flex-direction:column;gap:12px;box-shadow:-12px 0 30px rgba(0,0,0,.4)}
+#painel[hidden]{display:none}
+#painel h3{margin:0;font-size:1.05rem}
+#painel .fechar{align-self:flex-start;background:none;border:1px solid var(--l);border-radius:999px;padding:5px 12px;cursor:pointer}
+#painel dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.88rem}
+#painel dt{color:var(--m)}#painel dd{margin:0;font-variant-numeric:tabular-nums}
+#painel img{width:100%;max-height:230px;object-fit:cover;object-position:top;border-radius:8px;border:1px solid var(--l)}
+#painel label{font-size:.8rem;color:var(--m);display:block;margin-bottom:4px}
+#painel textarea{width:100%;min-height:74px;background:var(--bg);border:1px solid var(--l);border-radius:8px;padding:8px;resize:vertical}
+#painel .st{font-size:.76rem;color:var(--m);min-height:1.1em}
+#painel .st.ok{color:var(--a)}#painel .st.err{color:var(--r)}
+#painel .integ{background:var(--bg);border:1px solid var(--l);border-radius:8px;padding:8px 10px;font-size:.84rem}
+.rasc{font-size:.74rem;color:var(--w);border:1px solid var(--w);border-radius:999px;padding:1px 8px}
+@media (prefers-reduced-motion:reduce){.vivo i{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="h1"><h1>Jornada</h1><span class="rasc">rascunho</span><span class="vivo" id="vivo"><i></i><span id="vivo-tx">carregando…</span></span><a id="voltar" href="../">← Caixa</a></div>
+  <div class="filtros"><div class="chips" id="funis"></div><div class="seg" id="dias"><button type="button" data-d="7">7 dias</button><button type="button" data-d="30">30 dias</button></div><select id="origem" aria-label="De onde vieram"></select></div>
+</header>
+<div class="resumo" id="resumo"></div>
+<div id="tela"><div id="fluxo"></div></div>
+<aside id="painel" hidden aria-label="Detalhe da etapa"></aside>
+<script>
+const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
+const H = new URLSearchParams(location.hash.slice(1)), K = H.get('k') || '';
+const DESDE = '2026-11-13T03:00:00.000Z';   // o mesmo corte da Caixa (antes disso eram testes dele)
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const pct = v => v == null ? '—' : v.toLocaleString('pt-BR', { maximumFractionDigits:1 }) + '%';
+const post = corpo => fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ k:K, ...corpo }) });
+const chave = (pre, id) => (pre + String(id).replace(/[^A-Za-z0-9_]/g, '_')).slice(0, 40);
+let E = { funil:H.get('f') || 'pele-idade', dias:7, origem:'', dados:null, mapa:{}, cfg:{}, pedido:0, aberto:null };
+try { const g = JSON.parse(localStorage.getItem('livowa_jornada') || '{}'); if (!H.get('f') && /^[a-z0-9-]{1,40}$/.test(g.funil || '')) E.funil = g.funil; if (g.dias === 30) E.dias = 30; } catch {}
+$('voltar').href = '../' + (K ? '#k=' + encodeURIComponent(K) : '');
+
+// o que fica antes e depois do teste; os números de "com você" vêm da venda (CRM da Caixa), os da chegada vêm da origem
+const ROT_ORIGEM = o => o === 'bio' ? 'Link da bio' : o === 'whatsapp' ? 'Perfil do WhatsApp' : o === 'direto' ? 'Link direto' : o === 'teste' ? 'Testes (Claude)' : o.startsWith('direct:') ? 'Comentou ' + o.slice(7).toUpperCase() + ' → Direct' : o === 'direct' ? 'Direct' : o.replace(/^outro:/, '');
+const SIST = { fonte:'Instagram + robô do Direct (OpenReply) + link medido (livowa.com/comece)', etapa:'Site livowa.com (tela do teste; cada passagem é gravada no banco)', fim:'Site livowa.com (botão do fim do teste)', voce:'Caixa (livowa.com/consulta) + seu WhatsApp', ideia:'Ainda não existe: é um passo que você pediu' };
+const FIM_ROT = { complete:'Terminou o teste', contato:'Chamou você', whatsapp:'Tocou em WhatsApp', direct:'Tocou em Direct', lead_capture:'Deixou o contato', explicar:'Tocou em "me explique"' };
+
+function nota(id){ return E.cfg[chave('jn_', id)] || ''; }
+function passo(id){ return E.cfg[chave('jp_', id)] || ''; }
+function no(o){
+  const temNota = nota(o.id), img = o.img ? `<img src="${esc(o.img)}" alt="" loading="lazy" onerror="this.remove()">` : esc(o.ico || '');
+  return `<button type="button" class="no ${o.tipo}${o.queda ? ' queda' : ''}${o.n == null ? ' sem' : ''}" data-no="${esc(o.id)}">
+    ${temNota ? '<span class="nota">nota</span>' : ''}<span class="mini">${img}</span>
+    <span class="tx"><span class="t">${esc(o.t)}</span><span class="n">${o.n == null ? esc(o.semTx || 'sem medição') : o.n.toLocaleString('pt-BR')}</span>${o.sub ? `<span class="p">${esc(o.sub)}</span>` : ''}</span></button>`;
+}
+const seta = (p, saiu, q) => `<span class="seta${q ? ' queda' : ''}"><b>${p == null ? '' : pct(p)}</b><span>${saiu > 0 ? '−' + saiu : '&nbsp;'}</span></span>`;
+
+let NOS = {};
+function desenha(){
+  const j = E.dados, f = E.funil, mp = E.mapa[f] || { etapas:{} };
+  const funis = (j.opcoes.funis || []).filter(x => x.id !== 'crm-uso');
+  if (!funis.some(x => x.id === f)) funis.unshift({ id:f, pessoas:0 });
+  $('funis').innerHTML = funis.map(x => `<button type="button" data-funil="${esc(x.id)}" aria-pressed="${x.id === f}">${esc((E.mapa[x.id] || {}).nome || x.id)}<small>${x.pessoas || 0}</small></button>`).join('');
+  document.querySelectorAll('#dias button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.d === E.dias));
+  const os = ((j.opcoes.origens || {})[f] || []);
+  $('origem').innerHTML = [['', 'De todo lugar'], ...os.map(o => [o.id, `${ROT_ORIGEM(o.id)} · ${o.pessoas}`])].map(([v, t]) => `<option value="${esc(v)}"${v === E.origem ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  NOS = {};
+  const cad = ((j.etapas || {}).etapas || []).filter(e => !e.desvio), fim = (j.etapas || {}).fim || [];
+  if (!cad.length){ $('resumo').innerHTML = ''; $('fluxo').innerHTML = `<p class="vazio">Ninguém passou por aqui nos últimos ${E.dias} dias${E.origem ? ' vindo desse lugar' : ''}.</p>`; return; }
+  // maior queda
+  let qi = -1, qn = 0; cad.forEach((e, i) => { if (!i) return; const s = cad[i - 1].pessoas - e.pessoas; if (s > qn){ qn = s; qi = i; } });
+  const ini = cad[0].pessoas, term = fim.find(x => x.tipo === 'complete'), conv = fim.find(x => x.tipo === 'contato');
+  $('resumo').innerHTML = `<span><b>${ini}</b>começaram</span><span><b>${term ? term.pessoas : 0}</b>terminaram${term ? ' · ' + pct(term.pct_inicio) : ''}</span><span><b>${conv ? conv.pessoas : 0}</b>chamaram você${conv ? ' · ' + pct(conv.pct_inicio) : ''}</span>${qi > 0 ? `<span class="q"><b>−${qn}</b>maior queda: ${esc((mp.etapas[cad[qi].etapa] || {}).nome || cad[qi].etapa)}</span>` : ''}`;
+  let h = '';
+  // 1 · chegada
+  const fontes = (E.origem ? os.filter(o => o.id === E.origem) : os).filter(o => o.id !== 'teste').slice(0, 6);
+  h += `<div class="faixa"><h2>Chegada</h2><div class="pilha">${(fontes.length ? fontes : [{ id:'?', pessoas:null }]).map(o => { const x = { id:'fonte:' + o.id, tipo:'fonte', ico:o.id.startsWith('direct') ? '💬' : o.id === 'bio' ? '🔗' : '↗', t:o.id === '?' ? 'De onde vieram' : ROT_ORIGEM(o.id), n:o.pessoas, sub:'pessoas' }; NOS[x.id] = x; return no(x); }).join('')}</div></div><div class="sep"></div>`;
+  // 2 · o teste, tela por tela
+  h += `<div class="faixa"><h2>O teste, tela por tela</h2><div class="linha">`;
+  cad.forEach((e, i) => {
+    const m = mp.etapas[e.etapa] || {}, saiu = i ? cad[i - 1].pessoas - e.pessoas : 0;
+    if (i) h += seta(e.pct_anterior, saiu, i === qi);
+    const x = { id:e.etapa, tipo:'etapa', t:m.nome || e.etapa, img:m.img, ico:'▢', n:e.pessoas, sub:i ? pct(e.pct_inicio) + ' do início' : 'início', queda:i === qi, e, saiu };
+    NOS[x.id] = x; h += no(x);
+    if (passo(e.etapa)){ const y = { id:'ideia:' + e.etapa, tipo:'ideia', ico:'+', t:passo(e.etapa), n:null, semTx:'passo que você pediu', de:e.etapa }; NOS[y.id] = y; h += seta(null, 0) + no(y); }
+  });
+  h += `</div></div><div class="sep"></div>`;
+  // 3 · fim do teste
+  const fs = ['complete', 'whatsapp', 'direct', 'lead_capture', 'explicar'].map(t => fim.find(x => x.tipo === t || (x.tipo === 'contato' && x.canal === t))).filter(Boolean);
+  h += `<div class="faixa"><h2>Fim do teste</h2><div class="pilha">${(fs.length ? fs : [{ tipo:'complete', pessoas:null }]).map(x0 => { const t = x0.canal || x0.tipo; const x = { id:'fim:' + t, tipo:'acao fim', ico:t === 'complete' ? '✓' : '➜', t:FIM_ROT[t] || t, n:x0.pessoas, sub:x0.pct_inicio != null ? pct(x0.pct_inicio) + ' do início' : '' }; NOS[x.id] = x; return no(x); }).join('')}</div></div><div class="sep"></div>`;
+  // 4 · com você (CRM da Caixa)
+  const vs = Array.isArray(j.venda) ? j.venda.filter(v => !v.teste) : null, tem = (v, es) => (v.etapas || []).some(e => es.includes(e)) || es.includes(v.status);
+  const ELA = ['respondeu', 'conversa', 'faltou', 'comprou', 'nutrir', 'nao_quis'];
+  const V = [['chegou', 'Mensagem chegou na Caixa', vs ? vs.length : null], ['explicou', 'Você respondeu ou explicou', vs ? vs.filter(v => v.primeira_resposta_em || tem(v, ['audio', 'analisei', ...ELA, 'sumiu'])).length : null],
+    ['respondeu', 'Ela respondeu', vs ? vs.filter(v => tem(v, ELA)).length : null], ['conversa', 'Conversa marcada', vs ? vs.filter(v => tem(v, ['conversa', 'faltou', 'comprou'])).length : null], ['comprou', 'Começou o acompanhamento', vs ? vs.filter(v => tem(v, ['comprou'])).length : null]];
+  h += `<div class="faixa"><h2>Com você · todos os testes desde 13/11</h2><div class="linha">${V.map(([id, t, n], i) => { const x = { id:'voce:' + id, tipo:'voce', ico:['📥', '🎙', '↩', '📅', '★'][i], t, n, semTx:'sem medição' }; NOS[x.id] = x; const ant = i ? V[i - 1][2] : null;
+    return (i ? seta(ant ? Math.round(1000 * (n || 0) / ant) / 10 : null, ant != null && n != null ? ant - n : 0) : '') + no(x) + (passo('voce:' + id) ? (() => { const y = { id:'ideia:voce:' + id, tipo:'ideia', ico:'+', t:passo('voce:' + id), n:null, semTx:'passo que você pediu', de:'voce:' + id }; NOS[y.id] = y; return seta(null, 0) + no(y); })() : ''); }).join('')}</div></div>`;
+  $('fluxo').innerHTML = h;
+  if (E.aberto && NOS[E.aberto] && !E.semPainel) abre(E.aberto, true);
+}
+
+function abre(id, manter){
+  const x = NOS[id]; if (!x) return; E.aberto = id;
+  const alvo = x.tipo === 'ideia' ? x.de : id, p = $('painel'), tipo = x.tipo.split(' ')[0] === 'acao' ? 'fim' : x.tipo;
+  const antigo = manter ? { n:p.querySelector('#tx-nota')?.value, s:p.querySelector('#tx-passo')?.value } : {};
+  p.innerHTML = `<button type="button" class="fechar" id="fecha">← Fechar</button><h3>${esc(x.t)}</h3>
+    ${x.img ? `<img src="${esc(x.img)}" alt="Print da tela ${esc(x.t)}">` : ''}
+    <dl>${x.n != null ? `<dt>Pessoas</dt><dd>${x.n.toLocaleString('pt-BR')} em ${E.dias} dias</dd>` : '<dt>Pessoas</dt><dd>sem medição ainda</dd>'}
+      ${x.e ? `<dt>Da tela anterior</dt><dd>${pct(x.e.pct_anterior)}${x.saiu > 0 ? ` (saíram ${x.saiu})` : ''}</dd><dt>Do início</dt><dd>${pct(x.e.pct_inicio)}</dd><dt>Tempo na tela</dt><dd>${x.e.mediana_s == null ? 'sem tempo medido' : Math.round(x.e.mediana_s) + ' s (mediana)'}</dd>` : ''}</dl>
+    <div class="integ"><b>Quem faz este passo:</b> ${esc(SIST[tipo] || '')}</div>
+    <div><label for="tx-nota">Comentário para o Claude sobre este passo</label><textarea id="tx-nota" maxlength="1900" placeholder="O que mudar aqui?">${esc(antigo.n ?? nota(alvo))}</textarea><div class="st" id="st-nota"></div></div>
+    <div><label for="tx-passo">+ Passo novo depois deste (o que deve acontecer)</label><textarea id="tx-passo" maxlength="1900" placeholder="Ex.: mandar um áudio curto antes da explicação">${esc(antigo.s ?? passo(alvo))}</textarea><div class="st" id="st-passo"></div></div>`;
+  p.hidden = false;
+  $('fecha').onclick = () => { p.hidden = true; E.aberto = null; };
+  const liga = (campo, pre, st) => { let t; $(campo).addEventListener('input', () => { clearTimeout(t); $(st).textContent = 'gravando…'; $(st).className = 'st'; t = setTimeout(() => salva(pre, alvo, $(campo).value.trim(), st), 900); }); };
+  liga('tx-nota', 'jn_', 'st-nota'); liga('tx-passo', 'jp_', 'st-passo');
+}
+async function salva(pre, alvo, valor, st){
+  const c = chave(pre, alvo);
+  try { const r = await post({ acao:'config_salvar', escopo:'teste:' + E.funil, chave:c, valor:valor || null }), j = await r.json(); if (!j.ok) throw 0;
+    if (valor) E.cfg[c] = valor; else delete E.cfg[c];
+    const s = $(st); if (s){ s.textContent = valor ? 'Gravado. O Claude lê daqui.' : 'Apagado.'; s.className = 'st ok'; }
+    E.semPainel = true; desenha(); E.semPainel = false;   // redesenha o fluxo (selo de nota, passo novo) sem tirar o cursor da caixa
+  } catch { const s = $(st); if (s){ s.textContent = 'Não gravou. O texto continua na caixa; tente de novo.'; s.className = 'st err'; } }
+}
+async function carregaCfg(){
+  try { const r = await post({ acao:'config_ler' }), j = await r.json(); E.cfg = {};
+    (j.config || []).forEach(c => { if (c.escopo === 'teste:' + E.funil && /^j[np]_/.test(c.chave) && typeof c.valor === 'string') E.cfg[c.chave] = c.valor; }); } catch {}
+}
+async function carrega(silencio){
+  const n = ++E.pedido;
+  if (!K){ $('fluxo').innerHTML = '<p class="aviso">Abra pelo botão “Jornada” dentro da Caixa (o link carrega a sua chave).</p>'; $('vivo-tx').textContent = 'sem chave'; $('vivo').classList.add('erro'); return; }
+  try { localStorage.setItem('livowa_jornada', JSON.stringify({ funil:E.funil, dias:E.dias })); } catch {}
+  try {
+    const r = await post({ acao:'funil', dias:E.dias, funil:E.funil, origem:E.origem, variante:'', desde:DESDE });
+    if (r.status === 404) throw new Error('link sem acesso');
+    const j = await r.json(); if (!j.ok) throw new Error(j.erro || r.status);
+    if (n !== E.pedido) return;
+    E.dados = j; if (!silencio) await carregaCfg();
+    desenha(); $('vivo').classList.remove('erro'); $('vivo-tx').textContent = 'ao vivo · atualizado às ' + new Date().toLocaleTimeString('pt-BR');
+  } catch (e) { if (n !== E.pedido) return; $('vivo').classList.add('erro'); $('vivo-tx').textContent = 'não atualizou (' + (e.message || 'erro') + ')'; if (!E.dados) $('fluxo').innerHTML = '<p class="aviso">Não consegui carregar os números agora.</p>'; }
+}
+document.addEventListener('click', ev => {
+  const f = ev.target.closest('[data-funil]'); if (f){ E.funil = f.dataset.funil; E.origem = ''; E.aberto = null; $('painel').hidden = true; carrega(); return; }
+  const d = ev.target.closest('#dias [data-d]'); if (d){ E.dias = +d.dataset.d; carrega(true); return; }
+  const n = ev.target.closest('[data-no]'); if (n) abre(n.dataset.no);
+});
+$('origem').addEventListener('change', e => { E.origem = e.target.value; carrega(true); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape'){ $('painel').hidden = true; E.aberto = null; } });
+setInterval(() => { if (!document.hidden && K && !document.activeElement?.matches?.('textarea')) carrega(true); }, 60000);
+(async () => { try { const r = await fetch('mapa.json'); if (r.ok) E.mapa = await r.json(); } catch {} carrega(); })();
+</script>
+</body>
+</html>
