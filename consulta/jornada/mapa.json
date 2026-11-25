@@ -5,35 +5,118 @@
   "etapas": {
    "inicio": {
     "nome": "Capa",
-    "img": "img/teste-braco/inicio.jpg"
+    "img": "img/teste-braco/inicio.png",
+    "tipo": "capa",
+    "textos": {
+     "assinatura": "Dr. Lucca Marques\nMédico · CRM-GO 33.990",
+     "titulo": "Qual é a sua idade muscular?",
+     "texto": "Com o celular na mão, faça o máximo desse movimento em 5 segundos e descubra a idade que a potência dos seus braços mostra.",
+     "botao": "Fazer o teste"
+    },
+    "inteira": "img/teste-braco/inicio-inteira.png"
    },
    "como": {
     "nome": "Como fazer",
-    "img": "img/teste-braco/como.jpg"
+    "img": "img/teste-braco/como.png",
+    "tipo": "instrucao",
+    "textos": {
+     "titulo": "Como fazer",
+     "item_1": "Fique em pé e segure o celular muito firme na mão.",
+     "item_2": "Cotovelo junto do corpo: suba o celular da altura do bolso até a altura do queixo e desça, o mais rápido que conseguir. Não precisa esticar o braço todo nem encostar no ombro.",
+     "item_3": "Toque em Começar e faça o máximo desse movimento em 5 segundos, sem parar. A tela verde avisa o começo; dois bips e outra tela verde indicam o fim.",
+     "nota": "Não faça se tiver dor no ombro, no cotovelo ou no punho.",
+     "botao": "Entendi"
+    },
+    "inteira": "img/teste-braco/como-inteira.png"
    },
    "dados": {
     "nome": "Sobre você",
-    "img": "img/teste-braco/dados.jpg"
+    "img": "img/teste-braco/dados.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Sobre você",
+     "texto": "Antes do teste, informe seu sexo, sua idade e seu peso. O resultado é comparado com pessoas parecidas com você.",
+     "opcao_1": "Homem",
+     "opcao_2": "Mulher",
+     "rotulo": "Idade",
+     "rotulo_2": "Peso (kg)",
+     "nota": "Role para escolher.",
+     "botao": "Continuar"
+    },
+    "inteira": "img/teste-braco/dados-inteira.png"
    },
    "futuro": {
     "nome": "Daqui a 10 anos",
-    "img": "img/teste-braco/futuro.jpg"
+    "img": "img/teste-braco/futuro.png",
+    "tipo": "tela",
+    "textos": {
+     "titulo": "Daqui a 10 anos você vai ter 50. O que mais quer?",
+     "link": "Chegar aos 50 com corpo de atleta",
+     "link_2": "Ter braços firmes e fortes",
+     "link_3": "Ter a mesma disposição de hoje",
+     "link_4": "Envelhecer mais devagar"
+    }
    },
    "sensor": {
     "nome": "Libere o sensor",
-    "img": "img/teste-braco/sensor.jpg"
+    "img": "img/teste-braco/sensor.png",
+    "tipo": "medida",
+    "textos": {
+     "titulo": "Libere o sensor de movimento do celular",
+     "nota": "Ao tocar no botão, o iPhone pergunta se pode usar o sensor de movimento. Toque em Permitir.",
+     "botao": "Liberar o sensor"
+    }
    },
    "medir": {
     "nome": "Medindo",
-    "img": "img/teste-braco/medir.jpg"
+    "img": "img/teste-braco/medir.png",
+    "tipo": "medida",
+    "textos": {
+     "texto": "3",
+     "texto_2": "Valendo! O máximo que conseguir, sem parar",
+     "texto_3": "4 s",
+     "fala_1": "Pode começar: do bolso ao queixo, rápido (tela verde)",
+     "fala_2": "Valendo! O máximo que conseguir, sem parar (os 5 s contam do 1º movimento)",
+     "fala_3": "Pronto! Pode parar (tela verde de novo)",
+     "fala_4": "Um bip no 1º movimento; dois bips no fim"
+    }
    },
    "analise": {
     "nome": "Analisando",
-    "img": "img/teste-braco/analise.jpg"
+    "img": "img/teste-braco/analise.png",
+    "tipo": "carregando",
+    "textos": {
+     "titulo": "Analisando o seu movimento…",
+     "texto": "Medindo a amplitude…",
+     "texto_2": "33%"
+    }
    },
    "resultado": {
     "nome": "Resultado",
-    "img": "img/teste-braco/resultado.jpg"
+    "img": "img/teste-braco/resultado.png",
+    "tipo": "resultado",
+    "textos": {
+     "titulo": "Resultado",
+     "texto": "Idade muscular estimada",
+     "texto_2": "57 anos",
+     "texto_3": "17 anos acima dos seus 40",
+     "texto_4": "Velocidade dos seus braços",
+     "texto_5": "12,9",
+     "texto_6": "km/h",
+     "texto_7": "no movimento mais rápido, a sua mão foi mais rápida que uma corrida leve",
+     "texto_8": "6% abaixo do esperado para mulheres de 40 anos",
+     "texto_9": "Movimentos",
+     "texto_10": "7 movimentos em 5 s",
+     "assinatura": "Dr. Lucca Marques · Médico · CRM-GO 33.990",
+     "texto_11": "A potência muscular mais alta está relacionada com:",
+     "item_1": "Beleza estética",
+     "item_2": "Longevidade",
+     "item_3": "Resistência a doenças",
+     "texto_12": "Se você quiser o passo a passo para chegar aos 50 com corpo de atleta com base nos protocolos científicos mais respeitados, clique no botão abaixo.",
+     "botao": "Quero o passo a passo",
+     "link": "ou pelo Direct do Instagram"
+    },
+    "inteira": "img/teste-braco/resultado-inteira.png"
    }
   }
  },
@@ -43,83 +126,306 @@
   "etapas": {
    "capa": {
     "nome": "Capa",
-    "img": "img/teste-emagrecimento/capa.jpg"
+    "img": "img/teste-emagrecimento/capa.png",
+    "tipo": "capa",
+    "textos": {
+     "assinatura": "Dr. Lucca Marques\nMédico · CRM-GO 33.990",
+     "selo": "Teste do emagrecimento",
+     "titulo": "Já tentou de tudo para emagrecer? Veja o que mais pesa no seu caso",
+     "botao": "Começar o teste"
+    }
    },
    "sexo": {
     "nome": "Sexo",
-    "img": "img/teste-emagrecimento/sexo.jpg"
+    "img": "img/teste-emagrecimento/sexo.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Para ajustar as contas ao seu corpo, você é:",
+     "opcao_1": "Mulher",
+     "opcao_2": "Homem",
+     "botao": "Continuar"
+    }
    },
    "fase": {
     "nome": "Fase (gestação, menopausa)",
-    "img": "img/teste-emagrecimento/fase.jpg"
+    "img": "img/teste-emagrecimento/fase.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Importante: o peso muda muito em algumas fases.",
+     "texto": "Selecione o que vale para você.",
+     "opcao_1": "Nenhuma destas",
+     "opcao_2": "Estou grávida",
+     "opcao_3": "Estou amamentando",
+     "opcao_4": "Tive bebê há menos de 1 ano",
+     "opcao_5": "Estou na menopausa ou chegando nela",
+     "botao": "Continuar"
+    }
    },
    "idade": {
     "nome": "Idade",
-    "img": "img/teste-emagrecimento/idade.jpg"
+    "img": "img/teste-emagrecimento/idade.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Qual é a sua idade?",
+     "opcao_1": "18 a 29 anos",
+     "opcao_2": "30 a 39 anos",
+     "opcao_3": "40 a 49 anos",
+     "opcao_4": "50 a 59 anos",
+     "opcao_5": "60 anos ou mais",
+     "botao": "Continuar"
+    }
    },
    "nome": {
     "nome": "Nome",
-    "img": "img/teste-emagrecimento/nome.jpg"
+    "img": "img/teste-emagrecimento/nome.png",
+    "tipo": "campo",
+    "textos": {
+     "titulo": "Como posso te chamar no seu relatório?",
+     "botao": "Continuar"
+    }
    },
    "medidas": {
     "nome": "Peso e altura",
-    "img": "img/teste-emagrecimento/medidas.jpg"
+    "img": "img/teste-emagrecimento/medidas.png",
+    "tipo": "roda",
+    "textos": {
+     "titulo": "Ana, qual é o seu peso e a sua altura?",
+     "texto": "Arraste cada roda até o seu número. Pode ser aproximado.",
+     "rotulo": "Peso",
+     "texto_2": "kg",
+     "rotulo_2": "Altura",
+     "texto_3": "cm",
+     "botao": "Continuar"
+    }
    },
    "acontece": {
     "nome": "O que acontece",
-    "img": "img/teste-emagrecimento/acontece.jpg"
+    "img": "img/teste-emagrecimento/acontece.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, o que mais acontece quando você tenta emagrecer?",
+     "texto": "Escolha a que mais parece com você.",
+     "opcao_1": "Eu emagreço, mas depois engordo tudo de novo",
+     "opcao_2": "A vontade de comer vence, principalmente de doce",
+     "opcao_3": "Faço tudo certo e a balança não desce",
+     "opcao_4": "Começo animada e paro em poucas semanas",
+     "opcao_5": "Ainda não sei por onde começar",
+     "botao": "Continuar"
+    }
    },
    "tentou": {
     "nome": "O que já tentou",
-    "img": "img/teste-emagrecimento/tentou.jpg"
+    "img": "img/teste-emagrecimento/tentou.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "O que você já tentou para emagrecer?",
+     "texto": "Marque tudo o que já tentou.",
+     "opcao_1": "Dieta da internet ou de revista",
+     "opcao_2": "Cortar carboidrato",
+     "opcao_3": "Jejum intermitente",
+     "opcao_4": "Academia ou corrida",
+     "opcao_5": "Nutricionista",
+     "opcao_6": "Chá, shake ou suplemento",
+     "opcao_7": "Remédio para emagrecer",
+     "opcao_8": "Ainda nenhum destes",
+     "botao": "Continuar"
+    },
+    "inteira": "img/teste-emagrecimento/tentou-inteira.png"
    },
    "ciclo": {
     "nome": "Ciclo",
-    "img": "img/teste-emagrecimento/ciclo.jpg"
+    "img": "img/teste-emagrecimento/ciclo.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, como é a sua menstruação?",
+     "texto": "O ciclo conta muito sobre os hormônios.",
+     "opcao_1": "Vem todo mês, mais ou menos no mesmo intervalo",
+     "opcao_2": "Falha meses, atrasa muito ou vem fora de hora",
+     "opcao_3": "Uso anticoncepcional ou DIU hormonal",
+     "opcao_4": "Não menstruo por outro motivo",
+     "botao": "Continuar"
+    }
    },
    "pele": {
     "nome": "Pelos e espinhas",
-    "img": "img/teste-emagrecimento/pele.jpg"
+    "img": "img/teste-emagrecimento/pele.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Você tem algum destes?",
+     "texto": "Marque tudo o que acontece com você.",
+     "opcao_1": "Pelos grossos no rosto, no queixo ou na barriga",
+     "opcao_2": "Espinhas que não passam",
+     "opcao_3": "Cabelo afinando no alto da cabeça",
+     "opcao_4": "Nenhum destes",
+     "botao": "Continuar"
+    }
    },
    "tireoide": {
     "nome": "Sinais da tireoide",
-    "img": "img/teste-emagrecimento/tireoide.jpg"
+    "img": "img/teste-emagrecimento/tireoide.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "E no dia a dia, você sente algum destes?",
+     "texto": "Marque tudo o que acontece com você.",
+     "opcao_1": "Cansaço que não passa, mesmo dormindo",
+     "opcao_2": "Frio quando os outros não sentem",
+     "opcao_3": "Intestino preso",
+     "opcao_4": "Pele muito seca",
+     "opcao_5": "Nenhum destes",
+     "botao": "Continuar"
+    }
    },
    "exames": {
     "nome": "Exames",
-    "img": "img/teste-emagrecimento/exames.jpg"
+    "img": "img/teste-emagrecimento/exames.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Algum médico ou exame já te disse que você tem:",
+     "texto": "Marque tudo o que já ouviu.",
+     "opcao_1": "Pressão alta",
+     "opcao_2": "Glicose alta, pré-diabetes ou diabetes",
+     "opcao_3": "Triglicerídeo alto ou colesterol bom (HDL) baixo",
+     "opcao_4": "Nada disso",
+     "opcao_5": "Faz tempo que não faço exames",
+     "botao": "Continuar"
+    }
    },
    "remedios": {
     "nome": "Remédios",
-    "img": "img/teste-emagrecimento/remedios.jpg"
+    "img": "img/teste-emagrecimento/remedios.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Você toma algum remédio todo dia?",
+     "texto": "Alguns remédios mexem no peso. Marque tudo o que vale.",
+     "opcao_1": "Para depressão ou ansiedade",
+     "opcao_2": "Para diabetes",
+     "opcao_3": "Outro remédio de uso contínuo",
+     "opcao_4": "Nenhum remédio todo dia",
+     "botao": "Continuar"
+    }
    },
    "vontade": {
     "nome": "Vontade de comer",
-    "img": "img/teste-emagrecimento/vontade.jpg"
+    "img": "img/teste-emagrecimento/vontade.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, quando a vontade de comer aparece mais forte?",
+     "opcao_1": "À noite",
+     "opcao_2": "À tarde",
+     "opcao_3": "Quando fico ansiosa ou preocupada",
+     "opcao_4": "No fim de semana",
+     "opcao_5": "O dia todo",
+     "opcao_6": "Ela quase não me atrapalha",
+     "botao": "Continuar"
+    }
    },
    "sono": {
     "nome": "Sono",
-    "img": "img/teste-emagrecimento/sono.jpg"
+    "img": "img/teste-emagrecimento/sono.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, quantas horas você dorme por noite?",
+     "opcao_1": "5 h ou menos",
+     "opcao_2": "6 horas",
+     "opcao_3": "7 horas",
+     "opcao_4": "8 horas",
+     "opcao_5": "9 ou mais",
+     "botao": "Continuar"
+    }
    },
    "ronco": {
     "nome": "Ronco",
-    "img": "img/teste-emagrecimento/ronco.jpg"
+    "img": "img/teste-emagrecimento/ronco.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "E o seu sono, como é?",
+     "opcao_1": "Ronco e acordo\ncansada",
+     "opcao_2": "Ronco, mas acordo bem",
+     "opcao_3": "Não ronco, mas acordo\ncansada",
+     "opcao_4": "Durmo e acordo bem",
+     "opcao_5": "Não sei se ronco",
+     "botao": "Continuar"
+    }
    },
    "forca": {
     "nome": "Força",
-    "img": "img/teste-emagrecimento/forca.jpg"
+    "img": "img/teste-emagrecimento/forca.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Quantas vezes por semana você faz exercício de força?",
+     "texto": "Musculação, peso, elástico ou funcional.",
+     "opcao_1": "Ainda não faço",
+     "opcao_2": "1 vez por semana",
+     "opcao_3": "2 vezes ou mais",
+     "botao": "Continuar"
+    }
    },
    "objetivo": {
     "nome": "Objetivo",
-    "img": "img/teste-emagrecimento/objetivo.jpg"
+    "img": "img/teste-emagrecimento/objetivo.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Qual é o seu verdadeiro objetivo?",
+     "texto": "Pode falar a verdade: é só para entender você melhor.",
+     "opcao_1": "Voltar a usar as roupas que eu gosto",
+     "opcao_2": "Parar de engordar tudo de novo",
+     "opcao_3": "Ter mais disposição no dia a dia",
+     "opcao_4": "Cuidar da saúde e dos exames",
+     "opcao_5": "Me sentir bem com o meu corpo",
+     "opcao_6": "Outro",
+     "botao": "Continuar"
+    }
    },
    "carregando": {
     "nome": "Calculando",
-    "img": "img/teste-emagrecimento/carregando.jpg"
+    "img": "img/teste-emagrecimento/carregando.png",
+    "tipo": "carregando",
+    "textos": {
+     "selo": "Teste do emagrecimento",
+     "texto": "46",
+     "titulo": "Cruzando o ciclo, a tireoide, os exames e os remédios",
+     "texto_2": "Isso leva alguns segundos. Não feche a página."
+    }
    },
    "resultado": {
     "nome": "Resultado",
-    "img": "img/teste-emagrecimento/resultado.jpg"
+    "img": "img/teste-emagrecimento/resultado.png",
+    "tipo": "resultado",
+    "textos": {
+     "texto": "23 de novembro de 2026",
+     "titulo": "Ana, as suas respostas mostram três pontos que merecem o olhar de um médico",
+     "texto_2": "E o que mais acontece com você é o peso que volta. Veja o que cada resposta mostra.",
+     "texto_3": "Seu IMC",
+     "texto_4": "26,7kg/m²",
+     "texto_5": "Com 70 kg e 1,62 m, você está na faixa sobrepeso. É a conta do peso pela altura: não separa músculo de gordura, mas é por onde o médico começa.",
+     "texto_6": "Ponto de atenção 1",
+     "subtitulo": "Os seus hormônios",
+     "texto_7": "Você contou que a menstruação falha ou atrasa e aparecem pelos grossos no rosto, no queixo ou na barriga. Esses dois sinais juntos estão entre os critérios que o médico usa para investigar a síndrome dos ovários policísticos (SOP), uma alteração de hormônio comum que muda o plano para o peso. Só consulta e exame confirmam, e descartam outras causas.",
+     "texto_8": "Ponto de atenção 2",
+     "subtitulo_2": "O metabolismo",
+     "texto_9": "Você já ouviu que tem pressão alta. Pressão, glicose, triglicerídeo, colesterol bom (HDL) e cintura são os 5 sinais da síndrome metabólica: quando 3 aparecem juntos, ela se confirma. Pelas suas respostas, você já tem pelo menos 1.",
+     "texto_10": "Ponto de atenção 3",
+     "subtitulo_3": "O sono",
+     "texto_11": "Você ronca e acorda cansada, e tem pressão alta. Ronco, cansaço de dia, parar de respirar dormindo e pressão alta são as 4 perguntas que os médicos usam para rastrear apneia do sono. Você respondeu sim a 3 delas.",
+     "texto_12": "O que mais acontece com você",
+     "texto_13": "Você contou: “Eu emagreço, mas depois engordo tudo de novo”.",
+     "texto_14": "Quando o peso cai, o corpo aumenta a vontade de comer para voltar ao peso de antes. Não é falta de força de vontade: é o corpo se defendendo.",
+     "subtitulo_4": "Por que o que você tentou não segurou",
+     "texto_15": "Você já tentou dieta da internet e academia ou corrida. Tudo isso mexe no que você come e no que você gasta. Os hormônios, o metabolismo e o sono ficam de fora, e são justamente o que apareceu nas suas respostas.",
+     "subtitulo_5": "O que está entre você e “ter mais disposição no dia a dia”",
+     "texto_16": "Pelas suas respostas, o que pesa no seu caso são os hormônios, o metabolismo e o sono. Nenhuma dieta enxerga isso: pede exame de hormônios, olhar glicose, pressão e gordura no sangue junto com o peso e olhar o sono.",
+     "texto_17": "Cada nova tentativa sem olhar os hormônios, o metabolismo e o sono tende a terminar como as outras. A boa notícia: isso se olha com calma, com exame e conversa, sem adivinhar.",
+     "subtitulo_6": "O que este teste não consegue fazer",
+     "texto_18": "Um teste não pede exame, não examina você e não conhece a sua história. Para saber se esses pontos pesam no seu caso e chegar ao seu objetivo (“ter mais disposição no dia a dia”), alguém precisa olhar as suas respostas com você.",
+     "nota": "Estimativa pelas suas respostas, não é diagnóstico.",
+     "texto_19": "Fontes: Teede 2023, diretriz internacional de SOP (J Clin Endocrinol Metab): ciclo irregular, pelos, apneia · Alberti 2009, Circulation: os 5 sinais da síndrome metabólica (3 fecham o quadro) · Chung 2008, Anesthesiology: questionário STOP para apneia do sono · OMS, “Obesity and overweight” (2026): faixas do IMC · NICE, diretriz NG246: classes do IMC · Polidori 2016, Obesity: a vontade de comer depois de perder peso",
+     "assinatura": "Dr. Lucca Marques · Médico · CRM-GO 33.990",
+     "titulo_2": "Ana, é isso que você quer resolver?",
+     "texto_20": "Três pontos das suas respostas merecem o olhar de um médico. O Dr. Lucca lê cada um e te explica o que pesa no seu caso.",
+     "botao": "Quero que o Dr. Lucca olhe o meu caso",
+     "link": "ou pelo Direct do Instagram"
+    },
+    "inteira": "img/teste-emagrecimento/resultado-inteira.png"
    }
   }
  },
@@ -129,43 +435,138 @@
   "etapas": {
    "capa": {
     "nome": "Capa",
-    "img": "img/quiz-longevidade/capa.jpg"
+    "img": "img/quiz-longevidade/capa.png",
+    "tipo": "capa",
+    "textos": {
+     "selo": "5 perguntas · leva 1 minuto",
+     "titulo": "Responda 5 perguntas e veja o que pesa pra chegar aos 70 subindo escada sem pensar",
+     "texto": "No fim, você vê o próximo passo pra quem está na sua fase.",
+     "botao": "Responder quiz de 1 minuto",
+     "texto_2": "Feito pelo Dr. Lucca Marques · Médico · CRM-GO 33.990"
+    }
    },
    "autoridade": {
     "nome": "Quem é o Dr. Lucca",
-    "img": "img/quiz-longevidade/autoridade.jpg"
+    "img": "img/quiz-longevidade/autoridade.png",
+    "tipo": "estudo",
+    "textos": {
+     "selo": "Quem montou este quiz",
+     "titulo": "Quem vai ler as suas respostas",
+     "texto": "Dr. Lucca Marques",
+     "texto_2": "Médico · CRM-GO 33.990",
+     "botao": "Continuar"
+    }
    },
    "objetivo": {
     "nome": "Objetivo",
-    "img": "img/quiz-longevidade/objetivo.jpg"
+    "img": "img/quiz-longevidade/objetivo.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Daqui a 10 anos, o que você quer continuar fazendo?",
+     "nota": "(Marque tudo o que você quer)",
+     "opcao_1": "Subir escada e carregar as compras sem pensar duas vezes",
+     "opcao_2": "Ter disposição pra acompanhar filho e neto, sem ficar de fora",
+     "opcao_3": "Trabalhar no meu ritmo sem chegar no fim do dia no limite",
+     "opcao_4": "Viajar e andar o dia inteiro sem procurar banco pra sentar",
+     "opcao_5": "Continuar no futebol, na corrida ou no tênis sem me machucar",
+     "opcao_6": "Não depender de ninguém pra levantar, sair e resolver minhas coisas",
+     "botao": "Continuar"
+    },
+    "inteira": "img/quiz-longevidade/objetivo-inteira.png"
    },
    "idade": {
     "nome": "Idade",
-    "img": "img/quiz-longevidade/idade.jpg"
+    "img": "img/quiz-longevidade/idade.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Quantos anos você tem?",
+     "opcao_1": "Até 39 anos",
+     "opcao_2": "40 a 49 anos",
+     "opcao_3": "50 a 59 anos",
+     "opcao_4": "60 a 69 anos",
+     "opcao_5": "70 anos ou mais"
+    }
    },
    "rotina": {
     "nome": "Rotina",
-    "img": "img/quiz-longevidade/rotina.jpg"
+    "img": "img/quiz-longevidade/rotina.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "E a sua semana, como é hoje?",
+     "opcao_1": "Cuido de empresa ou equipe, e a agenda não para",
+     "opcao_2": "Sou profissional liberal",
+     "opcao_3": "Trabalho com hora pra entrar e pra sair",
+     "opcao_4": "Já me aposentei"
+    }
    },
    "ciencia": {
     "nome": "O que a ciência diz",
-    "img": "img/quiz-longevidade/ciencia.jpg"
+    "img": "img/quiz-longevidade/ciencia.png",
+    "tipo": "estudo",
+    "textos": {
+     "selo": "Pesquisa · Mayo Clinic Proceedings",
+     "texto": "Na sobrevida, a potência muscular pesou mais que a força.",
+     "texto_2": "Araújo et al., 2025 · 3.889 pessoas no Rio, por quase 11 anos",
+     "botao": "Continuar"
+    }
    },
    "incomoda": {
     "nome": "O que incomoda",
-    "img": "img/quiz-longevidade/incomoda.jpg"
+    "img": "img/quiz-longevidade/incomoda.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "O que mais te incomoda hoje?",
+     "nota": "(Marque tudo o que vale pra você)",
+     "opcao_1": "Cansaço que não passa nem depois de dormir",
+     "opcao_2": "A barriga que só cresce, mesmo comendo igual",
+     "opcao_3": "Dor nas costas ou no joelho que atrapalha o dia",
+     "opcao_4": "Exame que veio alterado: pressão, glicose ou colesterol",
+     "opcao_5": "Não consigo fazer as mesmas coisas que antes",
+     "opcao_6": "Nada por enquanto, quero me cuidar antes",
+     "botao": "Continuar"
+    },
+    "inteira": "img/quiz-longevidade/incomoda-inteira.png"
    },
    "atrapalha": {
     "nome": "O que atrapalha",
-    "img": "img/quiz-longevidade/atrapalha.jpg"
+    "img": "img/quiz-longevidade/atrapalha.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "E o que te trava pra cuidar disso?",
+     "nota": "(Marque tudo o que vale pra você)",
+     "opcao_1": "Não tenho tempo nem pra cuidar da saúde",
+     "opcao_2": "Não sei por onde começar",
+     "opcao_3": "Começo bem e largo na segunda semana",
+     "opcao_4": "Perder meio dia em clínica e laboratório",
+     "opcao_5": "Medo de me machucar ou piorar uma dor",
+     "botao": "Continuar"
+    },
+    "inteira": "img/quiz-longevidade/atrapalha-inteira.png"
    },
    "loading": {
     "nome": "Calculando",
-    "img": "img/quiz-longevidade/loading.jpg"
+    "img": "img/quiz-longevidade/loading.png",
+    "tipo": "carregando",
+    "textos": {
+     "titulo": "Você chegou na melhor parte",
+     "texto": "Estou juntando o que você me contou.",
+     "texto_2": "Montando seu resultado…",
+     "texto_3": "71%",
+     "item_1": "Cuido de empresa ou equipe, com a agenda cheia",
+     "item_2": "O que incomoda: o cansaço que não passa e a barriga que só cresce",
+     "item_3": "O que trava: a falta de tempo e não saber por onde começar"
+    }
    },
    "resultado": {
     "nome": "Resultado",
-    "img": "img/quiz-longevidade/resultado.jpg"
+    "img": "img/quiz-longevidade/resultado.png",
+    "tipo": "resultado",
+    "textos": {
+     "selo": "Seu resultado está pronto",
+     "titulo": "Agenda cheia, pouco tempo",
+     "texto": "Você não precisa de duas horas por dia. Precisa de um plano que caiba na sua semana.",
+     "botao": "QUERO O PLANO DE 4 SEMANAS"
+    }
    }
   }
  },
@@ -175,67 +576,250 @@
   "etapas": {
    "capa": {
     "nome": "Capa",
-    "img": "img/pele-idade/capa.jpg"
+    "img": "img/pele-idade/capa.png",
+    "tipo": "capa",
+    "textos": {
+     "assinatura": "Dr. Lucca Marques · Médico · CRM-GO 33.990",
+     "titulo": "Que idade o seu rosto mostra?",
+     "texto": "Para começar, você é:",
+     "opcao_1": "Mulher",
+     "opcao_2": "Homem"
+    }
    },
    "idade": {
     "nome": "Idade",
-    "img": "img/pele-idade/idade.jpg"
+    "img": "img/pele-idade/idade.png",
+    "tipo": "roda",
+    "textos": {
+     "titulo": "Quantos anos você tem?",
+     "nota": "É com ela que a foto vai ser comparada.",
+     "texto": "anos",
+     "botao": "Continuar"
+    }
    },
    "reforco1": {
     "nome": "Reforço da idade",
-    "img": "img/pele-idade/reforco1.jpg"
+    "img": "img/pele-idade/reforco1.png",
+    "tipo": "estudo",
+    "textos": {
+     "titulo": "Você tem 40 anos. A foto vai mostrar se o seu rosto acompanha essa idade.",
+     "texto": "O rosto mostra a idade do corpo!",
+     "texto_2": "Quem parece mais velho na foto, geralmente tem menos força e memória mais fraca.",
+     "nota": "Fonte: Christensen et al., BMJ 2009",
+     "botao": "Continuar"
+    }
    },
    "nome": {
     "nome": "Nome",
-    "img": "img/pele-idade/nome.jpg"
+    "img": "img/pele-idade/nome.png",
+    "tipo": "campo",
+    "textos": {
+     "titulo": "Como o Dr. Lucca pode te chamar no seu resultado?",
+     "botao": "Continuar",
+     "link": "Pular"
+    }
    },
    "espelho": {
     "nome": "Espelho",
-    "img": "img/pele-idade/espelho.jpg"
+    "img": "img/pele-idade/espelho.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, quando você se olha no espelho, o que mais te incomoda hoje?",
+     "opcao_1": "Cara de cansada, mesmo quando eu durmo",
+     "opcao_2": "O rosto caindo: bochecha, bigode chinês",
+     "opcao_3": "O pescoço e a papada",
+     "opcao_4": "Pareço mais velha do que sou",
+     "opcao_5": "Manchas e rugas",
+     "opcao_6": "Outro",
+     "botao": "Continuar"
+    }
    },
    "sol": {
     "nome": "Sol",
-    "img": "img/pele-idade/sol.jpg"
+    "img": "img/pele-idade/sol.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, quanto sol o seu rosto pega num dia comum?",
+     "nota": "Conta o sol sem protetor solar.",
+     "opcao_1": "Quase nenhum",
+     "opcao_2": "Um pouco, ou só no fim de semana",
+     "opcao_3": "Bastante, quase todo dia",
+     "botao": "Continuar"
+    }
    },
    "cigarro": {
     "nome": "Cigarro",
-    "img": "img/pele-idade/cigarro.jpg"
+    "img": "img/pele-idade/cigarro.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Você fuma ou já fumou?",
+     "opcao_1": "Nunca fumei",
+     "opcao_2": "Já fumei e parei",
+     "opcao_3": "Fumo ou uso vape às vezes",
+     "opcao_4": "Fumo todo dia",
+     "botao": "Continuar"
+    }
    },
    "reforco2": {
     "nome": "Reforço do cigarro",
-    "img": "img/pele-idade/reforco2.jpg"
+    "img": "img/pele-idade/reforco2.png",
+    "tipo": "estudo",
+    "textos": {
+     "titulo": "Ponto para você: o cigarro é o hábito com o efeito mais claro no rosto.",
+     "texto": "A cada 10 anos fumando",
+     "texto_2": "o rosto aparenta, em média, 2 anos a mais.",
+     "nota": "Fonte: Guyuron et al., 2009 · 186 pares de gêmeos idênticos",
+     "botao": "Continuar"
+    }
    },
    "metabolico": {
     "nome": "Pressão e glicose",
-    "img": "img/pele-idade/metabolico.jpg"
+    "img": "img/pele-idade/metabolico.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Já te disseram que a sua pressão ou a sua glicose estava alta?",
+     "opcao_1": "Não, e medi no último ano",
+     "opcao_2": "Nunca medi ou não lembro",
+     "opcao_3": "Sim, a pressão",
+     "opcao_4": "Sim, a glicose",
+     "opcao_5": "Sim, as duas",
+     "botao": "Continuar"
+    }
    },
    "movimento": {
     "nome": "Movimento",
-    "img": "img/pele-idade/movimento.jpg"
+    "img": "img/pele-idade/movimento.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Quanto você se exercita numa semana comum?",
+     "nota": "Caminhada conta.",
+     "opcao_1": "Quase nada",
+     "opcao_2": "Até 2 horas",
+     "opcao_3": "De 2 a 5 horas",
+     "opcao_4": "Mais de 5 horas",
+     "botao": "Continuar"
+    }
    },
    "sono": {
     "nome": "Sono",
-    "img": "img/pele-idade/sono.jpg"
+    "img": "img/pele-idade/sono.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, como são as suas noites?",
+     "opcao_1": "Durmo 7 horas ou mais e acordo bem",
+     "opcao_2": "Durmo umas 6 horas",
+     "opcao_3": "Durmo 5 horas ou menos",
+     "opcao_4": "Durmo, mas acordo cansada",
+     "botao": "Continuar"
+    }
    },
    "futuro": {
     "nome": "Daqui a 10 anos",
-    "img": "img/pele-idade/futuro.jpg"
+    "img": "img/pele-idade/futuro.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Daqui a 10 anos você vai ter 50. O que mais quer?",
+     "opcao_1": "Ter a mesma disposição de hoje",
+     "opcao_2": "Me reconhecer no espelho",
+     "opcao_3": "Aparentar ser mais jovem",
+     "opcao_4": "Cuidar da saúde antes de aparecer problema",
+     "botao": "Continuar"
+    }
    },
    "instrucao": {
     "nome": "Instrução da foto",
-    "img": "img/pele-idade/instrucao.jpg"
+    "img": "img/pele-idade/instrucao.png",
+    "tipo": "instrucao",
+    "textos": {
+     "titulo": "Agora 3 fotos: de frente e virando para cada lado.",
+     "item_1": "Luz frontal, rosto bem iluminado",
+     "item_2": "Sem óculos",
+     "item_3": "Cabelo para trás",
+     "nota": "As fotos servem só para a análise.",
+     "aceite": "Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minhas fotos só para analisá-las conforme os meus interesses, e depois elas serão apagadas definitivamente.",
+     "link": "Prefiro escolher uma foto",
+     "botao": "Abrir a câmera"
+    },
+    "inteira": "img/pele-idade/instrucao-inteira.png"
    },
    "scan": {
     "nome": "Câmera",
-    "img": "img/pele-idade/scan.jpg"
+    "img": "img/pele-idade/scan.png",
+    "tipo": "medida",
+    "textos": {
+     "texto": "☀ OK",
+     "item_1": "Esquerda",
+     "item_2": "Frente",
+     "item_3": "Direita",
+     "texto_2": "Rosto no meio do oval",
+     "link": "Desligar voz",
+     "fala_1": "Abrindo a câmera…",
+     "fala_2": "Só um instante… (com a câmera já na tela, se o leitor de rosto ainda não terminou de carregar)",
+     "fala_3": "Olhe reto para a câmera",
+     "fala_4": "Isso! Segure",
+     "fala_5": "Vire devagar para a sua esquerda",
+     "fala_6": "Para o outro lado: a sua esquerda",
+     "fala_7": "Virou demais: volte um pouco",
+     "fala_8": "Esquerda pronta",
+     "fala_9": "Agora para a sua direita",
+     "fala_10": "Direita pronta",
+     "fala_11": "Pronto!",
+     "fala_12": "Ajuda (botão ?): Celular na altura do rosto, de frente para uma janela. Primeiro olhe reto. Depois vire o rosto devagar para a sua esquerda até a foto sair, e então para a sua direita. As fotos saem sozinhas: não precisa tocar em nada."
+    }
    },
    "carregando": {
     "nome": "Analisando as fotos",
-    "img": "img/pele-idade/carregando.jpg"
+    "img": "img/pele-idade/carregando.png",
+    "tipo": "carregando",
+    "textos": {
+     "texto": "44%",
+     "titulo": "Olhando as marcas ao redor da boca…",
+     "texto_2": "Pesando o que você contou: acorda cansada",
+     "texto_3": "Enquanto analisa: veja o que muda a idade de um rosto",
+     "texto_4": "39",
+     "texto_5": "anos",
+     "texto_6": "simulação",
+     "texto_7": "Rosto de exemplo, criado por IA. Simulação."
+    },
+    "inteira": "img/pele-idade/carregando-inteira.png"
    },
    "resultado": {
     "nome": "Resultado",
-    "img": "img/pele-idade/resultado.jpg"
+    "img": "img/pele-idade/resultado.png",
+    "tipo": "resultado",
+    "textos": {
+     "nota": "Idade que o seu rosto aparenta",
+     "texto": "38–44anos",
+     "texto_2": "Você: 40",
+     "texto_3": "30",
+     "texto_4": "50",
+     "texto_5": "Ana, o seu rosto acompanha os seus 40 anos. Nos estudos, a idade do rosto andou junto com a força, a memória e o tempo de vida.*",
+     "nota_2": "Estimativa, não é diagnóstico. *Christensen, BMJ 2009: 1.826 gêmeos com 70+ anos.",
+     "subtitulo": "O que a sua foto mostra",
+     "texto_6": "Canto dos olhos · o que mais aparece na sua foto",
+     "item_1": "Canto dos olhos o que mais aparece\nA cara de cansada te incomoda. Na foto: linhas visíveis.",
+     "item_2": "Do nariz à boca\nVinco leve",
+     "nota_3": "Em outras idades",
+     "texto_7": "25",
+     "texto_8": "33",
+     "texto_9": "40",
+     "texto_10": "Você",
+     "texto_11": "48",
+     "texto_12": "60",
+     "texto_13": "Mulher de 60 anos",
+     "texto_14": "quando a causa de dentro pesa",
+     "texto_15": "quando é cuidada",
+     "nota_4": "Rostos de IA, sem promessa de resultado.",
+     "subtitulo_2": "O que pode estar por trás do seu rosto",
+     "item_3": "Nunca mediu pressão e glicose. As duas apareceram no rosto nos estudos, e a foto não mede nenhuma.",
+     "item_4": "Acorda cansada. Dormir mal se ligou a mais sinais de envelhecimento na pele.",
+     "nota_5": "Fontes: Gunn 2012 · Noordam 2011 · Oyetakin-White 2015",
+     "assinatura": "Dr. Lucca Marques · Médico · CRM-GO 33.990",
+     "titulo": "Ana, quer entender o que deixa o seu rosto com essas características e como agir para mudar e preservar?",
+     "botao": "Quero minha análise",
+     "link": "ou pelo Direct do Instagram"
+    },
+    "inteira": "img/pele-idade/resultado-inteira.png"
    }
   }
  },
@@ -245,67 +829,283 @@
   "etapas": {
    "capa": {
     "nome": "Capa",
-    "img": "img/pele2/capa.jpg"
+    "img": "img/pele2/capa.png",
+    "tipo": "capa",
+    "textos": {
+     "assinatura": "Dr. Lucca Marques\nMédico · CRM-GO 33.990",
+     "titulo": "Que idade a sua pele mostra?",
+     "texto": "Responda algumas perguntas, tire uma foto e veja a idade que o seu rosto aparenta e o que mais pesa nela, região por região. Leva poucos minutos.",
+     "botao": "Começar a análise"
+    }
    },
    "sexo": {
     "nome": "Sexo",
-    "img": "img/pele2/sexo.jpg"
+    "img": "img/pele2/sexo.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "A pele do homem e a da mulher envelhecem de jeitos diferentes. Você é:",
+     "opcao_1": "Mulher",
+     "opcao_2": "Homem",
+     "botao": "Continuar"
+    }
    },
    "seguranca": {
     "nome": "Segurança (gestação)",
-    "img": "img/pele2/seguranca.jpg"
+    "img": "img/pele2/seguranca.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Importante: alguns cuidados de pele precisam ser evitados em certas fases.",
+     "texto": "Selecione o que vale para você.",
+     "opcao_1": "Nenhuma destas",
+     "opcao_2": "Estou grávida",
+     "opcao_3": "Estou amamentando",
+     "opcao_4": "Estou tentando engravidar",
+     "botao": "Continuar"
+    }
    },
    "alergia": {
     "nome": "Alergia",
-    "img": "img/pele2/alergia.jpg"
+    "img": "img/pele2/alergia.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Você tem alguma alergia ou sensibilidade a produtos de pele?",
+     "opcao_1": "Não tenho",
+     "opcao_2": "Minha pele é muito sensível\narde, avermelha ou reage fácil",
+     "opcao_3": "Já tive reação a algum produto",
+     "opcao_4": "Não sei dizer",
+     "botao": "Continuar"
+    }
    },
    "nome": {
     "nome": "Nome",
-    "img": "img/pele2/nome.jpg"
+    "img": "img/pele2/nome.png",
+    "tipo": "campo",
+    "textos": {
+     "titulo": "Como posso te chamar?",
+     "botao": "Continuar"
+    }
    },
    "incomoda": {
     "nome": "O que incomoda",
-    "img": "img/pele2/incomoda.jpg"
+    "img": "img/pele2/incomoda.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, o que mais te incomoda na sua pele hoje?",
+     "texto": "Escolha até 3. A análise começa por elas.",
+     "opcao_1": "Acne / espinhas",
+     "opcao_2": "Manchas",
+     "opcao_3": "Cravos",
+     "opcao_4": "Oleosidade",
+     "opcao_5": "Rugas e linhas",
+     "opcao_6": "Poros dilatados",
+     "opcao_7": "Olheiras",
+     "opcao_8": "Ressecamento",
+     "opcao_9": "Textura irregular",
+     "opcao_10": "Outro",
+     "link": "Créditos das fotos",
+     "botao": "Continuar"
+    },
+    "inteira": "img/pele2/incomoda-inteira.png"
    },
    "tipo": {
     "nome": "Tipo de pele",
-    "img": "img/pele2/tipo.jpg"
+    "img": "img/pele2/tipo.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Como você descreveria a sua pele?",
+     "opcao_1": "Oleosa\nbrilha durante o dia",
+     "opcao_2": "Seca\nrepuxa e descama",
+     "opcao_3": "Mista\noleosa na testa, nariz e queixo",
+     "opcao_4": "Normal\nequilibrada",
+     "opcao_5": "Não sei\na foto ajuda a ver",
+     "botao": "Continuar"
+    }
    },
    "sol": {
     "nome": "Sol",
-    "img": "img/pele2/sol.jpg"
+    "img": "img/pele2/sol.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, quanto tempo você fica no sol por dia?",
+     "opcao_1": "Quase nada\nfico mais em lugar fechado",
+     "opcao_2": "Menos de 1 hora",
+     "opcao_3": "De 1 a 3 horas",
+     "opcao_4": "Mais de 3 horas",
+     "botao": "Continuar"
+    }
    },
    "agua": {
     "nome": "Água",
-    "img": "img/pele2/agua.jpg"
+    "img": "img/pele2/agua.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, quanta água você bebe por dia?",
+     "opcao_1": "Menos de 1 litro",
+     "opcao_2": "De 1 a 2 litros",
+     "opcao_3": "De 2 a 3 litros",
+     "opcao_4": "Mais de 3 litros",
+     "botao": "Continuar"
+    }
    },
    "sono": {
     "nome": "Sono",
-    "img": "img/pele2/sono.jpg"
+    "img": "img/pele2/sono.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Ana, quantas horas você dorme por noite?",
+     "opcao_1": "4 a 5 horas",
+     "opcao_2": "6 horas",
+     "opcao_3": "7 horas",
+     "opcao_4": "8 horas",
+     "opcao_5": "9 ou mais",
+     "botao": "Continuar"
+    }
    },
    "rotina": {
     "nome": "Rotina",
-    "img": "img/pele2/rotina.jpg"
+    "img": "img/pele2/rotina.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Como está a sua rotina de cuidados com a pele hoje?",
+     "opcao_1": "Não tenho rotina",
+     "opcao_2": "Tenho uma rotina que funciona\nquero completar o que falta",
+     "opcao_3": "Uso produtos receitados por médico",
+     "opcao_4": "Não sei se a minha rotina funciona",
+     "botao": "Continuar"
+    }
    },
    "objetivo": {
     "nome": "Objetivo",
-    "img": "img/pele2/objetivo.jpg"
+    "img": "img/pele2/objetivo.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Qual é o seu verdadeiro objetivo?",
+     "texto": "Pode falar a verdade: é só para entender você melhor.",
+     "opcao_1": "Me sentir bem e confiante com a minha pele",
+     "opcao_2": "Sair sem maquiagem nem filtro, sem me preocupar",
+     "opcao_3": "Gostar de me ver em foto de perto",
+     "opcao_4": "Cuidar agora, antes que piore",
+     "opcao_5": "Parar de gastar com o que não funciona",
+     "opcao_6": "Outro",
+     "botao": "Continuar"
+    }
    },
    "instrucao": {
     "nome": "Instrução da foto",
-    "img": "img/pele2/instrucao.jpg"
+    "img": "img/pele2/instrucao.png",
+    "tipo": "instrucao",
+    "textos": {
+     "titulo": "Agora, a foto: vamos ver a idade que o seu rosto mostra",
+     "item_1": "Rosto dentro do oval, olhando reto",
+     "item_2": "Vire devagar para a esquerda, depois a direita",
+     "item_3": "A foto sai sozinha: o anel acende inteiro",
+     "item_4": "Luz boa",
+     "item_5": "Sem maquiagem",
+     "item_6": "Cabelo preso",
+     "item_7": "Sem óculos",
+     "aceite": "Tenho 18 anos ou mais. Estou ciente de que este teste segue a Lei Geral de Proteção de Dados: o médico responsável, Dr. Lucca Felype, verá minha foto só para analisá-la conforme os meus interesses, e depois ela será apagada definitivamente.",
+     "link": "Prefiro escolher uma foto",
+     "botao": "Abrir a câmera"
+    }
    },
    "scan": {
     "nome": "Câmera",
-    "img": "img/pele2/scan.jpg"
+    "img": "img/pele2/scan.png",
+    "tipo": "medida",
+    "textos": {
+     "texto": "☀ OK",
+     "item_1": "Esquerda",
+     "item_2": "Frente",
+     "item_3": "Direita",
+     "texto_2": "Rosto no meio do oval",
+     "fala_1": "Abrindo a câmera…",
+     "fala_2": "Só um instante… (com a câmera já na tela, se o leitor de rosto ainda não terminou de carregar)",
+     "fala_3": "Olhe reto para a câmera",
+     "fala_4": "Isso! Segure",
+     "fala_5": "Vire devagar para a sua esquerda",
+     "fala_6": "Para o outro lado: a sua esquerda",
+     "fala_7": "Virou demais: volte um pouco",
+     "fala_8": "Esquerda pronta",
+     "fala_9": "Agora para a sua direita",
+     "fala_10": "Direita pronta",
+     "fala_11": "Pronto!",
+     "fala_12": "Ajuda (botão ?): Celular na altura do rosto, de frente para uma janela ou lâmpada. Primeiro olhe reto. Depois vire o rosto devagar para a sua esquerda, até a foto sair, e então para a sua direita. A foto sai sozinha: não precisa tocar em nada."
+    }
    },
    "carregando": {
     "nome": "Analisando a foto",
-    "img": "img/pele2/carregando.jpg"
+    "img": "img/pele2/carregando.png",
+    "tipo": "carregando",
+    "textos": {
+     "selo": "Idade da pele",
+     "texto": "31",
+     "titulo": "Mapeando as áreas do rosto",
+     "texto_2": "Isso leva alguns segundos. Não feche a página."
+    }
    },
    "resultado": {
     "nome": "Resultado",
-    "img": "img/pele2/resultado.jpg"
+    "img": "img/pele2/resultado.png",
+    "tipo": "resultado",
+    "textos": {
+     "texto": "24 de nov., 23:38",
+     "texto_2": "Idade aparente do rosto",
+     "texto_3": "38 a 44 anos",
+     "texto_4": "É quanto o seu rosto aparenta na foto: uma estimativa, que erra uns 4 a 5 anos para cada lado. Não é a sua idade nem um diagnóstico.",
+     "texto_5": "Por que isso importa. Num estudo com 1.826 gêmeos dinamarqueses de 70 anos ou mais, a idade que outras pessoas davam olhando a foto acompanhou a força, a memória e o tempo de vida, mesmo descontando a idade real. Christensen 2009, BMJ.",
+     "link": "Todos",
+     "link_2": "Linhas",
+     "link_3": "Poros e textura",
+     "link_4": "Espinhas",
+     "link_5": "Manchas",
+     "subtitulo": "O que pesa na foto",
+     "texto_6": "6 pontos",
+     "texto_7": "Olhos",
+     "texto_8": "Moderado",
+     "subtitulo_2": "Linhas visíveis no canto dos olhos",
+     "link_6": "As linhas se formam como as da testa (movimento, colágeno, sol).",
+     "texto_9": "Zona T",
+     "texto_10": "Leve",
+     "subtitulo_3": "Poros discretos",
+     "link_7": "Poro aparente tem muito de óleo e de hormônio: homem e pele oleosa tendem a ter poro maior.",
+     "texto_11": "Espinhas",
+     "texto_12": "Leve",
+     "subtitulo_4": "Poucos cravos",
+     "link_8": "Cravo é o poro entupido; quando inflama, vira a bolinha vermelha ou com ponta branca.",
+     "texto_13": "Testa",
+     "texto_14": "Leve",
+     "subtitulo_5": "Linhas leves na testa",
+     "link_9": "Essa linha nasce do movimento: o músculo dobra a pele milhares de vezes.",
+     "texto_15": "Nariz à boca",
+     "texto_16": "Leve",
+     "subtitulo_6": "Sulco leve",
+     "link_10": "O que muda com a idade é a profundidade: o osso por baixo diminui e a gordura da bochecha muda de lugar.",
+     "texto_17": "Bochechas",
+     "texto_18": "Leve",
+     "subtitulo_7": "Poucas manchas, discretas",
+     "link_11": "Mancha no rosto é, em boa parte, memória de sol.",
+     "texto_19": "Mancha nova, que cresce, muda de cor, coça ou sangra, não é para aplicativo avaliar: é para mostrar a um médico.",
+     "nota": "Estimativa pela foto, não é diagnóstico.",
+     "subtitulo_8": "Ana, sua preocupação faz sentido?",
+     "subtitulo_9": "Acne / espinhas",
+     "opcao_1": "Bate em parte",
+     "opcao_2": "Faz sentido: a foto mostra poucos cravos, grau leve.",
+     "subtitulo_10": "Oleosidade",
+     "opcao_3": "A foto não mede isso",
+     "opcao_4": "O brilho muda com a hora do dia e com a luz, então a foto não mede oleosidade direito. Na mesma área, a foto mostra: poros discretos (leve). Como você marcou pele mista, o poro tende a aparecer mais: ele tem muito de óleo e de hormônio.",
+     "subtitulo_11": "O que fazer agora",
+     "texto_20": "Para o seu objetivo, “me sentir bem e confiante com a minha pele”, comece por aqui:",
+     "item_1": "Protetor solar todo dia, no rosto inteiro. Como a foto mostra manchas, de preferência com cor.",
+     "item_2": "Como você marcou pele mista: limpador suave e hidratante leve, de manhã e à noite.",
+     "item_3": "Para as espinhas e os cravos: sem espremer. O que entra além da base, o médico escolhe com você.",
+     "nota_2": "A foto é usada só para a análise e apagada depois.",
+     "assinatura": "Dr. Lucca Marques · Médico · CRM-GO 33.990",
+     "titulo": "Ana, o Dr. Lucca vai explicar o seu resultado",
+     "texto_21": "Ele analisa a sua foto com as suas respostas e te explica por onde começar.",
+     "botao": "Quero que o Dr. Lucca me explique",
+     "link_12": "ou pelo Direct do Instagram"
+    },
+    "inteira": "img/pele2/resultado-inteira.png"
    }
   }
  },
@@ -315,91 +1115,308 @@
   "etapas": {
    "capa": {
     "nome": "Capa",
-    "img": "img/teste-tipos/capa.jpg"
+    "img": "img/teste-tipos/capa.png",
+    "tipo": "capa",
+    "textos": {
+     "assinatura": "Dr. Lucca Marques · Médico · CRM-GO 33.990",
+     "texto": "Teste · 12 frases · 2 minutos",
+     "titulo": "Descubra qual dos 4 tipos de engordar é o seu",
+     "texto_2": "Para começar, você é:",
+     "opcao_1": "Mulher",
+     "opcao_2": "Homem"
+    }
    },
    "idade": {
     "nome": "Idade",
-    "img": "img/teste-tipos/idade.jpg"
+    "img": "img/teste-tipos/idade.png",
+    "tipo": "roda",
+    "textos": {
+     "titulo": "Quantos anos você tem?",
+     "texto": "anos",
+     "botao": "Continuar"
+    }
    },
    "nome": {
     "nome": "Nome",
-    "img": "img/teste-tipos/nome.jpg"
+    "img": "img/teste-tipos/nome.png",
+    "tipo": "campo",
+    "textos": {
+     "titulo": "Como o Dr. Lucca pode te chamar no seu resultado?",
+     "botao": "Continuar",
+     "link": "Pular"
+    }
    },
    "medidas": {
     "nome": "Peso e altura",
-    "img": "img/teste-tipos/medidas.jpg"
+    "img": "img/teste-tipos/medidas.png",
+    "tipo": "roda",
+    "textos": {
+     "titulo": "Ana, qual é o seu peso e a sua altura?",
+     "nota": "Arraste cada roda até o seu número. Pode ser aproximado.",
+     "rotulo": "Peso",
+     "texto": "kg",
+     "rotulo_2": "Altura",
+     "texto_2": "cm",
+     "botao": "Continuar"
+    }
    },
    "mayo": {
     "nome": "O estudo da Mayo",
-    "img": "img/teste-tipos/mayo.jpg"
+    "img": "img/teste-tipos/mayo.png",
+    "tipo": "estudo",
+    "textos": {
+     "titulo": "Nem todo mundo engorda pelo mesmo motivo.",
+     "texto": "Na Mayo Clinic, os médicos acharam 4 tipos.",
+     "texto_2": "Os pacientes tratados pelo tipo perderam quase o dobro de peso em 1 ano: 15,9% contra 9,0% dos tratados do jeito de sempre.",
+     "texto_3": "Agora, frases rápidas. Toque no quanto cada uma parece com você.",
+     "nota": "Fonte: Acosta et al., Obesity 2021 · 312 pacientes da Mayo Clinic, em 2 grupos",
+     "botao": "Continuar"
+    }
    },
    "cb1": {
     "nome": "Frase 1 (cérebro)",
-    "img": "img/teste-tipos/cb1.jpg"
+    "img": "img/teste-tipos/cb1.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Preciso comer bastante para me sentir satisfeita.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "ef1": {
     "nome": "Frase 2 (estômago)",
-    "img": "img/teste-tipos/ef1.jpg"
+    "img": "img/teste-tipos/ef1.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Pouco tempo depois de comer, a vontade de comer já volta.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "em1": {
     "nome": "Frase 3 (emocional)",
-    "img": "img/teste-tipos/em1.jpg"
+    "img": "img/teste-tipos/em1.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Quando fico ansiosa ou preocupada, a vontade de comer aumenta.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "gl1": {
     "nome": "Frase 4 (gasto lento)",
-    "img": "img/teste-tipos/gl1.jpg"
+    "img": "img/teste-tipos/gl1.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Como pouco e, mesmo assim, o peso não desce.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "cb2": {
     "nome": "Frase 5 (cérebro)",
-    "img": "img/teste-tipos/cb2.jpg"
+    "img": "img/teste-tipos/cb2.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Mesmo de barriga cheia, ainda cabe mais um pouco.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "ef2": {
     "nome": "Frase 6 (estômago)",
-    "img": "img/teste-tipos/ef2.jpg"
+    "img": "img/teste-tipos/ef2.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Entre uma refeição e outra, preciso beliscar alguma coisa.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "mais1": {
     "nome": "Mais uma coisa",
-    "img": "img/teste-tipos/mais1.jpg"
+    "img": "img/teste-tipos/mais1.png",
+    "tipo": "estudo",
+    "textos": {
+     "titulo": "Ana, metade feita.",
+     "texto": "Quase 3 em cada 10 têm mais de um tipo.",
+     "texto_2": "Na Mayo Clinic, 27% dos pacientes tinham 2 tipos ou mais. Por isso o teste olha os 4 até o fim.",
+     "nota": "Fonte: Acosta et al., Obesity 2021 · 450 pacientes classificados",
+     "botao": "Continuar"
+    }
    },
    "tentou": {
     "nome": "O que já tentou",
-    "img": "img/teste-tipos/tentou.jpg"
+    "img": "img/teste-tipos/tentou.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "O que você já tentou para emagrecer?",
+     "nota": "Marque tudo o que já tentou.",
+     "opcao_1": "Dieta da internet ou de revista",
+     "opcao_2": "Cortar carboidrato",
+     "opcao_3": "Jejum intermitente",
+     "opcao_4": "Academia ou corrida",
+     "opcao_5": "Nutricionista",
+     "opcao_6": "Chá, shake ou suplemento",
+     "opcao_7": "Remédio ou caneta para emagrecer",
+     "opcao_8": "Ainda nenhum destes",
+     "botao": "Continuar"
+    },
+    "inteira": "img/teste-tipos/tentou-inteira.png"
    },
    "em2": {
     "nome": "Frase 7 (emocional)",
-    "img": "img/teste-tipos/em2.jpg"
+    "img": "img/teste-tipos/em2.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Fico tensa ou nervosa durante o dia.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "gl2": {
     "nome": "Frase 8 (gasto lento)",
-    "img": "img/teste-tipos/gl2.jpg"
+    "img": "img/teste-tipos/gl2.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Passo a maior parte do dia sentada.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "cb3": {
     "nome": "Frase 9 (cérebro)",
-    "img": "img/teste-tipos/cb3.jpg"
+    "img": "img/teste-tipos/cb3.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Para ficar satisfeita, preciso de um prato maior que o das pessoas à minha volta.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "ef3": {
     "nome": "Frase 10 (estômago)",
-    "img": "img/teste-tipos/ef3.jpg"
+    "img": "img/teste-tipos/ef3.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Uma refeição completa me segura só por pouco tempo.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "em3": {
     "nome": "Frase 11 (emocional)",
-    "img": "img/teste-tipos/em3.jpg"
+    "img": "img/teste-tipos/em3.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Num dia ruim, a comida é o que me acalma.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "gl3": {
     "nome": "Frase 12 (gasto lento)",
-    "img": "img/teste-tipos/gl3.jpg"
+    "img": "img/teste-tipos/gl3.png",
+    "tipo": "escolha",
+    "textos": {
+     "nota": "Quanto isso parece com você?",
+     "titulo": "Sinto que perdi força ou músculo nos últimos anos.",
+     "opcao_1": "Quase nunca",
+     "opcao_2": "Às vezes",
+     "opcao_3": "Muitas vezes",
+     "opcao_4": "Quase sempre",
+     "botao": "Continuar"
+    }
    },
    "objetivo": {
     "nome": "Objetivo",
-    "img": "img/teste-tipos/objetivo.jpg"
+    "img": "img/teste-tipos/objetivo.png",
+    "tipo": "escolha",
+    "textos": {
+     "titulo": "Qual é o seu verdadeiro objetivo?",
+     "opcao_1": "Voltar a usar as roupas que eu gosto",
+     "opcao_2": "Parar de engordar tudo de novo",
+     "opcao_3": "Ter mais disposição no dia a dia",
+     "opcao_4": "Cuidar da saúde e dos exames",
+     "opcao_5": "Me sentir bem com o meu corpo",
+     "botao": "Continuar"
+    }
    },
    "carregando": {
     "nome": "Calculando",
-    "img": "img/teste-tipos/carregando.jpg"
+    "img": "img/teste-tipos/carregando.png",
+    "tipo": "carregando",
+    "textos": {
+     "texto": "43%",
+     "titulo": "Somando o Estômago faminto…"
+    }
    },
    "resultado": {
     "nome": "Resultado",
-    "img": "img/teste-tipos/resultado.jpg"
+    "img": "img/teste-tipos/resultado.png",
+    "tipo": "resultado",
+    "textos": {
+     "nota": "Ana, você marcou:",
+     "item_1": "Quando fico ansiosa ou preocupada, a vontade de comer aumenta. quase sempre",
+     "item_2": "Fico tensa ou nervosa durante o dia. quase sempre",
+     "item_3": "Num dia ruim, a comida é o que me acalma. quase sempre",
+     "texto": "Isso tem cara de",
+     "texto_2": "FOME EMOCIONAL",
+     "texto_3": "come por emoção",
+     "texto_4": "A ansiedade puxa a vontade de comer: a comida vira o jeito de aliviar a tensão, mesmo sem fome de verdade.",
+     "texto_5": "A fome emocional não se resolve só com dieta da internet e academia. Se quem puxa a comida é a ansiedade, cortar comida não tira a ansiedade: a vontade volta junto com a tensão.",
+     "assinatura": "Dr. Lucca Marques · Médico · CRM-GO 33.990",
+     "titulo": "Ana, quer uma estratégia para o seu tipo?",
+     "texto_6": "Mande a mensagem pronta no WhatsApp. O Dr. Lucca analisa as suas respostas e te diz por onde começar para ter mais disposição no dia a dia.",
+     "botao": "Quero a minha estratégia",
+     "link": "ou pelo Direct do Instagram",
+     "nota_2": "Estimativa pelas suas respostas, não é diagnóstico."
+    },
+    "inteira": "img/teste-tipos/resultado-inteira.png"
    }
   }
  }

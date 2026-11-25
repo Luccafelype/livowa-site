@@ -5,87 +5,131 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title>Jornada · Livowa</title>
-<!-- RASCUNHO de 25/11/2026 (Lucca: "um fluxo, como aqueles fluxos de construção de funil, para ver a jornada do cliente, e eu
-     poderia acrescentar passos, fazer comentários… ver integrações"; referência dele: Funnelytics; "ter os dados em tempo real…
-     para todos os funis… integração automática").
-     - Números AO VIVO: o mesmo pedido da Caixa ({k, acao:'funil'}), refeito a cada 60 s. Nada de número escrito à mão.
-     - Todo funil aparece sozinho: a lista vem dos dados (opcoes.funis); nomes e miniaturas vêm de mapa.json
-       (gerado por livowa-empresa/scripts/jornada_miniaturas.py a partir das telas da Central).
-     - Comentário e "+ passo" gravam no mesmo lugar dos Ajustes da Caixa (config_salvar, escopo teste:<funil>, chaves jn_* e jp_*);
-       o Claude lê de lá. Só lê e grava texto; não muda funil nenhum sozinho. -->
+<!-- RASCUNHO 2 (25/11/2026). Pedido do Lucca: "um fluxo, como aqueles fluxos de construção de funil" (referência: Funnelytics),
+     com números em tempo real, automático para todo funil. Depois do rascunho 1 ele disse: "não se parece com o Funnelytics, eu
+     não consigo adicionar nada; como aqui tem 150% de passagem? não aparece a tela inteira nem quando eu clico; deveria
+     aparecer, ser rolável e editável, a própria tela com os componentes, e comentável; eu poderia adicionar passos e telas, e
+     deveria ter componentes para cada tipo de funil, pré-estabelecidos".
+     - Números AO VIVO: o pedido da Caixa ({k, acao:'funil'}), refeito a cada 60 s.
+     - Conta de passagem: tela que nem todo mundo vê (interstício condicional) NÃO vira base da seguinte; nunca passa de 100%.
+     - Todo funil aparece sozinho (opcoes.funis); telas, prints e componentes vêm de mapa.json
+       (livowa-empresa/scripts/jornada_miniaturas.py, a partir das telas da Central).
+     - Tudo o que ele escreve grava nos Ajustes da Caixa (config_salvar, escopo teste:<funil>): jn_<id> comentário,
+       jt_<etapa> textos mudados da tela (JSON), jp_<id> passos novos depois de <id> (JSON). O Claude lê de lá e aplica no site;
+       a página não muda funil nenhum sozinha. -->
 <style>
-:root{--bg:#0e1311;--s:#171e1a;--s2:#1f2823;--fg:#e6ece8;--m:#a0aea6;--l:#2d3732;--a:#5cc99c;--a2:#173a2d;--w:#e8ad57;--w2:#3a2b14;--r:#ff8f7a;--r2:#3d1d18;color-scheme:dark}
+:root{--bg:#0e1311;--s:#171e1a;--s2:#1f2823;--fg:#e6ece8;--m:#a0aea6;--l:#2d3732;--a:#5cc99c;--a2:#173a2d;--w:#e8ad57;--w2:#3a2b14;--r:#ff8f7a;--r2:#3d1d18;--pt:#26302b;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-button,select,textarea{font:inherit;color:inherit}
-header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--l);padding:12px max(16px,env(safe-area-inset-left)) 10px}
-.h1{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}
-.h1 h1{margin:0;font-size:1.15rem}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column}
+button,select,textarea,input{font:inherit;color:inherit}
+header{flex:none;background:var(--bg);border-bottom:1px solid var(--l);padding:10px max(16px,env(safe-area-inset-left)) 9px;z-index:6}
+.h1{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.h1 h1{margin:0;font-size:1.1rem}
+.rasc{font-size:.72rem;color:var(--w);border:1px solid var(--w);border-radius:999px;padding:1px 8px}
 .vivo{font-size:.78rem;color:var(--m)}.vivo i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--a);margin-right:6px;animation:p 2s infinite}
-.vivo.erro i{background:var(--r);animation:none}
-@keyframes p{50%{opacity:.25}}
+.vivo.erro i{background:var(--r);animation:none}@keyframes p{50%{opacity:.25}}
 .h1 a{margin-left:auto;color:var(--a);font-size:.85rem;text-decoration:none}
-.filtros{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chips button,.seg button{background:var(--s);border:1px solid var(--l);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.84rem}
+.chips button,.seg button,.zoom button{background:var(--s);border:1px solid var(--l);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:.84rem}
 .chips button small{color:var(--m);margin-left:4px}
 .chips button[aria-pressed=true],.seg button[aria-pressed=true]{background:var(--a2);border-color:var(--a);color:var(--a)}
-.seg{display:flex;gap:4px}
-select{background:var(--s);border:1px solid var(--l);border-radius:8px;padding:5px 8px;font-size:.84rem;max-width:230px}
-.resumo{display:flex;flex-wrap:wrap;gap:6px 22px;padding:12px max(16px,env(safe-area-inset-left)) 0;font-size:.9rem;color:var(--m)}
-.resumo b{color:var(--fg);font-size:1.1rem;margin-right:5px;font-variant-numeric:tabular-nums}
-.resumo .q b{color:var(--r)}
-#tela{overflow-x:auto;padding:18px max(16px,env(safe-area-inset-left)) 40px;-webkit-overflow-scrolling:touch}
-#fluxo{display:flex;align-items:flex-start;gap:0;width:max-content;min-height:330px}
-.faixa{display:flex;flex-direction:column;gap:8px}
-.faixa>h2{margin:0 0 2px;font:600 .68rem/1 ui-monospace,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--m)}
+.seg,.zoom{display:flex;gap:4px}
+select{background:var(--s);border:1px solid var(--l);border-radius:8px;padding:4px 8px;font-size:.84rem;max-width:230px}
+.resumo{display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:9px;font-size:.88rem;color:var(--m)}
+.resumo b{color:var(--fg);font-size:1.05rem;margin-right:5px;font-variant-numeric:tabular-nums}
+.resumo .q b{color:var(--r)}.resumo .pouco{color:var(--w)}
+main{flex:1;min-height:0;display:flex}
+/* paleta de componentes, à esquerda (como a barra do Funnelytics) */
+#paleta{flex:none;width:176px;border-right:1px solid var(--l);background:var(--s);overflow-y:auto;padding:10px 8px 20px;display:flex;flex-direction:column;gap:4px}
+#paleta h2{margin:8px 4px 2px;font:600 .64rem/1 ui-monospace,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--m)}
+#paleta p{margin:0 4px 4px;font-size:.74rem;color:var(--m);line-height:1.3}
+.comp{display:flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--l);border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.8rem;text-align:left}
+.comp:hover,.comp[aria-pressed=true]{border-color:var(--w);color:var(--w)}
+.comp i{font-style:normal;width:22px;text-align:center;flex:none}
+/* quadro pontilhado que arrasta e dá zoom */
+#tela{flex:1;min-width:0;overflow:auto;cursor:grab;background:radial-gradient(var(--pt) 1.2px,transparent 1.2px) 0 0/22px 22px,var(--bg)}
+#tela.arr{cursor:grabbing;user-select:none}
+#fluxo{display:flex;align-items:center;gap:0;width:max-content;padding:26px 60px 70px 26px;transform-origin:0 0}
+.faixa{display:flex;flex-direction:column;gap:10px}
+.faixa>h2{margin:0;font:600 .66rem/1 ui-monospace,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--m)}
 .linha{display:flex;align-items:center}
-.sep{width:26px;align-self:stretch;border-left:1px dashed var(--l);margin:22px 0 0 26px}
-.no{position:relative;width:132px;flex:none;background:var(--s);border:1px solid var(--l);border-radius:10px;padding:0;cursor:pointer;text-align:left;overflow:hidden;display:flex;flex-direction:column}
-.no:hover,.no:focus-visible{border-color:var(--a);outline:none}
-.no .mini{height:150px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:1.9rem;color:var(--m);border-bottom:1px solid var(--l)}
-.no .mini img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
-.no .tx{padding:7px 9px 9px;display:flex;flex-direction:column;gap:1px;min-height:74px}
-.no .t{font-size:.78rem;line-height:1.25;color:var(--m);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.no .n{font-size:1.35rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
-.no .p{font-size:.72rem;color:var(--m)}
-.no.queda{border-color:var(--r)}
-.no.sem .n{color:var(--m);font-size:.82rem;font-weight:500}
-.no.ideia{border-style:dashed;border-color:var(--w);background:var(--w2)}
-.no.ideia .mini{background:transparent;color:var(--w);height:60px;border-bottom:1px dashed var(--w)}
-.no.fonte .mini,.no.acao .mini,.no.voce .mini{height:60px}
-.no.voce{border-color:var(--w)}.no.voce .mini{color:var(--w)}
-.no .nota{position:absolute;top:6px;right:6px;background:var(--w);color:#201400;font:700 .66rem/1 ui-monospace,Menlo,monospace;border-radius:999px;padding:3px 6px}
-.seta{width:58px;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.7rem;color:var(--m);font-variant-numeric:tabular-nums}
-.seta::after{content:"";display:block;width:100%;height:2px;background:linear-gradient(90deg,var(--l),var(--a));border-radius:2px}
-.seta b{color:var(--fg);font-weight:600}
-.seta.queda b,.seta.queda span{color:var(--r)}.seta.queda::after{background:var(--r)}
-.pilha{display:flex;flex-direction:column;gap:8px}
-.vazio,.aviso{padding:26px max(16px,env(safe-area-inset-left));color:var(--m)}
-#painel{position:fixed;top:0;right:0;bottom:0;width:min(380px,100vw);background:var(--s);border-left:1px solid var(--l);z-index:20;padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow-y:auto;display:flex;flex-direction:column;gap:12px;box-shadow:-12px 0 30px rgba(0,0,0,.4)}
+.pilha{display:flex;flex-direction:column;gap:12px}
+/* nós */
+.no{position:relative;width:150px;flex:none;background:none;border:0;padding:0;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.no .nm{font-size:.76rem;line-height:1.2;color:var(--fg);max-width:150px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:1.85em}
+.no .mini{width:150px;aspect-ratio:360/613;background:#fff;border:2px solid var(--l);border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#667}
+.no .mini img{width:100%;height:100%;object-fit:contain;object-position:top;display:block}
+.no:hover .mini,.no:focus-visible .mini,.no.sel .mini{border-color:var(--a)}.no:focus-visible{outline:none}
+.no.queda .mini{border-color:var(--r)}
+.no .met{display:flex;flex-direction:column;align-items:center;background:var(--s);border:1px solid var(--l);border-radius:8px;padding:3px 10px;min-width:92px}
+.no .n{font-size:1.15rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.no .p{font-size:.68rem;color:var(--m)}
+.no.sem .n{font-size:.74rem;font-weight:500;color:var(--m)}
+.no .selo{position:absolute;top:22px;right:-6px;display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+.no .selo span{background:var(--w);color:#201400;font:700 .6rem/1 ui-monospace,Menlo,monospace;border-radius:999px;padding:3px 6px}
+.no .selo .opc{background:var(--s2);color:var(--m);border:1px solid var(--l)}
+/* nós redondos: chegada, ações e a parte com ele */
+.no.bola .mini{width:74px;aspect-ratio:1;border-radius:50%;background:var(--s);color:var(--fg);font-size:1.6rem;box-shadow:none}
+.no.bola{width:118px}.no.bola .nm{max-width:118px}
+.no.voce .mini{border-color:var(--w)}
+.no.ideia .mini{border-style:dashed;border-color:var(--w);background:var(--w2);color:var(--w);box-shadow:none}
+.no.ideia .met{border-style:dashed;border-color:var(--w)}
+/* setas com o "+" no meio */
+.seta{position:relative;width:86px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.7rem;color:var(--m);font-variant-numeric:tabular-nums;align-self:center}
+.seta svg{width:100%;height:14px;display:block;overflow:visible}
+.seta path{stroke:var(--a);stroke-width:2;fill:none}.seta polygon{fill:var(--a)}
+.seta .pc{background:var(--s);border:1px solid var(--l);border-radius:999px;padding:1px 8px;color:var(--fg);font-weight:600}
+.seta.queda .pc{border-color:var(--r);color:var(--r)}.seta.queda path{stroke:var(--r)}.seta.queda polygon{fill:var(--r)}
+.seta .sai{color:var(--r);min-height:1em}
+.mais{width:24px;height:24px;border-radius:50%;border:1px dashed var(--w);background:var(--bg);color:var(--w);font-weight:700;line-height:1;cursor:pointer;padding:0}
+.mais:hover,.mais.alvo{background:var(--w);color:#201400;border-style:solid}
+.vazio,.aviso{padding:26px;color:var(--m)}
+/* painel da tela aberta */
+#painel{position:fixed;top:0;right:0;bottom:0;width:min(860px,100vw);background:var(--s);border-left:1px solid var(--l);z-index:20;display:flex;flex-direction:column;box-shadow:-14px 0 34px rgba(0,0,0,.45)}
 #painel[hidden]{display:none}
-#painel h3{margin:0;font-size:1.05rem}
-#painel .fechar{align-self:flex-start;background:none;border:1px solid var(--l);border-radius:999px;padding:5px 12px;cursor:pointer}
-#painel dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:.88rem}
-#painel dt{color:var(--m)}#painel dd{margin:0;font-variant-numeric:tabular-nums}
-#painel img{width:100%;max-height:230px;object-fit:cover;object-position:top;border-radius:8px;border:1px solid var(--l)}
-#painel label{font-size:.8rem;color:var(--m);display:block;margin-bottom:4px}
-#painel textarea{width:100%;min-height:74px;background:var(--bg);border:1px solid var(--l);border-radius:8px;padding:8px;resize:vertical}
-#painel .st{font-size:.76rem;color:var(--m);min-height:1.1em}
-#painel .st.ok{color:var(--a)}#painel .st.err{color:var(--r)}
-#painel .integ{background:var(--bg);border:1px solid var(--l);border-radius:8px;padding:8px 10px;font-size:.84rem}
-.rasc{font-size:.74rem;color:var(--w);border:1px solid var(--w);border-radius:999px;padding:1px 8px}
+.pn-cab{flex:none;display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--l)}
+.pn-cab h3{margin:0;font-size:1.05rem;flex:1;min-width:0}
+.pn-cab button,.btn{background:none;border:1px solid var(--l);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.84rem}
+.btn.per{border-color:var(--r);color:var(--r)}
+.pn-corpo{flex:1;min-height:0;display:flex;gap:18px;padding:16px;overflow:auto}
+.cel{flex:none;width:300px;align-self:flex-start;position:sticky;top:0}
+.cel .moldura{border:8px solid #050706;border-radius:30px;background:#fff;overflow-y:auto;max-height:min(72vh,640px);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.cel .moldura img{width:100%;display:block}
+.cel .dica{font-size:.72rem;color:var(--m);text-align:center;margin-top:6px}
+.cel .semtela{aspect-ratio:360/613;display:flex;align-items:center;justify-content:center;color:#778;font-size:.85rem;padding:20px;text-align:center}
+.lado{flex:1;min-width:0;display:flex;flex-direction:column;gap:14px}
+.lado dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:.86rem}
+.lado dt{color:var(--m)}.lado dd{margin:0;font-variant-numeric:tabular-nums}
+.bloco{display:flex;flex-direction:column;gap:6px}
+.bloco>h4{margin:0;font:600 .66rem/1 ui-monospace,Menlo,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--m)}
+.cp{display:flex;flex-direction:column;gap:2px}
+.cp label{font-size:.72rem;color:var(--m);display:flex;gap:8px;align-items:baseline}
+.cp label button{background:none;border:0;color:var(--a);font-size:.72rem;cursor:pointer;padding:0}
+textarea,input[type=text]{width:100%;background:var(--bg);border:1px solid var(--l);border-radius:8px;padding:7px 9px;resize:vertical}
+.cp.mud textarea{border-color:var(--w);background:var(--w2)}
+.st{font-size:.76rem;color:var(--m);min-height:1.1em}.st.ok{color:var(--a)}.st.err{color:var(--r)}
+.integ{background:var(--bg);border:1px solid var(--l);border-radius:8px;padding:8px 10px;font-size:.82rem;color:var(--m)}
+.integ b{color:var(--fg)}
+#escolha{position:fixed;z-index:30;background:var(--s);border:1px solid var(--w);border-radius:10px;padding:8px;max-height:60vh;overflow:auto;width:240px;box-shadow:0 12px 30px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:4px}
+#escolha b{font-size:.8rem;padding:2px 4px}
+@media (max-width:780px){#paleta{display:none}.pn-corpo{flex-direction:column}.cel{position:static;width:min(300px,100%);align-self:center}}
 @media (prefers-reduced-motion:reduce){.vivo i{animation:none}}
 </style>
 </head>
 <body>
 <header>
-  <div class="h1"><h1>Jornada</h1><span class="rasc">rascunho</span><span class="vivo" id="vivo"><i></i><span id="vivo-tx">carregando…</span></span><a id="voltar" href="../">← Caixa</a></div>
-  <div class="filtros"><div class="chips" id="funis"></div><div class="seg" id="dias"><button type="button" data-d="7">7 dias</button><button type="button" data-d="30">30 dias</button></div><select id="origem" aria-label="De onde vieram"></select></div>
+  <div class="h1"><h1>Jornada</h1><span class="rasc">rascunho 2</span><span class="vivo" id="vivo"><i></i><span id="vivo-tx">carregando…</span></span><a id="voltar" href="../">← Caixa</a></div>
+  <div class="filtros"><div class="chips" id="funis"></div><div class="seg" id="dias"><button type="button" data-d="7">7 dias</button><button type="button" data-d="30">30 dias</button></div><select id="origem" aria-label="De onde vieram"></select>
+    <div class="zoom"><button type="button" data-z="-1" aria-label="Diminuir">−</button><button type="button" data-z="0">ajustar</button><button type="button" data-z="1" aria-label="Aumentar">+</button></div></div>
+  <div class="resumo" id="resumo"></div>
 </header>
-<div class="resumo" id="resumo"></div>
-<div id="tela"><div id="fluxo"></div></div>
-<aside id="painel" hidden aria-label="Detalhe da etapa"></aside>
+<main>
+  <nav id="paleta" aria-label="Componentes para acrescentar"></nav>
+  <div id="tela"><div id="fluxo"></div></div>
+</main>
+<aside id="painel" hidden aria-label="Tela aberta"></aside>
 <script>
 const API = 'https://vfzbtnrqbdkfjzhqkiiu.supabase.co/functions/v1/consultar-codigo';
 const H = new URLSearchParams(location.hash.slice(1)), K = H.get('k') || '';
@@ -95,101 +139,206 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&
 const pct = v => v == null ? '—' : v.toLocaleString('pt-BR', { maximumFractionDigits:1 }) + '%';
 const post = corpo => fetch(API, { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify({ k:K, ...corpo }) });
 const chave = (pre, id) => (pre + String(id).replace(/[^A-Za-z0-9_]/g, '_')).slice(0, 40);
-let E = { funil:H.get('f') || 'pele-idade', dias:7, origem:'', dados:null, mapa:{}, cfg:{}, pedido:0, aberto:null };
-try { const g = JSON.parse(localStorage.getItem('livowa_jornada') || '{}'); if (!H.get('f') && /^[a-z0-9-]{1,40}$/.test(g.funil || '')) E.funil = g.funil; if (g.dias === 30) E.dias = 30; } catch {}
+const lerJ = (s, pad) => { try { const v = JSON.parse(s); return v ?? pad; } catch { return pad; } };
+let E = { funil:H.get('f') || 'pele-idade', dias:7, origem:'', dados:null, mapa:{}, cfg:{}, pedido:0, aberto:null, zoom:1, armado:null };
+try { const g = JSON.parse(localStorage.getItem('livowa_jornada') || '{}'); if (!H.get('f') && /^[a-z0-9-]{1,40}$/.test(g.funil || '')) E.funil = g.funil; if (g.dias === 30) E.dias = 30; if (g.zoom >= .4 && g.zoom <= 1.6) E.zoom = g.zoom; } catch {}
 $('voltar').href = '../' + (K ? '#k=' + encodeURIComponent(K) : '');
 
-// o que fica antes e depois do teste; os números de "com você" vêm da venda (CRM da Caixa), os da chegada vêm da origem
-const ROT_ORIGEM = o => o === 'bio' ? 'Link da bio' : o === 'whatsapp' ? 'Perfil do WhatsApp' : o === 'direto' ? 'Link direto' : o === 'teste' ? 'Testes (Claude)' : o.startsWith('direct:') ? 'Comentou ' + o.slice(7).toUpperCase() + ' → Direct' : o === 'direct' ? 'Direct' : o.replace(/^outro:/, '');
-const SIST = { fonte:'Instagram + robô do Direct (OpenReply) + link medido (livowa.com/comece)', etapa:'Site livowa.com (tela do teste; cada passagem é gravada no banco)', fim:'Site livowa.com (botão do fim do teste)', voce:'Caixa (livowa.com/consulta) + seu WhatsApp', ideia:'Ainda não existe: é um passo que você pediu' };
-const FIM_ROT = { complete:'Terminou o teste', contato:'Chamou você', whatsapp:'Tocou em WhatsApp', direct:'Tocou em Direct', lead_capture:'Deixou o contato', explicar:'Tocou em "me explique"' };
+/* ---------- componentes pré-estabelecidos (o esqueleto de cada um vem pronto para ele preencher) ---------- */
+const COMP = {
+  capa:{ g:'Telas do teste', i:'🏁', n:'Capa (promessa)', x:{ titulo:'', apoio:'', botao:'Começar' } },
+  escolha:{ g:'Telas do teste', i:'☑', n:'Pergunta de escolha', x:{ titulo:'', opcao_1:'', opcao_2:'', opcao_3:'', opcao_4:'', botao:'Continuar' } },
+  roda:{ g:'Telas do teste', i:'🎚', n:'Roda (idade, peso, altura)', x:{ titulo:'', apoio:'', botao:'Continuar' } },
+  campo:{ g:'Telas do teste', i:'✎', n:'Campo de texto (nome)', x:{ titulo:'', campo:'', botao:'Continuar' } },
+  estudo:{ g:'Telas do teste', i:'📊', n:'Interstício com estudo', x:{ titulo:'', destaque:'', texto:'', fonte:'', botao:'Continuar' } },
+  instrucao:{ g:'Telas do teste', i:'ℹ', n:'Instrução (antes de medir)', x:{ titulo:'', passo_1:'', passo_2:'', passo_3:'', botao:'Começar' } },
+  medida:{ g:'Telas do teste', i:'📷', n:'Medição (câmera ou sensor)', x:{ titulo:'', aviso:'' } },
+  carregando:{ g:'Telas do teste', i:'⏳', n:'Carregando (análise)', x:{ titulo:'', linha_1:'', linha_2:'', linha_3:'' } },
+  resultado:{ g:'Telas do teste', i:'🏆', n:'Resultado + chamada', x:{ titulo:'', cartao_1:'', cartao_2:'', chamada:'', botao:'' } },
+  tela:{ g:'Telas do teste', i:'▢', n:'Tela livre', x:{ titulo:'', texto:'', botao:'' } },
+  reel:{ g:'Chegada', i:'🎬', n:'Reel com palavra', x:{ gancho:'', palavra:'' } },
+  story:{ g:'Chegada', i:'◎', n:'Story com link', x:{ texto:'' } },
+  bio:{ g:'Chegada', i:'🔗', n:'Link da bio', x:{ frase:'' } },
+  dm:{ g:'Mensagens', i:'💬', n:'Direct do robô', x:{ mensagem:'' } },
+  whatsapp:{ g:'Mensagens', i:'🟢', n:'Mensagem no WhatsApp', x:{ mensagem:'' } },
+  audio:{ g:'Com você', i:'🎙', n:'Áudio seu', x:{ fala:'' } },
+  video:{ g:'Com você', i:'🎥', n:'Vídeo da análise', x:{ roteiro:'' } },
+  conversa:{ g:'Com você', i:'📅', n:'Conversa', x:{ pauta:'' } },
+  oferta:{ g:'Com você', i:'★', n:'Oferta do acompanhamento', x:{ texto:'' } },
+  lembrete:{ g:'Com você', i:'⏰', n:'Lembrete ou retorno', x:{ quando:'', texto:'' } },
+  ideia:{ g:'', i:'+', n:'Passo novo', x:{ texto:'' } },
+  funil:{ g:'', i:'◇', n:'Funil novo', x:{ modelo:'', tema:'', publico:'', promessa:'' } },
+};
+const MODELOS = [['Quiz de perguntas', 'capa → perguntas de escolha → interstício → resultado'], ['Teste com foto', 'capa → perguntas → instrução → câmera → carregando → resultado'], ['Teste com sensor', 'capa → dados → instrução → medição → resultado'], ['Quiz de perfil (tipos)', 'capa → frases para pontuar → carregando → o seu tipo']];
+const ROT = { titulo:'Título', apoio:'Texto de apoio', subtitulo:'Subtítulo', botao:'Botão', campo:'Campo', texto:'Texto', fonte:'Fonte', destaque:'Destaque', chamada:'Chamada', mensagem:'Mensagem', fala:'O que você fala', roteiro:'Roteiro', pauta:'Pauta', gancho:'Gancho', palavra:'Palavra', frase:'Frase', aviso:'Aviso', quando:'Quando', modelo:'Modelo', tema:'Tema do funil', publico:'Para quem', promessa:'Promessa da capa' };
+const rot = k => ROT[k] || k.replace(/^opcao/, 'opção').replace(/^cartao/, 'cartão').replace(/_(\d+)$/, ' $1').replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+const ROT_ORIGEM = o => o === 'bio' ? 'Link da bio' : o === 'whatsapp' ? 'Perfil do WhatsApp' : o === 'direto' ? 'Link direto' : o === 'teste' ? 'Testes (Claude)' : o.startsWith('direct:') ? 'Comentou ' + o.slice(7).toUpperCase() : o === 'direct' ? 'Direct' : o.replace(/^outro:/, '');
+const SIST = { fonte:'Instagram, robô do Direct (OpenReply) e link medido (livowa.com/comece)', etapa:'Site livowa.com: tela do teste; cada passagem é gravada no banco', fim:'Site livowa.com: botão do fim do teste', voce:'Caixa (livowa.com/consulta) e o seu WhatsApp', ideia:'Ainda não existe: é um passo que você pediu. O Claude constrói a partir do que você escrever aqui' };
+const FIM_ROT = { complete:'Terminou o teste', whatsapp:'Tocou em WhatsApp', direct:'Tocou em Direct', lead_capture:'Deixou o contato', explicar:'Tocou em "me explique"' };
 
-function nota(id){ return E.cfg[chave('jn_', id)] || ''; }
-function passo(id){ return E.cfg[chave('jp_', id)] || ''; }
-function no(o){
-  const temNota = nota(o.id), img = o.img ? `<img src="${esc(o.img)}" alt="" loading="lazy" onerror="this.remove()">` : esc(o.ico || '');
-  return `<button type="button" class="no ${o.tipo}${o.queda ? ' queda' : ''}${o.n == null ? ' sem' : ''}" data-no="${esc(o.id)}">
-    ${temNota ? '<span class="nota">nota</span>' : ''}<span class="mini">${img}</span>
-    <span class="tx"><span class="t">${esc(o.t)}</span><span class="n">${o.n == null ? esc(o.semTx || 'sem medição') : o.n.toLocaleString('pt-BR')}</span>${o.sub ? `<span class="p">${esc(o.sub)}</span>` : ''}</span></button>`;
-}
-const seta = (p, saiu, q) => `<span class="seta${q ? ' queda' : ''}"><b>${p == null ? '' : pct(p)}</b><span>${saiu > 0 ? '−' + saiu : '&nbsp;'}</span></span>`;
-
-let NOS = {};
-function desenha(){
-  const j = E.dados, f = E.funil, mp = E.mapa[f] || { etapas:{} };
-  const funis = (j.opcoes.funis || []).filter(x => x.id !== 'crm-uso');
-  if (!funis.some(x => x.id === f)) funis.unshift({ id:f, pessoas:0 });
-  $('funis').innerHTML = funis.map(x => `<button type="button" data-funil="${esc(x.id)}" aria-pressed="${x.id === f}">${esc((E.mapa[x.id] || {}).nome || x.id)}<small>${x.pessoas || 0}</small></button>`).join('');
-  document.querySelectorAll('#dias button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.d === E.dias));
-  const os = ((j.opcoes.origens || {})[f] || []);
-  $('origem').innerHTML = [['', 'De todo lugar'], ...os.map(o => [o.id, `${ROT_ORIGEM(o.id)} · ${o.pessoas}`])].map(([v, t]) => `<option value="${esc(v)}"${v === E.origem ? ' selected' : ''}>${esc(t)}</option>`).join('');
-  NOS = {};
-  const cad = ((j.etapas || {}).etapas || []).filter(e => !e.desvio), fim = (j.etapas || {}).fim || [];
-  if (!cad.length){ $('resumo').innerHTML = ''; $('fluxo').innerHTML = `<p class="vazio">Ninguém passou por aqui nos últimos ${E.dias} dias${E.origem ? ' vindo desse lugar' : ''}.</p>`; return; }
-  // maior queda
-  let qi = -1, qn = 0; cad.forEach((e, i) => { if (!i) return; const s = cad[i - 1].pessoas - e.pessoas; if (s > qn){ qn = s; qi = i; } });
-  const ini = cad[0].pessoas, term = fim.find(x => x.tipo === 'complete'), conv = fim.find(x => x.tipo === 'contato');
-  $('resumo').innerHTML = `<span><b>${ini}</b>começaram</span><span><b>${term ? term.pessoas : 0}</b>terminaram${term ? ' · ' + pct(term.pct_inicio) : ''}</span><span><b>${conv ? conv.pessoas : 0}</b>chamaram você${conv ? ' · ' + pct(conv.pct_inicio) : ''}</span>${qi > 0 ? `<span class="q"><b>−${qn}</b>maior queda: ${esc((mp.etapas[cad[qi].etapa] || {}).nome || cad[qi].etapa)}</span>` : ''}`;
-  let h = '';
-  // 1 · chegada
-  const fontes = (E.origem ? os.filter(o => o.id === E.origem) : os).filter(o => o.id !== 'teste').slice(0, 6);
-  h += `<div class="faixa"><h2>Chegada</h2><div class="pilha">${(fontes.length ? fontes : [{ id:'?', pessoas:null }]).map(o => { const x = { id:'fonte:' + o.id, tipo:'fonte', ico:o.id.startsWith('direct') ? '💬' : o.id === 'bio' ? '🔗' : '↗', t:o.id === '?' ? 'De onde vieram' : ROT_ORIGEM(o.id), n:o.pessoas, sub:'pessoas' }; NOS[x.id] = x; return no(x); }).join('')}</div></div><div class="sep"></div>`;
-  // 2 · o teste, tela por tela
-  h += `<div class="faixa"><h2>O teste, tela por tela</h2><div class="linha">`;
-  cad.forEach((e, i) => {
-    const m = mp.etapas[e.etapa] || {}, saiu = i ? cad[i - 1].pessoas - e.pessoas : 0;
-    if (i) h += seta(e.pct_anterior, saiu, i === qi);
-    const x = { id:e.etapa, tipo:'etapa', t:m.nome || e.etapa, img:m.img, ico:'▢', n:e.pessoas, sub:i ? pct(e.pct_inicio) + ' do início' : 'início', queda:i === qi, e, saiu };
-    NOS[x.id] = x; h += no(x);
-    if (passo(e.etapa)){ const y = { id:'ideia:' + e.etapa, tipo:'ideia', ico:'+', t:passo(e.etapa), n:null, semTx:'passo que você pediu', de:e.etapa }; NOS[y.id] = y; h += seta(null, 0) + no(y); }
-  });
-  h += `</div></div><div class="sep"></div>`;
-  // 3 · fim do teste
-  const fs = ['complete', 'whatsapp', 'direct', 'lead_capture', 'explicar'].map(t => fim.find(x => x.tipo === t || (x.tipo === 'contato' && x.canal === t))).filter(Boolean);
-  h += `<div class="faixa"><h2>Fim do teste</h2><div class="pilha">${(fs.length ? fs : [{ tipo:'complete', pessoas:null }]).map(x0 => { const t = x0.canal || x0.tipo; const x = { id:'fim:' + t, tipo:'acao fim', ico:t === 'complete' ? '✓' : '➜', t:FIM_ROT[t] || t, n:x0.pessoas, sub:x0.pct_inicio != null ? pct(x0.pct_inicio) + ' do início' : '' }; NOS[x.id] = x; return no(x); }).join('')}</div></div><div class="sep"></div>`;
-  // 4 · com você (CRM da Caixa)
-  const vs = Array.isArray(j.venda) ? j.venda.filter(v => !v.teste) : null, tem = (v, es) => (v.etapas || []).some(e => es.includes(e)) || es.includes(v.status);
-  const ELA = ['respondeu', 'conversa', 'faltou', 'comprou', 'nutrir', 'nao_quis'];
-  const V = [['chegou', 'Mensagem chegou na Caixa', vs ? vs.length : null], ['explicou', 'Você respondeu ou explicou', vs ? vs.filter(v => v.primeira_resposta_em || tem(v, ['audio', 'analisei', ...ELA, 'sumiu'])).length : null],
-    ['respondeu', 'Ela respondeu', vs ? vs.filter(v => tem(v, ELA)).length : null], ['conversa', 'Conversa marcada', vs ? vs.filter(v => tem(v, ['conversa', 'faltou', 'comprou'])).length : null], ['comprou', 'Começou o acompanhamento', vs ? vs.filter(v => tem(v, ['comprou'])).length : null]];
-  h += `<div class="faixa"><h2>Com você · todos os testes desde 13/11</h2><div class="linha">${V.map(([id, t, n], i) => { const x = { id:'voce:' + id, tipo:'voce', ico:['📥', '🎙', '↩', '📅', '★'][i], t, n, semTx:'sem medição' }; NOS[x.id] = x; const ant = i ? V[i - 1][2] : null;
-    return (i ? seta(ant ? Math.round(1000 * (n || 0) / ant) / 10 : null, ant != null && n != null ? ant - n : 0) : '') + no(x) + (passo('voce:' + id) ? (() => { const y = { id:'ideia:voce:' + id, tipo:'ideia', ico:'+', t:passo('voce:' + id), n:null, semTx:'passo que você pediu', de:'voce:' + id }; NOS[y.id] = y; return seta(null, 0) + no(y); })() : ''); }).join('')}</div></div>`;
-  $('fluxo').innerHTML = h;
-  if (E.aberto && NOS[E.aberto] && !E.semPainel) abre(E.aberto, true);
-}
-
-function abre(id, manter){
-  const x = NOS[id]; if (!x) return; E.aberto = id;
-  const alvo = x.tipo === 'ideia' ? x.de : id, p = $('painel'), tipo = x.tipo.split(' ')[0] === 'acao' ? 'fim' : x.tipo;
-  const antigo = manter ? { n:p.querySelector('#tx-nota')?.value, s:p.querySelector('#tx-passo')?.value } : {};
-  p.innerHTML = `<button type="button" class="fechar" id="fecha">← Fechar</button><h3>${esc(x.t)}</h3>
-    ${x.img ? `<img src="${esc(x.img)}" alt="Print da tela ${esc(x.t)}">` : ''}
-    <dl>${x.n != null ? `<dt>Pessoas</dt><dd>${x.n.toLocaleString('pt-BR')} em ${E.dias} dias</dd>` : '<dt>Pessoas</dt><dd>sem medição ainda</dd>'}
-      ${x.e ? `<dt>Da tela anterior</dt><dd>${pct(x.e.pct_anterior)}${x.saiu > 0 ? ` (saíram ${x.saiu})` : ''}</dd><dt>Do início</dt><dd>${pct(x.e.pct_inicio)}</dd><dt>Tempo na tela</dt><dd>${x.e.mediana_s == null ? 'sem tempo medido' : Math.round(x.e.mediana_s) + ' s (mediana)'}</dd>` : ''}</dl>
-    <div class="integ"><b>Quem faz este passo:</b> ${esc(SIST[tipo] || '')}</div>
-    <div><label for="tx-nota">Comentário para o Claude sobre este passo</label><textarea id="tx-nota" maxlength="1900" placeholder="O que mudar aqui?">${esc(antigo.n ?? nota(alvo))}</textarea><div class="st" id="st-nota"></div></div>
-    <div><label for="tx-passo">+ Passo novo depois deste (o que deve acontecer)</label><textarea id="tx-passo" maxlength="1900" placeholder="Ex.: mandar um áudio curto antes da explicação">${esc(antigo.s ?? passo(alvo))}</textarea><div class="st" id="st-passo"></div></div>`;
-  p.hidden = false;
-  $('fecha').onclick = () => { p.hidden = true; E.aberto = null; };
-  const liga = (campo, pre, st) => { let t; $(campo).addEventListener('input', () => { clearTimeout(t); $(st).textContent = 'gravando…'; $(st).className = 'st'; t = setTimeout(() => salva(pre, alvo, $(campo).value.trim(), st), 900); }); };
-  liga('tx-nota', 'jn_', 'st-nota'); liga('tx-passo', 'jp_', 'st-passo');
-}
-async function salva(pre, alvo, valor, st){
-  const c = chave(pre, alvo);
-  try { const r = await post({ acao:'config_salvar', escopo:'teste:' + E.funil, chave:c, valor:valor || null }), j = await r.json(); if (!j.ok) throw 0;
-    if (valor) E.cfg[c] = valor; else delete E.cfg[c];
-    const s = $(st); if (s){ s.textContent = valor ? 'Gravado. O Claude lê daqui.' : 'Apagado.'; s.className = 'st ok'; }
-    E.semPainel = true; desenha(); E.semPainel = false;   // redesenha o fluxo (selo de nota, passo novo) sem tirar o cursor da caixa
-  } catch { const s = $(st); if (s){ s.textContent = 'Não gravou. O texto continua na caixa; tente de novo.'; s.className = 'st err'; } }
+/* ---------- o que ele escreveu (Ajustes da Caixa) ---------- */
+const nota = id => E.cfg[chave('jn_', id)] || '';
+const mudancas = et => lerJ(E.cfg[chave('jt_', et)], {}) || {};
+function novos(id){ const bruto = E.cfg[chave('jp_', id)]; if (!bruto) return []; const v = lerJ(bruto, null); return Array.isArray(v) ? v : [{ t:'ideia', x:{ texto:String(bruto) } }]; }
+async function grava(c, valor, st){
+  const s = st && $(st), txt = valor == null ? null : typeof valor === 'string' ? valor : JSON.stringify(valor);
+  if (txt && txt.length > 2000){ if (s){ s.textContent = 'Passou de 2.000 letras neste passo: encurte ou divida em dois.'; s.className = 'st err'; } return false; }
+  try { const r = await post({ acao:'config_salvar', escopo:'teste:' + E.funil, chave:c, valor:txt || null }), j = await r.json(); if (!j.ok) throw 0;
+    if (txt) E.cfg[c] = txt; else delete E.cfg[c];
+    const s2 = st && $(st); if (s2){ s2.textContent = 'Gravado às ' + new Date().toLocaleTimeString('pt-BR').slice(0, 5) + '. O Claude lê daqui.'; s2.className = 'st ok'; }
+    desenha(true); return true;
+  } catch { const s2 = st && $(st); if (s2){ s2.textContent = 'Não gravou. O texto continua na caixa; tente de novo.'; s2.className = 'st err'; } return false; }
 }
 async function carregaCfg(){
   try { const r = await post({ acao:'config_ler' }), j = await r.json(); E.cfg = {};
-    (j.config || []).forEach(c => { if (c.escopo === 'teste:' + E.funil && /^j[np]_/.test(c.chave) && typeof c.valor === 'string') E.cfg[c.chave] = c.valor; }); } catch {}
+    (j.config || []).forEach(c => { if (c.escopo === 'teste:' + E.funil && /^j[npt]_/.test(c.chave) && typeof c.valor === 'string') E.cfg[c.chave] = c.valor; }); } catch {}
 }
+
+/* ---------- conta de passagem honesta ----------
+   A etapa seguinte pode ter MAIS gente que a anterior quando a anterior é uma tela que nem todos veem (interstício que só
+   aparece para algumas respostas) ou quando há versões antigas do teste no período. A base de cada tela é a tela mais
+   próxima, para trás, com pelo menos a mesma quantidade de pessoas; as puladas ganham o selo "nem todos veem". */
+function ordena(cad, mp){ const ord = Object.keys(mp.etapas || {}); let ult = -1;
+  return cad.map((e, i) => { const k = ord.indexOf(e.etapa); const pos = e.etapa === 'inicio' && k < 0 ? -1 : k >= 0 ? k : ult + .5; if (k >= 0) ult = k; return { e, pos, i }; }).sort((a, b) => a.pos - b.pos || a.i - b.i).map(x => ({ ...x.e })); }
+function passagem(cad){
+  cad.forEach((e, i) => { if (!i) return; let j = i - 1; while (j > 0 && cad[j].pessoas < e.pessoas) j--;
+    e.base = j; e.outro = cad[j].pessoas < e.pessoas; e.pc = cad[j].pessoas ? Math.min(100, Math.round(1000 * e.pessoas / cad[j].pessoas) / 10) : null; e.saiu = Math.max(0, cad[j].pessoas - e.pessoas);
+    for (let k = j + 1; k < i; k++) cad[k].opc = true; });
+}
+
+/* ---------- desenho ---------- */
+let NOS = {};
+const seta = (o = {}) => `<span class="seta${o.q ? ' queda' : ''}">${o.pc != null ? `<span class="pc">${pct(o.pc)}</span>` : ''}<svg viewBox="0 0 86 14" preserveAspectRatio="none" aria-hidden="true"><path d="M0 7 H78"/><polygon points="78,2 86,7 78,12"/></svg><span class="sai">${o.saiu > 0 ? '−' + o.saiu : ''}</span>${o.dep ? `<button type="button" class="mais${E.armado ? ' alvo' : ''}" data-mais="${esc(o.dep)}" title="Acrescentar um passo aqui" aria-label="Acrescentar um passo depois de ${esc(o.depNome || '')}">+</button>` : ''}</span>`;
+function no(o){
+  const selos = [nota(o.id) && '<span>nota</span>', o.mud && '<span>editada</span>', o.opc && '<span class="opc">nem todos passam</span>'].filter(Boolean).join('');
+  const img = o.img ? `<img src="${esc(o.img)}" alt="" loading="lazy" onerror="this.remove()">` : esc(o.ico || '▢');
+  return `<button type="button" class="no ${o.cls}${o.queda ? ' queda' : ''}${o.n == null ? ' sem' : ''}${E.aberto === o.id ? ' sel' : ''}" data-no="${esc(o.id)}">
+    <span class="nm">${esc(o.t)}</span><span class="mini">${img}</span>${selos ? `<span class="selo">${selos}</span>` : ''}
+    <span class="met"><span class="n">${o.n == null ? esc(o.semTx || 'sem medição') : o.n.toLocaleString('pt-BR')}</span>${o.sub ? `<span class="p">${esc(o.sub)}</span>` : ''}</span></button>`;
+}
+function novosHtml(dep){ return novos(dep).map((p, i) => { const c = COMP[p.t] || COMP.ideia, tx = Object.values(p.x || {}).find(v => v) || c.n;
+  const y = { id:`novo:${dep}:${i}`, cls:'bola ideia', tipo:'ideia', ico:c.i, t:tx, n:null, semTx:c.n, dep, idx:i, comp:p }; NOS[y.id] = y; return no(y) + seta(); }).join(''); }
+function desenha(soFluxo){
+  const j = E.dados; if (!j) return; const f = E.funil, mp = E.mapa[f] || { etapas:{} };
+  const funis = (j.opcoes.funis || []).filter(x => x.id !== 'crm-uso');
+  if (!funis.some(x => x.id === f)) funis.unshift({ id:f, pessoas:0 });
+  const os = ((j.opcoes.origens || {})[f] || []);
+  if (!soFluxo){
+    $('funis').innerHTML = funis.map(x => `<button type="button" data-funil="${esc(x.id)}" aria-pressed="${x.id === f}">${esc((E.mapa[x.id] || {}).nome || x.id)}<small>${x.pessoas || 0}</small></button>`).join('');
+    document.querySelectorAll('#dias button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.d === E.dias));
+    $('origem').innerHTML = [['', 'De todo lugar'], ...os.map(o => [o.id, `${ROT_ORIGEM(o.id)} · ${o.pessoas}`])].map(([v, t]) => `<option value="${esc(v)}"${v === E.origem ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  }
+  NOS = {};
+  const cad = ordena(((j.etapas || {}).etapas || []).filter(e => !e.desvio), mp), fim = (j.etapas || {}).fim || [];
+  if (!cad.length){ $('resumo').innerHTML = ''; $('fluxo').innerHTML = `<p class="vazio">Ninguém passou por aqui nos últimos ${E.dias} dias${E.origem ? ' vindo desse lugar' : ''}. Troque para 30 dias ou escolha outro funil.</p>`; return; }
+  passagem(cad);
+  let qi = -1, qn = 0; cad.forEach((e, i) => { if (i && !e.opc && e.saiu > qn){ qn = e.saiu; qi = i; } });
+  const ini = Math.max(...cad.map(e => e.pessoas)), term = fim.find(x => x.tipo === 'complete'), conv = fim.find(x => x.tipo === 'contato');
+  const nomeDe = e => (mp.etapas[e.etapa] || {}).nome || (e.etapa === 'inicio' ? 'Abriu a página' : e.etapa);
+  $('resumo').innerHTML = `<span><b>${ini}</b>começaram</span><span><b>${term ? term.pessoas : 0}</b>terminaram${term ? ' · ' + pct(Math.min(100, term.pct_inicio)) : ''}</span><span><b>${conv ? conv.pessoas : 0}</b>chamaram você${conv ? ' · ' + pct(Math.min(100, conv.pct_inicio)) : ''}</span>${qi > 0 ? `<span class="q"><b>−${qn}</b>maior queda: ${esc(nomeDe(cad[qi]))}</span>` : ''}${ini < 30 ? `<span class="pouco">Pouca gente no período (${ini}): as porcentagens ainda dizem pouco.</span>` : ''}`;
+  let h = '';
+  // chegada
+  const fontes = (E.origem ? os.filter(o => o.id === E.origem) : os).filter(o => o.id !== 'teste').slice(0, 6);
+  h += `<div class="faixa"><h2>Chegada</h2><div class="pilha">${(fontes.length ? fontes : [{ id:'?', pessoas:null }]).map(o => { const x = { id:'fonte:' + o.id, cls:'bola fonte', tipo:'fonte', ico:o.id.startsWith('direct') ? '💬' : o.id === 'bio' ? '🔗' : o.id === 'whatsapp' ? '🟢' : '↗', t:o.id === '?' ? 'De onde vieram' : ROT_ORIGEM(o.id), n:o.pessoas, sub:o.pessoas == null ? '' : 'pessoas' }; NOS[x.id] = x; return no(x); }).join('')}</div></div>${seta({ dep:'chegada', depNome:'a chegada' })}${novosHtml('chegada')}`;
+  // o teste, tela por tela
+  h += `<div class="faixa"><h2>O teste, tela por tela</h2><div class="linha">`;
+  cad.forEach((e, i) => {
+    const m = mp.etapas[e.etapa] || {};
+    if (i) h += seta({ pc:e.pc, saiu:e.opc ? 0 : e.saiu, q:i === qi, dep:cad[i - 1].etapa, depNome:nomeDe(cad[i - 1]) }) + novosHtml(cad[i - 1].etapa);
+    const x = { id:e.etapa, cls:'etapa', tipo:'etapa', t:nomeDe(e), img:m.img, ico:(COMP[m.tipo] || COMP.tela).i, n:e.pessoas, sub:pct(Math.min(100, Math.round(1000 * e.pessoas / ini) / 10)) + ' do início', queda:i === qi, e, m, opc:e.opc, mud:Object.keys(mudancas(e.etapa)).length > 0 };
+    NOS[x.id] = x; h += no(x);
+  });
+  const ult = cad[cad.length - 1];
+  h += `</div></div>${seta({ dep:ult.etapa, depNome:nomeDe(ult) })}${novosHtml(ult.etapa)}`;
+  // fim do teste
+  const fs = ['complete', 'whatsapp', 'direct', 'lead_capture', 'explicar'].map(t => fim.find(x => x.tipo === t || (x.tipo === 'contato' && x.canal === t))).filter(Boolean);
+  h += `<div class="faixa"><h2>Fim do teste</h2><div class="pilha">${(fs.length ? fs : [{ tipo:'complete', pessoas:null }]).map(x0 => { const t = x0.canal || x0.tipo; const x = { id:'fim:' + t, cls:'bola fim', tipo:'fim', ico:t === 'complete' ? '✓' : t === 'whatsapp' ? '🟢' : '➜', t:FIM_ROT[t] || t, n:x0.pessoas, sub:x0.pct_inicio != null ? pct(Math.min(100, x0.pct_inicio)) + ' do início' : '' }; NOS[x.id] = x; return no(x); }).join('')}</div></div>${seta({ dep:'fim', depNome:'o fim do teste' })}${novosHtml('fim')}`;
+  // com você (CRM da Caixa)
+  const vs = Array.isArray(j.venda) ? j.venda.filter(v => !v.teste) : null, tem = (v, es) => (v.etapas || []).some(e => es.includes(e)) || es.includes(v.status);
+  const ELA = ['respondeu', 'conversa', 'faltou', 'comprou', 'nutrir', 'nao_quis'];
+  const V = [['chegou', 'Mensagem chegou na Caixa', '📥', vs ? vs.length : null], ['explicou', 'Você respondeu ou explicou', '🎙', vs ? vs.filter(v => v.primeira_resposta_em || tem(v, ['audio', 'analisei', ...ELA, 'sumiu'])).length : null],
+    ['respondeu', 'Ela respondeu', '↩', vs ? vs.filter(v => tem(v, ELA)).length : null], ['conversa', 'Conversa marcada', '📅', vs ? vs.filter(v => tem(v, ['conversa', 'faltou', 'comprou'])).length : null], ['comprou', 'Começou o acompanhamento', '★', vs ? vs.filter(v => tem(v, ['comprou'])).length : null]];
+  h += `<div class="faixa"><h2>Com você · todos os testes desde 13/11</h2><div class="linha">${V.map(([id, t, ico, n], i) => { const x = { id:'voce:' + id, cls:'bola voce', tipo:'voce', ico, t, n, sub:n == null ? '' : 'pessoas' }; NOS[x.id] = x; const ant = i ? V[i - 1][3] : null;
+    return (i ? seta({ pc:ant ? Math.min(100, Math.round(1000 * (n || 0) / ant) / 10) : null, saiu:ant != null && n != null ? Math.max(0, ant - n) : 0, dep:'voce:' + V[i - 1][0], depNome:V[i - 1][1] }) + novosHtml('voce:' + V[i - 1][0]) : '') + no(x); }).join('')}${seta({ dep:'voce:comprou', depNome:'o acompanhamento' })}${novosHtml('voce:comprou')}</div></div>`;
+  if (novos('modelo').length) h += `<div class="faixa" style="margin-left:44px"><h2>Funis novos que você pediu</h2><div class="linha">${novosHtml('modelo')}</div></div>`;
+  $('fluxo').innerHTML = h; aplicaZoom();
+  if (!soFluxo && E.aberto && NOS[E.aberto] && !$('painel').contains(document.activeElement)) abre(E.aberto);
+}
+
+/* ---------- paleta ---------- */
+function paleta(){
+  const gs = [...new Set(Object.values(COMP).map(c => c.g).filter(Boolean))];
+  $('paleta').innerHTML = `<h2>Acrescentar</h2><p>Toque num componente e depois no <b>+</b> do lugar onde ele entra. Ou toque direto num <b>+</b>.</p>` +
+    gs.map(g => `<h2>${esc(g)}</h2>` + Object.entries(COMP).filter(([, c]) => c.g === g).map(([k, c]) => `<button type="button" class="comp" data-comp="${k}" aria-pressed="${E.armado === k}"><i>${c.i}</i>${esc(c.n)}</button>`).join('')).join('') +
+    `<h2>Funil novo, por modelo</h2>` + MODELOS.map(([n, d]) => `<button type="button" class="comp" data-modelo="${esc(n)}" title="${esc(d)}"><i>◇</i>${esc(n)}</button>`).join('');
+}
+async function acrescenta(dep, tipo, x){
+  const c = COMP[tipo] || COMP.ideia, lista = novos(dep); lista.push({ t:tipo, x:{ ...c.x, ...(x || {}) } });
+  E.armado = null; paleta();
+  if (await grava(chave('jp_', dep), lista)) abre(`novo:${dep}:${lista.length - 1}`);
+}
+function escolhe(dep, onde){   // tocou no + sem componente armado: mostra a lista ali
+  document.querySelector('#escolha')?.remove();
+  const d = document.createElement('div'); d.id = 'escolha';
+  const r = onde.getBoundingClientRect(); d.style.left = Math.max(8, Math.min(innerWidth - 250, r.left - 108)) + 'px'; d.style.top = Math.max(8, Math.min(innerHeight - 360, r.bottom + 6)) + 'px';
+  d.innerHTML = '<b>O que entra aqui?</b>' + Object.entries(COMP).filter(([, c]) => c.g).map(([k, c]) => `<button type="button" class="comp" data-aqui="${k}"><i>${c.i}</i>${esc(c.n)}</button>`).join('');
+  d.addEventListener('click', ev => { const b = ev.target.closest('[data-aqui]'); if (b){ d.remove(); acrescenta(dep, b.dataset.aqui); } });
+  document.body.append(d);
+}
+
+/* ---------- painel: a tela aberta, rolável, com cada componente editável ---------- */
+function campos(obj, orig){ return Object.keys(obj).map(k => { const v = obj[k] ?? '', o = orig ? orig[k] : undefined, mud = orig && o !== undefined && v !== o;
+  return `<div class="cp${mud ? ' mud' : ''}"><label for="c-${esc(k)}">${esc(rot(k))}${mud ? `<button type="button" data-volta="${esc(k)}">voltar ao original</button>` : ''}</label><textarea id="c-${esc(k)}" data-campo="${esc(k)}" rows="${Math.min(6, Math.max(1, Math.ceil(String(v || '').length / 44)))}" placeholder="${orig ? '' : 'escreva aqui'}">${esc(v)}</textarea></div>`; }).join(''); }
+function abre(id){
+  const x = NOS[id]; if (!x) return; E.aberto = id; document.querySelectorAll('.no').forEach(n => n.classList.toggle('sel', n.dataset.no === id));
+  const p = $('painel'), novo = x.tipo === 'ideia', m = x.m || {};
+  const c0 = novo ? (COMP[x.comp.t] || COMP.ideia) : null;
+  const tela = novo ? `<div class="moldura"><div class="semtela">Passo que ainda não existe. Preencha os componentes ao lado: o Claude constrói a partir deles.</div></div>`
+    : m.img ? `<div class="moldura"><img src="${esc(m.inteira || m.img)}" alt="Tela ${esc(x.t)} como a pessoa vê"></div><div class="dica">${m.inteira ? 'Role dentro do celular para ver a tela até o fim.' : 'A tela inteira, como a pessoa vê.'}</div>`
+    : `<div class="moldura"><div class="semtela">${x.tipo === 'etapa' ? 'Esta etapa ainda não tem print na Central.' : esc(x.t)}</div></div>`;
+  const orig = m.textos || {}, atual = { ...orig, ...mudancas(id) };
+  const comps = novo ? `<div class="bloco"><h4>Componentes deste passo novo · ${esc(c0.n)}</h4>${campos(x.comp.x || {}, null)}<div class="st" id="st-comp"></div></div>`
+    : Object.keys(orig).length ? `<div class="bloco"><h4>Componentes desta tela (edite o texto; o Claude aplica no site)</h4>${campos(atual, orig)}<div class="st" id="st-comp"></div></div>` : '';
+  p.innerHTML = `<div class="pn-cab"><button type="button" id="fecha">← Fechar</button><h3>${esc(novo ? c0.n + ' (passo novo)' : x.t)}</h3>${novo ? '<button type="button" class="btn per" id="apaga">Tirar este passo</button>' : ''}</div>
+    <div class="pn-corpo"><div class="cel">${tela}</div><div class="lado">
+      ${novo ? '' : `<dl><dt>Pessoas</dt><dd>${x.n != null ? x.n.toLocaleString('pt-BR') + ' em ' + E.dias + ' dias' : 'sem medição ainda'}</dd>${x.e ? `<dt>Passaram para cá</dt><dd>${x.e.pc == null ? 'primeira tela' : pct(x.e.pc) + (x.e.saiu > 0 ? ` (saíram ${x.e.saiu})` : '') + (x.e.outro ? ' · parte entrou por outro caminho' : '')}</dd><dt>Tempo na tela</dt><dd>${x.e.mediana_s == null ? 'sem tempo medido' : Math.round(x.e.mediana_s) + ' s (mediana)'}</dd>${x.opc ? '<dt>Atenção</dt><dd>parte das pessoas chegou às telas seguintes sem passar por esta (tela que só aparece para algumas respostas, versão antiga do teste ou registro perdido); por isso ela não entra na conta da seguinte</dd>' : ''}` : ''}</dl>`}
+      <div class="integ"><b>Quem faz este passo:</b> ${esc(SIST[x.tipo] || '')}</div>
+      ${comps}
+      <div class="bloco"><h4>Comentário para o Claude</h4><textarea id="tx-nota" rows="3" maxlength="1900" placeholder="O que mudar aqui?">${esc(nota(id))}</textarea><div class="st" id="st-nota"></div></div>
+      ${novo ? '' : `<div class="bloco"><h4>Acrescentar depois deste passo</h4><div style="display:flex;flex-wrap:wrap;gap:6px">${['escolha', 'estudo', 'tela', 'audio', 'whatsapp'].map(k => `<button type="button" class="btn" data-depois="${k}">${COMP[k].i} ${esc(COMP[k].n)}</button>`).join('')}<button type="button" class="btn" data-depois="?">outro…</button></div></div>`}
+    </div></div>`;
+  p.hidden = false;
+  $('fecha').onclick = fecha;
+  const dep = x.tipo === 'etapa' ? id : x.tipo === 'fonte' ? 'chegada' : x.tipo === 'fim' ? 'fim' : id;
+  let t1, t2;
+  $('tx-nota').addEventListener('input', () => { clearTimeout(t1); $('st-nota').textContent = 'gravando…'; $('st-nota').className = 'st'; t1 = setTimeout(() => grava(chave('jn_', id), $('tx-nota').value.trim() || null, 'st-nota'), 900); });
+  const salvaComp = () => { const vals = {}; p.querySelectorAll('[data-campo]').forEach(a => vals[a.dataset.campo] = a.value);
+    if (novo){ const lista = novos(x.dep); if (!lista[x.idx]) return; lista[x.idx] = { ...lista[x.idx], x:vals }; return grava(chave('jp_', x.dep), lista, 'st-comp'); }
+    const dif = {}; Object.keys(vals).forEach(k => { if (vals[k] !== (orig[k] ?? '')) dif[k] = vals[k]; });
+    p.querySelectorAll('.cp').forEach(c => { const a = c.querySelector('[data-campo]'); c.classList.toggle('mud', a.value !== (orig[a.dataset.campo] ?? '')); });
+    return grava(chave('jt_', id), Object.keys(dif).length ? dif : null, 'st-comp'); };
+  p.querySelectorAll('[data-campo]').forEach(a => a.addEventListener('input', () => { clearTimeout(t2); const s = $('st-comp'); if (s){ s.textContent = 'gravando…'; s.className = 'st'; } t2 = setTimeout(salvaComp, 900); }));
+  p.onclick = async ev => {
+    const v = ev.target.closest('[data-volta]'); if (v){ const a = p.querySelector(`[data-campo="${CSS.escape(v.dataset.volta)}"]`); a.value = orig[v.dataset.volta] ?? ''; await salvaComp(); abre(id); return; }
+    const d = ev.target.closest('[data-depois]'); if (d){ if (d.dataset.depois === '?') escolhe(dep, d); else acrescenta(dep, d.dataset.depois); return; }
+    if (ev.target.id === 'apaga'){ const lista = novos(x.dep); lista.splice(x.idx, 1); fecha(); await grava(chave('jp_', x.dep), lista.length ? lista : null); }
+  };
+}
+function fecha(){ $('painel').hidden = true; E.aberto = null; document.querySelectorAll('.no.sel').forEach(n => n.classList.remove('sel')); }
+
+/* ---------- zoom e arrastar ---------- */
+function aplicaZoom(){ $('fluxo').style.zoom = E.zoom; try { localStorage.setItem('livowa_jornada', JSON.stringify({ funil:E.funil, dias:E.dias, zoom:E.zoom })); } catch {} }
+function ajusta(){ const t = $('tela'), f = $('fluxo'); f.style.zoom = 1; E.zoom = Math.max(.4, Math.min(1, (t.clientHeight - 20) / (f.scrollHeight || 1))); aplicaZoom(); }
+(() => { const t = $('tela'); let a = null;
+  t.addEventListener('pointerdown', e => { if (e.target.closest('button,textarea,a') || e.pointerType === 'touch') return; a = { x:e.clientX, y:e.clientY, l:t.scrollLeft, t:t.scrollTop }; t.classList.add('arr'); });
+  addEventListener('pointermove', e => { if (!a) return; t.scrollLeft = a.l - (e.clientX - a.x); t.scrollTop = a.t - (e.clientY - a.y); });
+  addEventListener('pointerup', () => { a = null; t.classList.remove('arr'); });
+  t.addEventListener('wheel', e => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); E.zoom = Math.max(.4, Math.min(1.6, E.zoom * (e.deltaY < 0 ? 1.08 : .93))); aplicaZoom(); }, { passive:false }); })();
+
+/* ---------- carregar ---------- */
 async function carrega(silencio){
   const n = ++E.pedido;
-  if (!K){ $('fluxo').innerHTML = '<p class="aviso">Abra pelo botão “Jornada” dentro da Caixa (o link carrega a sua chave).</p>'; $('vivo-tx').textContent = 'sem chave'; $('vivo').classList.add('erro'); return; }
-  try { localStorage.setItem('livowa_jornada', JSON.stringify({ funil:E.funil, dias:E.dias })); } catch {}
+  if (!K){ $('fluxo').innerHTML = '<p class="aviso">Abra pela Central (aba Funis › Jornada) ou pelo botão “Ver como jornada” da Caixa: o link carrega a sua chave.</p>'; $('vivo-tx').textContent = 'sem chave'; $('vivo').classList.add('erro'); return; }
   try {
     const r = await post({ acao:'funil', dias:E.dias, funil:E.funil, origem:E.origem, variante:'', desde:DESDE });
     if (r.status === 404) throw new Error('link sem acesso');
@@ -200,14 +349,19 @@ async function carrega(silencio){
   } catch (e) { if (n !== E.pedido) return; $('vivo').classList.add('erro'); $('vivo-tx').textContent = 'não atualizou (' + (e.message || 'erro') + ')'; if (!E.dados) $('fluxo').innerHTML = '<p class="aviso">Não consegui carregar os números agora.</p>'; }
 }
 document.addEventListener('click', ev => {
-  const f = ev.target.closest('[data-funil]'); if (f){ E.funil = f.dataset.funil; E.origem = ''; E.aberto = null; $('painel').hidden = true; carrega(); return; }
+  const esc0 = document.querySelector('#escolha'); if (esc0 && !ev.target.closest('#escolha') && !ev.target.closest('[data-mais],[data-depois]')) esc0.remove();
+  const f = ev.target.closest('[data-funil]'); if (f){ E.funil = f.dataset.funil; E.origem = ''; fecha(); carrega(); return; }
   const d = ev.target.closest('#dias [data-d]'); if (d){ E.dias = +d.dataset.d; carrega(true); return; }
+  const z = ev.target.closest('[data-z]'); if (z){ if (z.dataset.z === '0') ajusta(); else { E.zoom = Math.max(.4, Math.min(1.6, E.zoom + .15 * +z.dataset.z)); aplicaZoom(); } return; }
+  const c = ev.target.closest('#paleta [data-comp]'); if (c){ E.armado = E.armado === c.dataset.comp ? null : c.dataset.comp; paleta(); document.querySelectorAll('.mais').forEach(b => b.classList.toggle('alvo', !!E.armado)); return; }
+  const mo = ev.target.closest('[data-modelo]'); if (mo){ const m = MODELOS.find(x => x[0] === mo.dataset.modelo); acrescenta('modelo', 'funil', { modelo:m[0] + ': ' + m[1] }); return; }
+  const mais = ev.target.closest('[data-mais]'); if (mais){ if (E.armado) acrescenta(mais.dataset.mais, E.armado); else escolhe(mais.dataset.mais, mais); return; }
   const n = ev.target.closest('[data-no]'); if (n) abre(n.dataset.no);
 });
 $('origem').addEventListener('change', e => { E.origem = e.target.value; carrega(true); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape'){ $('painel').hidden = true; E.aberto = null; } });
-setInterval(() => { if (!document.hidden && K && !document.activeElement?.matches?.('textarea')) carrega(true); }, 60000);
-(async () => { try { const r = await fetch('mapa.json'); if (r.ok) E.mapa = await r.json(); } catch {} carrega(); })();
+document.addEventListener('keydown', e => { if (e.key === 'Escape'){ document.querySelector('#escolha')?.remove(); fecha(); } });
+setInterval(() => { if (!document.hidden && K && !document.activeElement?.matches?.('textarea,input')) carrega(true); }, 60000);
+(async () => { paleta(); try { const r = await fetch('mapa.json'); if (r.ok) E.mapa = await r.json(); } catch {} carrega(); })();
 </script>
 </body>
 </html>
