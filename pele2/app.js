@@ -627,12 +627,9 @@ function prazoResta(){ const t = +lerPrazos()[codigo]?.t || prazoT0; return t ? 
 function noPrazo(){ const r = prazoResta(); return r == null || r > 0; }
 const mmss = ms => { const s = Math.ceil(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 function pintarPrazo(){
-  const r = prazoResta(), ok = r == null || r > 0;
-  $('r-prazo').hidden = cur !== 'resultado' || r == null || !ok;   // 23/11: vencido, a linha some (nada de 'o prazo acabou')
-  if (r == null || !ok) return;
-  const txt = 'Análise sem custo se enviar em';
-  if ($('r-prazo-txt').textContent !== txt) $('r-prazo-txt').textContent = txt;
-  $('r-prazo-rel').hidden = false; $('r-prazo-rel').textContent = mmss(r);
+  // 23/11 18h25 (Lucca, no braço: "tire a análise sem custo e o timer"; vale para todos os fins). Aqui só entrou em 24/11
+  // (escapou na propagação de 23/11). O prazo segue só na medição (noPrazo).
+  $('r-prazo').hidden = true;
 }
 const fimValor = (esc_ = escolha()) => `${esc_}|fim${FIM}`;   // valueText do cta_click final: 'explicar|fimA' ou 'explicar|fimB'
 $('cta-wa').addEventListener('click', () => { $('cta-wa').href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensagem())}`; track('cta_click', { stepId:'resultado', valueText:fimValor(), props:{ canal:'whatsapp', ...fimProps(escolha()) } }); });
