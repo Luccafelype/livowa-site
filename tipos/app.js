@@ -107,12 +107,13 @@ const ROT = {
 
 // ---------- telas ----------
 const ITEM_IDS = ITENS.map(([id]) => id);
-const ORDEM = ['capa', 'idade', 'nome', 'medidas', 'mayo', ...ITEM_IDS.slice(0, 6), 'mais1', 'tentou', ...ITEM_IDS.slice(6), 'objetivo', 'carregando', 'resultado'];
+// 27/11 (edição do Lucca na Central em 25/11): a tela 'mayo' (O estudo da Mayo) saiu da sequência
+const ORDEM = ['capa', 'idade', 'nome', 'medidas', ...ITEM_IDS.slice(0, 6), 'mais1', 'tentou', ...ITEM_IDS.slice(6), 'objetivo', 'carregando', 'resultado'];
 const UM = [...ITEM_IDS, 'objetivo'];   // uma escolha (avança sozinho; o sexo está na capa)
 // barra: todas as telas da capa ao resultado; valor = log(passo)/log(total) (Conrad 2010; Villar 2013; o mesmo do /pele/)
 const BARRA = ORDEM.slice(0, ORDEM.indexOf('resultado') + 1);
 const pBarra = s => { const i = BARRA.indexOf(s); return i < 0 ? null : Math.log(i + 2) / Math.log(BARRA.length + 1); };
-const LIMITE = [0, (pBarra('mayo') + pBarra(ITEM_IDS[0])) / 2, (pBarra(ITEM_IDS[11]) + pBarra('objetivo')) / 2, 1];
+const LIMITE = [0, (pBarra('medidas') + pBarra(ITEM_IDS[0])) / 2, (pBarra(ITEM_IDS[11]) + pBarra('objetivo')) / 2, 1];
 (function montarBarra(){ [...$('barra').querySelectorAll('.b-trilho i')].forEach((el, k) => { el.style.flex = `${LIMITE[k + 1] - LIMITE[k]} 1 0`; }); })();
 function pintarBarra(s){
   const p = pBarra(s); if (p == null) return;
@@ -248,7 +249,7 @@ $('cta').addEventListener('click', () => {
   if (cur === 'idade'){ track('answer', { stepId:'idade', valueText:String(R.idade), props:{ como:como.idade || 'padrao' } }); return proxima(); }
   if (cur === 'medidas'){ track('answer', { stepId:'medidas', valueText:'ok', props:{ peso:R.peso, altura:R.altura, como:{ peso:como.peso || 'padrao', altura:como.altura || 'padrao' } } }); return proxima(); }
   if (cur === 'tentou'){ track('answer', { stepId:'tentou', valueText:R.tentou.join('+') }); return proxima(); }
-  if (UM.includes(cur) || ['mayo', 'mais1'].includes(cur)) return proxima();
+  if (UM.includes(cur) || ['mais1'].includes(cur)) return proxima();
 });
 $('cta-2').addEventListener('click', () => { if (cur === 'nome'){ R.nome = ''; $('nome').value = ''; track('answer', { stepId:'nome', valueText:'pulou' }); proxima(); } });
 
@@ -307,7 +308,7 @@ function montarResultado(){
   const lis = fs.map(x => `<li><q>${esc(frase(x.f))}</q> <em>${esc(ESCALA_TXT[R[x.id]].toLowerCase())}</em></li>`).join('');
   const abre = fs.length ? `<p class="nota">${nome ? esc(nome) + ', você' : 'Você'} marcou:</p><ul class="marcou">${lis}</ul>` : '';
   const cara = !forte ? (zero ? 'Nenhum dos 4 tipos apareceu nas suas respostas.' : 'Nenhum dos 4 apareceu forte. O que mais apareceu foi')
-    : (fs.length ? 'Isso tem cara de' : 'O que mais apareceu foi');
+    : (fs.length ? 'Características de:' : 'O que mais apareceu foi');   // 27/11 (edição dele em 25/11): era 'Isso tem cara de'
   const nomes = dois ? `${esc(T[0].nome)} <span class="junto">junto com</span> ${esc(T[1].nome)}` : esc(T[0].nome);
   $('r-tipo').innerHTML = `${abre}<p class="cara">${cara}</p>
     ${zero ? '' : `<p class="nome${dois ? ' dois' : ''}">${nomes}</p><p class="linha2">${T.map(x => esc(x.linha2)).join(' · ')}</p>
@@ -345,8 +346,9 @@ function prepararFechamento(){
   const nome = nomeBonito(), dois = RES?.seus.length === 2;
   const tit = `quer uma estratégia para ${dois ? 'os seus dois tipos' : 'o seu tipo'}?`;
   $('r-ponte-tit').textContent = nome ? `${nome}, ${tit}` : cap(tit);
-  const obj = R.objetivo ? ` para ${ROT.objetivo[R.objetivo]}` : '';
-  $('r-ponte-txt').textContent = `Mande a mensagem pronta no WhatsApp. O Dr. Lucca analisa as suas respostas e te diz por onde começar${obj}.`;
+  // 27/11 (edição dele na Central em 25/11): "Receba um plano para controlar [o tipo], sem custo." (o objetivo segue na mensagem)
+  const alvo = !RES || RES.P[RES.seus[0]] === 0 ? '' : lista(RES.seus.map(t => TIPOS[t].art + ' ' + TIPOS[t].curto.toLowerCase()));
+  $('r-ponte-txt').textContent = alvo ? `Receba um plano para controlar ${alvo}, sem custo.` : 'Receba um plano para o seu caso, sem custo.';
   $('r-cta').href = linkWA();
 }
 const fimProps = () => ({ escolha:'explicar', codigo:meuCodigo(), tipo:RES?.seus.join('+') || null });
